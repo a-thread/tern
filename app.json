@@ -1,0 +1,24 @@
+{
+  "expo": {
+    "name": "Tern",
+    "slug": "tern",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "splash": {
+      "resizeMode": "contain",
+      "backgroundColor": "#F5F3EE"
+    },
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "com.yourname.tern"
+    },
+    "android": {
+      "package": "com.yourname.tern",
+      "adaptiveIcon": {
+        "backgroundColor": "#F5F3EE"
+      }
+    },
+    "plugins": ["expo-font"]
+  }
+}
