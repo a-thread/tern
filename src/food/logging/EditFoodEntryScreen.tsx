@@ -17,6 +17,7 @@ import type { RootStackParamList } from '@shared/navigation/types';
 import { MEAL_OPTIONS, type Tier } from '../models';
 import { useFood } from '../FoodContext';
 import { TierPicker, MealPicker } from '../components';
+import { useFoodDisplay } from '../useFoodDisplay';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'EditFood'>;
 
@@ -25,6 +26,7 @@ export default function EditFoodEntryScreen({ navigation, route }: Props) {
   const insets = useSafeAreaInsets();
   const { foodLog, updateFoodEntry, removeFoodEntry } = useFood();
   const entry = foodLog.find((f) => f.id === entryId);
+  const { showTiers, showTierNumber, showCalories } = useFoodDisplay();
 
   const [servings, setServings] = useState(entry?.servings ?? 1);
   const [servingLabel, setServingLabel] = useState(entry?.servingLabel ?? '');
@@ -103,12 +105,16 @@ export default function EditFoodEntryScreen({ navigation, route }: Props) {
           {entry.brand ? <Text style={s.brand}>{entry.brand}</Text> : null}
         </View>
 
-        <View style={s.calCard}>
-          <Text style={s.calBig}>{Math.round(entry.calories * servings)}</Text>
-          <Text style={s.calLabel}>
-            calories at {servings} × {servingLabel || entry.servingLabel}
-          </Text>
-        </View>
+        {showCalories ? (
+          <View style={s.calCard}>
+            <Text style={s.calBig}>
+              {Math.round(entry.calories * servings)}
+            </Text>
+            <Text style={s.calLabel}>
+              calories at {servings} × {servingLabel || entry.servingLabel}
+            </Text>
+          </View>
+        ) : null}
 
         <GroupLabel>Portion</GroupLabel>
         <Group>
@@ -141,10 +147,19 @@ export default function EditFoodEntryScreen({ navigation, route }: Props) {
           <MealPicker value={meal} onChange={setMeal} options={MEAL_OPTIONS} />
         </View>
 
-        <GroupLabel>Food type</GroupLabel>
-        <View style={s.card}>
-          <TierPicker value={tier} onChange={setTier} suggested={null} />
-        </View>
+        {showTiers ? (
+          <>
+            <GroupLabel>Food type</GroupLabel>
+            <View style={s.card}>
+              <TierPicker
+                value={tier}
+                onChange={setTier}
+                suggested={null}
+                showNumber={showTierNumber}
+              />
+            </View>
+          </>
+        ) : null}
 
         <Pressable style={s.bigBtn} onPress={save}>
           <Text style={s.bigBtnText}>Save changes</Text>

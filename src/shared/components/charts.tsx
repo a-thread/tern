@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { View, Text, StyleSheet, Animated, Easing } from 'react-native';
 import Svg, {
   Path,
@@ -9,35 +9,129 @@ import Svg, {
   Defs,
   LinearGradient,
   Stop,
+  G,
   Text as SvgText,
 } from 'react-native-svg';
 import { colors, font, space } from '../theme';
+import { TERN_PATH } from './TernMark';
 
 const AnimatedPath = Animated.createAnimatedComponent(Path);
+const AnimatedCircle = Animated.createAnimatedComponent(Circle);
 
 /* ------------------------------------------------------------------ */
 /* Flight path — draws itself toward the goal on mount                  */
 /* ------------------------------------------------------------------ */
 
 const TRAIL = 'M4,42 C 58,42 54,13 112,13 S 186,40 232,26';
-const TRAIL_LEN = 300;
 
-export function FlightPath({ progress }: { progress: number }) {
-  const dash = useRef(new Animated.Value(TRAIL_LEN)).current;
+// The trail's two cubic segments, sampled once into an arc-length lookup
+// table so the bird can sit exactly on the drawn line at any progress.
+const TRAIL_SEGMENTS: [number, number][][] = [
+  [
+    [4, 42],
+    [58, 42],
+    [54, 13],
+    [112, 13],
+  ],
+  [
+    [112, 13],
+    [170, 13],
+    [186, 40],
+    [232, 26],
+  ],
+];
+
+const TRAIL_POINTS: { x: number; y: number; len: number }[] = (() => {
+  const pts: { x: number; y: number; len: number }[] = [];
+  let len = 0;
+  const STEPS = 100;
+  TRAIL_SEGMENTS.forEach(([p0, p1, p2, p3], si) => {
+    for (let i = si === 0 ? 0 : 1; i <= STEPS; i++) {
+      const t = i / STEPS;
+      const u = 1 - t;
+      const x =
+        u * u * u * p0[0] + 3 * u * u * t * p1[0] + 3 * u * t * t * p2[0] + t * t * t * p3[0];
+      const y =
+        u * u * u * p0[1] + 3 * u * u * t * p1[1] + 3 * u * t * t * p2[1] + t * t * t * p3[1];
+      const prev = pts[pts.length - 1];
+      if (prev) len += Math.hypot(x - prev.x, y - prev.y);
+      pts.push({ x, y, len });
+    }
+  });
+  return pts;
+})();
+
+const TRAIL_LEN = TRAIL_POINTS[TRAIL_POINTS.length - 1].len;
+
+/** Point on the trail at `fraction` (0–1) of its total length. */
+function pointAlongTrail(fraction: number) {
+  const target = Math.min(Math.max(fraction, 0), 1) * TRAIL_LEN;
+  let i = 1;
+  while (i < TRAIL_POINTS.length - 1 && TRAIL_POINTS[i].len < target) i++;
+  const a = TRAIL_POINTS[i - 1];
+  const b = TRAIL_POINTS[i];
+  const k = (target - a.len) / (b.len - a.len || 1);
+  return {
+    x: a.x + (b.x - a.x) * k,
+    y: a.y + (b.y - a.y) * k,
+    // the tern faces right, so tilt it to follow the direction of travel
+    angle: (Math.atan2(b.y - a.y, b.x - a.x) * 180) / Math.PI,
+  };
+}
+
+const BIRD_SCALE = 0.0105;
+const BIRD_CENTER = 1000 * BIRD_SCALE;
+const FLIGHT_MS = 1800;
+
+/**
+ * The bird flies the trail from the start to today's progress. Bump
+ * `replayKey` (e.g. each time the screen gains focus) to fly it again.
+ */
+export function FlightPath({
+  progress,
+  replayKey = 0,
+}: {
+  progress: number;
+  replayKey?: number;
+}) {
   const clamped = Math.min(Math.max(progress, 0), 1);
+  const travel = useRef(new Animated.Value(0)).current;
+  const pop = useRef(new Animated.Value(0)).current;
+  const [bird, setBird] = useState(() => ({ ...pointAlongTrail(0), size: 0.6 }));
+  const [popBoost, setPopBoost] = useState(0);
 
   useEffect(() => {
-    Animated.timing(dash, {
-      toValue: TRAIL_LEN * (1 - clamped),
-      duration: 1600,
+    const flightId = travel.addListener(({ value }) =>
+      // grows from 60% to full size over the first stretch of the flight
+      setBird({ ...pointAlongTrail(value), size: 0.6 + 0.4 * Math.min(value / 0.12, 1) }),
+    );
+    const popId = pop.addListener(({ value }) => setPopBoost(value));
+    travel.setValue(0);
+    pop.setValue(0);
+    Animated.timing(travel, {
+      toValue: clamped,
+      duration: FLIGHT_MS,
       easing: Easing.out(Easing.cubic),
       useNativeDriver: false,
-    }).start();
-  }, [clamped, dash]);
+    }).start(({ finished }) => {
+      if (finished && clamped >= 1) {
+        Animated.sequence([
+          Animated.timing(pop, { toValue: 1, duration: 180, useNativeDriver: false }),
+          Animated.spring(pop, { toValue: 0, friction: 4, useNativeDriver: false }),
+        ]).start();
+      }
+    });
+    return () => {
+      travel.removeListener(flightId);
+      pop.removeListener(popId);
+    };
+  }, [clamped, replayKey, travel, pop]);
 
-  // rough position of the bird along the curve
-  const birdX = 4 + (232 - 4) * clamped;
-  const birdY = 42 - 29 * Math.sin(Math.PI * clamped * 0.85);
+  const k = bird.size * (1 + 0.5 * popBoost);
+  const dash = travel.interpolate({
+    inputRange: [0, 1],
+    outputRange: [TRAIL_LEN, 0],
+  });
 
   return (
     <Svg width='100%' height={56} viewBox='0 0 280 56'>
@@ -65,12 +159,11 @@ export function FlightPath({ progress }: { progress: number }) {
         stroke='rgba(255,255,255,0.7)'
         strokeWidth={2}
       />
-      <Circle
-        cx={birdX}
-        cy={birdY}
-        r={4}
-        fill={clamped >= 1 ? '#FBFAF7' : colors.sun}
-      />
+      <G
+        transform={`translate(${bird.x - BIRD_CENTER * k}, ${bird.y - BIRD_CENTER * k}) scale(${BIRD_SCALE * k}) rotate(${bird.angle} 1000 1000)`}
+      >
+        <Path d={TERN_PATH} fill={clamped >= 1 ? '#FBFAF7' : colors.sun} />
+      </G>
     </Svg>
   );
 }
@@ -294,18 +387,27 @@ export function ConsistencyGrid({ days }: { days: DayBar['state'][] }) {
 /* Journey route                                                        */
 /* ------------------------------------------------------------------ */
 
-export function JourneyRoute({ progress }: { progress: number }) {
+const JOURNEY_LEN = 273; // measured arc length of the path below
+
+export function JourneyRoute({
+  progress,
+  replayKey = 0,
+}: {
+  progress: number;
+  replayKey?: number;
+}) {
   const path = 'M6,34 C 48,34 58,9 104,9 S 172,30 206,17 S 254,11 272,7';
-  const dash = useRef(new Animated.Value(320)).current;
+  const dash = useRef(new Animated.Value(JOURNEY_LEN)).current;
 
   useEffect(() => {
+    dash.setValue(JOURNEY_LEN);
     Animated.timing(dash, {
-      toValue: 320 * (1 - Math.min(progress, 1)),
+      toValue: JOURNEY_LEN * (1 - Math.min(progress, 1)),
       duration: 1800,
       easing: Easing.out(Easing.cubic),
       useNativeDriver: false,
     }).start();
-  }, [progress, dash]);
+  }, [progress, replayKey, dash]);
 
   return (
     <Svg width='100%' height={46} viewBox='0 0 280 46'>
@@ -322,7 +424,7 @@ export function JourneyRoute({ progress }: { progress: number }) {
         stroke='#8FD9C4'
         strokeWidth={2}
         strokeLinecap='round'
-        strokeDasharray={320}
+        strokeDasharray={JOURNEY_LEN}
         strokeDashoffset={dash as unknown as number}
       />
       <Circle cx={6} cy={34} r={2.6} fill='#8FD9C4' />
@@ -350,15 +452,38 @@ export function DayRing({
   today,
   rest,
   size = 23,
+  replayKey = 0,
+  delay = 0,
 }: {
   progress: number;
   label: string;
   today?: boolean;
   rest?: boolean;
   size?: number;
+  /** Bump to refill the ring from empty. */
+  replayKey?: number;
+  /** Stagger, in ms, before the ring starts filling. */
+  delay?: number;
 }) {
   const r = 12;
   const circ = 2 * Math.PI * r;
+  const fill = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    fill.setValue(0);
+    Animated.timing(fill, {
+      toValue: 1,
+      duration: 900,
+      delay,
+      easing: Easing.out(Easing.cubic),
+      useNativeDriver: false,
+    }).start();
+  }, [progress, replayKey, delay, fill]);
+
+  const ringOffset = fill.interpolate({
+    inputRange: [0, 1],
+    outputRange: [circ, circ * (1 - Math.min(progress, 1))],
+  });
   const stroke = rest ? colors.driftwood : today ? colors.sun : colors.glacier;
   const track = rest ? '#E4DECE' : colors.border;
   return (
@@ -376,7 +501,7 @@ export function DayRing({
           stroke={track}
           strokeWidth={4}
         />
-        <Circle
+        <AnimatedCircle
           cx={15}
           cy={15}
           r={r}
@@ -385,7 +510,7 @@ export function DayRing({
           strokeWidth={4}
           strokeLinecap='round'
           strokeDasharray={circ}
-          strokeDashoffset={circ * (1 - Math.min(progress, 1))}
+          strokeDashoffset={ringOffset as unknown as number}
           transform='rotate(-90 15 15)'
         />
       </Svg>

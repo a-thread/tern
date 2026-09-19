@@ -13,6 +13,7 @@ import {
   Chevron,
   ToggleRow,
   FootNote,
+  PushHeader,
 } from '@shared/components/ui';
 import { profile } from './mock';
 import { useSettings } from './SettingsContext';
@@ -33,9 +34,11 @@ export default function SettingsRootScreen({ navigation }: Props) {
     <View
       style={{ flex: 1, backgroundColor: colors.paper, paddingTop: insets.top }}
     >
-      <View style={{ paddingHorizontal: space.lg, paddingBottom: space.sm }}>
-        <Text style={s.title}>Settings</Text>
-      </View>
+      <PushHeader
+        title='Settings'
+        backLabel='Back'
+        onBack={() => navigation.getParent()?.goBack()}
+      />
 
       <ScrollView
         contentContainerStyle={{
@@ -281,12 +284,6 @@ function SettingsRow({
 }
 
 const s = StyleSheet.create({
-  title: {
-    fontFamily: font.display,
-    fontSize: 27,
-    color: colors.ink,
-    letterSpacing: -0.3,
-  },
   row: {
     flexDirection: 'row',
     alignItems: 'center',

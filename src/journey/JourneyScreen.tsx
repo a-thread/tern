@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useCallback, useState } from 'react';
 import { View, Text, ScrollView, StyleSheet } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -14,6 +14,7 @@ import {
   FootNote,
 } from '@shared/components/ui';
 import { JourneyRoute } from '@shared/components/charts';
+import { useFocusEffect } from '@react-navigation/native';
 import { useAnimatedNumber } from '@shared/hooks/useAnimatedNumber';
 import { milestones } from './mock';
 import { waypointRules } from './models';
@@ -25,6 +26,14 @@ export default function JourneyScreen() {
   const insets = useSafeAreaInsets();
   const { waypoints } = useWaypoints();
   const animatedWaypoints = useAnimatedNumber(waypoints, 900);
+
+  // Redraw the route each time the Journey tab comes into view.
+  const [replayKey, setReplayKey] = useState(0);
+  useFocusEffect(
+    useCallback(() => {
+      setReplayKey((k) => k + 1);
+    }, []),
+  );
   const reached = milestones.filter((m) => m.reachedOn);
   const next = milestones.find((m) => !m.reachedOn);
   const prev = reached[reached.length - 1];
@@ -43,7 +52,7 @@ export default function JourneyScreen() {
         <Text style={s.heroTitle}>Journey</Text>
 
         <View style={{ marginTop: space.sm }}>
-          <JourneyRoute progress={0.75} />
+          <JourneyRoute progress={0.75} replayKey={replayKey} />
         </View>
 
         <View style={{ alignItems: 'center', marginTop: 6 }}>

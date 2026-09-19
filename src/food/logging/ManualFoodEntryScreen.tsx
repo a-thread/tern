@@ -12,13 +12,10 @@ import { NativeStackScreenProps } from '@react-navigation/native-stack';
 
 import { colors, font, radius, space } from '@shared/theme';
 import { Group, GroupLabel, SheetNav } from '@shared/components/ui';
-import {
-  useWillCompleteAllMeals,
-  MEALS_BONUS_POINTS,
-} from '@journey/mealsBonus';
 import type { Tier } from '../models';
 import { useFood } from '../FoodContext';
 import { TierPicker } from '../components';
+import { useFoodDisplay } from '../useFoodDisplay';
 import type { LogFoodStackParamList } from '../types';
 
 type Props = NativeStackScreenProps<LogFoodStackParamList, 'ManualFoodEntry'>;
@@ -27,7 +24,7 @@ export default function ManualFoodEntryScreen({ navigation, route }: Props) {
   const { meal, name: initialName } = route.params;
   const insets = useSafeAreaInsets();
   const { addFoodEntry } = useFood();
-  const willCompleteAllMeals = useWillCompleteAllMeals();
+  const { showTiers, showTierNumber, showCalories } = useFoodDisplay();
 
   const [name, setName] = useState(initialName ?? '');
   const [serving, setServing] = useState('1 serving');
@@ -41,7 +38,6 @@ export default function ManualFoodEntryScreen({ navigation, route }: Props) {
 
   const save = () => {
     if (!canSave) return;
-    const willComplete = willCompleteAllMeals(meal);
     addFoodEntry({
       name: name.trim(),
       meal,
@@ -53,16 +49,7 @@ export default function ManualFoodEntryScreen({ navigation, route }: Props) {
       fat: Number(fat) || 0,
       tier,
     });
-    const parent = navigation.getParent();
-    parent?.goBack();
-    if (willComplete) {
-      parent?.navigate('Reward', {
-        kind: 'goal',
-        title: 'All meals logged',
-        subtitle: 'Breakfast, lunch, and dinner — all logged today',
-        points: MEALS_BONUS_POINTS,
-      });
-    }
+    navigation.getParent()?.goBack();
   };
 
   return (
@@ -108,13 +95,15 @@ export default function ManualFoodEntryScreen({ navigation, route }: Props) {
 
         <GroupLabel>Nutrition (optional)</GroupLabel>
         <Group>
-          <FieldRow
-            label='Calories'
-            value={calories}
-            onChangeText={setCalories}
-            keyboardType='numeric'
-            placeholder='—'
-          />
+          {showCalories ? (
+            <FieldRow
+              label='Calories'
+              value={calories}
+              onChangeText={setCalories}
+              keyboardType='numeric'
+              placeholder='—'
+            />
+          ) : null}
           <FieldRow
             label='Protein'
             value={protein}
@@ -141,10 +130,19 @@ export default function ManualFoodEntryScreen({ navigation, route }: Props) {
           />
         </Group>
 
-        <GroupLabel>Food type</GroupLabel>
-        <View style={s.card}>
-          <TierPicker value={tier} onChange={setTier} suggested={null} />
-        </View>
+        {showTiers ? (
+          <>
+            <GroupLabel>Food type</GroupLabel>
+            <View style={s.card}>
+              <TierPicker
+                value={tier}
+                onChange={setTier}
+                suggested={null}
+                showNumber={showTierNumber}
+              />
+            </View>
+          </>
+        ) : null}
 
         <Pressable
           style={[s.bigBtn, !canSave && { opacity: 0.5 }]}

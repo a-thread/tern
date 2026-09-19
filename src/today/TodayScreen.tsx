@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
   View,
   Text,
@@ -9,7 +9,11 @@ import {
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useNavigation } from '@react-navigation/native';
+import {
+  useFocusEffect,
+  useIsFocused,
+  useNavigation,
+} from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import Svg, { Path } from 'react-native-svg';
 
@@ -27,6 +31,7 @@ import { FlightPath, DayRing } from '@shared/components/charts';
 import TernMark from '@shared/components/TernMark';
 import {
   useAnimatedNumber,
+  useCountUp,
   usePulseOnIncrease,
 } from '@shared/hooks/useAnimatedNumber';
 import type { RootStackParamList } from '@shared/navigation/types';
@@ -36,7 +41,8 @@ import { useWeight } from '@weight/WeightContext';
 import { useSettings } from '@settings/SettingsContext';
 import { profile } from '@settings/mock';
 import { waypointRules } from '@journey/models';
-import { useWaypoints } from '@journey/WaypointsContext';
+import { useWaypoints, type Celebration } from '@journey/WaypointsContext';
+import WaypointBurst from '@journey/WaypointBurst';
 import { today, week, weekBars } from './mock';
 
 const WEEKDAY_NAMES = [
@@ -51,6 +57,18 @@ const WEEKDAY_NAMES = [
 const STEP_GOAL_POINTS =
   waypointRules.find((r) => r.id === 'steps')?.points ?? 40;
 
+type Point = { x: number; y: number };
+type Playing = { celebration: Celebration; origin: Point; target: Point };
+
+function measureInWindow(ref: React.RefObject<View>) {
+  return new Promise<{ x: number; y: number; width: number; height: number }>(
+    (resolve) =>
+      ref.current?.measureInWindow((x, y, width, height) =>
+        resolve({ x, y, width, height }),
+      ),
+  );
+}
+
 export default function TodayScreen() {
   const insets = useSafeAreaInsets();
   const navigation =
@@ -58,7 +76,13 @@ export default function TodayScreen() {
   const { foodLog } = useFood();
   const { weightEntries } = useWeight();
   const { settings } = useSettings();
-  const { waypoints, addWaypoints } = useWaypoints();
+  const {
+    waypoints,
+    addWaypoints,
+    celebrations,
+    pendingPoints,
+    completeCelebration,
+  } = useWaypoints();
   const lastWeight = weightEntries[0];
   const progress = today.steps / settings.stepGoal;
   const remaining = Math.max(settings.stepGoal - today.steps, 0);
@@ -67,22 +91,62 @@ export default function TodayScreen() {
   const mealsLoggedCount = CORE_MEALS.filter((m) =>
     foodLog.some((f) => f.meal === m),
   ).length;
-  const animatedWaypoints = useAnimatedNumber(waypoints);
-  const waypointsPulse = usePulseOnIncrease(waypoints);
+  // The chip holds back awards that haven't been celebrated yet, so its
+  // number ticks up (and pulses) as the feathers land on it.
+  const shownWaypoints = Math.max(waypoints - pendingPoints, 0);
+  const animatedWaypoints = useAnimatedNumber(shownWaypoints);
+
+  // Replay the flight (and the step roll-up) every time Today comes into view.
+  const [replayKey, setReplayKey] = useState(0);
+  useFocusEffect(
+    useCallback(() => {
+      setReplayKey((k) => k + 1);
+    }, []),
+  );
+  const animatedSteps = useCountUp(today.steps, replayKey);
+  const waypointsPulse = usePulseOnIncrease(shownWaypoints);
+
+  // Play queued awards while Today is actually on screen — an award made in
+  // the food-logging sheet waits here until you're back.
+  const isFocused = useIsFocused();
+  const rootRef = useRef<View>(null);
+  const heroRef = useRef<View>(null);
+  const chipRef = useRef<View>(null);
+  const [playing, setPlaying] = useState<Playing | null>(null);
+  const starting = useRef(false);
+  const nextCelebration = celebrations[0];
+
+  useEffect(() => {
+    if (!isFocused || playing || starting.current || !nextCelebration) return;
+    starting.current = true;
+    (async () => {
+      const [root, hero, chip] = await Promise.all([
+        measureInWindow(rootRef),
+        measureInWindow(heroRef),
+        measureInWindow(chipRef),
+      ]);
+      const inRoot = (r: typeof hero): Point => ({
+        x: r.x - root.x + r.width / 2,
+        y: r.y - root.y + r.height / 2,
+      });
+      const origin = inRoot(hero);
+      origin.y = Math.min(Math.max(origin.y, insets.top + 90), root.height - 160);
+      setPlaying({
+        celebration: nextCelebration,
+        origin,
+        target: inRoot(chip),
+      });
+      starting.current = false;
+    })();
+  }, [isFocused, playing, nextCelebration, insets.top]);
 
   const wasReached = useRef(reached);
   useEffect(() => {
     if (reached && !wasReached.current) {
-      addWaypoints(STEP_GOAL_POINTS);
-      navigation.navigate('Reward', {
-        kind: 'goal',
-        title: "You reached today's goal",
-        subtitle: `${settings.stepGoal.toLocaleString()} steps · ${today.streak} days in a row`,
-        points: STEP_GOAL_POINTS,
-      });
+      addWaypoints(STEP_GOAL_POINTS, 'steps');
     }
     wasReached.current = reached;
-  }, [reached, navigation, addWaypoints, settings.stepGoal]);
+  }, [reached, addWaypoints]);
 
   const openRestDay = (i: number) => {
     navigation.navigate('RestDay', {
@@ -94,6 +158,8 @@ export default function TodayScreen() {
 
   return (
     <View
+      ref={rootRef}
+      collapsable={false}
       style={{ flex: 1, backgroundColor: colors.paper, paddingTop: insets.top }}
     >
       <View style={s.header}>
@@ -112,7 +178,11 @@ export default function TodayScreen() {
               })
             }
           >
-            <Animated.View style={{ transform: [{ scale: waypointsPulse }] }}>
+            <Animated.View
+              ref={chipRef}
+              collapsable={false}
+              style={{ transform: [{ scale: waypointsPulse }] }}
+            >
               <Chip bg={colors.violetTint} color={colors.violet}>
                 <TernMark size={12} color={colors.violet} />
                 <Text style={[s.chipText, { color: colors.violet }]}>
@@ -147,6 +217,7 @@ export default function TodayScreen() {
           paddingBottom: 100,
         }}
       >
+        <View ref={heroRef} collapsable={false}>
         <LinearGradient colors={skyFor(progress) as string[]} style={s.hero}>
           <View style={s.heroTop}>
             <Text style={s.greeting}>Morning, {profile.name}</Text>
@@ -155,15 +226,16 @@ export default function TodayScreen() {
             </View>
           </View>
 
-          <FlightPath progress={progress} />
+          <FlightPath progress={progress} replayKey={replayKey} />
 
-          <Text style={s.stepBig}>{today.steps.toLocaleString()}</Text>
+          <Text style={s.stepBig}>{animatedSteps.toLocaleString()}</Text>
           <Text style={s.stepSub}>
             {reached
               ? `Goal reached · ${settings.stepGoal.toLocaleString()} steps`
               : `${remaining.toLocaleString()} to go`}
           </Text>
         </LinearGradient>
+        </View>
 
         <View style={s.weekRow}>
           {week.map((d, i) => (
@@ -174,6 +246,8 @@ export default function TodayScreen() {
             >
               <DayRing
                 progress={d.progress}
+                replayKey={replayKey}
+                delay={i * 80}
                 label={d.label}
                 rest={d.rest}
                 today={d.today}
@@ -258,6 +332,22 @@ export default function TodayScreen() {
           </>
         ) : null}
       </ScrollView>
+
+      {playing ? (
+        <WaypointBurst
+          key={playing.celebration.id}
+          id={playing.celebration.id}
+          points={playing.celebration.points}
+          label={
+            waypointRules.find((r) => r.id === playing.celebration.source)
+              ?.label ?? ''
+          }
+          origin={playing.origin}
+          target={playing.target}
+          onArrive={() => completeCelebration(playing.celebration.id)}
+          onDone={() => setPlaying(null)}
+        />
+      ) : null}
     </View>
   );
 }

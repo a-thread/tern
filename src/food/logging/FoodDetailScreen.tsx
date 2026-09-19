@@ -12,13 +12,10 @@ import { NativeStackScreenProps } from '@react-navigation/native-stack';
 
 import { colors, font, radius, space } from '@shared/theme';
 import { Group, GroupLabel, SheetNav } from '@shared/components/ui';
-import {
-  useWillCompleteAllMeals,
-  MEALS_BONUS_POINTS,
-} from '@journey/mealsBonus';
 import { MEAL_OPTIONS, type Tier } from '../models';
 import { useFood } from '../FoodContext';
 import { TierPicker, MealPicker } from '../components';
+import { useFoodDisplay } from '../useFoodDisplay';
 import type { LogFoodStackParamList } from '../types';
 
 type Props = NativeStackScreenProps<LogFoodStackParamList, 'FoodDetail'>;
@@ -27,7 +24,7 @@ export default function FoodDetailScreen({ navigation, route }: Props) {
   const { meal: initialMeal, result } = route.params;
   const insets = useSafeAreaInsets();
   const { addFoodEntry } = useFood();
-  const willCompleteAllMeals = useWillCompleteAllMeals();
+  const { showTiers, showTierNumber, showCalories } = useFoodDisplay();
 
   const [servings, setServings] = useState(1);
   const [servingLabel, setServingLabel] = useState(result.servingLabel);
@@ -38,7 +35,6 @@ export default function FoodDetailScreen({ navigation, route }: Props) {
     setServings((s) => Math.max(0.5, Math.round((s + delta) * 2) / 2));
 
   const add = () => {
-    const willComplete = willCompleteAllMeals(meal);
     addFoodEntry({
       name: result.name,
       brand: result.brand,
@@ -52,16 +48,7 @@ export default function FoodDetailScreen({ navigation, route }: Props) {
       tier,
       tierOverridden: tier !== result.tier,
     });
-    const parent = navigation.getParent();
-    parent?.goBack();
-    if (willComplete) {
-      parent?.navigate('Reward', {
-        kind: 'goal',
-        title: 'All meals logged',
-        subtitle: 'Breakfast, lunch, and dinner — all logged today',
-        points: MEALS_BONUS_POINTS,
-      });
-    }
+    navigation.getParent()?.goBack();
   };
 
   return (
@@ -89,12 +76,14 @@ export default function FoodDetailScreen({ navigation, route }: Props) {
         </View>
 
         <View style={s.calCard}>
-          <View>
-            <Text style={s.calBig}>
-              {Math.round(result.calories * servings)}
-            </Text>
-            <Text style={s.calLabel}>calories</Text>
-          </View>
+          {showCalories ? (
+            <View>
+              <Text style={s.calBig}>
+                {Math.round(result.calories * servings)}
+              </Text>
+              <Text style={s.calLabel}>calories</Text>
+            </View>
+          ) : null}
           <View style={s.macroMini}>
             <MacroMini value={result.protein * servings} label='protein' />
             <MacroMini value={result.carbs * servings} label='carbs' />
@@ -133,10 +122,19 @@ export default function FoodDetailScreen({ navigation, route }: Props) {
           <MealPicker value={meal} onChange={setMeal} options={MEAL_OPTIONS} />
         </View>
 
-        <GroupLabel>Food type</GroupLabel>
-        <View style={s.card}>
-          <TierPicker value={tier} onChange={setTier} suggested={result.tier} />
-        </View>
+        {showTiers ? (
+          <>
+            <GroupLabel>Food type</GroupLabel>
+            <View style={s.card}>
+              <TierPicker
+                value={tier}
+                onChange={setTier}
+                suggested={result.tier}
+                showNumber={showTierNumber}
+              />
+            </View>
+          </>
+        ) : null}
 
         <Pressable style={s.bigBtn} onPress={add}>
           <Text style={s.bigBtnText}>Add to {meal}</Text>

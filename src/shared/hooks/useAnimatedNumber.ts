@@ -46,13 +46,13 @@ export function usePulseOnIncrease(value: number) {
           toValue: 1.25,
           duration: 160,
           easing: Easing.out(Easing.quad),
-          useNativeDriver: true,
+          useNativeDriver: false,
         }),
         Animated.spring(scale, {
           toValue: 1,
           friction: 4,
           tension: 140,
-          useNativeDriver: true,
+          useNativeDriver: false,
         }),
       ]).start();
     }
@@ -60,4 +60,29 @@ export function usePulseOnIncrease(value: number) {
   }, [value, scale]);
 
   return scale;
+}
+
+/**
+ * Counts an integer up from 0 to `target`, and does it again whenever
+ * `replayKey` changes — for numbers that should roll up each time their
+ * screen comes into view.
+ */
+export function useCountUp(target: number, replayKey = 0, duration = 1800) {
+  const [display, setDisplay] = useState(0);
+
+  useEffect(() => {
+    const anim = new Animated.Value(0);
+    const id = anim.addListener(({ value }) => setDisplay(Math.round(value)));
+    Animated.timing(anim, {
+      toValue: target,
+      duration,
+      easing: Easing.out(Easing.cubic),
+      useNativeDriver: false,
+    }).start(({ finished }) => {
+      if (finished) setDisplay(target);
+    });
+    return () => anim.removeListener(id);
+  }, [target, replayKey, duration]);
+
+  return display;
 }

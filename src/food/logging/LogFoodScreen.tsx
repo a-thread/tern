@@ -21,6 +21,7 @@ import {
 } from '@shared/components/ui';
 import { searchResults, recentResults, type SearchResult } from '../searchData';
 import { TierDot } from '../components';
+import { useFoodDisplay } from '../useFoodDisplay';
 import type { LogFoodStackParamList } from '../types';
 
 type Props = NativeStackScreenProps<LogFoodStackParamList, 'Search'>;
@@ -163,13 +164,18 @@ function ResultRow({
   onPress: () => void;
 }) {
   const unknown = result.tier === null;
+  const { showTiers, showTierNumber, showCalories } = useFoodDisplay();
+  const brandPrefix = result.brand ? result.brand + ' · ' : '';
+  const detail = showCalories
+    ? `${brandPrefix}${result.calories} cal / ${result.servingLabel}`
+    : `${brandPrefix}${result.servingLabel}`;
   return (
     <Pressable
       style={s.row}
       android_ripple={{ color: colors.doveTint }}
       onPress={onPress}
     >
-      {unknown ? (
+      {!showTiers ? null : unknown ? (
         <View style={[s.tierUnknown]}>
           <Text style={s.tierUnknownText}>?</Text>
         </View>
@@ -177,14 +183,13 @@ function ResultRow({
         <TierDot
           tier={result.tier as number}
           color={tierColors[result.tier as 1 | 2 | 3 | 4]}
+          showNumber={showTierNumber}
         />
       )}
       <View style={{ flex: 1 }}>
         <Text style={s.rowTitle}>{result.name}</Text>
         <Text style={s.rowSub}>
-          {unknown
-            ? 'No nutrition data · tap to fill in'
-            : `${result.brand ? result.brand + ' · ' : ''}${result.calories} cal / ${result.servingLabel}`}
+          {unknown ? 'No nutrition data · tap to fill in' : detail}
         </Text>
       </View>
       {unknown ? (

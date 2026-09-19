@@ -29,10 +29,12 @@ export function TierPicker({
   value,
   onChange,
   suggested,
+  showNumber = true,
 }: {
   value: Tier | null;
   onChange: (tier: Tier) => void;
   suggested?: Tier | null;
+  showNumber?: boolean;
 }) {
   return (
     <View>
@@ -46,7 +48,11 @@ export function TierPicker({
               onPress={() => onChange(opt.tier)}
               style={[s.tierOpt, selected && s.tierOptSel]}
             >
-              <TierDot tier={opt.tier} color={tierColors[opt.tier]} />
+              <TierDot
+                tier={opt.tier}
+                color={tierColors[opt.tier]}
+                showNumber={showNumber}
+              />
               <Text style={[s.tierOptLabel, selected && s.tierOptLabelSel]}>
                 {opt.label}
               </Text>
