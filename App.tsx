@@ -19,6 +19,7 @@ import {
 import { colors } from '@shared/theme';
 import { AppProviders } from '@shared/state/AppProviders';
 import RootNavigator from '@shared/navigation/RootNavigator';
+import AuthGate from '@shared/auth/AuthGate';
 
 const navTheme = {
   ...DefaultTheme,
@@ -58,11 +59,13 @@ export default function App() {
   return (
     <SafeAreaProvider>
       <StatusBar style='dark' />
-      <AppProviders>
-        <NavigationContainer theme={navTheme}>
-          <RootNavigator />
-        </NavigationContainer>
-      </AppProviders>
+      <AuthGate>
+        <AppProviders>
+          <NavigationContainer theme={navTheme}>
+            <RootNavigator />
+          </NavigationContainer>
+        </AppProviders>
+      </AuthGate>
     </SafeAreaProvider>
   );
 }

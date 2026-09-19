@@ -43,7 +43,10 @@ export default function LogWeightScreen({ navigation }: Props) {
     return list;
   }, [weight]);
 
-  const weekAvg = weightTrend.reduce((a, b) => a + b, 0) / weightTrend.length;
+  const week = weightTrend.slice(-7);
+  const weekAvg = week.length
+    ? week.reduce((a, b) => a + b, 0) / week.length
+    : null;
 
   const save = () => {
     addWeightEntry(weight);
@@ -92,14 +95,18 @@ export default function LogWeightScreen({ navigation }: Props) {
           instead.
         </Text>
 
-        <GroupLabel>This week</GroupLabel>
-        <View style={s.weekCard}>
-          <View style={s.weekTop}>
-            <Text style={s.weekVal}>{weekAvg.toFixed(1)} kg</Text>
-            <Text style={s.weekSub}>7-day average</Text>
-          </View>
-          <WeightTrend trend={weightTrend} spread={0.5} height={44} />
-        </View>
+        {weekAvg !== null ? (
+          <>
+            <GroupLabel>This week</GroupLabel>
+            <View style={s.weekCard}>
+              <View style={s.weekTop}>
+                <Text style={s.weekVal}>{weekAvg.toFixed(1)} kg</Text>
+                <Text style={s.weekSub}>7-day average</Text>
+              </View>
+              <WeightTrend trend={week} spread={0.5} height={44} />
+            </View>
+          </>
+        ) : null}
 
         <GroupLabel>Details</GroupLabel>
         <Group>

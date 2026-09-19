@@ -11,3 +11,6 @@ export const waypointRules = [
   { id: 'meals', label: 'Logging all meals', points: 15 },
   { id: 'rest', label: 'Taking a rest day', points: 10 },
 ];
+
+/** Which waypoint rule an award came from (matches `waypointRules` ids). */
+export type WaypointSource = 'steps' | 'meals' | 'rest';

@@ -15,6 +15,7 @@ import {
   FootNote,
   PushHeader,
 } from '@shared/components/ui';
+import { useAuth } from '@shared/auth/AuthContext';
 import { profile } from './mock';
 import { useSettings } from './SettingsContext';
 import type { SettingsStackParamList } from './types';
@@ -24,6 +25,8 @@ type Props = NativeStackScreenProps<SettingsStackParamList, 'SettingsRoot'>;
 export default function SettingsRootScreen({ navigation }: Props) {
   const insets = useSafeAreaInsets();
   const { settings, updateSettings } = useSettings();
+  const auth = useAuth();
+  const email = auth?.session?.user.email;
 
   const stepWeightGoal = (delta: number) =>
     updateSettings({
@@ -49,11 +52,13 @@ export default function SettingsRootScreen({ navigation }: Props) {
         <Group style={{ marginTop: 4 }}>
           <View style={s.row}>
             <View style={s.avatar}>
-              <Text style={s.avatarText}>{profile.name[0]}</Text>
+              <Text style={s.avatarText}>
+                {(email ?? profile.name)[0].toUpperCase()}
+              </Text>
             </View>
             <View style={{ flex: 1 }}>
-              <Text style={s.rowTitle}>{profile.name}</Text>
-              <Text style={s.rowSub}>Local profile</Text>
+              <Text style={s.rowTitle}>{email ? 'Account' : profile.name}</Text>
+              <Text style={s.rowSub}>{email ?? 'Local profile'}</Text>
             </View>
           </View>
         </Group>
@@ -237,6 +242,12 @@ export default function SettingsRootScreen({ navigation }: Props) {
           </View>
         </Group>
 
+        {auth ? (
+          <Pressable style={s.signOut} onPress={auth.signOut}>
+            <Text style={s.signOutText}>Sign out</Text>
+          </Pressable>
+        ) : null}
+
         <FootNote>
           Nutrition data from Open Food Facts, used under the Open Database
           License.
@@ -284,6 +295,8 @@ function SettingsRow({
 }
 
 const s = StyleSheet.create({
+  signOut: { alignItems: 'center', paddingVertical: space.lg },
+  signOutText: { fontFamily: font.semibold, fontSize: 14, color: colors.ink2 },
   row: {
     flexDirection: 'row',
     alignItems: 'center',

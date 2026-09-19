@@ -1,0 +1,47 @@
+# Tern backend
+
+Tern stores its data in Supabase, in a dedicated `tern` schema, so it can share
+a project (and its login) with other apps without touching their `public`
+tables. With no keys configured, the app runs on local mock data instead.
+
+## Setup
+
+1. **Run the migration.** In the Supabase dashboard open *SQL Editor* and run
+   [`migrations/20260918000000_tern_schema.sql`](migrations/20260918000000_tern_schema.sql)
+   (or `supabase db push` if you use the CLI).
+2. **Expose the schema.** *Project Settings → API → Exposed schemas* → add `tern`.
+   Without this, every request fails with "schema must be one of…".
+3. **Add keys.** Copy `.env.example` to `.env` and fill in the project URL and
+   the `anon` key (*Project Settings → API*). The anon key is safe to ship in
+   the app; row-level security is what protects the data. Never put the
+   `service_role` key in `.env`.
+4. **Email confirmation.** If the project has *Confirm email* on, new accounts
+   must confirm before signing in (the sign-up screen says so). Turn it off
+   under *Authentication → Providers → Email* while developing if you like.
+5. Restart Expo with `npx expo start --clear` so the new env vars are picked up.
+
+## What's stored
+
+| Table | Contents |
+| --- | --- |
+| `tern.settings` | one row per user; the whole settings object as `jsonb` |
+| `tern.food_entries` | each logged food, by day and meal |
+| `tern.weight_entries` | each weigh-in |
+| `tern.waypoint_events` | the waypoints ledger: one row per award |
+
+Every table is row-level-secured to `auth.uid()`; signed-out (`anon`) requests
+get nothing.
+
+## Waypoints ledger
+
+Waypoints are earned for behavior only. `waypoint_events.source` is restricted
+to `steps`, `meals` and `rest`, there is at most one award per source per day
+(so awarding is idempotent), and taking one back deletes its row. The total is
+the `tern.waypoint_totals` view (the sum of a user's events).
+
+## Not yet backed by the server
+
+- **Steps** are still mock data (real steps need Health Connect / HealthKit and
+  a custom dev build rather than Expo Go).
+- **Trends** for steps and the Journey milestones are still mock data.
+- Rest-day (+10) awarding has no trigger yet.

@@ -38,6 +38,7 @@ import type { RootStackParamList } from '@shared/navigation/types';
 import { CORE_MEALS, dayTotals } from '@food/models';
 import { useFood } from '@food/FoodContext';
 import { useWeight } from '@weight/WeightContext';
+import { formatLoggedAt } from '@weight/models';
 import { useSettings } from '@settings/SettingsContext';
 import { profile } from '@settings/mock';
 import { waypointRules } from '@journey/models';
@@ -287,7 +288,7 @@ export default function TodayScreen() {
             title='Log weight'
             sub={
               lastWeight
-                ? `Last: ${lastWeight.kg} kg, ${lastWeight.loggedAt}`
+                ? `Last: ${lastWeight.kg} kg, ${formatLoggedAt(lastWeight.loggedAt)}`
                 : 'No weight logged yet'
             }
             onPress={() => navigation.navigate('LogWeight')}

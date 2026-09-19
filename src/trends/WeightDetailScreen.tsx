@@ -16,6 +16,7 @@ import {
 import { WeightTrend } from '@shared/components/charts';
 import { useWeight } from '@weight/WeightContext';
 import { useSettings } from '@settings/SettingsContext';
+import { formatLoggedAt } from '@weight/models';
 import type { TrendsStackParamList } from './types';
 
 type Props = NativeStackScreenProps<TrendsStackParamList, 'WeightDetail'>;
@@ -138,7 +139,7 @@ export default function WeightDetailScreen({ navigation }: Props) {
               <Row
                 key={entry.id}
                 title={`${entry.kg} kg`}
-                sub={entry.loggedAt}
+                sub={formatLoggedAt(entry.loggedAt)}
               />
             ))
           ) : (

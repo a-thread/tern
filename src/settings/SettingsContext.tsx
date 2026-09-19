@@ -2,9 +2,12 @@ import React, {
   createContext,
   useCallback,
   useContext,
+  useEffect,
   useMemo,
+  useRef,
   useState,
 } from 'react';
+import { useBackend } from '@shared/state/BackendContext';
 import { settingsSeed } from './mock';
 
 export type ReminderSettings = {
@@ -71,21 +74,48 @@ const initialSettings: AppSettings = {
 
 type SettingsContextValue = {
   settings: AppSettings;
+  ready: boolean;
   updateSettings: (patch: Partial<AppSettings>) => void;
 };
 
 const SettingsContext = createContext<SettingsContextValue | null>(null);
 
 export function SettingsProvider({ children }: { children: React.ReactNode }) {
+  const { settings: repo } = useBackend();
   const [settings, setSettings] = useState<AppSettings>(initialSettings);
+  const [ready, setReady] = useState(false);
+  const latest = useRef(settings);
+  latest.current = settings;
 
-  const updateSettings = useCallback((patch: Partial<AppSettings>) => {
-    setSettings((prev) => ({ ...prev, ...patch }));
-  }, []);
+  // Saved settings are merged over the defaults, so a setting added in a
+  // later version simply takes its default until the user changes it.
+  useEffect(() => {
+    let cancelled = false;
+    repo
+      .load()
+      .then((saved) => {
+        if (!cancelled && saved) setSettings({ ...initialSettings, ...saved });
+      })
+      .catch((e) => console.warn('Could not load settings', e))
+      .finally(() => !cancelled && setReady(true));
+    return () => {
+      cancelled = true;
+    };
+  }, [repo]);
+
+  const updateSettings = useCallback(
+    (patch: Partial<AppSettings>) => {
+      const next = { ...latest.current, ...patch };
+      latest.current = next;
+      setSettings(next);
+      repo.save(next).catch((e) => console.warn('Could not save settings', e));
+    },
+    [repo],
+  );
 
   const value = useMemo<SettingsContextValue>(
-    () => ({ settings, updateSettings }),
-    [settings, updateSettings],
+    () => ({ settings, ready, updateSettings }),
+    [settings, ready, updateSettings],
   );
 
   return (

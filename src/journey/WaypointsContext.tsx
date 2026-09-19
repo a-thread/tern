@@ -9,14 +9,14 @@ import React, {
 } from 'react';
 import { allMealsLogged } from '@food/models';
 import { useFood } from '@food/FoodContext';
-import { INITIAL_WAYPOINTS } from './mock';
-import { waypointRules } from './models';
+import { useBackend } from '@shared/state/BackendContext';
+import { dayKey } from '@shared/utils/date';
+import { waypointRules, type WaypointSource } from './models';
+
+export type { WaypointSource };
 
 const MEALS_BONUS_POINTS =
   waypointRules.find((r) => r.id === 'meals')?.points ?? 15;
-
-/** Which waypoint rule an award came from (matches `waypointRules` ids). */
-export type WaypointSource = 'steps' | 'meals' | 'rest';
 
 /** An award the UI hasn't celebrated yet. */
 export type Celebration = {
@@ -28,6 +28,9 @@ export type Celebration = {
 type WaypointsContextValue = {
   /** Live waypoint total. Behavior-only — never adjusted for weight or calorie totals. */
   waypoints: number;
+  /** False until the ledger has loaded. */
+  ready: boolean;
+  /** Award `points` for `source`. A source can only be awarded once per day, so repeats are ignored. */
   addWaypoints: (points: number, source: WaypointSource) => void;
   /** Awards waiting for the Today screen to play their animation, oldest first. */
   celebrations: Celebration[];
@@ -40,46 +43,78 @@ type WaypointsContextValue = {
 const WaypointsContext = createContext<WaypointsContextValue | null>(null);
 
 export function WaypointsProvider({ children }: { children: React.ReactNode }) {
-  const { foodLog } = useFood();
-  const [waypoints, setWaypoints] = useState<number>(INITIAL_WAYPOINTS);
+  const { waypoints: ledger } = useBackend();
+  const { foodLog, ready: foodReady } = useFood();
+  const [waypoints, setWaypoints] = useState(0);
   const [celebrations, setCelebrations] = useState<Celebration[]>([]);
-  const mealsBonusAwarded = useRef(allMealsLogged(foodLog));
+  const [ready, setReady] = useState(false);
+  const day = useRef(dayKey()).current;
+  // Sources already awarded today — the ledger's one-per-day rule, mirrored
+  // here so awarding and revoking decide synchronously.
+  const awarded = useRef(new Set<WaypointSource>());
   const nextId = useRef(1);
+
+  useEffect(() => {
+    let cancelled = false;
+    ledger
+      .load(day)
+      .then((snapshot) => {
+        if (cancelled) return;
+        awarded.current = new Set(snapshot.todaySources);
+        setWaypoints(snapshot.total);
+      })
+      .catch((e) => console.warn('Could not load waypoints', e))
+      .finally(() => !cancelled && setReady(true));
+    return () => {
+      cancelled = true;
+    };
+  }, [ledger, day]);
 
   const enqueue = useCallback((points: number, source: WaypointSource) => {
     setCelebrations((prev) => [...prev, { id: nextId.current++, points, source }]);
   }, []);
 
+  const award = useCallback(
+    (points: number, source: WaypointSource) => {
+      if (points <= 0 || awarded.current.has(source)) return;
+      awarded.current.add(source);
+      setWaypoints((w) => w + points);
+      enqueue(points, source);
+      ledger.award(source, points, day).catch((e) => {
+        console.warn('Could not save waypoints', e);
+      });
+    },
+    [ledger, day, enqueue],
+  );
+
+  /** Taking an award back is quiet, and cancels a celebration that hasn't played yet. */
+  const revoke = useCallback(
+    (points: number, source: WaypointSource) => {
+      if (!awarded.current.delete(source)) return;
+      setWaypoints((w) => Math.max(w - points, 0));
+      setCelebrations((prev) => {
+        const i = prev.map((c) => c.source).lastIndexOf(source);
+        return i === -1 ? prev : prev.filter((_, idx) => idx !== i);
+      });
+      ledger.revoke(source, day).catch((e) => {
+        console.warn('Could not save waypoints', e);
+      });
+    },
+    [ledger, day],
+  );
+
   /**
    * Keeps the "logging all meals" bonus honest: awards it the moment every
    * core meal has an entry, and takes it back if a removal or edit drops
    * coverage below that again — waypoints reflect the log as it stands now,
-   * not just its high-water mark. Awards are celebrated; take-backs are
-   * applied quietly (and cancel a celebration that hasn't played yet).
+   * not just its high-water mark. Waits for both the food log and the ledger
+   * to load, so an unloaded (empty) log is never mistaken for a dropped one.
    */
   useEffect(() => {
-    const complete = allMealsLogged(foodLog);
-    if (complete && !mealsBonusAwarded.current) {
-      mealsBonusAwarded.current = true;
-      setWaypoints((w) => w + MEALS_BONUS_POINTS);
-      enqueue(MEALS_BONUS_POINTS, 'meals');
-    } else if (!complete && mealsBonusAwarded.current) {
-      mealsBonusAwarded.current = false;
-      setWaypoints((w) => Math.max(w - MEALS_BONUS_POINTS, 0));
-      setCelebrations((prev) => {
-        const i = prev.map((c) => c.source).lastIndexOf('meals');
-        return i === -1 ? prev : prev.filter((_, idx) => idx !== i);
-      });
-    }
-  }, [foodLog, enqueue]);
-
-  const addWaypoints = useCallback(
-    (points: number, source: WaypointSource) => {
-      setWaypoints((w) => w + points);
-      if (points > 0) enqueue(points, source);
-    },
-    [enqueue],
-  );
+    if (!ready || !foodReady) return;
+    if (allMealsLogged(foodLog)) award(MEALS_BONUS_POINTS, 'meals');
+    else revoke(MEALS_BONUS_POINTS, 'meals');
+  }, [ready, foodReady, foodLog, award, revoke]);
 
   const completeCelebration = useCallback((id: number) => {
     setCelebrations((prev) => prev.filter((c) => c.id !== id));
@@ -93,12 +128,13 @@ export function WaypointsProvider({ children }: { children: React.ReactNode }) {
   const value = useMemo<WaypointsContextValue>(
     () => ({
       waypoints,
-      addWaypoints,
+      ready,
+      addWaypoints: award,
       celebrations,
       pendingPoints,
       completeCelebration,
     }),
-    [waypoints, addWaypoints, celebrations, pendingPoints, completeCelebration],
+    [waypoints, ready, award, celebrations, pendingPoints, completeCelebration],
   );
 
   return (

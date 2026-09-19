@@ -1,19 +1,33 @@
 import React from 'react';
-import { renderHook, act } from '@testing-library/react-native';
+import { renderHook, act, waitFor } from '@testing-library/react-native';
 import { FoodProvider, useFood } from '@food/FoodContext';
+import {
+  BackendProvider,
+  createMemoryBackend,
+  type Backend,
+} from '@shared/state/BackendContext';
+import { dayKey } from '@shared/utils/date';
 import { WaypointsProvider, useWaypoints } from './WaypointsContext';
 import { INITIAL_WAYPOINTS } from './mock';
 
-function wrapper({ children }: { children: React.ReactNode }) {
-  return (
-    <FoodProvider>
-      <WaypointsProvider>{children}</WaypointsProvider>
-    </FoodProvider>
-  );
+function useHarness() {
+  const food = useFood();
+  const points = useWaypoints();
+  return { ...food, ...points, ready: food.ready && points.ready };
 }
 
-function useHarness() {
-  return { ...useFood(), ...useWaypoints() };
+/** Renders the food + waypoints providers over a fresh in-memory backend, once both have loaded. */
+async function setup(backend: Backend = createMemoryBackend()) {
+  const wrapper = ({ children }: { children: React.ReactNode }) => (
+    <BackendProvider backend={backend}>
+      <FoodProvider>
+        <WaypointsProvider>{children}</WaypointsProvider>
+      </FoodProvider>
+    </BackendProvider>
+  );
+  const hook = renderHook(() => useHarness(), { wrapper });
+  await waitFor(() => expect(hook.result.current.ready).toBe(true));
+  return { ...hook, backend };
 }
 
 /**
@@ -22,13 +36,13 @@ function useHarness() {
  * coverage drops, not just awarded once and left stuck.
  */
 describe('waypoints meals bonus (reactive to foodLog)', () => {
-  it('starts with the seed log already covering all meals, so no double-award on mount', () => {
-    const { result } = renderHook(() => useHarness(), { wrapper });
+  it('starts with the seed log already covering all meals, so no double-award on mount', async () => {
+    const { result } = await setup();
     expect(result.current.waypoints).toBe(INITIAL_WAYPOINTS);
   });
 
-  it('revokes the bonus when a removal drops meal coverage, and re-awards it when coverage is restored', () => {
-    const { result } = renderHook(() => useHarness(), { wrapper });
+  it('revokes the bonus when a removal drops meal coverage, and re-awards it when coverage is restored', async () => {
+    const { result } = await setup();
     const initial = result.current.waypoints;
 
     const dinnerEntries = result.current.foodLog.filter(
@@ -36,14 +50,14 @@ describe('waypoints meals bonus (reactive to foodLog)', () => {
     );
     expect(dinnerEntries.length).toBeGreaterThan(0);
 
-    act(() => {
+    await act(async () => {
       dinnerEntries.forEach((entry) =>
         result.current.removeFoodEntry(entry.id),
       );
     });
     expect(result.current.waypoints).toBe(initial - 15);
 
-    act(() => {
+    await act(async () => {
       result.current.addFoodEntry({
         name: 'Chili, homemade',
         meal: 'dinner',
@@ -73,11 +87,11 @@ describe('celebration queue', () => {
     tier: 1 as const,
   });
 
-  it('queues a celebration for a step-goal award and holds its points as pending', () => {
-    const { result } = renderHook(() => useHarness(), { wrapper });
+  it('queues a celebration for a step-goal award and holds its points as pending', async () => {
+    const { result } = await setup();
     const initial = result.current.waypoints;
 
-    act(() => result.current.addWaypoints(40, 'steps'));
+    await act(async () => result.current.addWaypoints(40, 'steps'));
 
     expect(result.current.waypoints).toBe(initial + 40);
     expect(result.current.celebrations).toHaveLength(1);
@@ -85,29 +99,56 @@ describe('celebration queue', () => {
     expect(result.current.pendingPoints).toBe(40);
   });
 
-  it('clears the pending points once the celebration completes', () => {
-    const { result } = renderHook(() => useHarness(), { wrapper });
-    act(() => result.current.addWaypoints(40, 'steps'));
+  it('clears the pending points once the celebration completes', async () => {
+    const { result } = await setup();
+    await act(async () => result.current.addWaypoints(40, 'steps'));
 
-    act(() => result.current.completeCelebration(result.current.celebrations[0].id));
+    await act(async () => result.current.completeCelebration(result.current.celebrations[0].id));
 
     expect(result.current.celebrations).toHaveLength(0);
     expect(result.current.pendingPoints).toBe(0);
   });
 
-  it('celebrates the meals bonus when it is earned, and cancels it if it is taken back before playing', () => {
-    const { result } = renderHook(() => useHarness(), { wrapper });
+  it('celebrates the meals bonus when it is earned, and cancels it if it is taken back before playing', async () => {
+    const { result } = await setup();
     const dinners = result.current.foodLog.filter((f) => f.meal === 'dinner');
 
-    act(() => dinners.forEach((d) => result.current.removeFoodEntry(d.id)));
+    await act(async () => dinners.forEach((d) => result.current.removeFoodEntry(d.id)));
     expect(result.current.celebrations).toHaveLength(0); // a take-back is quiet
 
-    act(() => result.current.addFoodEntry(newEntry('dinner')));
+    await act(async () => result.current.addFoodEntry(newEntry('dinner')));
     expect(result.current.celebrations).toHaveLength(1);
     expect(result.current.celebrations[0].source).toBe('meals');
 
     const added = result.current.foodLog.find((f) => f.name === 'Test')!;
-    act(() => result.current.removeFoodEntry(added.id));
+    await act(async () => result.current.removeFoodEntry(added.id));
     expect(result.current.celebrations).toHaveLength(0);
+  });
+});
+
+describe('waypoints ledger', () => {
+  it('awards a source only once per day', async () => {
+    const { result } = await setup();
+    const initial = result.current.waypoints;
+
+    await act(async () => result.current.addWaypoints(40, 'steps'));
+    await act(async () => result.current.addWaypoints(40, 'steps'));
+
+    expect(result.current.waypoints).toBe(initial + 40);
+    expect(result.current.celebrations).toHaveLength(1);
+  });
+
+  it('persists awards and take-backs to the repository', async () => {
+    const { result, backend } = await setup();
+    const day = dayKey();
+
+    await act(async () => result.current.addWaypoints(40, 'steps'));
+    expect((await backend.waypoints.load(day)).total).toBe(INITIAL_WAYPOINTS + 40);
+
+    const dinners = result.current.foodLog.filter((f) => f.meal === 'dinner');
+    await act(async () => dinners.forEach((d) => result.current.removeFoodEntry(d.id)));
+    const after = await backend.waypoints.load(day);
+    expect(after.total).toBe(INITIAL_WAYPOINTS + 40 - 15);
+    expect(after.todaySources).toEqual(['steps']);
   });
 });
