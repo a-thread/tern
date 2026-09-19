@@ -8,7 +8,9 @@ tables. With no keys configured, the app runs on local mock data instead.
 
 1. **Run the migration.** In the Supabase dashboard open *SQL Editor* and run
    [`migrations/20260918000000_tern_schema.sql`](migrations/20260918000000_tern_schema.sql)
-   (or `supabase db push` if you use the CLI).
+   (or `supabase db push` if you use the CLI). Then run
+   [`migrations/20260919000000_weight_in_pounds.sql`](migrations/20260919000000_weight_in_pounds.sql),
+   which switches weight storage from kg to lb.
 2. **Expose the schema.** *Project Settings → API → Exposed schemas* → add `tern`.
    Without this, every request fails with "schema must be one of…".
 3. **Add keys.** Copy `.env.example` to `.env` and fill in the project URL and
@@ -18,7 +20,13 @@ tables. With no keys configured, the app runs on local mock data instead.
 4. **Email confirmation.** If the project has *Confirm email* on, new accounts
    must confirm before signing in (the sign-up screen says so). Turn it off
    under *Authentication → Providers → Email* while developing if you like.
-5. Restart Expo with `npx expo start --clear` so the new env vars are picked up.
+5. **Allow the app's email links.** Confirmation and password-reset emails open
+   the app through a deep link. Under *Authentication → URL Configuration →
+   Redirect URLs* add `tern://**` (a built app) and `exp://**` (Expo Go
+   during development). These are additive, so other apps sharing the project
+   (e.g. Lichen's web URL) are unaffected. Without them the links fall back to
+   the project's Site URL instead of opening Tern.
+6. Restart Expo with `npx expo start --clear` so the new env vars are picked up.
 
 ## What's stored
 
@@ -26,7 +34,7 @@ tables. With no keys configured, the app runs on local mock data instead.
 | --- | --- |
 | `tern.settings` | one row per user; the whole settings object as `jsonb` |
 | `tern.food_entries` | each logged food, by day and meal |
-| `tern.weight_entries` | each weigh-in |
+| `tern.weight_entries` | each weigh-in, in pounds (kg is a display setting) |
 | `tern.waypoint_events` | the waypoints ledger: one row per award |
 
 Every table is row-level-secured to `auth.uid()`; signed-out (`anon`) requests

@@ -17,7 +17,7 @@ type WeightContextValue = {
   /** Smoothed trend, oldest to newest. Empty until something is logged. */
   weightTrend: number[];
   ready: boolean;
-  addWeightEntry: (kg: number) => void;
+  addWeightEntry: (lb: number) => void;
 };
 
 const WeightContext = createContext<WeightContextValue | null>(null);
@@ -46,10 +46,10 @@ export function WeightProvider({ children }: { children: React.ReactNode }) {
   }, [reload]);
 
   const addWeightEntry = useCallback(
-    (kg: number) => {
+    (lb: number) => {
       const entry: WeightEntry = {
         id: newId(),
-        kg,
+        lb,
         loggedAt: new Date().toISOString(),
       };
       setWeightEntries((prev) => [entry, ...prev]);

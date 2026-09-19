@@ -1,5 +1,5 @@
 /** `loggedAt` is an ISO timestamp; use `formatLoggedAt` to display it. */
-export type WeightEntry = { id: string; kg: number; loggedAt: string };
+export type WeightEntry = { id: string; lb: number; loggedAt: string };
 
 /** How far back the trend line reaches. */
 const TREND_POINTS = 30;
@@ -16,7 +16,7 @@ export function computeTrend(entriesNewestFirst: WeightEntry[]): number[] {
   for (const entry of [...entriesNewestFirst].reverse()) {
     const prev = trend[trend.length - 1];
     const next =
-      prev === undefined ? entry.kg : prev + TREND_ALPHA * (entry.kg - prev);
+      prev === undefined ? entry.lb : prev + TREND_ALPHA * (entry.lb - prev);
     trend.push(Math.round(next * 100) / 100);
   }
   return trend.slice(-TREND_POINTS);

@@ -40,6 +40,7 @@ import { useFood } from '@food/FoodContext';
 import { useWeight } from '@weight/WeightContext';
 import { formatLoggedAt } from '@weight/models';
 import { useSettings } from '@settings/SettingsContext';
+import { useUnits } from '@settings/useUnits';
 import { profile } from '@settings/mock';
 import { waypointRules } from '@journey/models';
 import { useWaypoints, type Celebration } from '@journey/WaypointsContext';
@@ -77,6 +78,7 @@ export default function TodayScreen() {
   const { foodLog } = useFood();
   const { weightEntries } = useWeight();
   const { settings } = useSettings();
+  const { formatWeight } = useUnits();
   const {
     waypoints,
     addWaypoints,
@@ -288,7 +290,7 @@ export default function TodayScreen() {
             title='Log weight'
             sub={
               lastWeight
-                ? `Last: ${lastWeight.kg} kg, ${formatLoggedAt(lastWeight.loggedAt)}`
+                ? `Last: ${formatWeight(lastWeight.lb)},${formatLoggedAt(lastWeight.loggedAt)}`
                 : 'No weight logged yet'
             }
             onPress={() => navigation.navigate('LogWeight')}

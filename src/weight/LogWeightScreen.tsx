@@ -7,16 +7,20 @@ import { colors, font, radius, space } from '@shared/theme';
 import { Group, GroupLabel, SheetNav } from '@shared/components/ui';
 import { WeightTrend } from '@shared/components/charts';
 import type { RootStackParamList } from '@shared/navigation/types';
+import { useUnits } from '@settings/useUnits';
 import { useWeight } from './WeightContext';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'LogWeight'>;
 
-const PX_PER_KG = 110; // drag distance for a 1 kg change
+const PX_PER_UNIT = 110; // drag distance for a 1 lb (or 1 kg) change
 
 export default function LogWeightScreen({ navigation }: Props) {
   const insets = useSafeAreaInsets();
   const { weightEntries, weightTrend, addWeightEntry } = useWeight();
-  const latest = weightEntries[0]?.kg ?? 78.2;
+  const { units, weightLabel, toDisplay, fromDisplay, formatWeight } =
+    useUnits();
+  // The ruler works in the user's unit; storage stays lb.
+  const latest = Math.round(toDisplay(weightEntries[0]?.lb ?? 172.4) * 10) / 10;
 
   const [weight, setWeight] = useState(latest);
   const dragStart = useRef(latest);
@@ -28,7 +32,7 @@ export default function LogWeightScreen({ navigation }: Props) {
         dragStart.current = weight;
       },
       onPanResponderMove: (_evt, gesture) => {
-        const next = dragStart.current - gesture.dx / PX_PER_KG;
+        const next = dragStart.current - gesture.dx / PX_PER_UNIT;
         setWeight(Math.round(next * 10) / 10);
       },
     }),
@@ -44,12 +48,12 @@ export default function LogWeightScreen({ navigation }: Props) {
   }, [weight]);
 
   const week = weightTrend.slice(-7);
-  const weekAvg = week.length
+  const weekAvgLb = week.length
     ? week.reduce((a, b) => a + b, 0) / week.length
     : null;
 
   const save = () => {
-    addWeightEntry(weight);
+    addWeightEntry(fromDisplay(weight));
     navigation.goBack();
   };
 
@@ -73,7 +77,7 @@ export default function LogWeightScreen({ navigation }: Props) {
       >
         <View style={s.display}>
           <Text style={s.val}>{weight.toFixed(1)}</Text>
-          <Text style={s.unit}>kg</Text>
+          <Text style={s.unit}>{weightLabel}</Text>
         </View>
 
         <View style={s.ruler} {...panResponder.panHandlers}>
@@ -95,12 +99,12 @@ export default function LogWeightScreen({ navigation }: Props) {
           instead.
         </Text>
 
-        {weekAvg !== null ? (
+        {weekAvgLb !== null ? (
           <>
             <GroupLabel>This week</GroupLabel>
             <View style={s.weekCard}>
               <View style={s.weekTop}>
-                <Text style={s.weekVal}>{weekAvg.toFixed(1)} kg</Text>
+                <Text style={s.weekVal}>{formatWeight(weekAvgLb)}</Text>
                 <Text style={s.weekSub}>7-day average</Text>
               </View>
               <WeightTrend trend={week} spread={0.5} height={44} />
@@ -116,7 +120,9 @@ export default function LogWeightScreen({ navigation }: Props) {
           </View>
           <View style={s.row}>
             <Text style={s.rowTitle}>Units</Text>
-            <Text style={s.rowSub}>Kilograms</Text>
+            <Text style={s.rowSub}>
+              {units === 'imperial' ? 'Pounds' : 'Kilograms'}
+            </Text>
           </View>
         </Group>
       </ScrollView>

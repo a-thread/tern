@@ -16,6 +16,7 @@ import { dayTotals } from '@food/models';
 import { useFood } from '@food/FoodContext';
 import { useWeight } from '@weight/WeightContext';
 import { useSettings } from '@settings/SettingsContext';
+import { useUnits } from '@settings/useUnits';
 import type { TrendsStackParamList } from './types';
 
 type Props = NativeStackScreenProps<TrendsStackParamList, 'TrendsHome'>;
@@ -29,6 +30,7 @@ export default function TrendsScreen({ navigation }: Props) {
   const { foodLog } = useFood();
   const { weightEntries, weightTrend } = useWeight();
   const { settings } = useSettings();
+  const { formatWeight, toDisplay, weightLabel } = useUnits();
   const totals = dayTotals(foodLog);
 
   const avgSteps = Math.round(
@@ -92,10 +94,11 @@ export default function TrendsScreen({ navigation }: Props) {
                 <View style={s.metricTop}>
                   <View>
                     <Text style={s.metricName}>Weight</Text>
-                    <Text style={s.metricValue}>{latest.toFixed(1)} kg</Text>
+                    <Text style={s.metricValue}>{formatWeight(latest)}</Text>
                     <Text style={s.metricSub}>
                       7-day average ·{' '}
-                      {(latest - settings.weightGoalKg).toFixed(1)} kg from goal
+                      {toDisplay(latest - settings.weightGoalLb).toFixed(1)}{' '}
+                      {weightLabel} from goal
                     </Text>
                   </View>
                   <View
@@ -103,14 +106,14 @@ export default function TrendsScreen({ navigation }: Props) {
                   >
                     <Text style={[s.deltaText, { color: colors.water }]}>
                       {delta > 0 ? '+' : '−'}
-                      {Math.abs(delta).toFixed(1)}
+                      {toDisplay(Math.abs(delta)).toFixed(1)}
                     </Text>
                   </View>
                 </View>
                 <WeightTrend
-                  trend={weightTrend}
-                  spread={0.6}
-                  goalKg={settings.weightGoalKg}
+                  trend={weightTrend.map(toDisplay)}
+                  spread={toDisplay(1.3)}
+                  goal={toDisplay(settings.weightGoalLb)}
                 />
                 <Text style={s.legendNote}>
                   The shaded band is your day-to-day spread — normal

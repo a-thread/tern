@@ -2,6 +2,7 @@
   "expo": {
     "name": "Tern",
     "slug": "tern",
+    "scheme": "tern",
     "version": "0.1.0",
     "orientation": "portrait",
     "userInterfaceStyle": "light",

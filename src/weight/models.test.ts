@@ -1,8 +1,8 @@
 import { computeTrend, formatLoggedAt, type WeightEntry } from './models';
 
-const entry = (kg: number, loggedAt = '2026-09-01T07:00:00'): WeightEntry => ({
-  id: String(kg),
-  kg,
+const entry = (lb: number, loggedAt = '2026-09-01T07:00:00'): WeightEntry => ({
+  id: String(lb),
+  lb,
   loggedAt,
 });
 

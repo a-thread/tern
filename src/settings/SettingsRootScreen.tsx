@@ -18,6 +18,7 @@ import {
 import { useAuth } from '@shared/auth/AuthContext';
 import { profile } from './mock';
 import { useSettings } from './SettingsContext';
+import { useUnits } from './useUnits';
 import type { SettingsStackParamList } from './types';
 
 type Props = NativeStackScreenProps<SettingsStackParamList, 'SettingsRoot'>;
@@ -28,10 +29,17 @@ export default function SettingsRootScreen({ navigation }: Props) {
   const auth = useAuth();
   const email = auth?.session?.user.email;
 
-  const stepWeightGoal = (delta: number) =>
-    updateSettings({
-      weightGoalKg: Math.round((settings.weightGoalKg + delta) * 2) / 2,
-    });
+  const { units, toDisplay, fromDisplay, formatGoal } = useUnits();
+
+  // Whole pounds, or half kilograms, in whichever unit is showing.
+  const stepWeightGoal = (dir: 1 | -1) => {
+    const shown = toDisplay(settings.weightGoalLb);
+    const next =
+      units === 'imperial'
+        ? Math.round(shown) + dir
+        : Math.round(shown * 2) / 2 + dir * 0.5;
+    updateSettings({ weightGoalLb: fromDisplay(next) });
+  };
 
   return (
     <View
@@ -57,8 +65,14 @@ export default function SettingsRootScreen({ navigation }: Props) {
               </Text>
             </View>
             <View style={{ flex: 1 }}>
-              <Text style={s.rowTitle}>{email ? 'Account' : profile.name}</Text>
-              <Text style={s.rowSub}>{email ?? 'Local profile'}</Text>
+              <Text style={s.rowTitle}>
+                {auth?.isGuest ? 'Preview' : email ? 'Account' : profile.name}
+              </Text>
+              <Text style={s.rowSub}>
+                {auth?.isGuest
+                  ? 'Nothing is saved — this resets when you exit'
+                  : (email ?? 'Local profile')}
+              </Text>
             </View>
           </View>
         </Group>
@@ -122,11 +136,11 @@ export default function SettingsRootScreen({ navigation }: Props) {
             </IconBadge>
             <Text style={[s.rowTitle, { flex: 1 }]}>Weight goal</Text>
             <View style={s.stepper}>
-              <Pressable onPress={() => stepWeightGoal(-0.5)} hitSlop={8}>
+              <Pressable onPress={() => stepWeightGoal(-1)} hitSlop={8}>
                 <Text style={s.stepperBtn}>−</Text>
               </Pressable>
-              <Text style={s.stepperVal}>{settings.weightGoalKg} kg</Text>
-              <Pressable onPress={() => stepWeightGoal(0.5)} hitSlop={8}>
+              <Text style={s.stepperVal}>{formatGoal(settings.weightGoalLb)}</Text>
+              <Pressable onPress={() => stepWeightGoal(1)} hitSlop={8}>
                 <Text style={s.stepperBtn}>+</Text>
               </Pressable>
             </View>
@@ -154,6 +168,22 @@ export default function SettingsRootScreen({ navigation }: Props) {
 
         <GroupLabel>Data & display</GroupLabel>
         <Group>
+          <View style={s.row}>
+            <Text style={[s.rowTitle, { flex: 1 }]}>Units</Text>
+            <View style={s.stepper}>
+              {(['imperial', 'metric'] as const).map((u) => (
+                <Pressable
+                  key={u}
+                  onPress={() => updateSettings({ units: u })}
+                  style={[s.unitItem, units === u && s.unitItemOn]}
+                >
+                  <Text style={[s.unitText, units === u && s.unitTextOn]}>
+                    {u === 'imperial' ? 'lb' : 'kg'}
+                  </Text>
+                </Pressable>
+              ))}
+            </View>
+          </View>
           <SettingsRow
             icon={
               <IconBadge bg={colors.doveTint}>
@@ -243,9 +273,21 @@ export default function SettingsRootScreen({ navigation }: Props) {
         </Group>
 
         {auth ? (
-          <Pressable style={s.signOut} onPress={auth.signOut}>
-            <Text style={s.signOutText}>Sign out</Text>
-          </Pressable>
+          <View style={s.signOut}>
+            {auth.isGuest ? (
+              <Pressable
+                onPress={() => auth.signOut({ toSignUp: true })}
+                hitSlop={8}
+              >
+                <Text style={s.createText}>Create account</Text>
+              </Pressable>
+            ) : null}
+            <Pressable onPress={() => auth.signOut()} hitSlop={8}>
+              <Text style={s.signOutText}>
+                {auth.isGuest ? 'Exit preview' : 'Sign out'}
+              </Text>
+            </Pressable>
+          </View>
         ) : null}
 
         <FootNote>
@@ -295,7 +337,8 @@ function SettingsRow({
 }
 
 const s = StyleSheet.create({
-  signOut: { alignItems: 'center', paddingVertical: space.lg },
+  signOut: { alignItems: 'center', gap: space.md, paddingVertical: space.lg },
+  createText: { fontFamily: font.bold, fontSize: 14, color: colors.coral },
   signOutText: { fontFamily: font.semibold, fontSize: 14, color: colors.ink2 },
   row: {
     flexDirection: 'row',
@@ -341,6 +384,10 @@ const s = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 6,
   },
+  unitItem: { paddingHorizontal: 16, paddingVertical: 7 },
+  unitItemOn: { backgroundColor: colors.ink },
+  unitText: { fontFamily: font.semibold, fontSize: 13, color: colors.ink2 },
+  unitTextOn: { color: colors.paper },
   stepperVal: {
     fontFamily: font.semibold,
     fontSize: 13,

@@ -8,6 +8,7 @@ import React, {
   useState,
 } from 'react';
 import { useBackend } from '@shared/state/BackendContext';
+import type { Units } from '@shared/utils/units';
 import { settingsSeed } from './mock';
 
 export type ReminderSettings = {
@@ -32,7 +33,9 @@ export type AppSettings = {
   calorieTarget: number;
   macroTargets: { protein: number; carbs: number; fat: number };
   trackCalories: boolean;
-  weightGoalKg: number;
+  /** Display only; weight is stored in pounds either way. */
+  units: Units;
+  weightGoalLb: number;
   showTiers: boolean;
   showTierNumber: boolean;
   showCalories: boolean;
@@ -49,7 +52,8 @@ const initialSettings: AppSettings = {
   calorieTarget: settingsSeed.calorieTarget,
   macroTargets: { ...settingsSeed.macroTargets },
   trackCalories: true,
-  weightGoalKg: settingsSeed.weightGoalKg,
+  units: settingsSeed.units,
+  weightGoalLb: settingsSeed.weightGoalLb,
   showTiers: settingsSeed.showTiers,
   showTierNumber: true,
   showCalories: settingsSeed.showCalories,
