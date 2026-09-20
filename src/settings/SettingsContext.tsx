@@ -13,10 +13,10 @@ import { useToast } from '@shared/state/ToastContext';
 import type { Units } from '@shared/utils/units';
 import { settingsSeed } from './mock';
 
+/** Times are fixed; see reminders.plan.ts. */
 export type ReminderSettings = {
-  mealLog: { on: boolean; time: string };
-  weeklyWeighIn: { on: boolean; time: string };
-  stepGoalNudge: { on: boolean };
+  mealLog: { on: boolean };
+  weeklyWeighIn: { on: boolean };
 };
 
 export type HealthDataSettings = {
@@ -63,9 +63,8 @@ const initialSettings: AppSettings = {
   restDaysPerWeek: 2,
   autoDetectRestDays: true,
   reminders: {
-    mealLog: { on: true, time: '12:30 pm, 7:00 pm' },
-    weeklyWeighIn: { on: true, time: 'Sundays, 8:00 am' },
-    stepGoalNudge: { on: false },
+    mealLog: { on: true },
+    weeklyWeighIn: { on: true },
   },
   healthData: {
     readSteps: true,

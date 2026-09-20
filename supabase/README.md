@@ -61,7 +61,8 @@ Health Connect needs a custom dev build (Expo Go can't load native modules).
 The adapter is [src/today/steps.healthconnect.ts](../src/today/steps.healthconnect.ts);
 **it has not been run on a device.** To turn it on:
 
-1. `npx expo install react-native-health-connect expo-build-properties`
+1. `npx expo install react-native-health-connect expo-build-properties`, and
+   set `EXPO_PUBLIC_HEALTH_CONNECT=1` in `.env` (the adapter stays off without it).
 2. Add the config plugins to `app.json` (`react-native-health-connect`, and
    `expo-build-properties` with `android.minSdkVersion: 26`), plus the
    `android.permission.health.READ_STEPS` permission.
@@ -80,9 +81,25 @@ allowance, chosen days first). Days with no step data are never treated as rest
 days. A rest day holds the streak without adding to it. Taking one earns the
 rest waypoints; undoing it takes them back quietly.
 
+## Reminders
+
+Two repeating local notifications (no server involved): meals at 12:30 pm and
+7:00 pm, and a weigh-in on Sundays at 8:00 am. They're scheduled on the device
+from the Settings toggles ([src/settings/reminders.ts](../src/settings/reminders.ts))
+and can't tell whether you've already logged, so the wording is neutral. The
+times are fixed for now. The old "step goal nudge" was removed: a scheduled
+notification can't check how close you are to the goal.
+
+## Your data
+
+Signed-in accounts get Settings → *Your data*: **Export my data** shares a JSON
+copy (weights in pounds) through the system share sheet, and **Delete my data**
+erases every `tern.*` row for the account and signs you out. The login itself is
+kept; removing the account needs the Supabase dashboard.
+
 ## Not built yet
 
-- Reminders don't send anything yet (the toggles in Settings only save a preference).
 - Distance, weight-from-scale and the Health Connect write toggles are placeholders.
-- Export / delete my data.
-- Trends for food history (the calories card shows today only).
+- Editing reminder times.
+- Food history in Trends (the calories card shows today only).
+- Release setup: app icon and splash, EAS build profiles, privacy text for the store listing.

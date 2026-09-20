@@ -48,7 +48,7 @@ import { useWaypoints, type Celebration } from '@journey/WaypointsContext';
 import WaypointBurst from '@journey/WaypointBurst';
 import { leftToDo } from './models';
 import { useActivity } from './ActivityContext';
-import type { DayRecord } from './models';
+import { greetingFor, type DayRecord } from './models';
 
 const REST_DAY_POINTS =
   waypointRules.find((r) => r.id === 'rest')?.points ?? 10;
@@ -74,6 +74,7 @@ export default function TodayScreen() {
   const { settings } = useSettings();
   const { formatWeight } = useUnits();
   const todayKey = useDayKey();
+  const greeting = greetingFor();
   const {
     todaySteps,
     streak,
@@ -84,12 +85,8 @@ export default function TodayScreen() {
     takeRestDay,
     undoRestDay,
   } = useActivity();
-  const {
-    waypoints,
-    celebrations,
-    pendingPoints,
-    completeCelebration,
-  } = useWaypoints();
+  const { waypoints, celebrations, pendingPoints, completeCelebration } =
+    useWaypoints();
   const lastWeight = weightEntries[0];
   const progress = todaySteps / settings.stepGoal;
   const remaining = Math.max(settings.stepGoal - todaySteps, 0);
@@ -135,7 +132,10 @@ export default function TodayScreen() {
         y: r.y - root.y + r.height / 2,
       });
       const origin = inRoot(hero);
-      origin.y = Math.min(Math.max(origin.y, insets.top + 90), root.height - 160);
+      origin.y = Math.min(
+        Math.max(origin.y, insets.top + 90),
+        root.height - 160,
+      );
       setPlaying({
         celebration: nextCelebration,
         origin,
@@ -216,29 +216,33 @@ export default function TodayScreen() {
         }}
       >
         <View ref={heroRef} collapsable={false}>
-        <LinearGradient colors={skyFor(progress) as string[]} style={s.hero}>
-          <View style={s.heroTop}>
-            <Text style={s.greeting}>{settings.firstName ? `Morning, ${settings.firstName}` : 'Morning'}</Text>
-            {streak > 0 ? (
-              <View style={s.streakChip}>
-                <Text style={s.streakText}>
-                  ☀ {streak} {streak === 1 ? 'day' : 'days'}
-                </Text>
-              </View>
-            ) : null}
-          </View>
+          <LinearGradient colors={skyFor(progress) as string[]} style={s.hero}>
+            <View style={s.heroTop}>
+              <Text style={s.greeting}>
+                {settings.firstName
+                  ? `${greeting}, ${settings.firstName}`
+                  : greeting}
+              </Text>
+              {streak > 0 ? (
+                <View style={s.streakChip}>
+                  <Text style={s.streakText}>
+                    ☀ {streak} {streak === 1 ? 'day' : 'days'}
+                  </Text>
+                </View>
+              ) : null}
+            </View>
 
-          <FlightPath progress={progress} replayKey={replayKey} />
+            <FlightPath progress={progress} replayKey={replayKey} />
 
-          <Text style={s.stepBig}>{animatedSteps.toLocaleString()}</Text>
-          <Text style={s.stepSub}>
-            {stepsStatus !== 'connected'
-              ? "Steps aren't connected yet"
-              : reached
-              ? `Goal reached · ${settings.stepGoal.toLocaleString()} steps`
-              : `${remaining.toLocaleString()} to go`}
-          </Text>
-        </LinearGradient>
+            <Text style={s.stepBig}>{animatedSteps.toLocaleString()}</Text>
+            <Text style={s.stepSub}>
+              {stepsStatus !== 'connected'
+                ? "Steps aren't connected yet"
+                : reached
+                  ? `Goal reached · ${settings.stepGoal.toLocaleString()} steps`
+                  : `${remaining.toLocaleString()} to go`}
+            </Text>
+          </LinearGradient>
         </View>
 
         <View style={s.weekRow}>

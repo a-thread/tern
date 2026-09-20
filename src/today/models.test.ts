@@ -3,6 +3,7 @@ import type { WeightEntry } from '@weight/models';
 import {
   buildDays,
   computeStreak,
+  greetingFor,
   leftToDo,
   mealForTime,
   restDaysLeft,
@@ -201,5 +202,23 @@ describe('weekOf / restDaysLeft', () => {
     expect(restDaysLeft(d, TODAY, 2)).toBe(1);
     expect(restDaysLeft(d, TODAY, 1)).toBe(0);
     expect(restDaysLeft(d, TODAY, 0)).toBe(0);
+  });
+});
+
+describe('greetingFor', () => {
+  const at = (h: number) => greetingFor(new Date(2026, 8, 18, h));
+
+  it('follows the time of day', () => {
+    expect(at(6)).toBe('Morning');
+    expect(at(11)).toBe('Morning');
+    expect(at(12)).toBe('Afternoon');
+    expect(at(16)).toBe('Afternoon');
+    expect(at(17)).toBe('Evening');
+    expect(at(23)).toBe('Evening');
+  });
+
+  it('is a neutral hello in the small hours', () => {
+    expect(at(0)).toBe('Hello');
+    expect(at(4)).toBe('Hello');
   });
 });

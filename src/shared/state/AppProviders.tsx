@@ -6,18 +6,9 @@ import { FoodProvider, useFood } from '@food/FoodContext';
 import { WeightProvider, useWeight } from '@weight/WeightContext';
 import { WaypointsProvider, useWaypoints } from '@journey/WaypointsContext';
 import { ActivityProvider, useActivity } from '@today/ActivityContext';
+import { RemindersSync } from '@settings/RemindersSync';
 
-/**
- * Composition root for all app-wide state. Each domain owns its own
- * context (see the sibling *Context.tsx files) so a change in one — e.g.
- * toggling a Settings switch — doesn't re-render screens that only read
- * another domain. WaypointsProvider must nest inside FoodProvider: it
- * reads foodLog to keep the "logging all meals" bonus honest. ActivityProvider
- * (steps, rest days, streak) nests inside WaypointsProvider and
- * SettingsProvider because it awards waypoints from the step goal. Every
- * provider reads its data through the repositories in BackendContext, so
- * this must render inside a BackendProvider (see AuthGate).
- */
+/** App-wide providers, rendered inside BackendProvider by AuthGate. */
 export function AppProviders({ children }: { children: React.ReactNode }) {
   return (
     <SettingsProvider>
@@ -26,6 +17,7 @@ export function AppProviders({ children }: { children: React.ReactNode }) {
           <WaypointsProvider>
             <ActivityProvider>
               <LoadGate>{children}</LoadGate>
+              <RemindersSync />
             </ActivityProvider>
           </WaypointsProvider>
         </WeightProvider>

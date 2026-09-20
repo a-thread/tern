@@ -31,6 +31,8 @@ import {
   type RestDaysRepository,
 } from '@today/restDays.repository';
 import { createSupabaseRestDaysRepository } from '@today/restDays.repository.supabase';
+import type { DataRepository } from './dataRepository';
+import { createSupabaseDataRepository } from './dataRepository.supabase';
 
 /** Every repository the app persists through. Contexts read these; they never touch Supabase directly. */
 export type Backend = {
@@ -40,6 +42,8 @@ export type Backend = {
   waypoints: WaypointsRepository;
   steps: StepsRepository;
   restDays: RestDaysRepository;
+  /** Export and erase, for signed-in accounts. Absent in local mode, where nothing is stored. */
+  data?: DataRepository;
 };
 
 /** Local mock data — used when no Supabase keys are configured, and in tests. */
@@ -68,6 +72,7 @@ export function createRemoteBackend(): Backend {
       createHealthConnectStepsRepository() ??
       createUnavailableStepsRepository(),
     restDays: createSupabaseRestDaysRepository(supabase),
+    data: createSupabaseDataRepository(supabase),
   };
 }
 

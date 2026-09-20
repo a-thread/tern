@@ -76,7 +76,14 @@ export function buildDays(input: BuildDaysInput): DayRecord[] {
     } else {
       state = steps > 0 ? 'partial' : 'none';
     }
-    return { day: k, steps, state, chosenRest, isToday: k === today, future: false };
+    return {
+      day: k,
+      steps,
+      state,
+      chosenRest,
+      isToday: k === today,
+      future: false,
+    };
   });
 }
 
@@ -91,7 +98,8 @@ export function computeStreak(days: DayRecord[]): number {
     const d = days[i];
     if (d.state === 'goal') streak += 1;
     else if (d.state === 'rest') continue;
-    else if (d.isToday) continue; // still in progress
+    else if (d.isToday)
+      continue; // still in progress
     else break;
   }
   return streak;
@@ -127,6 +135,14 @@ export function restDaysLeft(
 ): number {
   const used = weekOf(days, today).filter((d) => d.state === 'rest').length;
   return Math.max(restPerWeek - used, 0);
+}
+
+export function greetingFor(now: Date = new Date()): string {
+  const h = now.getHours();
+  if (h < 5) return 'Hello';
+  if (h < 12) return 'Morning';
+  if (h < 17) return 'Afternoon';
+  return 'Evening';
 }
 
 export type LeftToDoItem =

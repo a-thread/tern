@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import {
+  Alert,
+  Share,
   View,
   Text,
   TextInput,
@@ -23,10 +25,13 @@ import {
   PushHeader,
 } from '@shared/components/ui';
 import { useAuth } from '@shared/auth/AuthContext';
+import { useBackend } from '@shared/state/BackendContext';
+import { useToast } from '@shared/state/ToastContext';
 import { useActivity } from '@today/ActivityContext';
 import { MAX_NAME } from '@shared/auth/validation';
 import { useSettings } from './SettingsContext';
 import { useUnits } from './useUnits';
+import { REMINDER_WHEN } from './reminders.plan';
 import type { SettingsStackParamList } from './types';
 
 type Props = NativeStackScreenProps<SettingsStackParamList, 'SettingsRoot'>;
@@ -36,6 +41,49 @@ export default function SettingsRootScreen({ navigation }: Props) {
   const { settings, updateSettings } = useSettings();
   const auth = useAuth();
   const { status: stepsStatus } = useActivity();
+  const { data: dataRepo } = useBackend();
+  const toast = useToast();
+  const [dataBusy, setDataBusy] = useState(false);
+
+  const exportData = async () => {
+    if (!dataRepo || dataBusy) return;
+    setDataBusy(true);
+    try {
+      const copy = await dataRepo.exportAll();
+      await Share.share({ title: 'Tern data', message: JSON.stringify(copy, null, 2) });
+    } catch (e) {
+      console.warn('Could not export data', e);
+      toast.show("Couldn't export your data — please try again.");
+    } finally {
+      setDataBusy(false);
+    }
+  };
+
+  const deleteData = () => {
+    if (!dataRepo || dataBusy) return;
+    Alert.alert(
+      'Delete all your data?',
+      "This erases your food log, weigh-ins, waypoints, rest days and settings from Tern. It can't be undone. You'll be signed out, and your login stays so you can start fresh.",
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Delete',
+          style: 'destructive',
+          onPress: async () => {
+            setDataBusy(true);
+            try {
+              await dataRepo.deleteAll();
+              await auth?.signOut();
+            } catch (e) {
+              console.warn('Could not delete data', e);
+              toast.show("Couldn't delete your data — please try again.");
+              setDataBusy(false);
+            }
+          },
+        },
+      ],
+    );
+  };
   const email = auth?.session?.user.email;
 
   // Edited locally and saved on blur, so each keystroke isn't a settings write.
@@ -257,7 +305,7 @@ export default function SettingsRootScreen({ navigation }: Props) {
         <Group>
           <ToggleRow
             title='Log meals'
-            sub={settings.reminders.mealLog.time}
+            sub={REMINDER_WHEN.meals}
             on={settings.reminders.mealLog.on}
             onToggle={(v) =>
               updateSettings({
@@ -270,7 +318,7 @@ export default function SettingsRootScreen({ navigation }: Props) {
           />
           <ToggleRow
             title='Weekly weigh-in'
-            sub={settings.reminders.weeklyWeighIn.time}
+            sub={REMINDER_WHEN.weighIn}
             on={settings.reminders.weeklyWeighIn.on}
             onToggle={(v) =>
               updateSettings({
@@ -281,17 +329,27 @@ export default function SettingsRootScreen({ navigation }: Props) {
               })
             }
           />
-          <ToggleRow
-            title='Step goal nudge'
-            sub="Only if you're close, late in the day"
-            on={settings.reminders.stepGoalNudge.on}
-            onToggle={(v) =>
-              updateSettings({
-                reminders: { ...settings.reminders, stepGoalNudge: { on: v } },
-              })
-            }
-          />
         </Group>
+
+        {dataRepo ? (
+          <>
+            <GroupLabel>Your data</GroupLabel>
+            <Group>
+              <Pressable style={s.row} onPress={exportData} disabled={dataBusy}>
+                <View style={{ flex: 1 }}>
+                  <Text style={s.rowTitle}>Export my data</Text>
+                  <Text style={s.rowSub}>A copy of everything Tern holds, as JSON</Text>
+                </View>
+              </Pressable>
+              <Pressable style={s.row} onPress={deleteData} disabled={dataBusy}>
+                <View style={{ flex: 1 }}>
+                  <Text style={[s.rowTitle, s.dangerText]}>Delete my data</Text>
+                  <Text style={s.rowSub}>Erase your log, weigh-ins and waypoints</Text>
+                </View>
+              </Pressable>
+            </Group>
+          </>
+        ) : null}
 
         <GroupLabel>About</GroupLabel>
         <Group>
@@ -377,6 +435,7 @@ const s = StyleSheet.create({
     paddingVertical: 12,
   },
   rowTitle: { fontFamily: font.medium, fontSize: 14, color: colors.ink },
+  dangerText: { color: '#B3261E' },
   nameInput: {
     fontFamily: font.medium,
     fontSize: 14,

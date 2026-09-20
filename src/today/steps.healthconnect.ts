@@ -6,18 +6,24 @@ import type { StepsRepository, StepsStatus } from './steps.repository';
  *
  * NOT VERIFIED ON A DEVICE. It is written against the react-native-health-connect
  * API and needs a custom dev build (Expo Go can't load native modules). To turn
- * it on, see supabase/README.md ("Steps from Health Connect"). Until the package
- * is installed this returns null and the app treats steps as unavailable.
+ * it on, see supabase/README.md ("Steps from Health Connect"). It is off unless
+ * EXPO_PUBLIC_HEALTH_CONNECT=1, and returns null (steps unavailable) if the
+ * package isn't installed.
  */
 export function createHealthConnectStepsRepository(): StepsRepository | null {
+  // Off unless asked for. Metro turns a require of a missing package into a
+  // runtime error even inside try/catch, so it must never be reached without
+  // the package installed.
+  if (process.env.EXPO_PUBLIC_HEALTH_CONNECT !== '1') return null;
+
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let hc: any;
   try {
-    // Optional: absent in Expo Go and in builds that haven't added the package.
     hc = require('react-native-health-connect');
   } catch {
     return null;
   }
+  if (typeof hc?.getSdkStatus !== 'function') return null;
 
   const stepsRead = { accessType: 'read', recordType: 'Steps' };
 

@@ -20,6 +20,6 @@
         "backgroundColor": "#F5F3EE"
       }
     },
-    "plugins": ["expo-font"]
+    "plugins": ["expo-font", "expo-notifications"]
   }
 }
