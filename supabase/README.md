@@ -6,7 +6,7 @@ tables. With no keys configured, the app runs on local mock data instead.
 
 ## Setup
 
-1. **Run the migration.** In the Supabase dashboard open *SQL Editor* and run
+1. **Run the migration.** In the Supabase dashboard open _SQL Editor_ and run
    [`migrations/20260918000000_tern_schema.sql`](migrations/20260918000000_tern_schema.sql)
    (or `supabase db push` if you use the CLI). Then run
    [`migrations/20260919000000_weight_in_pounds.sql`](migrations/20260919000000_weight_in_pounds.sql),
@@ -15,18 +15,18 @@ tables. With no keys configured, the app runs on local mock data instead.
    which adds the rest-days table, and
    [`migrations/20260921000000_saved_meals.sql`](migrations/20260921000000_saved_meals.sql),
    which adds saved meals.
-2. **Expose the schema.** *Project Settings → API → Exposed schemas* → add `tern`.
+2. **Expose the schema.** _Project Settings → API → Exposed schemas_ → add `tern`.
    Without this, every request fails with "schema must be one of…".
 3. **Add keys.** Copy `.env.example` to `.env` and fill in the project URL and
-   the `anon` key (*Project Settings → API*). The anon key is safe to ship in
+   the `anon` key (_Project Settings → API_). The anon key is safe to ship in
    the app; row-level security is what protects the data. Never put the
    `service_role` key in `.env`.
-4. **Email confirmation.** If the project has *Confirm email* on, new accounts
+4. **Email confirmation.** If the project has _Confirm email_ on, new accounts
    must confirm before signing in (the sign-up screen says so). Turn it off
-   under *Authentication → Providers → Email* while developing if you like.
+   under _Authentication → Providers → Email_ while developing if you like.
 5. **Allow the app's email links.** Confirmation and password-reset emails open
-   the app through a deep link. Under *Authentication → URL Configuration →
-   Redirect URLs* add `tern://**` (a built app) and `exp://**` (Expo Go
+   the app through a deep link. Under _Authentication → URL Configuration →
+   Redirect URLs_ add `tern://**` (a built app) and `exp://**` (Expo Go
    during development). These are additive, so other apps sharing the project
    (e.g. Lichen's web URL) are unaffected. Without them the links fall back to
    the project's Site URL instead of opening Tern.
@@ -34,14 +34,14 @@ tables. With no keys configured, the app runs on local mock data instead.
 
 ## What's stored
 
-| Table | Contents |
-| --- | --- |
-| `tern.settings` | one row per user; the whole settings object as `jsonb` |
-| `tern.food_entries` | each logged food, by day and meal |
-| `tern.weight_entries` | each weigh-in, in pounds (kg is a display setting) |
-| `tern.waypoint_events` | the waypoints ledger: one row per award |
-| `tern.rest_days` | the days you chose to rest (one row per day) |
-| `tern.saved_meals` | named groups of foods you saved (a snapshot of the items and portions) |
+| Table                  | Contents                                                               |
+| ---------------------- | ---------------------------------------------------------------------- |
+| `tern.settings`        | one row per user; the whole settings object as `jsonb`                 |
+| `tern.food_entries`    | each logged food, by day and meal                                      |
+| `tern.weight_entries`  | each weigh-in, in pounds (kg is a display setting)                     |
+| `tern.waypoint_events` | the waypoints ledger: one row per award                                |
+| `tern.rest_days`       | the days you chose to rest (one row per day)                           |
+| `tern.saved_meals`     | named groups of foods you saved (a snapshot of the items and portions) |
 
 Every table is row-level-secured to `auth.uid()`; signed-out (`anon`) requests
 get nothing.
@@ -77,7 +77,7 @@ entry that the 3.x plugin lacks.
 2. `npx expo run:android` with a device or emulator that has Health Connect
    (built in on Android 14+; a Play Store app before that), or an EAS build:
    `eas build --profile development --platform android`.
-3. In the app: Settings → Health data → *Connect Health Connect*.
+3. In the app: Settings → Health data → _Connect Health Connect_.
 
 If the app shows "Not available in this build", the flag is off or the module
 didn't load. Check the `aggregateGroupByPeriod` call against the library docs
@@ -86,7 +86,7 @@ if step counts look wrong.
 ## Rest days and the streak
 
 You choose rest days from Today ("Take today as a rest day"), within the weekly
-allowance in Settings → Rest days. With auto-detect on, a *past* day that has
+allowance in Settings → Rest days. With auto-detect on, a _past_ day that has
 some steps but is well under the goal also reads as a rest day (within the same
 allowance, chosen days first). Days with no step data are never treated as rest
 days. A rest day holds the streak without adding to it. Taking one earns the
@@ -104,7 +104,7 @@ you are to the goal.
 
 ## Your data
 
-Signed-in accounts get Settings → *Your data*: **Export my data** shares a JSON
+Signed-in accounts get Settings → _Your data_: **Export my data** shares a JSON
 copy (weights in pounds) through the system share sheet, and **Delete my data**
 erases every `tern.*` row for the account and signs you out. The login itself is
 kept; removing the account needs the Supabase dashboard.
@@ -119,7 +119,7 @@ it is only ever a suggestion.
 
 ## Releasing
 
-- **App identity:** `com.yourname.tern` in `app.json` (Android `package`, iOS
+- **App identity:** `com.purlieus.tern` in `app.json` (Android `package`, iOS
   `bundleIdentifier`) is a placeholder. Pick your real id before the first store
   build; it can't be changed afterwards.
 - **Icon and splash:** generated from the Tern mark into `assets/` (icon,
@@ -128,7 +128,7 @@ it is only ever a suggestion.
   `production` profiles. The Supabase URL and anon key come from `.env` locally;
   for EAS builds add them as EAS environment variables
   (`EXPO_PUBLIC_SUPABASE_URL`, `EXPO_PUBLIC_SUPABASE_ANON_KEY`, and `EXPO_PUBLIC_USDA_API_KEY` for everyday-food search), since `.env` is not committed.
-- **Privacy policy:** [docs/PRIVACY.md](../docs/PRIVACY.md) is a draft. Host it at
+- **Privacy policy:** [docs/privacy.html](../docs/privacy.html) is a draft. Host it at
   a public URL; Google Play and Health Connect both ask for one.
 - **Native folders:** `android/` and `ios/` are generated by `expo prebuild` and
   are gitignored.

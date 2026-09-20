@@ -1,0 +1,59 @@
+name: Build
+
+on:
+  workflow_dispatch:
+    inputs:
+      profile:
+        description: EAS build profile
+        type: choice
+        options: [preview, production]
+        default: preview
+      platform:
+        description: Platform
+        type: choice
+        options: [android, ios, all]
+        default: android
+      submit:
+        description: Submit to the store after building (production only)
+        type: boolean
+        default: false
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: read
+
+concurrency:
+  group: build-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  check:
+    uses: ./.github/workflows/ci.yml
+
+  build:
+    needs: check
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      PROFILE: ${{ inputs.profile || 'production' }}
+      PLATFORM: ${{ inputs.platform || 'android' }}
+      SUBMIT: ${{ inputs.submit || 'false' }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - uses: expo/expo-github-action@v8
+        with:
+          eas-version: latest
+          token: ${{ secrets.EXPO_TOKEN }}
+      - run: npm ci
+      - name: Start EAS build
+        run: |
+          args="--platform $PLATFORM --profile $PROFILE --non-interactive --no-wait"
+          if [ "$PROFILE" = "production" ] && [ "$SUBMIT" = "true" ]; then
+            args="$args --auto-submit"
+          fi
+          eas build $args

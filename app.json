@@ -14,15 +14,18 @@
     },
     "ios": {
       "supportsTablet": false,
-      "bundleIdentifier": "com.yourname.tern"
+      "bundleIdentifier": "com.purlieus.tern"
     },
     "android": {
-      "package": "com.yourname.tern",
+      "package": "com.purlieus.tern",
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#F5F3EE"
       },
-      "permissions": ["android.permission.health.READ_STEPS"]
+      "permissions": [
+        "android.permission.health.READ_STEPS",
+        "android.permission.CAMERA"
+      ]
     },
     "plugins": [
       "expo-font",
@@ -52,6 +55,12 @@
           }
         }
       ]
-    ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "5a0739df-fa83-452d-8c31-92cd473ffa80"
+      }
+    },
+    "owner": "purlieus-systems"
   }
 }
