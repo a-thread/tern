@@ -7,6 +7,7 @@ export type TernExport = {
   weight: unknown[];
   waypoints: unknown[];
   restDays: unknown[];
+  savedMeals: unknown[];
 };
 
 /** Whole-account operations: a copy of your data, and erasing it. */

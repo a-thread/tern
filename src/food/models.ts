@@ -88,7 +88,10 @@ export function mealTotals(log: FoodEntry[], meal: FoodEntry['meal']) {
     .reduce((sum, f) => sum + f.calories * f.servings, 0);
 }
 
-export function dayTotals(log: FoodEntry[]) {
+/** Anything with a per-serving nutrition and a serving count: a log entry or a saved-meal item. */
+type Servable = Pick<FoodEntry, 'calories' | 'protein' | 'carbs' | 'fat' | 'servings'>;
+
+export function dayTotals(log: Servable[]) {
   return log.reduce(
     (acc, f) => ({
       calories: acc.calories + f.calories * f.servings,

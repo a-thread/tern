@@ -10,7 +10,8 @@ what it stores, where, and what you can do about it.
 If you create an account, Tern stores, against your account:
 
 - your email address and first name (used to sign you in and greet you),
-- your food log (what you log, the meal, and its nutrition values),
+- your food log (what you log, the meal, and its nutrition values) and the
+  meals you save (named groups of foods),
 - your weigh-ins (stored in pounds, shown in pounds or kilograms as you choose),
 - your waypoints, rest days and settings (goals, units, reminder times).
 
@@ -45,8 +46,8 @@ through a server, and you can turn them off in Settings.
 In Settings, under **Your data**, you can:
 
 - **Export my data**: get a copy of everything Tern holds about you (JSON).
-- **Delete my data**: erase your food log, weigh-ins, waypoints, rest days and
-  settings. Your login is kept; to remove the account itself, contact us below.
+- **Delete my data**: erase your food log, saved meals, weigh-ins, waypoints,
+  rest days and settings. Your login is kept; to remove the account itself, contact us below.
 
 ## Food information
 

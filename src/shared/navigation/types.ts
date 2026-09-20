@@ -20,6 +20,7 @@ export type RootStackParamList = {
   LogFood: { meal: FoodEntry['meal'] };
   LogWeight: undefined;
   EditFood: { entryId: string };
+  SaveMeal: { meal: FoodEntry['meal'] };
   Settings: undefined;
   Reward: RewardParams;
   RestDay: RestDayParams;

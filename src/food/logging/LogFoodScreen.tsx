@@ -18,6 +18,7 @@ import {
   GroupLabel,
   SheetNav,
   FootNote,
+  Chevron,
 } from '@shared/components/ui';
 import type { SearchResult } from '../searchData';
 import { filterFoods } from '../recentFoods';
@@ -28,6 +29,8 @@ import {
   SEARCH_MIN_CHARS,
 } from '../useFoodSearch';
 import { isUsdaEnabled } from '../usda';
+import { useSavedMeals } from '../SavedMealsContext';
+import { filterMeals, savedMealTotals, type SavedMeal } from '../savedMeals';
 import { useLoggedFoods } from '../useLoggedFoods';
 import { TierDot } from '../components';
 import { useFoodDisplay } from '../useFoodDisplay';
@@ -35,7 +38,7 @@ import type { LogFoodStackParamList } from '../types';
 
 type Props = NativeStackScreenProps<LogFoodStackParamList, 'Search'>;
 
-const FILTERS = ['All', 'My foods', 'Recent'] as const;
+const FILTERS = ['All', 'Meals', 'My foods', 'Recent'] as const;
 
 export default function LogFoodScreen({ navigation, route }: Props) {
   const { meal } = route.params;
@@ -46,6 +49,8 @@ export default function LogFoodScreen({ navigation, route }: Props) {
   const searching = trimmed.length >= SEARCH_MIN_CHARS;
 
   const logged = useLoggedFoods();
+  const { meals: savedMeals } = useSavedMeals();
+  const yourMeals = useMemo(() => filterMeals(savedMeals, query), [savedMeals, query]);
   const mine = useMemo(() => filterFoods(logged.mine, query), [logged.mine, query]);
   const recent = useMemo(() => filterFoods(logged.recent, query), [logged.recent, query]);
 
@@ -73,6 +78,7 @@ export default function LogFoodScreen({ navigation, route }: Props) {
   const nothingFound =
     !loading &&
     !failed.length &&
+    !yourMeals.length &&
     !yourMatches.length &&
     !everydayResults.length &&
     !packagedResults.length;
@@ -80,6 +86,8 @@ export default function LogFoodScreen({ navigation, route }: Props) {
   // Every result carries nutrition (results without it are filtered out), so
   // it always goes to the details screen; only a missing food type is asked for there.
   const pick = (result: SearchResult) => navigation.navigate('FoodDetail', { meal, result });
+  const openMeal = (m: SavedMeal) =>
+    navigation.navigate('SavedMeal', { meal, mealId: m.id });
 
   return (
     <View
@@ -149,16 +157,25 @@ export default function LogFoodScreen({ navigation, route }: Props) {
         {filter === 'All' ? (
           <>
             {!searching ? (
-              recent.length ? (
-                <FoodGroup label='Logged recently' foods={recent} onPick={pick} />
-              ) : (
-                <Note>
-                  Search foods above, or scan a barcode. Foods you log will show
-                  up here for next time.
-                </Note>
-              )
+              <>
+                {yourMeals.length ? (
+                  <MealGroup label='Your meals' meals={yourMeals} onPick={openMeal} />
+                ) : null}
+                {recent.length ? (
+                  <FoodGroup label='Logged recently' foods={recent} onPick={pick} />
+                ) : null}
+                {!yourMeals.length && !recent.length ? (
+                  <Note>
+                    Search foods above, or scan a barcode. Foods you log will show
+                    up here for next time.
+                  </Note>
+                ) : null}
+              </>
             ) : (
               <>
+                {yourMeals.length ? (
+                  <MealGroup label='Your meals' meals={yourMeals.slice(0, 5)} onPick={openMeal} />
+                ) : null}
                 {yourMatches.length ? (
                   <FoodGroup label='Your foods' foods={yourMatches} onPick={pick} />
                 ) : null}
@@ -197,6 +214,18 @@ export default function LogFoodScreen({ navigation, route }: Props) {
               </>
             )}
           </>
+        ) : null}
+
+        {filter === 'Meals' ? (
+          yourMeals.length ? (
+            <MealGroup label='Your meals' meals={yourMeals} onPick={openMeal} />
+          ) : (
+            <Note>
+              {trimmed
+                ? `None of your meals match “${trimmed}”.`
+                : 'Log a few foods, then choose “Save as meal” on the Food tab. Your saved meals show up here.'}
+            </Note>
+          )
         ) : null}
 
         {filter === 'My foods' ? (
@@ -256,6 +285,50 @@ function FoodGroup({
         ))}
       </Group>
     </>
+  );
+}
+
+function MealGroup({
+  label,
+  meals,
+  onPick,
+}: {
+  label: string;
+  meals: SavedMeal[];
+  onPick: (m: SavedMeal) => void;
+}) {
+  return (
+    <>
+      <GroupLabel>{label}</GroupLabel>
+      <Group>
+        {meals.map((m) => (
+          <MealRow key={m.id} meal={m} onPress={() => onPick(m)} />
+        ))}
+      </Group>
+    </>
+  );
+}
+
+function MealRow({ meal, onPress }: { meal: SavedMeal; onPress: () => void }) {
+  const { showCalories } = useFoodDisplay();
+  const cals = Math.round(savedMealTotals(meal.items).calories);
+  const n = meal.items.length;
+  return (
+    <Pressable style={s.row} android_ripple={{ color: colors.doveTint }} onPress={onPress}>
+      <View style={s.mealIcon}>
+        <Svg width={13} height={13} viewBox='0 0 24 24' fill='none'>
+          <Path d='M6 3h12v18l-6-4-6 4V3z' stroke={colors.ink2} strokeWidth={2.2} strokeLinejoin='round' />
+        </Svg>
+      </View>
+      <View style={{ flex: 1 }}>
+        <Text style={s.rowTitle}>{meal.name}</Text>
+        <Text style={s.rowSub}>
+          {n} {n === 1 ? 'food' : 'foods'}
+          {showCalories ? ` · ${cals} cal` : ''}
+        </Text>
+      </View>
+      <Chevron />
+    </Pressable>
   );
 }
 
@@ -401,6 +474,14 @@ const s = StyleSheet.create({
     height: 25,
     borderRadius: 8,
     backgroundColor: colors.coralTint,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  mealIcon: {
+    width: 19,
+    height: 19,
+    borderRadius: 6,
+    backgroundColor: colors.doveTint,
     alignItems: 'center',
     justifyContent: 'center',
   },

@@ -6,4 +6,5 @@ export type LogFoodStackParamList = {
   BarcodeScan: { meal: FoodEntry['meal'] };
   FoodDetail: { meal: FoodEntry['meal']; result: SearchResult };
   ManualFoodEntry: { meal: FoodEntry['meal']; name?: string };
+  SavedMeal: { meal: FoodEntry['meal']; mealId: string };
 };

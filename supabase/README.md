@@ -12,7 +12,9 @@ tables. With no keys configured, the app runs on local mock data instead.
    [`migrations/20260919000000_weight_in_pounds.sql`](migrations/20260919000000_weight_in_pounds.sql),
    which switches weight storage from kg to lb, and
    [`migrations/20260920000000_rest_days.sql`](migrations/20260920000000_rest_days.sql),
-   which adds the rest-days table.
+   which adds the rest-days table, and
+   [`migrations/20260921000000_saved_meals.sql`](migrations/20260921000000_saved_meals.sql),
+   which adds saved meals.
 2. **Expose the schema.** *Project Settings → API → Exposed schemas* → add `tern`.
    Without this, every request fails with "schema must be one of…".
 3. **Add keys.** Copy `.env.example` to `.env` and fill in the project URL and
@@ -39,6 +41,7 @@ tables. With no keys configured, the app runs on local mock data instead.
 | `tern.weight_entries` | each weigh-in, in pounds (kg is a display setting) |
 | `tern.waypoint_events` | the waypoints ledger: one row per award |
 | `tern.rest_days` | the days you chose to rest (one row per day) |
+| `tern.saved_meals` | named groups of foods you saved (a snapshot of the items and portions) |
 
 Every table is row-level-secured to `auth.uid()`; signed-out (`anon`) requests
 get nothing.

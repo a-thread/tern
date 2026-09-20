@@ -22,6 +22,8 @@ type FoodContextValue = {
   /** False until the first load finishes — don't derive "nothing logged" from an unloaded log. */
   ready: boolean;
   addFoodEntry: (entry: NewFoodEntry) => void;
+  /** Adds several entries at once (e.g. a saved meal) as a single update. */
+  addFoodEntries: (entries: NewFoodEntry[]) => void;
   updateFoodEntry: (id: string, patch: Partial<NewFoodEntry>) => void;
   removeFoodEntry: (id: string) => void;
 };
@@ -82,6 +84,16 @@ export function FoodProvider({ children }: { children: React.ReactNode }) {
     [food, day, persist],
   );
 
+  const addFoodEntries = useCallback(
+    (entries: NewFoodEntry[]) => {
+      if (!entries.length) return;
+      const full: FoodEntry[] = entries.map((e) => ({ ...e, id: newId() }));
+      setFoodLog((prev) => [...prev, ...full]);
+      persist(Promise.all(full.map((f) => food.add(day, f))).then(() => undefined));
+    },
+    [food, day, persist],
+  );
+
   const updateFoodEntry = useCallback(
     (id: string, patch: Partial<NewFoodEntry>) => {
       setFoodLog((prev) =>
@@ -106,10 +118,19 @@ export function FoodProvider({ children }: { children: React.ReactNode }) {
       loadedDay,
       ready,
       addFoodEntry,
+      addFoodEntries,
       updateFoodEntry,
       removeFoodEntry,
     }),
-    [foodLog, loadedDay, ready, addFoodEntry, updateFoodEntry, removeFoodEntry],
+    [
+      foodLog,
+      loadedDay,
+      ready,
+      addFoodEntry,
+      addFoodEntries,
+      updateFoodEntry,
+      removeFoodEntry,
+    ],
   );
 
   return <FoodContext.Provider value={value}>{children}</FoodContext.Provider>;

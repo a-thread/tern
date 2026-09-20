@@ -93,6 +93,16 @@ export default function FoodScreen() {
                       navigation.navigate('LogFood', { meal: key })
                     }
                   />,
+                  ...(items.length
+                    ? [
+                        <SaveMealRow
+                          key='save'
+                          onPress={() =>
+                            navigation.navigate('SaveMeal', { meal: key })
+                          }
+                        />,
+                      ]
+                    : []),
                 ]}
               </Group>
             </View>
@@ -173,6 +183,27 @@ function AddRow({ onPress }: { onPress: () => void }) {
         />
       </Svg>
       <Text style={[s.foodName, { color: colors.coral }]}>Add food</Text>
+    </Pressable>
+  );
+}
+
+/** A quiet row under a meal's foods for keeping them as a reusable saved meal. */
+function SaveMealRow({ onPress }: { onPress: () => void }) {
+  return (
+    <Pressable
+      style={s.foodRow}
+      android_ripple={{ color: colors.doveTint }}
+      onPress={onPress}
+    >
+      <Svg width={13} height={13} viewBox='0 0 24 24' fill='none'>
+        <Path
+          d='M6 3h12v18l-6-4-6 4V3z'
+          stroke={colors.ink2}
+          strokeWidth={2.2}
+          strokeLinejoin='round'
+        />
+      </Svg>
+      <Text style={[s.foodName, { color: colors.ink2 }]}>Save as meal</Text>
     </Pressable>
   );
 }

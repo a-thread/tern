@@ -74,7 +74,7 @@ export default function SettingsRootScreen({ navigation }: Props) {
     if (!dataRepo || dataBusy) return;
     Alert.alert(
       'Delete all your data?',
-      "This erases your food log, weigh-ins, waypoints, rest days and settings from Tern. It can't be undone. You'll be signed out, and your login stays so you can start fresh.",
+      "This erases your food log, saved meals, weigh-ins, waypoints, rest days and settings from Tern. It can't be undone. You'll be signed out, and your login stays so you can start fresh.",
       [
         { text: 'Cancel', style: 'cancel' },
         {

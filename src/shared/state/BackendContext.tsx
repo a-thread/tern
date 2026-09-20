@@ -31,6 +31,11 @@ import {
   type RestDaysRepository,
 } from '@today/restDays.repository';
 import { createSupabaseRestDaysRepository } from '@today/restDays.repository.supabase';
+import {
+  createMemorySavedMealsRepository,
+  type SavedMealsRepository,
+} from '@food/savedMeals.repository';
+import { createSupabaseSavedMealsRepository } from '@food/savedMeals.repository.supabase';
 import type { DataRepository } from './dataRepository';
 import { createSupabaseDataRepository } from './dataRepository.supabase';
 
@@ -42,6 +47,7 @@ export type Backend = {
   waypoints: WaypointsRepository;
   steps: StepsRepository;
   restDays: RestDaysRepository;
+  savedMeals: SavedMealsRepository;
   /** Export and erase, for signed-in accounts. Absent in local mode, where nothing is stored. */
   data?: DataRepository;
 };
@@ -55,6 +61,7 @@ export function createMemoryBackend(): Backend {
     waypoints: createMemoryWaypointsRepository(),
     steps: createMemoryStepsRepository(),
     restDays: createMemoryRestDaysRepository(),
+    savedMeals: createMemorySavedMealsRepository(),
   };
 }
 
@@ -72,6 +79,7 @@ export function createRemoteBackend(): Backend {
       createHealthConnectStepsRepository() ??
       createUnavailableStepsRepository(),
     restDays: createSupabaseRestDaysRepository(supabase),
+    savedMeals: createSupabaseSavedMealsRepository(supabase),
     data: createSupabaseDataRepository(supabase),
   };
 }

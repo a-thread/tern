@@ -3,6 +3,7 @@ import { ActivityIndicator, View } from 'react-native';
 import { colors } from '@shared/theme';
 import { SettingsProvider, useSettings } from '@settings/SettingsContext';
 import { FoodProvider, useFood } from '@food/FoodContext';
+import { SavedMealsProvider } from '@food/SavedMealsContext';
 import { WeightProvider, useWeight } from '@weight/WeightContext';
 import { WaypointsProvider, useWaypoints } from '@journey/WaypointsContext';
 import { ActivityProvider, useActivity } from '@today/ActivityContext';
@@ -13,14 +14,16 @@ export function AppProviders({ children }: { children: React.ReactNode }) {
   return (
     <SettingsProvider>
       <FoodProvider>
-        <WeightProvider>
-          <WaypointsProvider>
-            <ActivityProvider>
-              <LoadGate>{children}</LoadGate>
-              <RemindersSync />
-            </ActivityProvider>
-          </WaypointsProvider>
-        </WeightProvider>
+        <SavedMealsProvider>
+          <WeightProvider>
+            <WaypointsProvider>
+              <ActivityProvider>
+                <LoadGate>{children}</LoadGate>
+                <RemindersSync />
+              </ActivityProvider>
+            </WaypointsProvider>
+          </WeightProvider>
+        </SavedMealsProvider>
       </FoodProvider>
     </SettingsProvider>
   );
