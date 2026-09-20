@@ -8,13 +8,15 @@ import Svg, { Path } from 'react-native-svg';
 import { colors, font, radius, space, tierColors } from '@shared/theme';
 import { Group, GroupLabel, Chevron, FootNote } from '@shared/components/ui';
 import type { RootStackParamList } from '@shared/navigation/types';
-import { today } from '@today/mock';
+import { useDayKey } from '@shared/hooks/useDayKey';
+import { formatLongDate } from '@shared/utils/date';
 import { useSettings } from '@settings/SettingsContext';
 import { mealTotals, dayTotals, MEAL_OPTIONS, type FoodEntry } from './models';
 import { useFood } from './FoodContext';
 import { TierDot } from './components';
 
 export default function FoodScreen() {
+  const todayKey = useDayKey();
   const insets = useSafeAreaInsets();
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
@@ -31,7 +33,7 @@ export default function FoodScreen() {
       style={{ flex: 1, backgroundColor: colors.paper, paddingTop: insets.top }}
     >
       <View style={{ paddingHorizontal: space.lg, paddingBottom: space.sm }}>
-        <Text style={s.eyebrow}>{today.date}</Text>
+        <Text style={s.eyebrow}>{formatLongDate(todayKey)}</Text>
         <Text style={s.title}>Food</Text>
       </View>
 
@@ -91,6 +93,16 @@ export default function FoodScreen() {
                       navigation.navigate('LogFood', { meal: key })
                     }
                   />,
+                  ...(items.length
+                    ? [
+                        <SaveMealRow
+                          key='save'
+                          onPress={() =>
+                            navigation.navigate('SaveMeal', { meal: key })
+                          }
+                        />,
+                      ]
+                    : []),
                 ]}
               </Group>
             </View>
@@ -171,6 +183,27 @@ function AddRow({ onPress }: { onPress: () => void }) {
         />
       </Svg>
       <Text style={[s.foodName, { color: colors.coral }]}>Add food</Text>
+    </Pressable>
+  );
+}
+
+/** A quiet row under a meal's foods for keeping them as a reusable saved meal. */
+function SaveMealRow({ onPress }: { onPress: () => void }) {
+  return (
+    <Pressable
+      style={s.foodRow}
+      android_ripple={{ color: colors.doveTint }}
+      onPress={onPress}
+    >
+      <Svg width={13} height={13} viewBox='0 0 24 24' fill='none'>
+        <Path
+          d='M6 3h12v18l-6-4-6 4V3z'
+          stroke={colors.ink2}
+          strokeWidth={2.2}
+          strokeLinejoin='round'
+        />
+      </Svg>
+      <Text style={[s.foodName, { color: colors.ink2 }]}>Save as meal</Text>
     </Pressable>
   );
 }

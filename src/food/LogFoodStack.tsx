@@ -7,6 +7,8 @@ import LogFoodScreen from './logging/LogFoodScreen';
 import BarcodeScanScreen from './logging/BarcodeScanScreen';
 import FoodDetailScreen from './logging/FoodDetailScreen';
 import ManualFoodEntryScreen from './logging/ManualFoodEntryScreen';
+import SavedMealScreen from './logging/SavedMealScreen';
+import MealEditorScreen from './logging/MealEditorScreen';
 import type { LogFoodStackParamList } from './types';
 
 const Stack = createNativeStackNavigator<LogFoodStackParamList>();
@@ -25,6 +27,8 @@ export default function LogFoodStack({ route }: Props) {
       <Stack.Screen name='BarcodeScan' component={BarcodeScanScreen} />
       <Stack.Screen name='FoodDetail' component={FoodDetailScreen} />
       <Stack.Screen name='ManualFoodEntry' component={ManualFoodEntryScreen} />
+      <Stack.Screen name='SavedMeal' component={SavedMealScreen} />
+      <Stack.Screen name='MealEditor' component={MealEditorScreen} />
     </Stack.Navigator>
   );
 }

@@ -1,24 +1,57 @@
 import React from 'react';
-import { SettingsProvider } from '@settings/SettingsContext';
-import { FoodProvider } from '@food/FoodContext';
-import { WeightProvider } from '@weight/WeightContext';
-import { WaypointsProvider } from '@journey/WaypointsContext';
+import { ActivityIndicator, View } from 'react-native';
+import { colors } from '@shared/theme';
+import { SettingsProvider, useSettings } from '@settings/SettingsContext';
+import { FoodProvider, useFood } from '@food/FoodContext';
+import { SavedMealsProvider } from '@food/SavedMealsContext';
+import { WeightProvider, useWeight } from '@weight/WeightContext';
+import { WaypointsProvider, useWaypoints } from '@journey/WaypointsContext';
+import { ActivityProvider, useActivity } from '@today/ActivityContext';
+import { RemindersSync } from '@settings/RemindersSync';
 
-/**
- * Composition root for all app-wide state. Each domain owns its own
- * context (see the sibling *Context.tsx files) so a change in one — e.g.
- * toggling a Settings switch — doesn't re-render screens that only read
- * another domain. WaypointsProvider must nest inside FoodProvider: it
- * reads foodLog to keep the "logging all meals" bonus honest.
- */
+/** App-wide providers, rendered inside BackendProvider by AuthGate. */
 export function AppProviders({ children }: { children: React.ReactNode }) {
   return (
     <SettingsProvider>
       <FoodProvider>
-        <WeightProvider>
-          <WaypointsProvider>{children}</WaypointsProvider>
-        </WeightProvider>
+        <SavedMealsProvider>
+          <WeightProvider>
+            <WaypointsProvider>
+              <ActivityProvider>
+                <LoadGate>{children}</LoadGate>
+                <RemindersSync />
+              </ActivityProvider>
+            </WaypointsProvider>
+          </WeightProvider>
+        </SavedMealsProvider>
       </FoodProvider>
     </SettingsProvider>
   );
+}
+
+/** Holds the UI back until every domain has loaded, so no screen flashes defaults or zeros. */
+function LoadGate({ children }: { children: React.ReactNode }) {
+  const ready = [
+    useSettings().ready,
+    useFood().ready,
+    useWeight().ready,
+    useWaypoints().ready,
+    useActivity().ready,
+  ].every(Boolean);
+
+  if (!ready) {
+    return (
+      <View
+        style={{
+          flex: 1,
+          backgroundColor: colors.paper,
+          alignItems: 'center',
+          justifyContent: 'center',
+        }}
+      >
+        <ActivityIndicator color={colors.coral} />
+      </View>
+    );
+  }
+  return <>{children}</>;
 }

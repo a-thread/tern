@@ -1,9 +1,14 @@
 import type { Tier } from './models';
 
+/** A named amount of a food and what it weighs, e.g. "cup" = 158 g. */
+export type Portion = { label: string; grams: number };
+
 /**
- * Mock stand-in for an Open Food Facts search response. `tier` is the
- * NOVA-derived suggestion; `null` means the product had no processing
- * data and the picker should prompt for it instead of guessing.
+ * A food that can be logged, from a food database or from your own log.
+ * Nutrition values are for `servingLabel`: for database foods that is always
+ * "100 g", with `portions` saying what a cup or a serving weighs. `tier` is the
+ * NOVA-derived suggestion; `null` means there was no processing data, so the
+ * picker asks instead of guessing.
  */
 export type SearchResult = {
   id: string;
@@ -15,76 +20,9 @@ export type SearchResult = {
   carbs: number;
   fat: number;
   tier: Tier | null;
+  portions?: Portion[];
+  source?: 'off' | 'usda';
 };
-
-export const searchResults: SearchResult[] = [
-  {
-    id: 's1',
-    name: 'Rolled oats',
-    brand: "Bob's Red Mill",
-    servingLabel: '40 g',
-    calories: 150,
-    protein: 5,
-    carbs: 27,
-    fat: 3,
-    tier: 1,
-  },
-  {
-    id: 's2',
-    name: 'Oat milk, original',
-    brand: 'Oatly',
-    servingLabel: '240 ml',
-    calories: 120,
-    protein: 3,
-    carbs: 16,
-    fat: 5,
-    tier: 3,
-  },
-  {
-    id: 's3',
-    name: 'Oatmeal cookie bar',
-    brand: 'Quaker',
-    servingLabel: '1 bar',
-    calories: 190,
-    protein: 3,
-    carbs: 29,
-    fat: 7,
-    tier: 4,
-  },
-  {
-    id: 's4',
-    name: 'Oat flour, bulk',
-    servingLabel: '100 g',
-    calories: 0,
-    protein: 0,
-    carbs: 0,
-    fat: 0,
-    tier: null,
-  },
-];
-
-export const recentResults: SearchResult[] = [
-  {
-    id: 'r1',
-    name: 'Greek yogurt with berries',
-    servingLabel: '1 bowl',
-    calories: 210,
-    protein: 18,
-    carbs: 24,
-    fat: 4,
-    tier: 1,
-  },
-  {
-    id: 'r2',
-    name: 'Chili, homemade',
-    servingLabel: '1 bowl',
-    calories: 420,
-    protein: 30,
-    carbs: 26,
-    fat: 12,
-    tier: 2,
-  },
-];
 
 export const tierPickerOptions: { tier: Tier; label: string }[] = [
   { tier: 1, label: 'Whole' },

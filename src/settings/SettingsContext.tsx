@@ -2,34 +2,42 @@ import React, {
   createContext,
   useCallback,
   useContext,
+  useEffect,
   useMemo,
+  useRef,
   useState,
 } from 'react';
+import { useBackend } from '@shared/state/BackendContext';
+import { useAuth } from '@shared/auth/AuthContext';
+import { useToast } from '@shared/state/ToastContext';
+import type { Units } from '@shared/utils/units';
+import { dayKey } from '@shared/utils/date';
+import { recordGoalChange, type GoalChange } from '@today/models';
 import { settingsSeed } from './mock';
+import {
+  DEFAULT_REMINDERS,
+  mergeReminders,
+  type ReminderConfig,
+} from './reminders.plan';
 
-export type ReminderSettings = {
-  mealLog: { on: boolean; time: string };
-  weeklyWeighIn: { on: boolean; time: string };
-  stepGoalNudge: { on: boolean };
-};
+export type ReminderSettings = ReminderConfig;
 
 export type HealthDataSettings = {
-  connected: boolean;
-  lastSynced: string;
   readSteps: boolean;
-  readDistance: boolean;
-  readWeight: boolean;
-  writeWeight: boolean;
-  writeNutrition: boolean;
 };
 
 export type AppSettings = {
+  firstName: string;
   stepGoal: number;
+  /** Past step-goal changes, so a new goal only applies from the day it was set. */
+  stepGoalHistory: GoalChange[];
   suggestStepAdjustments: boolean;
   calorieTarget: number;
   macroTargets: { protein: number; carbs: number; fat: number };
   trackCalories: boolean;
-  weightGoalKg: number;
+  /** Display only; weight is stored in pounds either way. */
+  units: Units;
+  weightGoalLb: number;
   showTiers: boolean;
   showTierNumber: boolean;
   showCalories: boolean;
@@ -41,51 +49,102 @@ export type AppSettings = {
 };
 
 const initialSettings: AppSettings = {
+  firstName: '',
   stepGoal: settingsSeed.stepGoal,
+  stepGoalHistory: [],
   suggestStepAdjustments: true,
   calorieTarget: settingsSeed.calorieTarget,
   macroTargets: { ...settingsSeed.macroTargets },
   trackCalories: true,
-  weightGoalKg: settingsSeed.weightGoalKg,
+  units: settingsSeed.units,
+  weightGoalLb: settingsSeed.weightGoalLb,
   showTiers: settingsSeed.showTiers,
   showTierNumber: true,
   showCalories: settingsSeed.showCalories,
   showRemainingVsTarget: false,
   restDaysPerWeek: 2,
   autoDetectRestDays: true,
-  reminders: {
-    mealLog: { on: true, time: '12:30 pm, 7:00 pm' },
-    weeklyWeighIn: { on: true, time: 'Sundays, 8:00 am' },
-    stepGoalNudge: { on: false },
-  },
+  reminders: DEFAULT_REMINDERS,
   healthData: {
-    connected: true,
-    lastSynced: '4 minutes ago',
     readSteps: true,
-    readDistance: true,
-    readWeight: false,
-    writeWeight: true,
-    writeNutrition: false,
   },
 };
 
 type SettingsContextValue = {
   settings: AppSettings;
+  ready: boolean;
   updateSettings: (patch: Partial<AppSettings>) => void;
 };
 
 const SettingsContext = createContext<SettingsContextValue | null>(null);
 
 export function SettingsProvider({ children }: { children: React.ReactNode }) {
+  const { settings: repo } = useBackend();
+  const toast = useToast();
   const [settings, setSettings] = useState<AppSettings>(initialSettings);
+  const [ready, setReady] = useState(false);
+  const latest = useRef(settings);
+  latest.current = settings;
+  // Sign-up stores the first name in auth metadata (no session, so no settings
+  // row, until the email is confirmed); the first load copies it across.
+  const signedUpName = useAuth()?.session?.user.user_metadata?.first_name;
+  const signedUpNameRef = useRef<string | undefined>(signedUpName);
+  signedUpNameRef.current = signedUpName;
 
-  const updateSettings = useCallback((patch: Partial<AppSettings>) => {
-    setSettings((prev) => ({ ...prev, ...patch }));
-  }, []);
+  // Saved settings are merged over the defaults, so a setting added in a
+  // later version simply takes its default until the user changes it.
+  useEffect(() => {
+    let cancelled = false;
+    repo
+      .load()
+      .then((saved) => {
+        if (cancelled) return;
+        const loaded = {
+          ...initialSettings,
+          ...saved,
+          // Older saves stored reminder times as text; fall back per field.
+          reminders: mergeReminders(saved?.reminders),
+        };
+        const name = signedUpNameRef.current?.trim();
+        // Only when never set — clearing the name in Settings must stick.
+        if (saved?.firstName === undefined && name) {
+          loaded.firstName = name;
+          repo.save(loaded).catch((e) => console.warn('Could not save settings', e));
+        }
+        setSettings(loaded);
+      })
+      .catch((e) => console.warn('Could not load settings', e))
+      .finally(() => !cancelled && setReady(true));
+    return () => {
+      cancelled = true;
+    };
+  }, [repo]);
+
+  const updateSettings = useCallback(
+    (patch: Partial<AppSettings>) => {
+      const prev = latest.current;
+      const next = { ...prev, ...patch };
+      if (patch.stepGoal !== undefined && patch.stepGoal !== prev.stepGoal) {
+        next.stepGoalHistory = recordGoalChange(
+          prev.stepGoalHistory,
+          prev.stepGoal,
+          patch.stepGoal,
+          dayKey(),
+        );
+      }
+      latest.current = next;
+      setSettings(next);
+      repo.save(next).catch((e) => {
+        console.warn('Could not save settings', e);
+        toast.show("Couldn't save your settings — they may not stick.");
+      });
+    },
+    [repo, toast],
+  );
 
   const value = useMemo<SettingsContextValue>(
-    () => ({ settings, updateSettings }),
-    [settings, updateSettings],
+    () => ({ settings, ready, updateSettings }),
+    [settings, ready, updateSettings],
   );
 
   return (

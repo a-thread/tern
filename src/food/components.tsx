@@ -67,7 +67,7 @@ export function TierPicker({
         </Text>
       ) : (
         <Text style={[s.suggestNote, { backgroundColor: colors.doveTint }]}>
-          No suggestion available for custom foods — pick whichever fits.
+          No processing data for this food — pick whichever fits.
         </Text>
       )}
     </View>

@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useCallback, useState } from 'react';
 import { View, Text, ScrollView, StyleSheet, Pressable } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import Svg, { Path } from 'react-native-svg';
+import { useFocusEffect } from '@react-navigation/native';
 
 import { colors, font, space } from '@shared/theme';
 import { Card, GroupLabel, Insight, FootNote } from '@shared/components/ui';
@@ -11,17 +12,23 @@ import {
   WeightTrend,
   ConsistencyGrid,
 } from '@shared/components/charts';
-import { weekBars, monthConsistency } from '@today/mock';
-import { dayTotals } from '@food/models';
+import { useActivity } from '@today/ActivityContext';
+import { useDayKey } from '@shared/hooks/useDayKey';
+import { addDays, monthName, weekdayLetter } from '@shared/utils/date';
+import { useBackend } from '@shared/state/BackendContext';
+import { averageIntake, type IntakeAverage } from '@food/models';
 import { useFood } from '@food/FoodContext';
 import { useWeight } from '@weight/WeightContext';
 import { useSettings } from '@settings/SettingsContext';
+import { useUnits } from '@settings/useUnits';
+import { longestProtectedRun, summarizeSteps } from './models';
 import type { TrendsStackParamList } from './types';
 
 type Props = NativeStackScreenProps<TrendsStackParamList, 'TrendsHome'>;
 
 const RANGES = ['Week', 'Month', '6 months'] as const;
 const WEIGHT_TREND_MIN_ENTRIES = 7;
+const RANGE_DAYS = { Week: 7, Month: 30, '6 months': 180 } as const;
 
 export default function TrendsScreen({ navigation }: Props) {
   const insets = useSafeAreaInsets();
@@ -29,11 +36,38 @@ export default function TrendsScreen({ navigation }: Props) {
   const { foodLog } = useFood();
   const { weightEntries, weightTrend } = useWeight();
   const { settings } = useSettings();
-  const totals = dayTotals(foodLog);
+  const { formatWeight, toDisplay, weightLabel } = useUnits();
+  const { food } = useBackend();
+  const [intake, setIntake] = useState<IntakeAverage | null>(null);
 
-  const avgSteps = Math.round(
-    weekBars.reduce((a, b) => a + b.value, 0) / weekBars.length,
+  const { days, status: stepsStatus } = useActivity();
+  const todayKey = useDayKey();
+  // Food averages cover the last week, or the last 30 days for longer ranges
+  // (a longer window would mean loading a lot of rows for little gain).
+  const foodDays = range === 'Week' ? 7 : 30;
+  useFocusEffect(
+    useCallback(() => {
+      let cancelled = false;
+      food
+        .history(addDays(todayKey, -(foodDays - 1)), todayKey)
+        .then((byDay) => !cancelled && setIntake(averageIntake(byDay, todayKey)))
+        .catch((e) => console.warn('Could not load food history', e));
+      return () => {
+        cancelled = true;
+      };
+      // foodLog is a trigger, not an input: reload after something is logged.
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [food, todayKey, foodDays, foodLog]),
   );
+  const stepsConnected = stepsStatus === 'connected';
+  const rangeSteps = summarizeSteps(days, RANGE_DAYS[range]);
+  const last7 = days.slice(-7).map((d) => ({
+    label: weekdayLetter(d.day),
+    value: d.steps,
+    state: d.state,
+  }));
+  const last30 = days.slice(-30).map((d) => d.state);
+  const longestRun = longestProtectedRun(days.slice(-RANGE_DAYS[range]).map((d) => d.state));
   const latest = weightTrend[weightTrend.length - 1];
   const delta = latest - weightTrend[0];
   const hasWeightTrend = weightEntries.length >= WEIGHT_TREND_MIN_ENTRIES;
@@ -43,7 +77,7 @@ export default function TrendsScreen({ navigation }: Props) {
       style={{ flex: 1, backgroundColor: colors.paper, paddingTop: insets.top }}
     >
       <View style={{ paddingHorizontal: space.lg, paddingBottom: space.sm }}>
-        <Text style={s.eyebrow}>September</Text>
+        <Text style={s.eyebrow}>{monthName(todayKey)}</Text>
         <Text style={s.title}>Trends</Text>
       </View>
 
@@ -71,16 +105,29 @@ export default function TrendsScreen({ navigation }: Props) {
             <View style={s.metricTop}>
               <View>
                 <Text style={s.metricName}>Steps</Text>
-                <Text style={s.metricValue}>{avgSteps.toLocaleString()}</Text>
+                <Text style={s.metricValue}>
+                  {rangeSteps.average === null
+                    ? '—'
+                    : rangeSteps.average.toLocaleString()}
+                </Text>
                 <Text style={s.metricSub}>daily average</Text>
               </View>
-              <View style={[s.delta, { backgroundColor: colors.glacierTint }]}>
-                <Text style={[s.deltaText, { color: colors.glacierDeep }]}>
-                  +11%
-                </Text>
-              </View>
+              {rangeSteps.changePct !== null ? (
+                <View style={[s.delta, { backgroundColor: colors.glacierTint }]}>
+                  <Text style={[s.deltaText, { color: colors.glacierDeep }]}>
+                    {rangeSteps.changePct > 0 ? '+' : rangeSteps.changePct < 0 ? '−' : ''}
+                    {Math.abs(rangeSteps.changePct)}%
+                  </Text>
+                </View>
+              ) : null}
             </View>
-            <StepBars days={weekBars} goal={settings.stepGoal} />
+            {stepsConnected ? (
+              <StepBars days={last7} goal={settings.stepGoal} />
+            ) : (
+              <Text style={s.metricSub}>
+                Connect step data in Settings → Health data to see this.
+              </Text>
+            )}
           </Card>
         </Pressable>
 
@@ -92,10 +139,11 @@ export default function TrendsScreen({ navigation }: Props) {
                 <View style={s.metricTop}>
                   <View>
                     <Text style={s.metricName}>Weight</Text>
-                    <Text style={s.metricValue}>{latest.toFixed(1)} kg</Text>
+                    <Text style={s.metricValue}>{formatWeight(latest)}</Text>
                     <Text style={s.metricSub}>
                       7-day average ·{' '}
-                      {(latest - settings.weightGoalKg).toFixed(1)} kg from goal
+                      {toDisplay(latest - settings.weightGoalLb).toFixed(1)}{' '}
+                      {weightLabel} from goal
                     </Text>
                   </View>
                   <View
@@ -103,14 +151,14 @@ export default function TrendsScreen({ navigation }: Props) {
                   >
                     <Text style={[s.deltaText, { color: colors.water }]}>
                       {delta > 0 ? '+' : '−'}
-                      {Math.abs(delta).toFixed(1)}
+                      {toDisplay(Math.abs(delta)).toFixed(1)}
                     </Text>
                   </View>
                 </View>
                 <WeightTrend
-                  trend={weightTrend}
-                  spread={0.6}
-                  goalKg={settings.weightGoalKg}
+                  trend={weightTrend.map(toDisplay)}
+                  spread={toDisplay(1.3)}
+                  goal={toDisplay(settings.weightGoalLb)}
                 />
                 <Text style={s.legendNote}>
                   The shaded band is your day-to-day spread — normal
@@ -145,29 +193,31 @@ export default function TrendsScreen({ navigation }: Props) {
         <Card style={{ marginBottom: space.md }}>
           <Text style={s.metricName}>Calories</Text>
           <Text style={s.metricValue}>
-            {Math.round(totals.calories).toLocaleString()}
+            {intake ? intake.calories.toLocaleString() : '—'}
           </Text>
           <Text style={s.metricSub}>
-            daily average
+            {intake
+              ? `daily average · last ${foodDays} days`
+              : 'no food logged yet'}
             {settings.trackCalories
               ? ` · target ${settings.calorieTarget.toLocaleString()}`
               : ''}
           </Text>
           <View style={s.macroRow}>
             <MacroBox
-              value={`${Math.round(totals.protein)}g`}
+              value={intake ? `${intake.protein}g` : '—'}
               label='protein'
               bg={colors.kelpTint}
               color={colors.kelp}
             />
             <MacroBox
-              value={`${Math.round(totals.carbs)}g`}
+              value={intake ? `${intake.carbs}g` : '—'}
               label='carbs'
               bg={colors.glacierTint}
               color={colors.glacierDeep}
             />
             <MacroBox
-              value={`${Math.round(totals.fat)}g`}
+              value={intake ? `${intake.fat}g` : '—'}
               label='fat'
               bg={colors.sunTint}
               color={colors.sunDeep}
@@ -178,23 +228,25 @@ export default function TrendsScreen({ navigation }: Props) {
         <GroupLabel>Consistency</GroupLabel>
         <Card>
           <Text style={s.metricSub}>Last 30 days</Text>
-          <ConsistencyGrid days={monthConsistency} />
+          <ConsistencyGrid days={last30} />
         </Card>
 
-        <Insight
-          icon={
-            <Svg width={13} height={13} viewBox='0 0 24 24' fill='none'>
-              <Path
-                d='M3 17l6-6 4 4 8-8'
-                stroke={colors.aurora}
-                strokeWidth={2}
-                strokeLinecap='round'
-              />
-            </Svg>
-          }
-        >
-          Nine days logged in a row — your most consistent stretch yet.
-        </Insight>
+        {longestRun > 1 ? (
+          <Insight
+            icon={
+              <Svg width={13} height={13} viewBox='0 0 24 24' fill='none'>
+                <Path
+                  d='M3 17l6-6 4 4 8-8'
+                  stroke={colors.aurora}
+                  strokeWidth={2}
+                  strokeLinecap='round'
+                />
+              </Svg>
+            }
+          >
+            {`Your longest stretch in this period is ${longestRun} days, rest days included.`}
+          </Insight>
+        ) : null}
 
         <FootNote>
           Averages smooth out day-to-day noise. Single-day weight changes are

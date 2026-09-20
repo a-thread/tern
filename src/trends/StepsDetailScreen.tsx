@@ -12,36 +12,48 @@ import {
   FootNote,
 } from '@shared/components/ui';
 import { StepBars, ConsistencyGrid } from '@shared/components/charts';
-import { weekBars, monthConsistency } from '@today/mock';
+import { useActivity } from '@today/ActivityContext';
+import { weekdayLetter, weekdayName } from '@shared/utils/date';
 import { useSettings } from '@settings/SettingsContext';
-import { longestProtectedRun } from './models';
+import { longestProtectedRun, summarizeSteps } from './models';
 import type { TrendsStackParamList } from './types';
 
 type Props = NativeStackScreenProps<TrendsStackParamList, 'StepsDetail'>;
 
 const RANGES = ['Week', 'Month', '6 months'] as const;
+const RANGE_DAYS = { Week: 7, Month: 30, '6 months': 180 } as const;
 
 export default function StepsDetailScreen({ navigation }: Props) {
   const insets = useSafeAreaInsets();
   const [range, setRange] = useState<(typeof RANGES)[number]>('Month');
   const { settings } = useSettings();
 
-  const avgSteps = Math.round(
-    weekBars.reduce((a, b) => a + b.value, 0) / weekBars.length,
-  );
-  const goalDays = monthConsistency.filter((d) => d === 'goal').length;
-  const restDays = monthConsistency.filter((d) => d === 'rest').length;
-  const longestRun = longestProtectedRun(monthConsistency);
+  const { days, status } = useActivity();
+  const connected = status === 'connected';
 
-  const best = weekBars.reduce((a, b) => (b.value > a.value ? b : a));
-  const quietest = weekBars.reduce((a, b) => (b.value < a.value ? b : a));
-  const DAY_NAMES: Record<string, string> = {
-    M: 'Monday',
-    T: 'Tuesday',
-    W: 'Wednesday',
-    F: 'Friday',
-    S: 'Saturday',
-  };
+  const inRange = days.slice(-RANGE_DAYS[range]);
+  const { average } = summarizeSteps(days, RANGE_DAYS[range]);
+  const goalDays = inRange.filter((d) => d.state === 'goal').length;
+  const restDays = inRange.filter((d) => d.state === 'rest').length;
+  const longestRun = longestProtectedRun(inRange.map((d) => d.state));
+
+  const last7 = days.slice(-7);
+  const bars = last7.map((d) => ({
+    label: weekdayLetter(d.day),
+    value: d.steps,
+    state: d.state,
+  }));
+  const withSteps = last7.filter((d) => d.steps > 0);
+  const best = withSteps.reduce<(typeof last7)[number] | null>(
+    (a, d) => (!a || d.steps > a.steps ? d : a),
+    null,
+  );
+  const quietest = withSteps.reduce<(typeof last7)[number] | null>(
+    (a, d) => (!a || d.steps < a.steps ? d : a),
+    null,
+  );
+  const rangeLabel =
+    range === 'Week' ? 'this week' : range === 'Month' ? 'this month' : 'over 6 months';
 
   return (
     <View
@@ -72,9 +84,17 @@ export default function StepsDetailScreen({ navigation }: Props) {
         </View>
 
         <Card style={{ marginBottom: space.md }}>
-          <Text style={s.metricValue}>{avgSteps.toLocaleString()}</Text>
-          <Text style={s.metricSub}>daily average this week</Text>
-          <StepBars days={weekBars} goal={settings.stepGoal} height={88} />
+          <Text style={s.metricValue}>
+            {average === null ? '—' : average.toLocaleString()}
+          </Text>
+          <Text style={s.metricSub}>daily average {rangeLabel}</Text>
+          {connected ? (
+            <StepBars days={bars} goal={settings.stepGoal} height={88} />
+          ) : (
+            <Text style={s.metricSub}>
+              Connect step data in Settings → Health data to see this.
+            </Text>
+          )}
 
           <View style={s.statGrid}>
             <StatBox value={goalDays} label='goal days' />
@@ -86,7 +106,7 @@ export default function StepsDetailScreen({ navigation }: Props) {
         <GroupLabel>Consistency</GroupLabel>
         <Card>
           <Text style={s.metricSub}>Last 30 days</Text>
-          <ConsistencyGrid days={monthConsistency} />
+          <ConsistencyGrid days={days.slice(-30).map((d) => d.state)} />
           <View style={s.legend}>
             <LegendDot color={colors.glacier} label='goal' />
             <LegendDot color={colors.glacierTint} label='partial' />
@@ -98,17 +118,21 @@ export default function StepsDetailScreen({ navigation }: Props) {
           </View>
         </Card>
 
-        <GroupLabel>This week</GroupLabel>
-        <Card style={{ padding: 0 }}>
-          <Row
-            title={DAY_NAMES[best.label] ?? best.label}
-            sub={`${best.value.toLocaleString()} steps — your strongest day`}
-          />
-          <Row
-            title={DAY_NAMES[quietest.label] ?? quietest.label}
-            sub={`${quietest.value.toLocaleString()} steps — your quietest`}
-          />
-        </Card>
+        {best && quietest ? (
+          <>
+            <GroupLabel>This week</GroupLabel>
+            <Card style={{ padding: 0 }}>
+              <Row
+                title={weekdayName(best.day)}
+                sub={`${best.steps.toLocaleString()} steps — your strongest day`}
+              />
+              <Row
+                title={weekdayName(quietest.day)}
+                sub={`${quietest.steps.toLocaleString()} steps — your quietest`}
+              />
+            </Card>
+          </>
+        ) : null}
 
         <FootNote>
           Patterns like these are just information — useful for planning, not a

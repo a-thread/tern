@@ -1,5 +1,13 @@
 import React, { useMemo, useRef, useState } from 'react';
-import { View, Text, ScrollView, StyleSheet, PanResponder } from 'react-native';
+import {
+  View,
+  Text,
+  TextInput,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  PanResponder,
+} from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 
@@ -7,32 +15,56 @@ import { colors, font, radius, space } from '@shared/theme';
 import { Group, GroupLabel, SheetNav } from '@shared/components/ui';
 import { WeightTrend } from '@shared/components/charts';
 import type { RootStackParamList } from '@shared/navigation/types';
+import { useUnits } from '@settings/useUnits';
 import { useWeight } from './WeightContext';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'LogWeight'>;
 
-const PX_PER_KG = 110; // drag distance for a 1 kg change
+const PX_PER_UNIT = 110; // drag distance for a 1 lb (or 1 kg) change
+// The range the database accepts, in pounds.
+const MIN_LB = 40;
+const MAX_LB = 1100;
 
 export default function LogWeightScreen({ navigation }: Props) {
   const insets = useSafeAreaInsets();
   const { weightEntries, weightTrend, addWeightEntry } = useWeight();
-  const latest = weightEntries[0]?.kg ?? 78.2;
+  const { units, weightLabel, toDisplay, fromDisplay, formatWeight } =
+    useUnits();
+  // The ruler works in the user's unit; storage stays lb.
+  const latest = Math.round(toDisplay(weightEntries[0]?.lb ?? 172.4) * 10) / 10;
 
-  const [weight, setWeight] = useState(latest);
+  const min = Math.ceil(toDisplay(MIN_LB) * 10) / 10;
+  const max = Math.floor(toDisplay(MAX_LB) * 10) / 10;
+  const clamp = (v: number) => Math.min(Math.max(v, min), max);
+
+  const [weight, setWeightState] = useState(latest);
+  const weightRef = useRef(latest);
+  const setWeight = (v: number) => {
+    const next = clamp(Math.round(v * 10) / 10);
+    weightRef.current = next;
+    setWeightState(next);
+  };
   const dragStart = useRef(latest);
+  const [draft, setDraft] = useState<string | null>(null); // while typing
 
   const panResponder = useRef(
     PanResponder.create({
       onStartShouldSetPanResponder: () => true,
+      onPanResponderTerminationRequest: () => false,
       onPanResponderGrant: () => {
-        dragStart.current = weight;
+        dragStart.current = weightRef.current;
       },
       onPanResponderMove: (_evt, gesture) => {
-        const next = dragStart.current - gesture.dx / PX_PER_KG;
-        setWeight(Math.round(next * 10) / 10);
+        setWeight(dragStart.current - gesture.dx / PX_PER_UNIT);
       },
     }),
   ).current;
+
+  const commitDraft = () => {
+    const typed = parseFloat((draft ?? '').replace(',', '.'));
+    if (!Number.isNaN(typed)) setWeight(typed);
+    setDraft(null);
+  };
 
   const ticks = useMemo(() => {
     const list: { v: number; major: boolean }[] = [];
@@ -43,10 +75,13 @@ export default function LogWeightScreen({ navigation }: Props) {
     return list;
   }, [weight]);
 
-  const weekAvg = weightTrend.reduce((a, b) => a + b, 0) / weightTrend.length;
+  const week = weightTrend.slice(-7);
+  const weekAvgLb = week.length
+    ? week.reduce((a, b) => a + b, 0) / week.length
+    : null;
 
   const save = () => {
-    addWeightEntry(weight);
+    addWeightEntry(fromDisplay(weight));
     navigation.goBack();
   };
 
@@ -63,14 +98,26 @@ export default function LogWeightScreen({ navigation }: Props) {
       />
 
       <ScrollView
+        keyboardShouldPersistTaps='handled'
         contentContainerStyle={{
           paddingHorizontal: space.lg,
           paddingBottom: 40,
         }}
       >
         <View style={s.display}>
-          <Text style={s.val}>{weight.toFixed(1)}</Text>
-          <Text style={s.unit}>kg</Text>
+          <TextInput
+            style={s.val}
+            value={draft ?? weight.toFixed(1)}
+            onFocus={() => setDraft(weight.toFixed(1))}
+            onChangeText={setDraft}
+            onBlur={commitDraft}
+            onSubmitEditing={commitDraft}
+            keyboardType='decimal-pad'
+            selectTextOnFocus
+            maxLength={6}
+            accessibilityLabel='Weight'
+          />
+          <Text style={s.unit}>{weightLabel}</Text>
         </View>
 
         <View style={s.ruler} {...panResponder.panHandlers}>
@@ -87,19 +134,39 @@ export default function LogWeightScreen({ navigation }: Props) {
           <View style={s.needle} pointerEvents='none' />
         </View>
 
+        <View style={s.stepRow}>
+          {[-1, -0.1, 0.1, 1].map((d) => (
+            <Pressable
+              key={d}
+              onPress={() => setWeight(weightRef.current + d)}
+              style={s.stepBtn}
+              accessibilityLabel={`${d > 0 ? 'Add' : 'Subtract'} ${Math.abs(d)} ${weightLabel}`}
+            >
+              <Text style={s.stepText}>
+                {d > 0 ? '+' : '−'}
+                {Math.abs(d)}
+              </Text>
+            </Pressable>
+          ))}
+        </View>
+
         <Text style={s.hint}>
           Day-to-day changes are mostly water. Tern tracks your weekly average
           instead.
         </Text>
 
-        <GroupLabel>This week</GroupLabel>
-        <View style={s.weekCard}>
-          <View style={s.weekTop}>
-            <Text style={s.weekVal}>{weekAvg.toFixed(1)} kg</Text>
-            <Text style={s.weekSub}>7-day average</Text>
-          </View>
-          <WeightTrend trend={weightTrend} spread={0.5} height={44} />
-        </View>
+        {weekAvgLb !== null ? (
+          <>
+            <GroupLabel>This week</GroupLabel>
+            <View style={s.weekCard}>
+              <View style={s.weekTop}>
+                <Text style={s.weekVal}>{formatWeight(weekAvgLb)}</Text>
+                <Text style={s.weekSub}>7-day average</Text>
+              </View>
+              <WeightTrend trend={week} spread={0.5} height={44} />
+            </View>
+          </>
+        ) : null}
 
         <GroupLabel>Details</GroupLabel>
         <Group>
@@ -109,7 +176,9 @@ export default function LogWeightScreen({ navigation }: Props) {
           </View>
           <View style={s.row}>
             <Text style={s.rowTitle}>Units</Text>
-            <Text style={s.rowSub}>Kilograms</Text>
+            <Text style={s.rowSub}>
+              {units === 'imperial' ? 'Pounds' : 'Kilograms'}
+            </Text>
           </View>
         </Group>
       </ScrollView>
@@ -124,7 +193,24 @@ const s = StyleSheet.create({
     justifyContent: 'center',
     paddingVertical: 20,
   },
+  stepRow: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    gap: space.sm,
+    marginBottom: space.md,
+  },
+  stepBtn: {
+    minWidth: 56,
+    alignItems: 'center',
+    paddingVertical: 8,
+    borderRadius: radius.md,
+    backgroundColor: colors.card,
+  },
+  stepText: { fontFamily: font.semibold, fontSize: 13.5, color: colors.ink },
   val: {
+    padding: 0,
+    minWidth: 90,
+    textAlign: 'center',
     fontFamily: font.displayMedium,
     fontSize: 46,
     color: colors.ink,

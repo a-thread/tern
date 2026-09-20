@@ -11,6 +11,7 @@ import RestDayScreen from '@today/RestDayScreen';
 import FoodScreen from '@food/FoodScreen';
 import LogFoodStack from '@food/LogFoodStack';
 import EditFoodEntryScreen from '@food/logging/EditFoodEntryScreen';
+import SaveMealScreen from '@food/logging/SaveMealScreen';
 import LogWeightScreen from '@weight/LogWeightScreen';
 import TrendsStack from '@trends/TrendsStack';
 import JourneyScreen from '@journey/JourneyScreen';
@@ -73,6 +74,7 @@ export default function RootNavigator() {
         <RootStack.Screen name='LogFood' component={LogFoodStack} />
         <RootStack.Screen name='LogWeight' component={LogWeightScreen} />
         <RootStack.Screen name='EditFood' component={EditFoodEntryScreen} />
+        <RootStack.Screen name='SaveMeal' component={SaveMealScreen} />
         <RootStack.Screen name='Settings' component={SettingsStack} />
       </RootStack.Group>
 

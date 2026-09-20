@@ -83,8 +83,8 @@ create table profiles (
   step_goal int default 8000,
   calorie_target int,
   macro_targets jsonb,
-  weight_goal_kg numeric,
-  units text default 'metric',
+  weight_goal_lb numeric,
+  units text default 'imperial',
   show_tiers bool default true,
   show_calories bool default true
 );
@@ -123,7 +123,7 @@ create table weight_entries (
   id uuid primary key default gen_random_uuid(),
   user_id uuid references profiles on delete cascade,
   logged_at timestamptz not null,
-  kg numeric not null
+  lb numeric not null
 );
 
 create table waypoint_events (     -- append-only ledger

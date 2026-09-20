@@ -1,5 +1,14 @@
-import React from 'react';
-import { View, Text, ScrollView, StyleSheet, Pressable } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import {
+  Alert,
+  Share,
+  View,
+  Text,
+  TextInput,
+  ScrollView,
+  StyleSheet,
+  Pressable,
+} from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import Svg, { Path } from 'react-native-svg';
@@ -15,8 +24,22 @@ import {
   FootNote,
   PushHeader,
 } from '@shared/components/ui';
-import { profile } from './mock';
+import { useAuth } from '@shared/auth/AuthContext';
+import { useBackend } from '@shared/state/BackendContext';
+import { useToast } from '@shared/state/ToastContext';
+import { useActivity } from '@today/ActivityContext';
+import { MAX_NAME } from '@shared/auth/validation';
 import { useSettings } from './SettingsContext';
+import { useUnits } from './useUnits';
+import TimeStepperRow from './TimeStepperRow';
+import {
+  REMINDER_STEP_MINUTES,
+  describeReminders,
+  formatMinutes,
+  stepMinutes,
+  stepWeekday,
+  weekdayPlural,
+} from './reminders.plan';
 import type { SettingsStackParamList } from './types';
 
 type Props = NativeStackScreenProps<SettingsStackParamList, 'SettingsRoot'>;
@@ -24,11 +47,76 @@ type Props = NativeStackScreenProps<SettingsStackParamList, 'SettingsRoot'>;
 export default function SettingsRootScreen({ navigation }: Props) {
   const insets = useSafeAreaInsets();
   const { settings, updateSettings } = useSettings();
+  const auth = useAuth();
+  const { status: stepsStatus } = useActivity();
+  const { data: dataRepo } = useBackend();
+  const reminders = settings.reminders;
+  const reminderText = describeReminders(reminders);
+  const stepStep = REMINDER_STEP_MINUTES;
+  const toast = useToast();
+  const [dataBusy, setDataBusy] = useState(false);
 
-  const stepWeightGoal = (delta: number) =>
-    updateSettings({
-      weightGoalKg: Math.round((settings.weightGoalKg + delta) * 2) / 2,
-    });
+  const exportData = async () => {
+    if (!dataRepo || dataBusy) return;
+    setDataBusy(true);
+    try {
+      const copy = await dataRepo.exportAll();
+      await Share.share({ title: 'Tern data', message: JSON.stringify(copy, null, 2) });
+    } catch (e) {
+      console.warn('Could not export data', e);
+      toast.show("Couldn't export your data — please try again.");
+    } finally {
+      setDataBusy(false);
+    }
+  };
+
+  const deleteData = () => {
+    if (!dataRepo || dataBusy) return;
+    Alert.alert(
+      'Delete all your data?',
+      "This erases your food log, saved meals, weigh-ins, waypoints, rest days and settings from Tern. It can't be undone. You'll be signed out, and your login stays so you can start fresh.",
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Delete',
+          style: 'destructive',
+          onPress: async () => {
+            setDataBusy(true);
+            try {
+              await dataRepo.deleteAll();
+              await auth?.signOut();
+            } catch (e) {
+              console.warn('Could not delete data', e);
+              toast.show("Couldn't delete your data — please try again.");
+              setDataBusy(false);
+            }
+          },
+        },
+      ],
+    );
+  };
+  const email = auth?.session?.user.email;
+
+  // Edited locally and saved on blur, so each keystroke isn't a settings write.
+  const [name, setName] = useState(settings.firstName);
+  useEffect(() => setName(settings.firstName), [settings.firstName]);
+  const saveName = () => {
+    const trimmed = name.trim();
+    setName(trimmed);
+    if (trimmed !== settings.firstName) updateSettings({ firstName: trimmed });
+  };
+
+  const { units, toDisplay, fromDisplay, formatGoal } = useUnits();
+
+  // Whole pounds, or half kilograms, in whichever unit is showing.
+  const stepWeightGoal = (dir: 1 | -1) => {
+    const shown = toDisplay(settings.weightGoalLb);
+    const next =
+      units === 'imperial'
+        ? Math.round(shown) + dir
+        : Math.round(shown * 2) / 2 + dir * 0.5;
+    updateSettings({ weightGoalLb: fromDisplay(next) });
+  };
 
   return (
     <View
@@ -49,11 +137,30 @@ export default function SettingsRootScreen({ navigation }: Props) {
         <Group style={{ marginTop: 4 }}>
           <View style={s.row}>
             <View style={s.avatar}>
-              <Text style={s.avatarText}>{profile.name[0]}</Text>
+              <Text style={s.avatarText}>
+                {(name.trim() || email || '?')[0].toUpperCase()}
+              </Text>
             </View>
             <View style={{ flex: 1 }}>
-              <Text style={s.rowTitle}>{profile.name}</Text>
-              <Text style={s.rowSub}>Local profile</Text>
+              <TextInput
+                value={name}
+                onChangeText={setName}
+                onBlur={saveName}
+                onSubmitEditing={saveName}
+                placeholder='First name'
+                placeholderTextColor={colors.ink3}
+                maxLength={MAX_NAME}
+                autoCapitalize='words'
+                autoComplete='given-name'
+                returnKeyType='done'
+                accessibilityLabel='First name'
+                style={s.nameInput}
+              />
+              <Text style={s.rowSub}>
+                {auth?.isGuest
+                  ? 'Preview · nothing is saved, this resets when you exit'
+                  : (email ?? 'Local profile')}
+              </Text>
             </View>
           </View>
         </Group>
@@ -117,11 +224,11 @@ export default function SettingsRootScreen({ navigation }: Props) {
             </IconBadge>
             <Text style={[s.rowTitle, { flex: 1 }]}>Weight goal</Text>
             <View style={s.stepper}>
-              <Pressable onPress={() => stepWeightGoal(-0.5)} hitSlop={8}>
+              <Pressable onPress={() => stepWeightGoal(-1)} hitSlop={8}>
                 <Text style={s.stepperBtn}>−</Text>
               </Pressable>
-              <Text style={s.stepperVal}>{settings.weightGoalKg} kg</Text>
-              <Pressable onPress={() => stepWeightGoal(0.5)} hitSlop={8}>
+              <Text style={s.stepperVal}>{formatGoal(settings.weightGoalLb)}</Text>
+              <Pressable onPress={() => stepWeightGoal(1)} hitSlop={8}>
                 <Text style={s.stepperBtn}>+</Text>
               </Pressable>
             </View>
@@ -149,6 +256,22 @@ export default function SettingsRootScreen({ navigation }: Props) {
 
         <GroupLabel>Data & display</GroupLabel>
         <Group>
+          <View style={s.row}>
+            <Text style={[s.rowTitle, { flex: 1 }]}>Units</Text>
+            <View style={s.stepper}>
+              {(['imperial', 'metric'] as const).map((u) => (
+                <Pressable
+                  key={u}
+                  onPress={() => updateSettings({ units: u })}
+                  style={[s.unitItem, units === u && s.unitItemOn]}
+                >
+                  <Text style={[s.unitText, units === u && s.unitTextOn]}>
+                    {u === 'imperial' ? 'lb' : 'kg'}
+                  </Text>
+                </Pressable>
+              ))}
+            </View>
+          </View>
           <SettingsRow
             icon={
               <IconBadge bg={colors.doveTint}>
@@ -184,7 +307,7 @@ export default function SettingsRootScreen({ navigation }: Props) {
             }
             title='Health data'
             sub='Steps sync automatically'
-            badge={settings.healthData.connected ? 'Connected' : undefined}
+            badge={stepsStatus === 'connected' ? 'Connected' : undefined}
             onPress={() => navigation.navigate('HealthData')}
           />
         </Group>
@@ -193,41 +316,116 @@ export default function SettingsRootScreen({ navigation }: Props) {
         <Group>
           <ToggleRow
             title='Log meals'
-            sub={settings.reminders.mealLog.time}
-            on={settings.reminders.mealLog.on}
+            sub={reminderText.meals}
+            on={reminders.mealLog.on}
             onToggle={(v) =>
               updateSettings({
-                reminders: {
-                  ...settings.reminders,
-                  mealLog: { ...settings.reminders.mealLog, on: v },
-                },
+                reminders: { ...reminders, mealLog: { ...reminders.mealLog, on: v } },
               })
             }
           />
+          {reminders.mealLog.on ? (
+            <>
+              <TimeStepperRow
+                label='Midday'
+                value={formatMinutes(reminders.mealLog.midday)}
+                onStep={(d) =>
+                  updateSettings({
+                    reminders: {
+                      ...reminders,
+                      mealLog: {
+                        ...reminders.mealLog,
+                        midday: stepMinutes(reminders.mealLog.midday, d * stepStep),
+                      },
+                    },
+                  })
+                }
+              />
+              <TimeStepperRow
+                label='Evening'
+                value={formatMinutes(reminders.mealLog.evening)}
+                onStep={(d) =>
+                  updateSettings({
+                    reminders: {
+                      ...reminders,
+                      mealLog: {
+                        ...reminders.mealLog,
+                        evening: stepMinutes(reminders.mealLog.evening, d * stepStep),
+                      },
+                    },
+                  })
+                }
+              />
+            </>
+          ) : null}
           <ToggleRow
             title='Weekly weigh-in'
-            sub={settings.reminders.weeklyWeighIn.time}
-            on={settings.reminders.weeklyWeighIn.on}
+            sub={reminderText.weighIn}
+            on={reminders.weeklyWeighIn.on}
             onToggle={(v) =>
               updateSettings({
                 reminders: {
-                  ...settings.reminders,
-                  weeklyWeighIn: { ...settings.reminders.weeklyWeighIn, on: v },
+                  ...reminders,
+                  weeklyWeighIn: { ...reminders.weeklyWeighIn, on: v },
                 },
               })
             }
           />
-          <ToggleRow
-            title='Step goal nudge'
-            sub="Only if you're close, late in the day"
-            on={settings.reminders.stepGoalNudge.on}
-            onToggle={(v) =>
-              updateSettings({
-                reminders: { ...settings.reminders, stepGoalNudge: { on: v } },
-              })
-            }
-          />
+          {reminders.weeklyWeighIn.on ? (
+            <>
+              <TimeStepperRow
+                label='Day'
+                value={weekdayPlural(reminders.weeklyWeighIn.weekday)}
+                onStep={(d) =>
+                  updateSettings({
+                    reminders: {
+                      ...reminders,
+                      weeklyWeighIn: {
+                        ...reminders.weeklyWeighIn,
+                        weekday: stepWeekday(reminders.weeklyWeighIn.weekday, d),
+                      },
+                    },
+                  })
+                }
+              />
+              <TimeStepperRow
+                label='Time'
+                value={formatMinutes(reminders.weeklyWeighIn.at)}
+                onStep={(d) =>
+                  updateSettings({
+                    reminders: {
+                      ...reminders,
+                      weeklyWeighIn: {
+                        ...reminders.weeklyWeighIn,
+                        at: stepMinutes(reminders.weeklyWeighIn.at, d * stepStep),
+                      },
+                    },
+                  })
+                }
+              />
+            </>
+          ) : null}
         </Group>
+
+        {dataRepo ? (
+          <>
+            <GroupLabel>Your data</GroupLabel>
+            <Group>
+              <Pressable style={s.row} onPress={exportData} disabled={dataBusy}>
+                <View style={{ flex: 1 }}>
+                  <Text style={s.rowTitle}>Export my data</Text>
+                  <Text style={s.rowSub}>A copy of everything Tern holds, as JSON</Text>
+                </View>
+              </Pressable>
+              <Pressable style={s.row} onPress={deleteData} disabled={dataBusy}>
+                <View style={{ flex: 1 }}>
+                  <Text style={[s.rowTitle, s.dangerText]}>Delete my data</Text>
+                  <Text style={s.rowSub}>Erase your log, weigh-ins and waypoints</Text>
+                </View>
+              </Pressable>
+            </Group>
+          </>
+        ) : null}
 
         <GroupLabel>About</GroupLabel>
         <Group>
@@ -237,9 +435,27 @@ export default function SettingsRootScreen({ navigation }: Props) {
           </View>
         </Group>
 
+        {auth ? (
+          <View style={s.signOut}>
+            {auth.isGuest ? (
+              <Pressable
+                onPress={() => auth.signOut({ toSignUp: true })}
+                hitSlop={8}
+              >
+                <Text style={s.createText}>Create account</Text>
+              </Pressable>
+            ) : null}
+            <Pressable onPress={() => auth.signOut()} hitSlop={8}>
+              <Text style={s.signOutText}>
+                {auth.isGuest ? 'Exit preview' : 'Sign out'}
+              </Text>
+            </Pressable>
+          </View>
+        ) : null}
+
         <FootNote>
           Nutrition data from Open Food Facts, used under the Open Database
-          License.
+          License, and USDA FoodData Central.
         </FootNote>
       </ScrollView>
     </View>
@@ -284,6 +500,9 @@ function SettingsRow({
 }
 
 const s = StyleSheet.create({
+  signOut: { alignItems: 'center', gap: space.md, paddingVertical: space.lg },
+  createText: { fontFamily: font.bold, fontSize: 14, color: colors.coral },
+  signOutText: { fontFamily: font.semibold, fontSize: 14, color: colors.ink2 },
   row: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -292,6 +511,13 @@ const s = StyleSheet.create({
     paddingVertical: 12,
   },
   rowTitle: { fontFamily: font.medium, fontSize: 14, color: colors.ink },
+  dangerText: { color: '#B3261E' },
+  nameInput: {
+    fontFamily: font.medium,
+    fontSize: 14,
+    color: colors.ink,
+    padding: 0,
+  },
   rowSub: {
     fontFamily: font.body,
     fontSize: 11.5,
@@ -328,6 +554,10 @@ const s = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 6,
   },
+  unitItem: { paddingHorizontal: 16, paddingVertical: 7 },
+  unitItemOn: { backgroundColor: colors.ink },
+  unitText: { fontFamily: font.semibold, fontSize: 13, color: colors.ink2 },
+  unitTextOn: { color: colors.paper },
   stepperVal: {
     fontFamily: font.semibold,
     fontSize: 13,

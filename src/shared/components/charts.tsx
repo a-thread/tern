@@ -271,18 +271,18 @@ export function WeightTrend({
   trend,
   spread,
   height = 92,
-  goalKg,
+  goal,
 }: {
   trend: number[];
   spread?: number;
   height?: number;
   /** Optional weight goal; renders a dashed moss reference line. */
-  goalKg?: number;
+  goal?: number;
 }) {
   const W = 280;
   const H = height;
-  const min = Math.min(...trend, goalKg ?? Infinity) - (spread ?? 0.8);
-  const max = Math.max(...trend, goalKg ?? -Infinity) + (spread ?? 0.8);
+  const min = Math.min(...trend, goal ?? Infinity) - (spread ?? 0.8);
+  const max = Math.max(...trend, goal ?? -Infinity) + (spread ?? 0.8);
   const range = max - min || 1;
 
   const pt = (v: number, i: number) => {
@@ -325,24 +325,24 @@ export function WeightTrend({
         />
       ) : null}
       <Polygon points={area} fill='url(#wfill)' />
-      {goalKg !== undefined ? (
+      {goal !== undefined ? (
         <>
           <Line
             x1={0}
-            y1={pt(goalKg, 0)[1]}
+            y1={pt(goal, 0)[1]}
             x2={W}
-            y2={pt(goalKg, 0)[1]}
+            y2={pt(goal, 0)[1]}
             stroke={colors.kelp}
             strokeWidth={1.5}
             strokeDasharray='4 4'
           />
           <SvgText
             x={4}
-            y={pt(goalKg, 0)[1] - 4}
+            y={pt(goal, 0)[1] - 4}
             fontSize={8.5}
             fill={colors.kelp}
           >
-            goal {goalKg}
+            goal {Number(goal.toFixed(1))}
           </SvgText>
         </>
       ) : null}

@@ -14,6 +14,7 @@ import { colors, font, radius, space } from '@shared/theme';
 import { Group, GroupLabel, SheetNav } from '@shared/components/ui';
 import type { Tier } from '../models';
 import { useFood } from '../FoodContext';
+import { useSavedMeals } from '../SavedMealsContext';
 import { TierPicker } from '../components';
 import { useFoodDisplay } from '../useFoodDisplay';
 import type { LogFoodStackParamList } from '../types';
@@ -21,9 +22,10 @@ import type { LogFoodStackParamList } from '../types';
 type Props = NativeStackScreenProps<LogFoodStackParamList, 'ManualFoodEntry'>;
 
 export default function ManualFoodEntryScreen({ navigation, route }: Props) {
-  const { meal, name: initialName } = route.params;
+  const { meal, name: initialName, pick } = route.params;
   const insets = useSafeAreaInsets();
   const { addFoodEntry } = useFood();
+  const { addDraftItem } = useSavedMeals();
   const { showTiers, showTierNumber, showCalories } = useFoodDisplay();
 
   const [name, setName] = useState(initialName ?? '');
@@ -38,9 +40,8 @@ export default function ManualFoodEntryScreen({ navigation, route }: Props) {
 
   const save = () => {
     if (!canSave) return;
-    addFoodEntry({
+    const food = {
       name: name.trim(),
-      meal,
       servings: 1,
       servingLabel: serving.trim() || '1 serving',
       calories: Number(calories) || 0,
@@ -48,7 +49,14 @@ export default function ManualFoodEntryScreen({ navigation, route }: Props) {
       carbs: Number(carbs) || 0,
       fat: Number(fat) || 0,
       tier,
-    });
+    };
+    if (pick) {
+      // Building a saved meal: add to the meal being edited, not today's log.
+      addDraftItem(food);
+      navigation.navigate('MealEditor');
+      return;
+    }
+    addFoodEntry({ ...food, meal });
     navigation.getParent()?.goBack();
   };
 
@@ -59,8 +67,10 @@ export default function ManualFoodEntryScreen({ navigation, route }: Props) {
       <SheetNav
         title='New food'
         leftLabel='Cancel'
-        onLeftPress={() => navigation.getParent()?.goBack()}
-        rightLabel='Save'
+        onLeftPress={() =>
+          pick ? navigation.goBack() : navigation.getParent()?.goBack()
+        }
+        rightLabel={pick ? 'Add' : 'Save'}
         onRightPress={save}
         rightDisabled={!canSave}
       />

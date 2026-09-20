@@ -16,6 +16,8 @@ import {
 import { WeightTrend } from '@shared/components/charts';
 import { useWeight } from '@weight/WeightContext';
 import { useSettings } from '@settings/SettingsContext';
+import { useUnits } from '@settings/useUnits';
+import { formatLoggedAt } from '@weight/models';
 import type { TrendsStackParamList } from './types';
 
 type Props = NativeStackScreenProps<TrendsStackParamList, 'WeightDetail'>;
@@ -28,10 +30,11 @@ export default function WeightDetailScreen({ navigation }: Props) {
   const [range, setRange] = useState<(typeof RANGES)[number]>('6 months');
   const { weightEntries, weightTrend } = useWeight();
   const { settings } = useSettings();
+  const { formatWeight, formatGoal, toDisplay } = useUnits();
 
   const latest = weightTrend[weightTrend.length - 1];
   const delta = latest - weightTrend[0];
-  const spread = 0.6;
+  const spread = 1.3; // lb, either side of the trend
   const hasTrend = weightEntries.length >= MIN_TREND_ENTRIES;
 
   return (
@@ -67,23 +70,23 @@ export default function WeightDetailScreen({ navigation }: Props) {
             <>
               <View style={s.metricTop}>
                 <View>
-                  <Text style={s.metricValue}>{latest.toFixed(1)} kg</Text>
+                  <Text style={s.metricValue}>{formatWeight(latest)}</Text>
                   <Text style={s.metricSub}>
-                    7-day average · goal {settings.weightGoalKg} kg
+                    7-day average · goal {formatGoal(settings.weightGoalLb)}
                   </Text>
                 </View>
                 <View style={s.delta}>
                   <Text style={s.deltaText}>
                     {delta > 0 ? '+' : '−'}
-                    {Math.abs(delta).toFixed(1)} kg
+                    {formatWeight(Math.abs(delta))}
                   </Text>
                 </View>
               </View>
               <WeightTrend
-                trend={weightTrend}
-                spread={spread}
+                trend={weightTrend.map(toDisplay)}
+                spread={toDisplay(spread)}
                 height={110}
-                goalKg={settings.weightGoalKg}
+                goal={toDisplay(settings.weightGoalLb)}
               />
               <View style={s.legend}>
                 <LegendDot color={colors.water} label='trend' />
@@ -127,7 +130,7 @@ export default function WeightDetailScreen({ navigation }: Props) {
               </Svg>
             }
           >
-            {`The shaded band is your day-to-day spread — usually about ${(spread * 2).toFixed(1)} kg wide. That's normal fluctuation, not change.`}
+            {`The shaded band is your day-to-day spread — usually about ${formatWeight(spread * 2)} wide. That's normal fluctuation, not change.`}
           </Insight>
         ) : null}
 
@@ -137,8 +140,8 @@ export default function WeightDetailScreen({ navigation }: Props) {
             weightEntries.map((entry) => (
               <Row
                 key={entry.id}
-                title={`${entry.kg} kg`}
-                sub={entry.loggedAt}
+                title={formatWeight(entry.lb)}
+                sub={formatLoggedAt(entry.loggedAt)}
               />
             ))
           ) : (

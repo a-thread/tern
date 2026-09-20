@@ -1,10 +1,22 @@
-/** Seed data only — swapping in real Supabase queries means replacing just this file. */
+/** Seed data for the local (no-backend) mode. */
 import type { WeightEntry } from './models';
 
-export const weightTrend = [80.6, 80.1, 79.8, 79.4, 79.0, 78.7, 78.4];
-
-export const weightEntries: WeightEntry[] = [
-  { id: 'w1', kg: 78.2, loggedAt: 'Today, 7:02 am' },
-  { id: 'w2', kg: 78.9, loggedAt: 'Yesterday, 7:14 am' },
-  { id: 'w3', kg: 78.4, loggedAt: 'Thu, 6:58 am' },
+// Oldest to newest: a gentle downward drift with normal day-to-day noise.
+const LB = [
+  177.7, 178.3, 176.8, 176.6, 175.5, 176.1, 174.8, 174.2, 175.0, 173.5, 173.3,
+  174.0, 172.8, 172.4,
 ];
+
+/** Newest-first entries, one per day ending today, built relative to `now`. */
+export function seedWeightEntries(now: Date = new Date()): WeightEntry[] {
+  return LB.map((lb, i) => {
+    const d = new Date(
+      now.getFullYear(),
+      now.getMonth(),
+      now.getDate() - (LB.length - 1 - i),
+      7,
+      2,
+    );
+    return { id: `w${i + 1}`, lb, loggedAt: d.toISOString() };
+  }).reverse();
+}

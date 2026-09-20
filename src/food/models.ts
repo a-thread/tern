@@ -39,13 +39,59 @@ export function allMealsLogged(log: FoodEntry[]): boolean {
   return CORE_MEALS.every((meal) => log.some((f) => f.meal === meal));
 }
 
+export type IntakeAverage = {
+  /** How many days with anything logged the averages are over. */
+  days: number;
+  calories: number;
+  protein: number;
+  carbs: number;
+  fat: number;
+};
+
+/**
+ * Average daily intake over the days that have food logged. `today`, if given,
+ * is left out when other days exist: it's still in progress, so it would drag
+ * the average down. Null when there's nothing to average.
+ */
+export function averageIntake(
+  byDay: Record<string, FoodEntry[]>,
+  today?: string,
+): IntakeAverage | null {
+  let keys = Object.keys(byDay).filter((k) => byDay[k].length > 0);
+  if (today && keys.length > 1) keys = keys.filter((k) => k !== today);
+  if (!keys.length) return null;
+  const sum = keys.reduce(
+    (acc, k) => {
+      const t = dayTotals(byDay[k]);
+      return {
+        calories: acc.calories + t.calories,
+        protein: acc.protein + t.protein,
+        carbs: acc.carbs + t.carbs,
+        fat: acc.fat + t.fat,
+      };
+    },
+    { calories: 0, protein: 0, carbs: 0, fat: 0 },
+  );
+  const n = keys.length;
+  return {
+    days: n,
+    calories: Math.round(sum.calories / n),
+    protein: Math.round(sum.protein / n),
+    carbs: Math.round(sum.carbs / n),
+    fat: Math.round(sum.fat / n),
+  };
+}
+
 export function mealTotals(log: FoodEntry[], meal: FoodEntry['meal']) {
   return log
     .filter((f) => f.meal === meal)
     .reduce((sum, f) => sum + f.calories * f.servings, 0);
 }
 
-export function dayTotals(log: FoodEntry[]) {
+/** Anything with a per-serving nutrition and a serving count: a log entry or a saved-meal item. */
+type Servable = Pick<FoodEntry, 'calories' | 'protein' | 'carbs' | 'fat' | 'servings'>;
+
+export function dayTotals(log: Servable[]) {
   return log.reduce(
     (acc, f) => ({
       calories: acc.calories + f.calories * f.servings,
