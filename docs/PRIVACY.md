@@ -51,7 +51,16 @@ In Settings, under **Your data**, you can:
 ## Food information
 
 Nutrition information for packaged foods comes from Open Food Facts, used under
-the Open Database License.
+the Open Database License, and for everyday foods from USDA FoodData Central
+(public domain). When you search for a food or scan a barcode, the search text
+or barcode number is sent to these public databases so it can be looked up.
+Nothing else about you or your account is sent with it, though, as with any web
+request, the services can see your IP address.
+
+## Camera
+
+If you use the barcode scanner, Tern asks for camera access. The camera is used
+only to read the barcode on screen; nothing is recorded, photographed or saved.
 
 ## Contact
 

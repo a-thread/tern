@@ -455,7 +455,7 @@ export default function SettingsRootScreen({ navigation }: Props) {
 
         <FootNote>
           Nutrition data from Open Food Facts, used under the Open Database
-          License.
+          License, and USDA FoodData Central.
         </FootNote>
       </ScrollView>
     </View>

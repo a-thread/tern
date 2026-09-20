@@ -33,6 +33,13 @@
           "color": "#26262B"
         }
       ],
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "Tern uses the camera to scan food barcodes. Nothing is recorded or saved.",
+          "recordAudioAndroid": false
+        }
+      ],
       "react-native-health-connect",
       "./plugins/withHealthConnectPermissionUsage",
       [
