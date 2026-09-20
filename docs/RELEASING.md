@@ -9,7 +9,7 @@ Builds run on EAS (Expo), started from GitHub Actions. App id: `codes.athread.te
 3. Run the first Android build by hand so EAS creates the keystore, then back it up:
    `npx eas-cli build -p android --profile production` and `npx eas-cli credentials`.
 4. Play Console: create the app, upload the first AAB manually (Google requires it), fill the
-   listing, data safety and Health Connect declarations, host `docs/privacy.html` (GitHub Pages).
+   listing, data safety and Health Connect declarations, host `docs/index.html` (GitHub Pages).
 5. For automatic submission: add a Google Play service-account key to EAS credentials, then set
    `submit.production.android.track` in `eas.json`.
 

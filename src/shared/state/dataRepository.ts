@@ -15,4 +15,6 @@ export interface DataRepository {
   exportAll(): Promise<TernExport>;
   /** Erases everything Tern stores for the account. The login itself is kept. */
   deleteAll(): Promise<void>;
+  /** Deletes the account itself, and with it everything stored for it. */
+  deleteAccount(): Promise<void>;
 }

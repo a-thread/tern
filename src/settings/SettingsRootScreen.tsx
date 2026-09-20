@@ -95,6 +95,38 @@ export default function SettingsRootScreen({ navigation }: Props) {
       ],
     );
   };
+
+  const deleteAccount = () => {
+    if (!dataRepo || dataBusy) return;
+    Alert.alert(
+      'Delete your account?',
+      "This permanently deletes your account and everything in it: your food log, saved meals, weigh-ins, waypoints, rest days and settings. It can't be undone.",
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Delete account',
+          style: 'destructive',
+          onPress: async () => {
+            setDataBusy(true);
+            try {
+              await dataRepo.deleteAccount();
+            } catch (e) {
+              console.warn('Could not delete account', e);
+              toast.show("Couldn't delete your account — please try again.");
+              setDataBusy(false);
+              return;
+            }
+            // The login is gone, so ending the session is best effort.
+            try {
+              await auth?.signOut();
+            } catch (e) {
+              console.warn('Could not sign out after deleting the account', e);
+            }
+          },
+        },
+      ],
+    );
+  };
   const email = auth?.session?.user.email;
 
   // Edited locally and saved on blur, so each keystroke isn't a settings write.
@@ -421,6 +453,12 @@ export default function SettingsRootScreen({ navigation }: Props) {
                 <View style={{ flex: 1 }}>
                   <Text style={[s.rowTitle, s.dangerText]}>Delete my data</Text>
                   <Text style={s.rowSub}>Erase your log, weigh-ins and waypoints</Text>
+                </View>
+              </Pressable>
+              <Pressable style={s.row} onPress={deleteAccount} disabled={dataBusy}>
+                <View style={{ flex: 1 }}>
+                  <Text style={[s.rowTitle, s.dangerText]}>Delete my account</Text>
+                  <Text style={s.rowSub}>Remove your login and everything in it</Text>
                 </View>
               </Pressable>
             </Group>

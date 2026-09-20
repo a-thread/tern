@@ -48,5 +48,12 @@ export function createSupabaseDataRepository(db: TernClient): DataRepository {
         if (error) throw error;
       }
     },
+
+    async deleteAccount() {
+      // Server-side function (supabase/migrations/20260922000000_delete_account.sql):
+      // removing the login cascades to every row of the account.
+      const { error } = await db.rpc('delete_my_account');
+      if (error) throw error;
+    },
   };
 }
