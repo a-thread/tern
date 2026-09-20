@@ -13,3 +13,4 @@ web-build/
 .env
 coverage/
 .idea/
+android/
