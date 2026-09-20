@@ -82,6 +82,13 @@ function pointAlongTrail(fraction: number) {
 const BIRD_SCALE = 0.0105;
 const BIRD_CENTER = 1000 * BIRD_SCALE;
 const FLIGHT_MS = 1800;
+/** The bird's position updates at most this often (about 30 per second). */
+const BIRD_UPDATE_MS = 33;
+
+/** The bird at `value` (0–1) along the trail; it grows from 60% to full size over the first stretch. */
+function birdAt(value: number) {
+  return { ...pointAlongTrail(value), size: 0.6 + 0.4 * Math.min(value / 0.12, 1) };
+}
 
 /**
  * The bird flies the trail from the start to today's progress. Bump
@@ -97,14 +104,18 @@ export function FlightPath({
   const clamped = Math.min(Math.max(progress, 0), 1);
   const travel = useRef(new Animated.Value(0)).current;
   const pop = useRef(new Animated.Value(0)).current;
-  const [bird, setBird] = useState(() => ({ ...pointAlongTrail(0), size: 0.6 }));
+  const [bird, setBird] = useState(() => birdAt(0));
   const [popBoost, setPopBoost] = useState(0);
 
   useEffect(() => {
-    const flightId = travel.addListener(({ value }) =>
-      // grows from 60% to full size over the first stretch of the flight
-      setBird({ ...pointAlongTrail(value), size: 0.6 + 0.4 * Math.min(value / 0.12, 1) }),
-    );
+    let lastAt = 0;
+    const flightId = travel.addListener(({ value }) => {
+      // Each update re-renders the SVG, so don't do it on every animation frame.
+      const now = Date.now();
+      if (now - lastAt < BIRD_UPDATE_MS) return;
+      lastAt = now;
+      setBird(birdAt(value));
+    });
     const popId = pop.addListener(({ value }) => setPopBoost(value));
     travel.setValue(0);
     pop.setValue(0);
@@ -114,6 +125,8 @@ export function FlightPath({
       easing: Easing.out(Easing.cubic),
       useNativeDriver: false,
     }).start(({ finished }) => {
+      // Land exactly on the final spot (the last throttled frame may be a touch short).
+      if (finished) setBird(birdAt(clamped));
       if (finished && clamped >= 1) {
         Animated.sequence([
           Animated.timing(pop, { toValue: 1, duration: 180, useNativeDriver: false }),
@@ -124,6 +137,8 @@ export function FlightPath({
     return () => {
       travel.removeListener(flightId);
       pop.removeListener(popId);
+      travel.stopAnimation();
+      pop.stopAnimation();
     };
   }, [clamped, replayKey, travel, pop]);
 
@@ -446,7 +461,7 @@ export function JourneyRoute({
 /* Day rings (week strip)                                               */
 /* ------------------------------------------------------------------ */
 
-export function DayRing({
+function DayRingBase({
   progress,
   label,
   today,
@@ -525,6 +540,9 @@ export function DayRing({
     </View>
   );
 }
+
+// Memoized: the week strip re-renders with its screen, but a ring only needs to when its own props change.
+export const DayRing = React.memo(DayRingBase);
 
 const cs = StyleSheet.create({
   bars: {

@@ -1,12 +1,5 @@
-import React, { useRef } from 'react';
-import {
-  View,
-  Text,
-  ScrollView,
-  StyleSheet,
-  Pressable,
-  PanResponder,
-} from 'react-native';
+import React from 'react';
+import { View, Text, ScrollView, StyleSheet, Pressable } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 
@@ -19,6 +12,7 @@ import {
   FootNote,
 } from '@shared/components/ui';
 import { useSettings } from './SettingsContext';
+import { useSliderValue } from './useSliderValue';
 import type { SettingsStackParamList } from './types';
 
 type Props = NativeStackScreenProps<SettingsStackParamList, 'Targets'>;
@@ -34,31 +28,13 @@ const MACRO_PRESETS = [
 export default function TargetsScreen({ navigation }: Props) {
   const insets = useSafeAreaInsets();
   const { settings, updateSettings } = useSettings();
-  const trackWidth = useRef(0);
-  const dragStartTarget = useRef(settings.calorieTarget);
-  // The drag handler is created once, so it reads the live value from a ref.
-  const targetRef = useRef(settings.calorieTarget);
-  targetRef.current = settings.calorieTarget;
-
-  const setCalorieTarget = (v: number) =>
-    updateSettings({
-      calorieTarget: Math.round(Math.min(Math.max(v, MIN), MAX) / 50) * 50,
-    });
-
-  const panResponder = useRef(
-    PanResponder.create({
-      onStartShouldSetPanResponder: () => true,
-      onPanResponderTerminationRequest: () => false,
-      onPanResponderGrant: () => {
-        dragStartTarget.current = targetRef.current;
-      },
-      onPanResponderMove: (_evt, gesture) => {
-        if (!trackWidth.current) return;
-        const delta = (gesture.dx / trackWidth.current) * (MAX - MIN);
-        setCalorieTarget(dragStartTarget.current + delta);
-      },
-    }),
-  ).current;
+  const slider = useSliderValue({
+    value: settings.calorieTarget,
+    min: MIN,
+    max: MAX,
+    step: 50,
+    onCommit: (calorieTarget) => updateSettings({ calorieTarget }),
+  });
 
   const applyPreset = (protein: number, carbs: number, fat: number) => {
     const cal = settings.calorieTarget;
@@ -74,7 +50,6 @@ export default function TargetsScreen({ navigation }: Props) {
   const { protein, carbs, fat } = settings.macroTargets;
   const pct = (grams: number, calPerGram: number) =>
     Math.round(((grams * calPerGram) / settings.calorieTarget) * 100);
-  const fillPct = ((settings.calorieTarget - MIN) / (MAX - MIN)) * 100;
 
   return (
     <View
@@ -104,21 +79,17 @@ export default function TargetsScreen({ navigation }: Props) {
         {settings.trackCalories ? (
           <>
             <View style={s.display}>
-              <Text style={s.num}>
-                {settings.calorieTarget.toLocaleString()}
-              </Text>
+              <Text style={s.num}>{slider.shown.toLocaleString()}</Text>
               <Text style={s.unit}>calories per day</Text>
             </View>
 
             <View
               style={s.slider}
-              onLayout={(e) => {
-                trackWidth.current = e.nativeEvent.layout.width;
-              }}
-              {...panResponder.panHandlers}
+              onLayout={slider.onLayout}
+              {...slider.panHandlers}
             >
-              <View style={[s.sliderFill, { width: `${fillPct}%` }]} />
-              <View style={[s.sliderKnob, { left: `${fillPct}%` }]} />
+              <View style={[s.sliderFill, { width: `${slider.fillPct}%` }]} />
+              <View style={[s.sliderKnob, { left: `${slider.fillPct}%` }]} />
             </View>
             <View style={s.sliderEnds}>
               <Text style={s.sliderEndText}>{MIN.toLocaleString()}</Text>

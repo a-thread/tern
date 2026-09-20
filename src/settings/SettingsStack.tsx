@@ -14,7 +14,7 @@ const Stack = createNativeStackNavigator<SettingsStackParamList>();
 /** Presented modally from the root stack; screens inside push/pop normally. */
 export default function SettingsStack() {
   return (
-    <Stack.Navigator screenOptions={{ headerShown: false }}>
+    <Stack.Navigator screenOptions={{ headerShown: false, freezeOnBlur: true }}>
       <Stack.Screen name='SettingsRoot' component={SettingsRootScreen} />
       <Stack.Screen name='StepGoal' component={StepGoalScreen} />
       <Stack.Screen name='FoodDisplay' component={FoodDisplayScreen} />

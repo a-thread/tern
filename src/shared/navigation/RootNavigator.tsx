@@ -27,6 +27,7 @@ function Tabs() {
     <Tab.Navigator
       screenOptions={{
         headerShown: false,
+        freezeOnBlur: true,
         tabBarActiveTintColor: colors.coral,
         tabBarInactiveTintColor: colors.ink3,
         tabBarStyle: {
@@ -67,7 +68,9 @@ function Tabs() {
 
 export default function RootNavigator() {
   return (
-    <RootStack.Navigator screenOptions={{ headerShown: false }}>
+    <RootStack.Navigator
+      screenOptions={{ headerShown: false, freezeOnBlur: true }}
+    >
       <RootStack.Screen name='Tabs' component={Tabs} />
 
       <RootStack.Group screenOptions={{ presentation: 'modal' }}>
@@ -79,7 +82,11 @@ export default function RootNavigator() {
       </RootStack.Group>
 
       <RootStack.Group
-        screenOptions={{ presentation: 'transparentModal', animation: 'fade' }}
+        screenOptions={{
+          presentation: 'transparentModal',
+          animation: 'fade',
+          freezeOnBlur: false,
+        }}
       >
         <RootStack.Screen name='Reward' component={RewardScreen} />
         <RootStack.Screen name='RestDay' component={RestDayScreen} />

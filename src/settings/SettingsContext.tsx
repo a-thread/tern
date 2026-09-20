@@ -70,6 +70,17 @@ const initialSettings: AppSettings = {
   },
 };
 
+export function changesAnything(
+  current: AppSettings,
+  patch: Partial<AppSettings>,
+): boolean {
+  return (Object.keys(patch) as (keyof AppSettings)[]).some(
+    (k) =>
+      current[k] !== patch[k] &&
+      JSON.stringify(current[k]) !== JSON.stringify(patch[k]),
+  );
+}
+
 type SettingsContextValue = {
   settings: AppSettings;
   ready: boolean;
@@ -109,7 +120,9 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
         // Only when never set — clearing the name in Settings must stick.
         if (saved?.firstName === undefined && name) {
           loaded.firstName = name;
-          repo.save(loaded).catch((e) => console.warn('Could not save settings', e));
+          repo
+            .save(loaded)
+            .catch((e) => console.warn('Could not save settings', e));
         }
         setSettings(loaded);
       })
@@ -123,6 +136,8 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
   const updateSettings = useCallback(
     (patch: Partial<AppSettings>) => {
       const prev = latest.current;
+      // A patch that changes nothing costs nothing: no save, no re-render.
+      if (!changesAnything(prev, patch)) return;
       const next = { ...prev, ...patch };
       if (patch.stepGoal !== undefined && patch.stepGoal !== prev.stepGoal) {
         next.stepGoalHistory = recordGoalChange(

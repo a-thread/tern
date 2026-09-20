@@ -1,10 +1,11 @@
 import { useEffect, useRef, useState } from 'react';
 import { Animated, Easing } from 'react-native';
 
+/** Limit display updates so the number remains readable. */
+const NUMBER_UPDATE_MS = 66;
+
 /**
- * Eases the displayed integer toward `value` whenever it changes, instead of
- * snapping — used anywhere a waypoint total updates on screen so an earned
- * gain reads as a gain, not a silent re-render.
+ * Animate the displayed integer toward `value` instead of snapping to it.
  */
 export function useAnimatedNumber(value: number, duration = 650) {
   const [display, setDisplay] = useState(value);
@@ -14,20 +15,28 @@ export function useAnimatedNumber(value: number, duration = 650) {
   useEffect(() => {
     if (prevValue.current === value) return;
     anim.setValue(prevValue.current);
-    const listenerId = anim.addListener(({ value: v }) =>
-      setDisplay(Math.round(v)),
-    );
+    let lastAt = 0;
+    const listenerId = anim.addListener(({ value: v }) => {
+      const now = Date.now();
+      if (now - lastAt < NUMBER_UPDATE_MS) return;
+      lastAt = now;
+      setDisplay(Math.round(v));
+    });
     Animated.timing(anim, {
       toValue: value,
       duration,
       easing: Easing.out(Easing.cubic),
       useNativeDriver: false,
-    }).start(() => {
+    }).start(({ finished }) => {
       anim.removeListener(listenerId);
-      setDisplay(value);
+      if (finished) setDisplay(value);
     });
     prevValue.current = value;
-    return () => anim.removeListener(listenerId);
+    return () => {
+      anim.removeListener(listenerId);
+      // Stop the animation to prevent updates after unmount.
+      anim.stopAnimation();
+    };
   }, [value, duration, anim]);
 
   return display;
@@ -65,14 +74,20 @@ export function usePulseOnIncrease(value: number) {
 /**
  * Counts an integer up from 0 to `target`, and does it again whenever
  * `replayKey` changes — for numbers that should roll up each time their
- * screen comes into view.
+ * screen comes into view. Use through `<CountUp>` so only a Text re-renders.
  */
 export function useCountUp(target: number, replayKey = 0, duration = 1800) {
   const [display, setDisplay] = useState(0);
 
   useEffect(() => {
     const anim = new Animated.Value(0);
-    const id = anim.addListener(({ value }) => setDisplay(Math.round(value)));
+    let lastAt = 0;
+    const id = anim.addListener(({ value }) => {
+      const now = Date.now();
+      if (now - lastAt < NUMBER_UPDATE_MS) return;
+      lastAt = now;
+      setDisplay(Math.round(value));
+    });
     Animated.timing(anim, {
       toValue: target,
       duration,
@@ -81,7 +96,10 @@ export function useCountUp(target: number, replayKey = 0, duration = 1800) {
     }).start(({ finished }) => {
       if (finished) setDisplay(target);
     });
-    return () => anim.removeListener(id);
+    return () => {
+      anim.removeListener(id);
+      anim.stopAnimation();
+    };
   }, [target, replayKey, duration]);
 
   return display;

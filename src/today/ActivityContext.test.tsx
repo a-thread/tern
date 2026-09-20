@@ -100,3 +100,32 @@ describe('rest days', () => {
     expect(result.current.activity.takeRestDay()).toBe(false); // already resting today
   });
 });
+
+describe('refreshing', () => {
+  it('a refresh that finds the same data changes nothing screens can see', async () => {
+    // getRange returns a brand-new (but equal) object each call, like a real read would.
+    const { result } = await setup(stepsRepo(3000));
+    const before = result.current.activity;
+    await act(async () => {
+      await result.current.activity.refresh();
+      await result.current.activity.refresh();
+    });
+    expect(result.current.activity).toBe(before);
+  });
+
+  it('a refresh that finds new steps does update', async () => {
+    let steps = 3000;
+    const repo: StepsRepository = {
+      status: async () => 'connected',
+      connect: async () => 'connected',
+      getRange: async () => ({ [todayKey]: steps }),
+    };
+    const { result } = await setup(repo);
+    expect(result.current.activity.todaySteps).toBe(3000);
+    steps = 5200;
+    await act(async () => {
+      await result.current.activity.refresh();
+    });
+    expect(result.current.activity.todaySteps).toBe(5200);
+  });
+});

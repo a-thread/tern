@@ -8,10 +8,12 @@ import { WeightProvider, useWeight } from '@weight/WeightContext';
 import { WaypointsProvider, useWaypoints } from '@journey/WaypointsContext';
 import { ActivityProvider, useActivity } from '@today/ActivityContext';
 import { RemindersSync } from '@settings/RemindersSync';
+import { DayKeyProvider } from '@shared/hooks/useDayKey';
 
 /** App-wide providers, rendered inside BackendProvider by AuthGate. */
 export function AppProviders({ children }: { children: React.ReactNode }) {
   return (
+    <DayKeyProvider>
     <SettingsProvider>
       <FoodProvider>
         <SavedMealsProvider>
@@ -26,6 +28,7 @@ export function AppProviders({ children }: { children: React.ReactNode }) {
         </SavedMealsProvider>
       </FoodProvider>
     </SettingsProvider>
+    </DayKeyProvider>
   );
 }
 

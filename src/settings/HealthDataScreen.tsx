@@ -15,7 +15,7 @@ import {
   FootNote,
 } from '@shared/components/ui';
 import { formatLoggedAt } from '@weight/models';
-import { useActivity } from '@today/ActivityContext';
+import { useActivity, useLastSynced } from '@today/ActivityContext';
 import { useSettings } from './SettingsContext';
 import type { SettingsStackParamList } from './types';
 
@@ -25,7 +25,8 @@ export default function HealthDataScreen({ navigation }: Props) {
   const insets = useSafeAreaInsets();
   const { settings, updateSettings } = useSettings();
   const hd = settings.healthData;
-  const { status, lastSynced, refresh, connect } = useActivity();
+  const { status, refresh, connect } = useActivity();
+  const lastSynced = useLastSynced();
 
   const patchHealthData = (patch: Partial<typeof hd>) =>
     updateSettings({ healthData: { ...hd, ...patch } });

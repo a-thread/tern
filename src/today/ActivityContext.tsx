@@ -25,6 +25,7 @@ import {
   type DayRecord,
 } from './models';
 import type { StepsStatus } from './steps.repository';
+import { sameDays, sameSteps } from './sameData';
 
 /** How much history is read: enough for the 6-month views. */
 export const HISTORY_DAYS = 180;
@@ -49,7 +50,6 @@ type ActivityContextValue = {
   restLeft: number;
   /** Whether the user chose today as a rest day. */
   todayIsRest: boolean;
-  lastSynced: Date | null;
   refresh: () => Promise<void>;
   /** Ask for access to the step source (Health Connect). */
   connect: () => Promise<void>;
@@ -59,6 +59,7 @@ type ActivityContextValue = {
 };
 
 const ActivityContext = createContext<ActivityContextValue | null>(null);
+const LastSyncedContext = createContext<Date | null>(null);
 
 /**
  * Steps and rest days, and everything derived from them: the day-by-day
@@ -69,11 +70,7 @@ const ActivityContext = createContext<ActivityContextValue | null>(null);
 export function ActivityProvider({ children }: { children: React.ReactNode }) {
   const { steps: stepsRepo, restDays: restRepo } = useBackend();
   const { settings } = useSettings();
-  const {
-    day: awardDay,
-    addWaypoints,
-    revokeWaypoints,
-  } = useWaypoints();
+  const { day: awardDay, addWaypoints, revokeWaypoints } = useWaypoints();
   const toast = useToast();
   const today = useDayKey();
 
@@ -95,9 +92,9 @@ export function ActivityProvider({ children }: { children: React.ReactNode }) {
         restRepo.load(from, today),
       ]);
       if (!mounted.current) return;
-      setStatus(nextStatus);
-      setStepsByDay(steps);
-      setRestList(rest);
+      setStatus((prev) => (prev === nextStatus ? prev : nextStatus));
+      setStepsByDay((prev) => (sameSteps(prev, steps) ? prev : steps));
+      setRestList((prev) => (sameDays(prev, rest) ? prev : rest));
       setLastSynced(new Date());
     } catch (e) {
       console.warn('Could not load activity', e);
@@ -137,7 +134,8 @@ export function ActivityProvider({ children }: { children: React.ReactNode }) {
       buildDays({
         stepsByDay,
         restDays: restSet,
-        goalFor: (day) => goalFor(settings.stepGoalHistory, settings.stepGoal, day),
+        goalFor: (day) =>
+          goalFor(settings.stepGoalHistory, settings.stepGoal, day),
         restPerWeek: settings.restDaysPerWeek,
         autoDetect: settings.autoDetectRestDays,
         today,
@@ -167,7 +165,15 @@ export function ActivityProvider({ children }: { children: React.ReactNode }) {
     if (status === 'connected' && todaySteps >= settings.stepGoal) {
       addWaypoints(STEP_GOAL_POINTS, 'steps');
     }
-  }, [ready, awardDay, today, status, todaySteps, settings.stepGoal, addWaypoints]);
+  }, [
+    ready,
+    awardDay,
+    today,
+    status,
+    todaySteps,
+    settings.stepGoal,
+    addWaypoints,
+  ]);
 
   useEffect(() => {
     if (!ready || awardDay !== today) return;
@@ -211,7 +217,6 @@ export function ActivityProvider({ children }: { children: React.ReactNode }) {
       streak,
       restLeft,
       todayIsRest,
-      lastSynced,
       refresh: load,
       connect,
       takeRestDay,
@@ -226,7 +231,6 @@ export function ActivityProvider({ children }: { children: React.ReactNode }) {
       streak,
       restLeft,
       todayIsRest,
-      lastSynced,
       load,
       connect,
       takeRestDay,
@@ -235,8 +239,20 @@ export function ActivityProvider({ children }: { children: React.ReactNode }) {
   );
 
   return (
-    <ActivityContext.Provider value={value}>{children}</ActivityContext.Provider>
+    <ActivityContext.Provider value={value}>
+      <LastSyncedContext.Provider value={lastSynced}>
+        {children}
+      </LastSyncedContext.Provider>
+    </ActivityContext.Provider>
   );
+}
+
+/**
+ * When steps were last read. Kept out of the main context on purpose: it changes
+ * on every refresh, and only the Health data screen shows it.
+ */
+export function useLastSynced(): Date | null {
+  return useContext(LastSyncedContext);
 }
 
 export function useActivity() {

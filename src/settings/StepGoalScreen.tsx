@@ -1,5 +1,5 @@
-import React, { useRef } from 'react';
-import { View, Text, ScrollView, StyleSheet, PanResponder } from 'react-native';
+import React from 'react';
+import { View, Text, ScrollView, StyleSheet } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 
@@ -13,6 +13,7 @@ import {
 import { useActivity } from '@today/ActivityContext';
 import { STEP_GOAL_MAX, STEP_GOAL_MIN, suggestGoal } from '@today/models';
 import { useSettings } from './SettingsContext';
+import { useSliderValue } from './useSliderValue';
 import type { SettingsStackParamList } from './types';
 
 type Props = NativeStackScreenProps<SettingsStackParamList, 'StepGoal'>;
@@ -24,10 +25,6 @@ const PRESETS = [4000, 6000, 8000, 10000];
 export default function StepGoalScreen({ navigation }: Props) {
   const insets = useSafeAreaInsets();
   const { settings, updateSettings } = useSettings();
-  const trackWidth = useRef(0);
-  const dragStartGoal = useRef(settings.stepGoal);
-  const goalRef = useRef(settings.stepGoal);
-  goalRef.current = settings.stepGoal;
   const { days } = useActivity();
 
   const recent = days.slice(-30).filter((d) => d.steps > 0);
@@ -44,22 +41,13 @@ export default function StepGoalScreen({ navigation }: Props) {
       stepGoal: Math.round(Math.min(Math.max(v, MIN), MAX) / 100) * 100,
     });
 
-  const panResponder = useRef(
-    PanResponder.create({
-      onStartShouldSetPanResponder: () => true,
-      onPanResponderTerminationRequest: () => false,
-      onPanResponderGrant: () => {
-        dragStartGoal.current = goalRef.current;
-      },
-      onPanResponderMove: (_evt, gesture) => {
-        if (!trackWidth.current) return;
-        const deltaSteps = (gesture.dx / trackWidth.current) * (MAX - MIN);
-        setGoal(dragStartGoal.current + deltaSteps);
-      },
-    }),
-  ).current;
-
-  const fillPct = ((settings.stepGoal - MIN) / (MAX - MIN)) * 100;
+  const slider = useSliderValue({
+    value: settings.stepGoal,
+    min: MIN,
+    max: MAX,
+    step: 100,
+    onCommit: (stepGoal) => updateSettings({ stepGoal }),
+  });
 
   return (
     <View
@@ -78,19 +66,17 @@ export default function StepGoalScreen({ navigation }: Props) {
         }}
       >
         <View style={s.display}>
-          <Text style={s.num}>{settings.stepGoal.toLocaleString()}</Text>
+          <Text style={s.num}>{slider.shown.toLocaleString()}</Text>
           <Text style={s.unit}>steps per day</Text>
         </View>
 
         <View
           style={s.slider}
-          onLayout={(e) => {
-            trackWidth.current = e.nativeEvent.layout.width;
-          }}
-          {...panResponder.panHandlers}
+          onLayout={slider.onLayout}
+          {...slider.panHandlers}
         >
-          <View style={[s.sliderFill, { width: `${fillPct}%` }]} />
-          <View style={[s.sliderKnob, { left: `${fillPct}%` }]} />
+          <View style={[s.sliderFill, { width: `${slider.fillPct}%` }]} />
+          <View style={[s.sliderKnob, { left: `${slider.fillPct}%` }]} />
         </View>
         <View style={s.sliderEnds}>
           <Text style={s.sliderEndText}>{MIN.toLocaleString()}</Text>
@@ -102,7 +88,7 @@ export default function StepGoalScreen({ navigation }: Props) {
             <Text
               key={p}
               onPress={() => setGoal(p)}
-              style={[s.preset, settings.stepGoal === p && s.presetSel]}
+              style={[s.preset, slider.shown === p && s.presetSel]}
             >
               {p.toLocaleString()}
             </Text>

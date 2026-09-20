@@ -18,7 +18,7 @@ type Props = NativeStackScreenProps<RootStackParamList, 'LogFood'>;
 /** Presented modally from the root stack; screens inside push/pop normally. */
 export default function LogFoodStack({ route }: Props) {
   return (
-    <Stack.Navigator screenOptions={{ headerShown: false }}>
+    <Stack.Navigator screenOptions={{ headerShown: false, freezeOnBlur: true }}>
       <Stack.Screen
         name='Search'
         component={LogFoodScreen}

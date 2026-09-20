@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
   View,
   Text,
@@ -9,11 +9,7 @@ import {
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import {
-  useFocusEffect,
-  useIsFocused,
-  useNavigation,
-} from '@react-navigation/native';
+import { useIsFocused, useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import Svg, { Path } from 'react-native-svg';
 
@@ -31,11 +27,9 @@ import {
 } from '@shared/components/ui';
 import { FlightPath, DayRing } from '@shared/components/charts';
 import TernMark from '@shared/components/TernMark';
-import {
-  useAnimatedNumber,
-  useCountUp,
-  usePulseOnIncrease,
-} from '@shared/hooks/useAnimatedNumber';
+import { usePulseOnIncrease } from '@shared/hooks/useAnimatedNumber';
+import { useReplayOnFocus } from '@shared/hooks/useReplayOnFocus';
+import { AnimatedNumber, CountUp } from '@shared/components/AnimatedNumber';
 import type { RootStackParamList } from '@shared/navigation/types';
 import { dayTotals } from '@food/models';
 import { useFood } from '@food/FoodContext';
@@ -96,16 +90,7 @@ export default function TodayScreen() {
   // The chip holds back awards that haven't been celebrated yet, so its
   // number ticks up (and pulses) as the feathers land on it.
   const shownWaypoints = Math.max(waypoints - pendingPoints, 0);
-  const animatedWaypoints = useAnimatedNumber(shownWaypoints);
-
-  // Replay the flight (and the step roll-up) every time Today comes into view.
-  const [replayKey, setReplayKey] = useState(0);
-  useFocusEffect(
-    useCallback(() => {
-      setReplayKey((k) => k + 1);
-    }, []),
-  );
-  const animatedSteps = useCountUp(todaySteps, replayKey);
+  const replayKey = useReplayOnFocus(todaySteps);
   const waypointsPulse = usePulseOnIncrease(shownWaypoints);
 
   // Play queued awards while Today is actually on screen — an award made in
@@ -183,9 +168,10 @@ export default function TodayScreen() {
             >
               <Chip bg={colors.violetTint} color={colors.violet}>
                 <TernMark size={12} color={colors.violet} />
-                <Text style={[s.chipText, { color: colors.violet }]}>
-                  {animatedWaypoints.toLocaleString()}
-                </Text>
+                <AnimatedNumber
+                  value={shownWaypoints}
+                  style={[s.chipText, { color: colors.violet }]}
+                />
               </Chip>
             </Animated.View>
           </Pressable>
@@ -234,7 +220,11 @@ export default function TodayScreen() {
 
             <FlightPath progress={progress} replayKey={replayKey} />
 
-            <Text style={s.stepBig}>{animatedSteps.toLocaleString()}</Text>
+            <CountUp
+              target={todaySteps}
+              replayKey={replayKey}
+              style={s.stepBig}
+            />
             <Text style={s.stepSub}>
               {stepsStatus !== 'connected'
                 ? "Steps aren't connected yet"

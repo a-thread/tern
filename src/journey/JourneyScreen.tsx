@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useState } from 'react';
+import React, { useMemo } from 'react';
 import { View, Text, ScrollView, StyleSheet } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -14,8 +14,8 @@ import {
   FootNote,
 } from '@shared/components/ui';
 import { JourneyRoute } from '@shared/components/charts';
-import { useFocusEffect } from '@react-navigation/native';
-import { useAnimatedNumber } from '@shared/hooks/useAnimatedNumber';
+import { useReplayOnFocus } from '@shared/hooks/useReplayOnFocus';
+import { AnimatedNumber } from '@shared/components/AnimatedNumber';
 import { formatShortDate, monthName } from '@shared/utils/date';
 import {
   MILESTONE_STOPS,
@@ -30,15 +30,9 @@ const MILESTONE_COLORS = [colors.glacier, colors.violet, colors.aurora];
 export default function JourneyScreen() {
   const insets = useSafeAreaInsets();
   const { waypoints, events } = useWaypoints();
-  const animatedWaypoints = useAnimatedNumber(waypoints, 900);
 
-  // Redraw the route each time the Journey tab comes into view.
-  const [replayKey, setReplayKey] = useState(0);
-  useFocusEffect(
-    useCallback(() => {
-      setReplayKey((k) => k + 1);
-    }, []),
-  );
+  // Redraw the route when Journey comes into view the first time, when the total changes or after a minute away.
+  const replayKey = useReplayOnFocus(waypoints);
   const milestones = useMemo(
     () => milestonesFor(waypoints, events),
     [waypoints, events],
@@ -74,7 +68,11 @@ export default function JourneyScreen() {
         </View>
 
         <View style={{ alignItems: 'center', marginTop: 6 }}>
-          <Text style={s.heroNumber}>{animatedWaypoints.toLocaleString()}</Text>
+          <AnimatedNumber
+            value={waypoints}
+            duration={900}
+            style={s.heroNumber}
+          />
           <Text style={s.heroLabel}>
             waypoints · {daysWithWaypoints(events)}{' '}
             {daysWithWaypoints(events) === 1 ? 'day' : 'days'} earned

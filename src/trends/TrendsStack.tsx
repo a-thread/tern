@@ -11,7 +11,7 @@ const Stack = createNativeStackNavigator<TrendsStackParamList>();
 /** Nested inside the Trends tab so the tab bar stays visible while drilling into detail. */
 export default function TrendsStack() {
   return (
-    <Stack.Navigator screenOptions={{ headerShown: false }}>
+    <Stack.Navigator screenOptions={{ headerShown: false, freezeOnBlur: true }}>
       <Stack.Screen name='TrendsHome' component={TrendsScreen} />
       <Stack.Screen name='StepsDetail' component={StepsDetailScreen} />
       <Stack.Screen name='WeightDetail' component={WeightDetailScreen} />

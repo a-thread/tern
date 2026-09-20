@@ -2,6 +2,7 @@ import React from 'react';
 import { View, ActivityIndicator } from 'react-native';
 import { NavigationContainer, DefaultTheme } from '@react-navigation/native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { enableFreeze } from 'react-native-screens';
 import { StatusBar } from 'expo-status-bar';
 
 import {
@@ -21,6 +22,8 @@ import { AppProviders } from '@shared/state/AppProviders';
 import RootNavigator from '@shared/navigation/RootNavigator';
 import AuthGate from '@shared/auth/AuthGate';
 import { ToastProvider } from '@shared/state/ToastContext';
+
+enableFreeze(true);
 
 const navTheme = {
   ...DefaultTheme,

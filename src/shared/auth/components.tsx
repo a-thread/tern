@@ -44,9 +44,9 @@ export function AuthLayout({
         {showMark ? (
           <View style={s.mark}>
             <Image
-              source={require('../../../assets/adaptive-icon.png')}
+              source={require('../../../assets/logo-header.png')}
               style={s.markImage}
-              resizeMode='cover'
+              resizeMode='contain'
               accessibilityLabel='Tern'
             />
           </View>
@@ -176,8 +176,8 @@ export function LinkColumn({ children }: { children: React.ReactNode }) {
 
 const s = StyleSheet.create({
   mark: { alignItems: 'center', marginBottom: space.sm },
-  // The artwork is a transparent square with the bird in the middle; 'cover' in
-  // a wide, short frame crops the empty top and bottom.
+  // logo-header.png is the app icon artwork pre-cropped to this frame's ratio and
+  // sized for it (660x390 = 3x), instead of decoding the 2000x2000 launcher icon.
   markImage: { width: 220, height: 130 },
   title: {
     fontFamily: font.display,
