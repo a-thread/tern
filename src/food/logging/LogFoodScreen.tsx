@@ -41,7 +41,8 @@ type Props = NativeStackScreenProps<LogFoodStackParamList, 'Search'>;
 const FILTERS = ['All', 'Meals', 'My foods', 'Recent'] as const;
 
 export default function LogFoodScreen({ navigation, route }: Props) {
-  const { meal } = route.params;
+  // `pick`: choosing a food for a saved meal being built, not logging to today.
+  const { meal, pick: pickMode } = route.params;
   const insets = useSafeAreaInsets();
   const [query, setQuery] = useState('');
   const [filter, setFilter] = useState<(typeof FILTERS)[number]>('All');
@@ -49,8 +50,12 @@ export default function LogFoodScreen({ navigation, route }: Props) {
   const searching = trimmed.length >= SEARCH_MIN_CHARS;
 
   const logged = useLoggedFoods();
-  const { meals: savedMeals } = useSavedMeals();
-  const yourMeals = useMemo(() => filterMeals(savedMeals, query), [savedMeals, query]);
+  const { meals: savedMeals, startDraft } = useSavedMeals();
+  const yourMeals = useMemo(
+    () => (pickMode ? [] : filterMeals(savedMeals, query)),
+    [savedMeals, query, pickMode],
+  );
+  const filters = pickMode ? FILTERS.filter((f) => f !== 'Meals') : FILTERS;
   const mine = useMemo(() => filterFoods(logged.mine, query), [logged.mine, query]);
   const recent = useMemo(() => filterFoods(logged.recent, query), [logged.recent, query]);
 
@@ -85,7 +90,12 @@ export default function LogFoodScreen({ navigation, route }: Props) {
 
   // Every result carries nutrition (results without it are filtered out), so
   // it always goes to the details screen; only a missing food type is asked for there.
-  const pick = (result: SearchResult) => navigation.navigate('FoodDetail', { meal, result });
+  const pick = (result: SearchResult) =>
+    navigation.navigate('FoodDetail', { meal, result, pick: pickMode });
+  const newMeal = () => {
+    startDraft();
+    navigation.navigate('MealEditor');
+  };
   const openMeal = (m: SavedMeal) =>
     navigation.navigate('SavedMeal', { meal, mealId: m.id });
 
@@ -94,9 +104,11 @@ export default function LogFoodScreen({ navigation, route }: Props) {
       style={{ flex: 1, backgroundColor: colors.paper, paddingTop: insets.top }}
     >
       <SheetNav
-        title={`Add to ${meal}`}
+        title={pickMode ? 'Add food to meal' : `Add to ${meal}`}
         leftLabel='Cancel'
-        onLeftPress={() => navigation.getParent()?.goBack()}
+        onLeftPress={() =>
+          pickMode ? navigation.goBack() : navigation.getParent()?.goBack()
+        }
       />
 
       <View style={s.searchBar}>
@@ -120,7 +132,9 @@ export default function LogFoodScreen({ navigation, route }: Props) {
         />
         <Pressable
           style={s.scanBtn}
-          onPress={() => navigation.navigate('BarcodeScan', { meal })}
+          onPress={() =>
+            navigation.navigate('BarcodeScan', { meal, pick: pickMode })
+          }
         >
           <Svg
             width={15}
@@ -136,7 +150,7 @@ export default function LogFoodScreen({ navigation, route }: Props) {
       </View>
 
       <View style={s.seg}>
-        {FILTERS.map((f) => (
+        {filters.map((f) => (
           <Pressable
             key={f}
             onPress={() => setFilter(f)}
@@ -217,15 +231,23 @@ export default function LogFoodScreen({ navigation, route }: Props) {
         ) : null}
 
         {filter === 'Meals' ? (
-          yourMeals.length ? (
-            <MealGroup label='Your meals' meals={yourMeals} onPick={openMeal} />
-          ) : (
-            <Note>
-              {trimmed
-                ? `None of your meals match “${trimmed}”.`
-                : 'Log a few foods, then choose “Save as meal” on the Food tab. Your saved meals show up here.'}
-            </Note>
-          )
+          <>
+            <Pressable style={s.newMeal} onPress={newMeal}>
+              <Svg width={13} height={13} viewBox='0 0 24 24' fill='none'>
+                <Path d='M12 5v14M5 12h14' stroke={colors.coral} strokeWidth={3} strokeLinecap='round' />
+              </Svg>
+              <Text style={s.newMealText}>New meal</Text>
+            </Pressable>
+            {yourMeals.length ? (
+              <MealGroup label='Your meals' meals={yourMeals} onPick={openMeal} />
+            ) : (
+              <Note>
+                {trimmed
+                  ? `None of your meals match “${trimmed}”.`
+                  : 'Build a meal with New meal, or log a few foods and choose “Save as meal” on the Food tab.'}
+              </Note>
+            )}
+          </>
         ) : null}
 
         {filter === 'My foods' ? (
@@ -253,7 +275,9 @@ export default function LogFoodScreen({ navigation, route }: Props) {
         ) : null}
 
         <Pressable
-          onPress={() => navigation.navigate('ManualFoodEntry', { meal })}
+          onPress={() =>
+            navigation.navigate('ManualFoodEntry', { meal, pick: pickMode })
+          }
           style={s.ghostBtn}
         >
           <Text style={s.ghostText}>+ Create a food manually</Text>
@@ -477,6 +501,17 @@ const s = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
+  newMeal: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    backgroundColor: colors.card,
+    borderRadius: radius.lg,
+    paddingHorizontal: 13,
+    paddingVertical: 12,
+    marginTop: space.md,
+  },
+  newMealText: { fontFamily: font.semibold, fontSize: 14, color: colors.coral },
   mealIcon: {
     width: 19,
     height: 19,

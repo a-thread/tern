@@ -14,6 +14,7 @@ import { colors, font, radius, space } from '@shared/theme';
 import { Group, GroupLabel, SheetNav } from '@shared/components/ui';
 import { MEAL_OPTIONS, type Tier } from '../models';
 import { useFood } from '../FoodContext';
+import { useSavedMeals } from '../SavedMealsContext';
 import { TierPicker, MealPicker } from '../components';
 import { useFoodDisplay } from '../useFoodDisplay';
 import {
@@ -28,9 +29,10 @@ import type { LogFoodStackParamList } from '../types';
 type Props = NativeStackScreenProps<LogFoodStackParamList, 'FoodDetail'>;
 
 export default function FoodDetailScreen({ navigation, route }: Props) {
-  const { meal: initialMeal, result } = route.params;
+  const { meal: initialMeal, result, pick } = route.params;
   const insets = useSafeAreaInsets();
   const { addFoodEntry } = useFood();
+  const { addDraftItem } = useSavedMeals();
   const { showTiers, showTierNumber, showCalories } = useFoodDisplay();
 
   // Foods sized in grams ("100 g", the usual Open Food Facts unit) are logged by
@@ -96,15 +98,21 @@ export default function FoodDetailScreen({ navigation, route }: Props) {
             carbs: result.carbs,
             fat: result.fat,
           };
-    addFoodEntry({
+    const food = {
       name: result.name,
       brand: result.brand,
-      meal,
       ...amount,
       // With food types hidden in Settings there's no picker, so an unknown type is stored as 1.
       tier: tier ?? 1,
       tierOverridden: result.tier !== null && tier !== result.tier,
-    });
+    };
+    if (pick) {
+      // Building a saved meal: the food goes into the meal being edited, not today's log.
+      addDraftItem(food);
+      navigation.navigate('MealEditor');
+      return;
+    }
+    addFoodEntry({ ...food, meal });
     navigation.getParent()?.goBack();
   };
 
@@ -242,10 +250,14 @@ export default function FoodDetailScreen({ navigation, route }: Props) {
           )}
         </Group>
 
-        <GroupLabel>Meal</GroupLabel>
-        <View style={s.card}>
-          <MealPicker value={meal} onChange={setMeal} options={MEAL_OPTIONS} />
-        </View>
+        {pick ? null : (
+          <>
+            <GroupLabel>Meal</GroupLabel>
+            <View style={s.card}>
+              <MealPicker value={meal} onChange={setMeal} options={MEAL_OPTIONS} />
+            </View>
+          </>
+        )}
 
         {showTiers ? (
           <>
@@ -271,7 +283,9 @@ export default function FoodDetailScreen({ navigation, route }: Props) {
               ? 'Enter an amount to add'
               : needsTier
                 ? 'Choose a food type to add'
-                : `Add to ${meal}`}
+                : pick
+                  ? 'Add to meal'
+                  : `Add to ${meal}`}
           </Text>
         </Pressable>
       </ScrollView>

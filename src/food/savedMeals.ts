@@ -45,12 +45,24 @@ export function snapshotItems(entries: FoodEntry[]): SavedMealItem[] {
   }));
 }
 
-/** New log entries for a saved meal's items, all in `meal`. */
+/** Servings after scaling a whole meal, to two decimals (so 0.5 × 0.75 stays tidy). */
+export const scaleServings = (servings: number, factor: number) =>
+  Math.round(servings * factor * 100) / 100;
+
+/**
+ * New log entries for a saved meal's items, all in `meal`. `scale` multiplies
+ * every item's servings (0.5 = half portions), leaving the saved meal alone.
+ */
 export function itemsToEntries(
   items: SavedMealItem[],
   meal: FoodEntry['meal'],
+  scale = 1,
 ): NewFoodEntry[] {
-  return items.map((i) => ({ ...i, meal }));
+  return items.map((i) => ({
+    ...i,
+    meal,
+    servings: scaleServings(i.servings, scale),
+  }));
 }
 
 /** Calories and macros for a saved meal's items. */

@@ -10,7 +10,7 @@ import { dayKey } from '@shared/utils/date';
 import { WaypointsProvider, useWaypoints } from '@journey/WaypointsContext';
 import { FoodProvider, useFood } from './FoodContext';
 import { SavedMealsProvider, useSavedMeals } from './SavedMealsContext';
-import { itemsToEntries } from './savedMeals';
+import { itemsToEntries, snapshotItems } from './savedMeals';
 import type { FoodEntry } from './models';
 
 const entry = (name: string, over: Partial<FoodEntry> = {}): FoodEntry => ({
@@ -187,6 +187,161 @@ describe('adding a saved meal to the log', () => {
     });
     expect(result.current.points.waypoints).toBe(before + 15);
     expect(result.current.points.celebrations.filter((c) => c.source === 'meals')).toHaveLength(1);
+  });
+});
+
+const item = (name: string, over: Partial<FoodEntry> = {}) => snapshotItems([entry(name, over)])[0];
+
+describe('building a meal from scratch', () => {
+  it('collects foods in a draft, then saves it as a new meal', async () => {
+    const { result, backend } = await setup();
+    act(() => result.current.saved.startDraft());
+    expect(result.current.saved.draft).toMatchObject({ id: null, name: '', items: [] });
+
+    act(() => {
+      result.current.saved.setDraftName('  Post-run  snack ');
+      result.current.saved.addDraftItem(item('Banana', { servingLabel: '1 medium (118 g)' }));
+      result.current.saved.addDraftItem(item('Yogurt'));
+    });
+
+    let outcome: ReturnType<typeof result.current.saved.commitDraft> | undefined;
+    await act(async () => {
+      outcome = result.current.saved.commitDraft();
+    });
+    expect(outcome).toMatchObject({ ok: true, created: true });
+    expect(result.current.saved.draft).toBeNull();
+    expect(result.current.saved.meals.map((m) => m.name)).toEqual(['Post-run snack']);
+    const stored = await backend.savedMeals.list();
+    expect(stored[0].items.map((i) => [i.name, i.servingLabel])).toEqual([
+      ['Banana', '1 medium (118 g)'],
+      ['Yogurt', '1 serving'],
+    ]);
+  });
+
+  it('will not save without a name, without foods, or under a name in use', async () => {
+    const { result } = await setup();
+    await act(async () => {
+      result.current.saved.saveMeal('Lunch', [entry('Soup')]);
+    });
+    act(() => result.current.saved.startDraft());
+
+    let outcome: ReturnType<typeof result.current.saved.commitDraft> | undefined;
+    await act(async () => {
+      outcome = result.current.saved.commitDraft();
+    });
+    expect(outcome).toMatchObject({ ok: false });
+
+    act(() => {
+      result.current.saved.setDraftName('lunch');
+      result.current.saved.addDraftItem(item('Sandwich'));
+    });
+    await act(async () => {
+      outcome = result.current.saved.commitDraft();
+    });
+    expect(outcome).toMatchObject({ ok: false });
+    expect((outcome as { error: string }).error).toMatch(/already have/);
+    expect(result.current.saved.draft).not.toBeNull(); // still open to fix
+    expect(result.current.saved.meals).toHaveLength(1);
+  });
+
+  it('discarding leaves the meals alone', async () => {
+    const { result } = await setup();
+    act(() => {
+      result.current.saved.startDraft();
+      result.current.saved.setDraftName('Nope');
+      result.current.saved.addDraftItem(item('Toast'));
+    });
+    act(() => result.current.saved.discardDraft());
+    expect(result.current.saved.draft).toBeNull();
+    expect(result.current.saved.meals).toEqual([]);
+  });
+});
+
+describe('editing a saved meal', () => {
+  type Result = Awaited<ReturnType<typeof setup>>['result'];
+  const saveTwoFoods = async (result: Result) => {
+    await act(async () => {
+      result.current.saved.saveMeal('Usual', [entry('Oats'), entry('Banana')]);
+    });
+    return result.current.saved.meals[0];
+  };
+
+  it('changes portions, removes and adds foods, and keeps the meal id', async () => {
+    const { result, backend } = await setup();
+    const original = await saveTwoFoods(result);
+
+    act(() => {
+      result.current.saved.startDraft(original.id);
+      result.current.saved.stepDraftItem(0, 0.5); // Oats 1 -> 1.5
+      result.current.saved.removeDraftItem(1); // drop Banana
+      result.current.saved.addDraftItem(item('Coffee'));
+    });
+    expect(result.current.saved.draft?.items.map((i) => [i.name, i.servings])).toEqual([
+      ['Oats', 1.5],
+      ['Coffee', 1],
+    ]);
+    // The saved meal is untouched until the draft is committed.
+    expect(result.current.saved.meals[0].items.map((i) => i.name)).toEqual(['Oats', 'Banana']);
+
+    let outcome: ReturnType<typeof result.current.saved.commitDraft> | undefined;
+    await act(async () => {
+      outcome = result.current.saved.commitDraft();
+    });
+    expect(outcome).toMatchObject({ ok: true, created: false });
+    expect(result.current.saved.meals).toHaveLength(1);
+    expect(result.current.saved.meals[0].id).toBe(original.id);
+    expect(result.current.saved.meals[0].items.map((i) => [i.name, i.servings])).toEqual([
+      ['Oats', 1.5],
+      ['Coffee', 1],
+    ]);
+    expect((await backend.savedMeals.list())[0].items).toHaveLength(2);
+  });
+
+  it('can rename while editing, and discarding changes nothing', async () => {
+    const { result } = await setup();
+    const original = await saveTwoFoods(result);
+    act(() => {
+      result.current.saved.startDraft(original.id);
+      result.current.saved.setDraftName('Big breakfast');
+      result.current.saved.removeDraftItem(0);
+    });
+    act(() => result.current.saved.discardDraft());
+    expect(result.current.saved.meals[0]).toMatchObject({ name: 'Usual' });
+    expect(result.current.saved.meals[0].items).toHaveLength(2);
+
+    act(() => {
+      result.current.saved.startDraft(original.id);
+      result.current.saved.setDraftName('Big breakfast');
+    });
+    await act(async () => {
+      result.current.saved.commitDraft();
+    });
+    expect(result.current.saved.meals[0].name).toBe('Big breakfast');
+  });
+});
+
+describe('logging a saved meal at a different size', () => {
+  it('adds every item scaled, and leaves the saved meal unchanged', async () => {
+    const { result } = await setup();
+    await act(async () => {
+      result.current.food.foodLog.forEach((f) => result.current.food.removeFoodEntry(f.id));
+    });
+    await act(async () => {
+      result.current.saved.saveMeal('Usual', [
+        entry('Oats', { servings: 1, calories: 150 }),
+        entry('Banana', { servings: 2, calories: 100 }),
+      ]);
+    });
+    const meal = result.current.saved.meals[0];
+    await act(async () => {
+      result.current.food.addFoodEntries(itemsToEntries(meal.items, 'lunch', 0.5));
+    });
+    const lunch = result.current.food.foodLog.filter((f) => f.meal === 'lunch');
+    expect(lunch.map((f) => [f.name, f.servings])).toEqual([
+      ['Oats', 0.5],
+      ['Banana', 1],
+    ]);
+    expect(result.current.saved.meals[0].items.map((i) => i.servings)).toEqual([1, 2]);
   });
 });
 

@@ -18,7 +18,8 @@ import { useFood } from '../FoodContext';
 import { useSavedMeals } from '../SavedMealsContext';
 import { MealPicker } from '../components';
 import { useFoodDisplay } from '../useFoodDisplay';
-import { MAX_MEAL_NAME, itemsToEntries, savedMealTotals } from '../savedMeals';
+import { MAX_MEAL_NAME, itemsToEntries, scaleServings } from '../savedMeals';
+import { scaledTotals, stepScale } from '../mealDraft';
 import type { LogFoodStackParamList } from '../types';
 import ItemRow from './ItemRow';
 
@@ -29,11 +30,13 @@ export default function SavedMealScreen({ navigation, route }: Props) {
   const { meal: initialMeal, mealId } = route.params;
   const insets = useSafeAreaInsets();
   const { addFoodEntries } = useFood();
-  const { meals, renameMeal, deleteMeal } = useSavedMeals();
+  const { meals, renameMeal, deleteMeal, startDraft } = useSavedMeals();
   const { showCalories } = useFoodDisplay();
   const saved = meals.find((m) => m.id === mealId);
 
   const [target, setTarget] = useState(initialMeal);
+  // Scales every food when adding (0.5 = half portions); the saved meal is unchanged.
+  const [scale, setScale] = useState(1);
   const [name, setName] = useState(saved?.name ?? '');
   const [nameError, setNameError] = useState<string | null>(null);
   // Follow the stored name when it changes from elsewhere (e.g. after a refresh).
@@ -50,7 +53,7 @@ export default function SavedMealScreen({ navigation, route }: Props) {
     );
   }
 
-  const totals = savedMealTotals(saved.items);
+  const totals = scaledTotals(saved.items, scale);
   const targetLabel = MEAL_OPTIONS.find((m) => m.key === target)?.label ?? target;
 
   const saveName = () => {
@@ -60,8 +63,13 @@ export default function SavedMealScreen({ navigation, route }: Props) {
   };
 
   const add = () => {
-    addFoodEntries(itemsToEntries(saved.items, target));
+    addFoodEntries(itemsToEntries(saved.items, target, scale));
     navigation.getParent()?.goBack();
+  };
+
+  const editMeal = () => {
+    startDraft(saved.id);
+    navigation.navigate('MealEditor');
   };
 
   const confirmDelete = () =>
@@ -116,9 +124,31 @@ export default function SavedMealScreen({ navigation, route }: Props) {
         <GroupLabel>In this meal</GroupLabel>
         <Group>
           {saved.items.map((item, i) => (
-            <ItemRow key={`${item.name}-${i}`} item={item} />
+            <ItemRow
+              key={`${item.name}-${i}`}
+              item={{ ...item, servings: scaleServings(item.servings, scale) }}
+            />
           ))}
         </Group>
+
+        <GroupLabel>Portion</GroupLabel>
+        <View style={[s.card, s.scaleRow]}>
+          <View style={{ flex: 1 }}>
+            <Text style={s.scaleTitle}>
+              {scale === 1 ? 'As saved' : `${scale}× as saved`}
+            </Text>
+            <Text style={s.scaleSub}>Scales every food in this meal</Text>
+          </View>
+          <View style={s.stepper}>
+            <Pressable onPress={() => setScale((v) => stepScale(v, -1))} hitSlop={8} accessibilityLabel='Smaller portion'>
+              <Text style={s.stepperBtn}>−</Text>
+            </Pressable>
+            <Text style={s.stepperVal}>{scale}×</Text>
+            <Pressable onPress={() => setScale((v) => stepScale(v, 1))} hitSlop={8} accessibilityLabel='Larger portion'>
+              <Text style={s.stepperBtn}>+</Text>
+            </Pressable>
+          </View>
+        </View>
 
         <GroupLabel>Add to</GroupLabel>
         <View style={s.card}>
@@ -127,6 +157,10 @@ export default function SavedMealScreen({ navigation, route }: Props) {
 
         <Pressable style={s.bigBtn} onPress={add}>
           <Text style={s.bigBtnText}>Add all to {targetLabel.toLowerCase()}</Text>
+        </Pressable>
+
+        <Pressable onPress={editMeal} hitSlop={8} style={s.editBtn}>
+          <Text style={s.editText}>Edit meal</Text>
         </Pressable>
 
         <Pressable onPress={confirmDelete} hitSlop={8} style={s.deleteBtn}>
@@ -161,6 +195,32 @@ const s = StyleSheet.create({
     marginTop: space.lg,
   },
   bigBtnText: { fontFamily: font.bold, fontSize: 15, color: '#fff' },
+  scaleRow: { flexDirection: 'row', alignItems: 'center' },
+  scaleTitle: { fontFamily: font.medium, fontSize: 14, color: colors.ink },
+  scaleSub: { fontFamily: font.body, fontSize: 11.5, color: colors.ink2, marginTop: 1 },
+  stepper: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#E8E5DD',
+    borderRadius: 10,
+    overflow: 'hidden',
+  },
+  stepperBtn: {
+    fontFamily: font.body,
+    fontSize: 17,
+    color: colors.coral,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+  },
+  stepperVal: {
+    fontFamily: font.semibold,
+    fontSize: 13,
+    color: colors.ink,
+    minWidth: 44,
+    textAlign: 'center',
+  },
+  editBtn: { alignItems: 'center', paddingTop: space.lg },
+  editText: { fontFamily: font.semibold, fontSize: 13.5, color: colors.ink },
   deleteBtn: { alignItems: 'center', paddingVertical: space.lg },
   deleteText: { fontFamily: font.semibold, fontSize: 13.5, color: '#B3261E' },
   gone: {

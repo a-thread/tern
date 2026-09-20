@@ -32,7 +32,7 @@ type Phase =
  * to adding the food by hand. A code can also be typed in.
  */
 export default function BarcodeScanScreen({ navigation, route }: Props) {
-  const { meal } = route.params;
+  const { meal, pick } = route.params;
   const insets = useSafeAreaInsets();
   const [permission, requestPermission] = useCameraPermissions();
   const [phase, setPhase] = useState<Phase>({ kind: 'scanning' });
@@ -57,7 +57,7 @@ export default function BarcodeScanScreen({ navigation, route }: Props) {
       const res = await getProductByBarcode(raw);
       if (res.status === 'found') {
         // Stay on "looking" until this screen regains focus (see above).
-        navigation.navigate('FoodDetail', { meal, result: res.result });
+        navigation.navigate('FoodDetail', { meal, result: res.result, pick });
         return;
       }
       setPhase({ kind: 'miss', name: res.status === 'no-nutrition' ? res.name : undefined });
@@ -73,14 +73,19 @@ export default function BarcodeScanScreen({ navigation, route }: Props) {
   };
 
   const addByHand = (name?: string) =>
-    navigation.navigate('ManualFoodEntry', { meal, name });
+    navigation.navigate('ManualFoodEntry', { meal, name, pick });
 
   const granted = permission?.granted === true;
 
   return (
     <View style={[s.wrap, { paddingTop: insets.top }]}>
       <View style={s.nav}>
-        <Pressable onPress={() => navigation.getParent()?.goBack()} hitSlop={8}>
+        <Pressable
+          onPress={() =>
+            pick ? navigation.goBack() : navigation.getParent()?.goBack()
+          }
+          hitSlop={8}
+        >
           <Text style={s.cancel}>Cancel</Text>
         </Pressable>
         <Text style={s.title}>Scan barcode</Text>

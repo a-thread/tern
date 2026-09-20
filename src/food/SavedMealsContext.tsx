@@ -13,16 +13,30 @@ import { useToast } from '@shared/state/ToastContext';
 import { newId } from '@shared/utils/id';
 import type { FoodEntry } from './models';
 import {
+  addItem,
+  draftFromMeal,
+  emptyDraft,
+  removeItemAt,
+  stepItemServings,
+  validateDraft,
+  type MealDraft,
+} from './mealDraft';
+import {
   cleanName,
   findMealByName,
   snapshotItems,
   sortMeals,
   validateMealName,
   type SavedMeal,
+  type SavedMealItem,
 } from './savedMeals';
 
 type SaveOutcome =
   | { ok: true; replaced: boolean; meal: SavedMeal }
+  | { ok: false; error: string };
+
+type CommitOutcome =
+  | { ok: true; meal: SavedMeal; created: boolean }
   | { ok: false; error: string };
 
 type SavedMealsContextValue = {
@@ -37,6 +51,18 @@ type SavedMealsContextValue = {
   /** Returns an error message, or null on success. */
   renameMeal: (id: string, name: string) => string | null;
   deleteMeal: (id: string) => void;
+
+  /** The meal being built or edited, or null when none is open. */
+  draft: MealDraft | null;
+  /** Opens a draft: a copy of an existing meal, or an empty new one. */
+  startDraft: (mealId?: string) => void;
+  setDraftName: (name: string) => void;
+  addDraftItem: (item: SavedMealItem) => void;
+  stepDraftItem: (index: number, delta: number) => void;
+  removeDraftItem: (index: number) => void;
+  discardDraft: () => void;
+  /** Saves the draft (creating or updating the meal) and closes it. */
+  commitDraft: () => CommitOutcome;
 };
 
 const SavedMealsContext = createContext<SavedMealsContextValue | null>(null);
@@ -50,6 +76,8 @@ export function SavedMealsProvider({ children }: { children: React.ReactNode }) 
   const toast = useToast();
   const [meals, setMeals] = useState<SavedMeal[]>([]);
   const [ready, setReady] = useState(false);
+  const [draft, setDraft] = useState<MealDraft | null>(null);
+  const draftRef = useRef<MealDraft | null>(null);
   const mounted = useRef(true);
   // The latest list, so saveMeal/renameMeal can decide synchronously.
   const latest = useRef<SavedMeal[]>([]);
@@ -143,9 +171,109 @@ export function SavedMealsProvider({ children }: { children: React.ReactNode }) 
     [repo, persist, commit],
   );
 
+  // Drafts. The ref is updated straight away so a food picked and a screen
+  // change in the same moment see each other's result.
+  const changeDraft = useCallback((next: MealDraft | null) => {
+    draftRef.current = next;
+    setDraft(next);
+  }, []);
+
+  const startDraft = useCallback(
+    (mealId?: string) => {
+      const meal = mealId ? latest.current.find((m) => m.id === mealId) : undefined;
+      changeDraft(meal ? draftFromMeal(meal) : emptyDraft());
+    },
+    [changeDraft],
+  );
+
+  const setDraftName = useCallback(
+    (name: string) => {
+      if (draftRef.current) changeDraft({ ...draftRef.current, name });
+    },
+    [changeDraft],
+  );
+
+  const addDraftItem = useCallback(
+    (item: SavedMealItem) => {
+      const d = draftRef.current ?? emptyDraft();
+      changeDraft({ ...d, items: addItem(d.items, item) });
+    },
+    [changeDraft],
+  );
+
+  const stepDraftItem = useCallback(
+    (index: number, delta: number) => {
+      const d = draftRef.current;
+      if (d) changeDraft({ ...d, items: stepItemServings(d.items, index, delta) });
+    },
+    [changeDraft],
+  );
+
+  const removeDraftItem = useCallback(
+    (index: number) => {
+      const d = draftRef.current;
+      if (d) changeDraft({ ...d, items: removeItemAt(d.items, index) });
+    },
+    [changeDraft],
+  );
+
+  const discardDraft = useCallback(() => changeDraft(null), [changeDraft]);
+
+  const commitDraft = useCallback((): CommitOutcome => {
+    const d = draftRef.current;
+    if (!d) return { ok: false, error: 'There is no meal open.' };
+    const problem = validateDraft(d, latest.current);
+    if (problem) return { ok: false, error: problem };
+
+    const clean = cleanName(d.name);
+    const existing = d.id ? latest.current.find((m) => m.id === d.id) : undefined;
+    const meal: SavedMeal = existing
+      ? { ...existing, name: clean, items: d.items }
+      : { id: d.id ?? newId(), name: clean, items: d.items, createdAt: new Date().toISOString() };
+
+    commit(
+      sortMeals(
+        existing
+          ? latest.current.map((m) => (m.id === meal.id ? meal : m))
+          : [...latest.current, meal],
+      ),
+    );
+    persist(repo.save(meal));
+    changeDraft(null);
+    return { ok: true, meal, created: !existing };
+  }, [repo, persist, commit, changeDraft]);
+
   const value = useMemo<SavedMealsContextValue>(
-    () => ({ meals, ready, saveMeal, renameMeal, deleteMeal }),
-    [meals, ready, saveMeal, renameMeal, deleteMeal],
+    () => ({
+      meals,
+      ready,
+      saveMeal,
+      renameMeal,
+      deleteMeal,
+      draft,
+      startDraft,
+      setDraftName,
+      addDraftItem,
+      stepDraftItem,
+      removeDraftItem,
+      discardDraft,
+      commitDraft,
+    }),
+    [
+      meals,
+      ready,
+      saveMeal,
+      renameMeal,
+      deleteMeal,
+      draft,
+      startDraft,
+      setDraftName,
+      addDraftItem,
+      stepDraftItem,
+      removeDraftItem,
+      discardDraft,
+      commitDraft,
+    ],
   );
 
   return (
