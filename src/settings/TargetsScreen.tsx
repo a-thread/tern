@@ -36,6 +36,9 @@ export default function TargetsScreen({ navigation }: Props) {
   const { settings, updateSettings } = useSettings();
   const trackWidth = useRef(0);
   const dragStartTarget = useRef(settings.calorieTarget);
+  // The drag handler is created once, so it reads the live value from a ref.
+  const targetRef = useRef(settings.calorieTarget);
+  targetRef.current = settings.calorieTarget;
 
   const setCalorieTarget = (v: number) =>
     updateSettings({
@@ -45,8 +48,9 @@ export default function TargetsScreen({ navigation }: Props) {
   const panResponder = useRef(
     PanResponder.create({
       onStartShouldSetPanResponder: () => true,
+      onPanResponderTerminationRequest: () => false,
       onPanResponderGrant: () => {
-        dragStartTarget.current = settings.calorieTarget;
+        dragStartTarget.current = targetRef.current;
       },
       onPanResponderMove: (_evt, gesture) => {
         if (!trackWidth.current) return;

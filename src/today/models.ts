@@ -7,6 +7,8 @@ export type DayState = 'goal' | 'partial' | 'rest' | 'none';
 export type DayRecord = {
   day: string;
   steps: number;
+  /** The step goal that applied on this day (goal changes only affect days from then on). */
+  goal: number;
   state: DayState;
   /** The user chose this as a rest day (as opposed to it being detected). */
   chosenRest: boolean;
@@ -22,7 +24,8 @@ export type BuildDaysInput = {
   stepsByDay: Record<string, number>;
   /** Day keys the user marked as rest days. */
   restDays: ReadonlySet<string>;
-  goal: number;
+  /** The step goal in effect on a given day; see `goalFor`. */
+  goalFor: (day: string) => number;
   restPerWeek: number;
   autoDetect: boolean;
   today: string;
@@ -38,8 +41,15 @@ export type BuildDaysInput = {
  * 'partial' (some steps) or 'none'. Weeks run Monday to Sunday.
  */
 export function buildDays(input: BuildDaysInput): DayRecord[] {
-  const { stepsByDay, restDays, goal, restPerWeek, autoDetect, today, count } =
-    input;
+  const {
+    stepsByDay,
+    restDays,
+    goalFor,
+    restPerWeek,
+    autoDetect,
+    today,
+    count,
+  } = input;
   const keys = Array.from({ length: count }, (_, i) =>
     addDays(today, i - (count - 1)),
   );
@@ -48,7 +58,7 @@ export function buildDays(input: BuildDaysInput): DayRecord[] {
   // week never crowds one the user picked.
   const chosenPerWeek = new Map<string, number>();
   for (const k of keys) {
-    if (restDays.has(k) && (stepsByDay[k] ?? 0) < goal) {
+    if (restDays.has(k) && (stepsByDay[k] ?? 0) < goalFor(k)) {
       const w = weekStartKey(k);
       chosenPerWeek.set(w, (chosenPerWeek.get(w) ?? 0) + 1);
     }
@@ -57,6 +67,7 @@ export function buildDays(input: BuildDaysInput): DayRecord[] {
 
   return keys.map((k) => {
     const steps = stepsByDay[k] ?? 0;
+    const goal = goalFor(k);
     const chosenRest = restDays.has(k);
     const w = weekStartKey(k);
     let state: DayState;
@@ -79,12 +90,92 @@ export function buildDays(input: BuildDaysInput): DayRecord[] {
     return {
       day: k,
       steps,
+      goal,
       state,
       chosenRest,
       isToday: k === today,
       future: false,
     };
   });
+}
+
+/** One step-goal change: `goal` applies from `from` (a day key) until the next entry. */
+export type GoalChange = { from: string; goal: number };
+
+/** The first entry's `from`, meaning "since the beginning". */
+export const GOAL_SINCE_ALWAYS = '0000-00-00';
+
+/**
+ * Records a change of step goal effective today. Past days keep the goal they
+ * were judged against, so raising the goal never retroactively breaks a
+ * streak (and lowering it never rewrites history either). Changes made on the
+ * same day replace each other, so dragging a slider leaves one entry.
+ */
+export function recordGoalChange(
+  history: GoalChange[],
+  previousGoal: number,
+  nextGoal: number,
+  today: string,
+): GoalChange[] {
+  if (previousGoal === nextGoal) return history;
+  const base = history.length
+    ? history
+    : [{ from: GOAL_SINCE_ALWAYS, goal: previousGoal }];
+  const last = base[base.length - 1];
+  if (last.from === today) {
+    const earlier = base.slice(0, -1);
+    // Back to what it was before today: nothing to record.
+    if (earlier.length && earlier[earlier.length - 1].goal === nextGoal) {
+      return earlier;
+    }
+    return [...earlier, { from: today, goal: nextGoal }];
+  }
+  return [...base, { from: today, goal: nextGoal }];
+}
+
+/** The step goal that applied on `day`. With no recorded changes, it's the current goal. */
+export function goalFor(
+  history: GoalChange[],
+  currentGoal: number,
+  day: string,
+): number {
+  if (!history.length) return currentGoal;
+  let goal = history[0].goal;
+  for (const change of history) {
+    if (change.from <= day) goal = change.goal;
+  }
+  return goal;
+}
+
+export const STEP_GOAL_MIN = 2000;
+export const STEP_GOAL_MAX = 15000;
+
+/**
+ * A gentle, optional suggestion for the step goal, from the last 30 days that
+ * have steps. Only when the goal is clearly off: reached on nearly every day
+ * (suggest a bit more) or on very few (suggest something more reachable).
+ * Null when there's too little data or the goal already fits.
+ */
+export function suggestGoal(
+  days: DayRecord[],
+  currentGoal: number,
+): number | null {
+  const recent = days.slice(-30).filter((d) => d.steps > 0);
+  if (recent.length < 14) return null;
+  const hitRate = recent.filter((d) => d.steps >= d.goal).length / recent.length;
+  const round = (n: number) => Math.round(n / 100) * 100;
+
+  if (hitRate >= 0.9) {
+    const next = Math.min(currentGoal + 1000, STEP_GOAL_MAX);
+    return next > currentGoal ? next : null;
+  }
+  if (hitRate <= 0.25) {
+    const sorted = recent.map((d) => d.steps).sort((a, b) => a - b);
+    const p75 = sorted[Math.floor(sorted.length * 0.75)];
+    const next = Math.max(round(p75), STEP_GOAL_MIN);
+    return next <= currentGoal - 500 ? next : null;
+  }
+  return null;
 }
 
 /**
@@ -118,6 +209,7 @@ export function weekOf(days: DayRecord[], today: string): DayRecord[] {
       byDay.get(k) ?? {
         day: k,
         steps: 0,
+        goal: 0,
         state: 'none' as DayState,
         chosenRest: false,
         isToday: false,

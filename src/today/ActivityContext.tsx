@@ -19,6 +19,7 @@ import { waypointRules } from '@journey/models';
 import {
   buildDays,
   computeStreak,
+  goalFor,
   restDaysLeft,
   weekOf,
   type DayRecord,
@@ -77,7 +78,7 @@ export function ActivityProvider({ children }: { children: React.ReactNode }) {
   const today = useDayKey();
 
   const [status, setStatus] = useState<StepsStatus>('unavailable');
-  const [stepsByDay, setStepsByDay] = useState<Record<string, number>>({});
+  const [rawStepsByDay, setStepsByDay] = useState<Record<string, number>>({});
   const [restList, setRestList] = useState<string[]>([]);
   const [lastSynced, setLastSynced] = useState<Date | null>(null);
   const [ready, setReady] = useState(false);
@@ -124,13 +125,19 @@ export function ActivityProvider({ children }: { children: React.ReactNode }) {
   }, [load]);
 
   const restSet = useMemo(() => new Set(restList), [restList]);
+  // Switching off "read steps" in Settings hides the data without deleting anything.
+  const readSteps = settings.healthData.readSteps;
+  const stepsByDay = useMemo(
+    () => (readSteps ? rawStepsByDay : {}),
+    [readSteps, rawStepsByDay],
+  );
 
   const days = useMemo(
     () =>
       buildDays({
         stepsByDay,
         restDays: restSet,
-        goal: settings.stepGoal,
+        goalFor: (day) => goalFor(settings.stepGoalHistory, settings.stepGoal, day),
         restPerWeek: settings.restDaysPerWeek,
         autoDetect: settings.autoDetectRestDays,
         today,
@@ -140,6 +147,7 @@ export function ActivityProvider({ children }: { children: React.ReactNode }) {
       stepsByDay,
       restSet,
       settings.stepGoal,
+      settings.stepGoalHistory,
       settings.restDaysPerWeek,
       settings.autoDetectRestDays,
       today,

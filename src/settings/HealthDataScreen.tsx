@@ -80,37 +80,9 @@ export default function HealthDataScreen({ navigation }: Props) {
         <Group>
           <ToggleRow
             title='Steps'
-            sub='Used for your daily goal'
+            sub='Used for your daily goal. Off hides steps without deleting anything'
             on={hd.readSteps}
             onToggle={(v) => patchHealthData({ readSteps: v })}
-          />
-          <ToggleRow
-            title='Distance'
-            sub='Shown on the Trends tab'
-            on={hd.readDistance}
-            onToggle={(v) => patchHealthData({ readDistance: v })}
-          />
-          <ToggleRow
-            title='Weight'
-            sub='From a connected scale, if you have one'
-            on={hd.readWeight}
-            onToggle={(v) => patchHealthData({ readWeight: v })}
-          />
-        </Group>
-
-        <GroupLabel>Writing to Health Connect</GroupLabel>
-        <Group>
-          <ToggleRow
-            title='Weight entries'
-            sub='Share weights you log in Tern'
-            on={hd.writeWeight}
-            onToggle={(v) => patchHealthData({ writeWeight: v })}
-          />
-          <ToggleRow
-            title='Nutrition'
-            sub='Share calories and macros'
-            on={hd.writeNutrition}
-            onToggle={(v) => patchHealthData({ writeNutrition: v })}
           />
         </Group>
 
@@ -130,8 +102,8 @@ export default function HealthDataScreen({ navigation }: Props) {
         </Group>
 
         <FootNote>
-          Tern reads only what's switched on above, and never shares your health
-          data with anyone. To disconnect, remove Tern's access in Health Connect; everything
+          Tern only reads your steps, and never shares your health data with
+          anyone. To disconnect, remove Tern's access in Health Connect; everything
           you've logged stays.
         </FootNote>
 

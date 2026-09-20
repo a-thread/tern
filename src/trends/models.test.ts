@@ -38,6 +38,7 @@ describe('summarizeSteps', () => {
   const rec = (i: number, steps: number): DayRecord => ({
     day: `d${i}`,
     steps,
+    goal: 8000,
     state: 'partial',
     chosenRest: false,
     isToday: false,

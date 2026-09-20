@@ -4,7 +4,7 @@ import * as Notifications from 'expo-notifications';
 import {
   ALL_REMINDER_IDS,
   planReminders,
-  type ReminderKey,
+  type ReminderConfig,
 } from './reminders.plan';
 
 const CHANNEL_ID = 'reminders';
@@ -21,9 +21,9 @@ export type SyncResult = 'ok' | 'denied';
 
 /** Syncs scheduled reminders with the enabled settings. */
 export async function syncReminders(
-  on: Record<ReminderKey, boolean>,
+  config: ReminderConfig,
 ): Promise<SyncResult> {
-  const plan = planReminders(on);
+  const plan = planReminders(config);
 
   await Promise.all(
     ALL_REMINDER_IDS.map((id) =>

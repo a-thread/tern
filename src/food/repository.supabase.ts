@@ -64,6 +64,20 @@ export function createSupabaseFoodRepository(db: TernClient): FoodRepository {
       if (error) throw error;
       return (data as FoodRow[]).map(rowToFood);
     },
+    async history(from, to) {
+      const { data, error } = await db
+        .from('food_entries')
+        .select('*')
+        .gte('logged_on', from)
+        .lte('logged_on', to)
+        .order('logged_on');
+      if (error) throw error;
+      const byDay: Record<string, FoodEntry[]> = {};
+      for (const row of data as FoodRow[]) {
+        (byDay[row.logged_on] ??= []).push(rowToFood(row));
+      }
+      return byDay;
+    },
     async add(day, entry) {
       const { id, ...rest } = entry;
       const { error } = await db

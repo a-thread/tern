@@ -6,7 +6,9 @@
     "version": "0.1.0",
     "orientation": "portrait",
     "userInterfaceStyle": "light",
+    "icon": "./assets/icon.png",
     "splash": {
+      "image": "./assets/splash.png",
       "resizeMode": "contain",
       "backgroundColor": "#F5F3EE"
     },
@@ -17,9 +19,32 @@
     "android": {
       "package": "com.yourname.tern",
       "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#F5F3EE"
-      }
+      },
+      "permissions": ["android.permission.health.READ_STEPS"]
     },
-    "plugins": ["expo-font", "expo-notifications"]
+    "plugins": [
+      "expo-font",
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/notification-icon.png",
+          "color": "#26262B"
+        }
+      ],
+      "react-native-health-connect",
+      "./plugins/withHealthConnectPermissionUsage",
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "compileSdkVersion": 34,
+            "targetSdkVersion": 34,
+            "minSdkVersion": 26
+          }
+        }
+      ]
+    ]
   }
 }

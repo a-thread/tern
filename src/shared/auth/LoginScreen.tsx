@@ -36,7 +36,7 @@ export default function LoginScreen({
     <AuthLayout
       showMark
       title='Tern'
-      subtitle='Small steps, a long way.'
+      subtitle='Fly far. Keep every mile.'
     >
       <AuthBanner variant='error' message={error || null} />
       <AuthBanner variant='info' message={infoMessage ?? null} />

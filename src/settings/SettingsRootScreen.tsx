@@ -31,7 +31,15 @@ import { useActivity } from '@today/ActivityContext';
 import { MAX_NAME } from '@shared/auth/validation';
 import { useSettings } from './SettingsContext';
 import { useUnits } from './useUnits';
-import { REMINDER_WHEN } from './reminders.plan';
+import TimeStepperRow from './TimeStepperRow';
+import {
+  REMINDER_STEP_MINUTES,
+  describeReminders,
+  formatMinutes,
+  stepMinutes,
+  stepWeekday,
+  weekdayPlural,
+} from './reminders.plan';
 import type { SettingsStackParamList } from './types';
 
 type Props = NativeStackScreenProps<SettingsStackParamList, 'SettingsRoot'>;
@@ -42,6 +50,9 @@ export default function SettingsRootScreen({ navigation }: Props) {
   const auth = useAuth();
   const { status: stepsStatus } = useActivity();
   const { data: dataRepo } = useBackend();
+  const reminders = settings.reminders;
+  const reminderText = describeReminders(reminders);
+  const stepStep = REMINDER_STEP_MINUTES;
   const toast = useToast();
   const [dataBusy, setDataBusy] = useState(false);
 
@@ -305,30 +316,95 @@ export default function SettingsRootScreen({ navigation }: Props) {
         <Group>
           <ToggleRow
             title='Log meals'
-            sub={REMINDER_WHEN.meals}
-            on={settings.reminders.mealLog.on}
+            sub={reminderText.meals}
+            on={reminders.mealLog.on}
             onToggle={(v) =>
               updateSettings({
-                reminders: {
-                  ...settings.reminders,
-                  mealLog: { ...settings.reminders.mealLog, on: v },
-                },
+                reminders: { ...reminders, mealLog: { ...reminders.mealLog, on: v } },
               })
             }
           />
+          {reminders.mealLog.on ? (
+            <>
+              <TimeStepperRow
+                label='Midday'
+                value={formatMinutes(reminders.mealLog.midday)}
+                onStep={(d) =>
+                  updateSettings({
+                    reminders: {
+                      ...reminders,
+                      mealLog: {
+                        ...reminders.mealLog,
+                        midday: stepMinutes(reminders.mealLog.midday, d * stepStep),
+                      },
+                    },
+                  })
+                }
+              />
+              <TimeStepperRow
+                label='Evening'
+                value={formatMinutes(reminders.mealLog.evening)}
+                onStep={(d) =>
+                  updateSettings({
+                    reminders: {
+                      ...reminders,
+                      mealLog: {
+                        ...reminders.mealLog,
+                        evening: stepMinutes(reminders.mealLog.evening, d * stepStep),
+                      },
+                    },
+                  })
+                }
+              />
+            </>
+          ) : null}
           <ToggleRow
             title='Weekly weigh-in'
-            sub={REMINDER_WHEN.weighIn}
-            on={settings.reminders.weeklyWeighIn.on}
+            sub={reminderText.weighIn}
+            on={reminders.weeklyWeighIn.on}
             onToggle={(v) =>
               updateSettings({
                 reminders: {
-                  ...settings.reminders,
-                  weeklyWeighIn: { ...settings.reminders.weeklyWeighIn, on: v },
+                  ...reminders,
+                  weeklyWeighIn: { ...reminders.weeklyWeighIn, on: v },
                 },
               })
             }
           />
+          {reminders.weeklyWeighIn.on ? (
+            <>
+              <TimeStepperRow
+                label='Day'
+                value={weekdayPlural(reminders.weeklyWeighIn.weekday)}
+                onStep={(d) =>
+                  updateSettings({
+                    reminders: {
+                      ...reminders,
+                      weeklyWeighIn: {
+                        ...reminders.weeklyWeighIn,
+                        weekday: stepWeekday(reminders.weeklyWeighIn.weekday, d),
+                      },
+                    },
+                  })
+                }
+              />
+              <TimeStepperRow
+                label='Time'
+                value={formatMinutes(reminders.weeklyWeighIn.at)}
+                onStep={(d) =>
+                  updateSettings({
+                    reminders: {
+                      ...reminders,
+                      weeklyWeighIn: {
+                        ...reminders.weeklyWeighIn,
+                        at: stepMinutes(reminders.weeklyWeighIn.at, d * stepStep),
+                      },
+                    },
+                  })
+                }
+              />
+            </>
+          ) : null}
         </Group>
 
         {dataRepo ? (

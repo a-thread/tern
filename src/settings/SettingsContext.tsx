@@ -11,25 +11,26 @@ import { useBackend } from '@shared/state/BackendContext';
 import { useAuth } from '@shared/auth/AuthContext';
 import { useToast } from '@shared/state/ToastContext';
 import type { Units } from '@shared/utils/units';
+import { dayKey } from '@shared/utils/date';
+import { recordGoalChange, type GoalChange } from '@today/models';
 import { settingsSeed } from './mock';
+import {
+  DEFAULT_REMINDERS,
+  mergeReminders,
+  type ReminderConfig,
+} from './reminders.plan';
 
-/** Times are fixed; see reminders.plan.ts. */
-export type ReminderSettings = {
-  mealLog: { on: boolean };
-  weeklyWeighIn: { on: boolean };
-};
+export type ReminderSettings = ReminderConfig;
 
 export type HealthDataSettings = {
   readSteps: boolean;
-  readDistance: boolean;
-  readWeight: boolean;
-  writeWeight: boolean;
-  writeNutrition: boolean;
 };
 
 export type AppSettings = {
   firstName: string;
   stepGoal: number;
+  /** Past step-goal changes, so a new goal only applies from the day it was set. */
+  stepGoalHistory: GoalChange[];
   suggestStepAdjustments: boolean;
   calorieTarget: number;
   macroTargets: { protein: number; carbs: number; fat: number };
@@ -50,6 +51,7 @@ export type AppSettings = {
 const initialSettings: AppSettings = {
   firstName: '',
   stepGoal: settingsSeed.stepGoal,
+  stepGoalHistory: [],
   suggestStepAdjustments: true,
   calorieTarget: settingsSeed.calorieTarget,
   macroTargets: { ...settingsSeed.macroTargets },
@@ -62,16 +64,9 @@ const initialSettings: AppSettings = {
   showRemainingVsTarget: false,
   restDaysPerWeek: 2,
   autoDetectRestDays: true,
-  reminders: {
-    mealLog: { on: true },
-    weeklyWeighIn: { on: true },
-  },
+  reminders: DEFAULT_REMINDERS,
   healthData: {
     readSteps: true,
-    readDistance: true,
-    readWeight: false,
-    writeWeight: true,
-    writeNutrition: false,
   },
 };
 
@@ -104,7 +99,12 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
       .load()
       .then((saved) => {
         if (cancelled) return;
-        const loaded = { ...initialSettings, ...saved };
+        const loaded = {
+          ...initialSettings,
+          ...saved,
+          // Older saves stored reminder times as text; fall back per field.
+          reminders: mergeReminders(saved?.reminders),
+        };
         const name = signedUpNameRef.current?.trim();
         // Only when never set — clearing the name in Settings must stick.
         if (saved?.firstName === undefined && name) {
@@ -122,7 +122,16 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
 
   const updateSettings = useCallback(
     (patch: Partial<AppSettings>) => {
-      const next = { ...latest.current, ...patch };
+      const prev = latest.current;
+      const next = { ...prev, ...patch };
+      if (patch.stepGoal !== undefined && patch.stepGoal !== prev.stepGoal) {
+        next.stepGoalHistory = recordGoalChange(
+          prev.stepGoalHistory,
+          prev.stepGoal,
+          patch.stepGoal,
+          dayKey(),
+        );
+      }
       latest.current = next;
       setSettings(next);
       repo.save(next).catch((e) => {

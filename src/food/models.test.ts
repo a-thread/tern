@@ -3,6 +3,7 @@ import {
   mealTotals,
   dayTotals,
   CORE_MEALS,
+  averageIntake,
   type FoodEntry,
 } from './models';
 
@@ -100,5 +101,39 @@ describe('dayTotals', () => {
       carbs: 0,
       fat: 0,
     });
+  });
+});
+
+describe('averageIntake', () => {
+  const item = (calories: number, protein = 10): FoodEntry => ({
+    id: String(calories),
+    name: 'x',
+    meal: 'lunch',
+    servings: 1,
+    servingLabel: '1',
+    calories,
+    protein,
+    carbs: 20,
+    fat: 5,
+    tier: 1,
+  });
+
+  it('is null with nothing logged', () => {
+    expect(averageIntake({})).toBeNull();
+    expect(averageIntake({ '2026-09-01': [] })).toBeNull();
+  });
+
+  it('averages over days that have food, not calendar days', () => {
+    const a = averageIntake({
+      '2026-09-01': [item(1000, 40), item(500, 20)],
+      '2026-09-03': [item(1500, 60)],
+    });
+    expect(a).toEqual({ days: 2, calories: 1500, protein: 60, carbs: 30, fat: 8 });
+  });
+
+  it('leaves out today when other days exist, but not when it is the only day', () => {
+    const days = { '2026-09-01': [item(2000)], '2026-09-02': [item(500)] };
+    expect(averageIntake(days, '2026-09-02')?.calories).toBe(2000);
+    expect(averageIntake({ '2026-09-02': [item(500)] }, '2026-09-02')?.calories).toBe(500);
   });
 });

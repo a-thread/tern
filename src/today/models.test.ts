@@ -3,6 +3,10 @@ import type { WeightEntry } from '@weight/models';
 import {
   buildDays,
   computeStreak,
+  goalFor,
+  recordGoalChange,
+  suggestGoal,
+  type DayRecord,
   greetingFor,
   leftToDo,
   mealForTime,
@@ -88,7 +92,7 @@ const days = (over: Partial<BuildDaysInput> = {}) =>
   buildDays({
     stepsByDay: {},
     restDays: new Set(),
-    goal: 8000,
+    goalFor: () => 8000,
     restPerWeek: 2,
     autoDetect: false,
     today: TODAY,
@@ -220,5 +224,74 @@ describe('greetingFor', () => {
   it('is a neutral hello in the small hours', () => {
     expect(at(0)).toBe('Hello');
     expect(at(4)).toBe('Hello');
+  });
+});
+
+describe('goal history', () => {
+  it('uses the current goal when nothing has changed', () => {
+    expect(goalFor([], 8000, '2026-09-01')).toBe(8000);
+  });
+
+  it('applies a change from its day onward, leaving earlier days alone', () => {
+    const h = recordGoalChange([], 8000, 10000, '2026-09-10');
+    expect(goalFor(h, 10000, '2026-09-09')).toBe(8000);
+    expect(goalFor(h, 10000, '2026-09-10')).toBe(10000);
+    expect(goalFor(h, 10000, '2026-10-01')).toBe(10000);
+    expect(goalFor(h, 10000, '2020-01-01')).toBe(8000);
+  });
+
+  it('collapses same-day changes, and drops one that returns to the old goal', () => {
+    let h = recordGoalChange([], 8000, 8500, '2026-09-10');
+    h = recordGoalChange(h, 8500, 9000, '2026-09-10');
+    expect(h.filter((c) => c.from === '2026-09-10')).toEqual([
+      { from: '2026-09-10', goal: 9000 },
+    ]);
+    h = recordGoalChange(h, 9000, 8000, '2026-09-10');
+    expect(h).toHaveLength(1);
+    expect(goalFor(h, 8000, '2026-09-10')).toBe(8000);
+  });
+
+  it('keeps a streak intact when the goal is raised later', () => {
+    const history = recordGoalChange([], 8000, 12000, '2026-09-20');
+    const d = buildDays({
+      stepsByDay: { '2026-09-19': 9000, '2026-09-18': 9000 },
+      restDays: new Set(),
+      goalFor: (day) => goalFor(history, 12000, day),
+      restPerWeek: 2,
+      autoDetect: false,
+      today: '2026-09-20',
+      count: 5,
+    });
+    expect(computeStreak(d)).toBe(2);
+  });
+});
+
+describe('suggestGoal', () => {
+  const series = (steps: number[], goal = 8000): DayRecord[] =>
+    steps.map((s, i) => ({
+      day: `2026-08-${String(i + 1).padStart(2, '0')}`,
+      steps: s,
+      goal,
+      state: s >= goal ? 'goal' : 'partial',
+      chosenRest: false,
+      isToday: false,
+      future: false,
+    }));
+
+  it('offers nothing without enough data', () => {
+    expect(suggestGoal(series(Array(10).fill(9000)), 8000)).toBeNull();
+  });
+
+  it('suggests a little more when the goal is met almost every day', () => {
+    expect(suggestGoal(series(Array(20).fill(9000)), 8000)).toBe(9000);
+  });
+
+  it('suggests something more reachable when it is rarely met', () => {
+    expect(suggestGoal(series(Array(20).fill(4000)), 8000)).toBe(4000);
+  });
+
+  it('stays quiet when the goal fits', () => {
+    const steps = Array.from({ length: 20 }, (_, i) => (i % 2 ? 9000 : 6000));
+    expect(suggestGoal(series(steps), 8000)).toBeNull();
   });
 });

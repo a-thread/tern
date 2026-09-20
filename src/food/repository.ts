@@ -12,6 +12,8 @@ export type NewFoodEntry = Omit<FoodEntry, 'id'>;
 export interface FoodRepository {
   /** Entries logged on `day` (local YYYY-MM-DD). */
   load(day: string): Promise<FoodEntry[]>;
+  /** Entries grouped by day for `from`..`to` inclusive. Days with nothing logged are absent. */
+  history(from: string, to: string): Promise<Record<string, FoodEntry[]>>;
   add(day: string, entry: FoodEntry): Promise<void>;
   update(id: string, patch: Partial<NewFoodEntry>): Promise<void>;
   remove(id: string): Promise<void>;
@@ -23,6 +25,8 @@ export function createMemoryFoodRepository(
   let entries = [...initial];
   return {
     load: async () => [...entries],
+    // Local mode keeps one day's log, so history is just that day (the end of the range).
+    history: async (_from, to) => (entries.length ? { [to]: [...entries] } : {}),
     add: async (_day, entry) => {
       entries = [...entries, entry];
     },

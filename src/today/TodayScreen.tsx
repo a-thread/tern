@@ -253,7 +253,7 @@ export default function TodayScreen() {
               disabled={d.state !== 'rest'}
             >
               <DayRing
-                progress={Math.min(d.steps / settings.stepGoal, 1)}
+                progress={d.goal > 0 ? Math.min(d.steps / d.goal, 1) : 0}
                 replayKey={replayKey}
                 delay={i * 80}
                 label={weekdayLetter(d.day)}

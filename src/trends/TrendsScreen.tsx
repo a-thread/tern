@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useCallback, useState } from 'react';
 import { View, Text, ScrollView, StyleSheet, Pressable } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import Svg, { Path } from 'react-native-svg';
+import { useFocusEffect } from '@react-navigation/native';
 
 import { colors, font, space } from '@shared/theme';
 import { Card, GroupLabel, Insight, FootNote } from '@shared/components/ui';
@@ -13,8 +14,9 @@ import {
 } from '@shared/components/charts';
 import { useActivity } from '@today/ActivityContext';
 import { useDayKey } from '@shared/hooks/useDayKey';
-import { monthName, weekdayLetter } from '@shared/utils/date';
-import { dayTotals } from '@food/models';
+import { addDays, monthName, weekdayLetter } from '@shared/utils/date';
+import { useBackend } from '@shared/state/BackendContext';
+import { averageIntake, type IntakeAverage } from '@food/models';
 import { useFood } from '@food/FoodContext';
 import { useWeight } from '@weight/WeightContext';
 import { useSettings } from '@settings/SettingsContext';
@@ -35,10 +37,28 @@ export default function TrendsScreen({ navigation }: Props) {
   const { weightEntries, weightTrend } = useWeight();
   const { settings } = useSettings();
   const { formatWeight, toDisplay, weightLabel } = useUnits();
-  const totals = dayTotals(foodLog);
+  const { food } = useBackend();
+  const [intake, setIntake] = useState<IntakeAverage | null>(null);
 
   const { days, status: stepsStatus } = useActivity();
   const todayKey = useDayKey();
+  // Food averages cover the last week, or the last 30 days for longer ranges
+  // (a longer window would mean loading a lot of rows for little gain).
+  const foodDays = range === 'Week' ? 7 : 30;
+  useFocusEffect(
+    useCallback(() => {
+      let cancelled = false;
+      food
+        .history(addDays(todayKey, -(foodDays - 1)), todayKey)
+        .then((byDay) => !cancelled && setIntake(averageIntake(byDay, todayKey)))
+        .catch((e) => console.warn('Could not load food history', e));
+      return () => {
+        cancelled = true;
+      };
+      // foodLog is a trigger, not an input: reload after something is logged.
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [food, todayKey, foodDays, foodLog]),
+  );
   const stepsConnected = stepsStatus === 'connected';
   const rangeSteps = summarizeSteps(days, RANGE_DAYS[range]);
   const last7 = days.slice(-7).map((d) => ({
@@ -173,29 +193,31 @@ export default function TrendsScreen({ navigation }: Props) {
         <Card style={{ marginBottom: space.md }}>
           <Text style={s.metricName}>Calories</Text>
           <Text style={s.metricValue}>
-            {Math.round(totals.calories).toLocaleString()}
+            {intake ? intake.calories.toLocaleString() : '—'}
           </Text>
           <Text style={s.metricSub}>
-            today
+            {intake
+              ? `daily average · last ${foodDays} days`
+              : 'no food logged yet'}
             {settings.trackCalories
               ? ` · target ${settings.calorieTarget.toLocaleString()}`
               : ''}
           </Text>
           <View style={s.macroRow}>
             <MacroBox
-              value={`${Math.round(totals.protein)}g`}
+              value={intake ? `${intake.protein}g` : '—'}
               label='protein'
               bg={colors.kelpTint}
               color={colors.kelp}
             />
             <MacroBox
-              value={`${Math.round(totals.carbs)}g`}
+              value={intake ? `${intake.carbs}g` : '—'}
               label='carbs'
               bg={colors.glacierTint}
               color={colors.glacierDeep}
             />
             <MacroBox
-              value={`${Math.round(totals.fat)}g`}
+              value={intake ? `${intake.fat}g` : '—'}
               label='fat'
               bg={colors.sunTint}
               color={colors.sunDeep}

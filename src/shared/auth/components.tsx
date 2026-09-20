@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import {
   ActivityIndicator,
+  Image,
   KeyboardAvoidingView,
   Platform,
   Pressable,
@@ -13,9 +14,8 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { colors, font, radius, space } from '@shared/theme';
-import TernMark from '@shared/components/TernMark';
 
-/** Shared frame for every auth screen: mark, title, subtitle, then the form. */
+/** Shared frame for every auth screen: logo, title, subtitle, then the form. */
 export function AuthLayout({
   title,
   subtitle,
@@ -43,7 +43,12 @@ export function AuthLayout({
       >
         {showMark ? (
           <View style={s.mark}>
-            <TernMark size={44} color={colors.ink} />
+            <Image
+              source={require('../../../assets/adaptive-icon.png')}
+              style={s.markImage}
+              resizeMode='cover'
+              accessibilityLabel='Tern'
+            />
           </View>
         ) : null}
         <Text style={s.title}>{title}</Text>
@@ -171,6 +176,9 @@ export function LinkColumn({ children }: { children: React.ReactNode }) {
 
 const s = StyleSheet.create({
   mark: { alignItems: 'center', marginBottom: space.sm },
+  // The artwork is a transparent square with the bird in the middle; 'cover' in
+  // a wide, short frame crops the empty top and bottom.
+  markImage: { width: 220, height: 130 },
   title: {
     fontFamily: font.display,
     fontSize: 28,

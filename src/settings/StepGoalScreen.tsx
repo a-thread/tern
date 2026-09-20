@@ -10,13 +10,15 @@ import {
   PushHeader,
   ToggleRow,
 } from '@shared/components/ui';
+import { useActivity } from '@today/ActivityContext';
+import { STEP_GOAL_MAX, STEP_GOAL_MIN, suggestGoal } from '@today/models';
 import { useSettings } from './SettingsContext';
 import type { SettingsStackParamList } from './types';
 
 type Props = NativeStackScreenProps<SettingsStackParamList, 'StepGoal'>;
 
-const MIN = 2000;
-const MAX = 15000;
+const MIN = STEP_GOAL_MIN;
+const MAX = STEP_GOAL_MAX;
 const PRESETS = [4000, 6000, 8000, 10000];
 
 export default function StepGoalScreen({ navigation }: Props) {
@@ -24,6 +26,18 @@ export default function StepGoalScreen({ navigation }: Props) {
   const { settings, updateSettings } = useSettings();
   const trackWidth = useRef(0);
   const dragStartGoal = useRef(settings.stepGoal);
+  const goalRef = useRef(settings.stepGoal);
+  goalRef.current = settings.stepGoal;
+  const { days } = useActivity();
+
+  const recent = days.slice(-30).filter((d) => d.steps > 0);
+  const goalDays = recent.filter((d) => d.steps >= d.goal).length;
+  const average = recent.length
+    ? Math.round(recent.reduce((sum, d) => sum + d.steps, 0) / recent.length)
+    : null;
+  const suggestion = settings.suggestStepAdjustments
+    ? suggestGoal(days, settings.stepGoal)
+    : null;
 
   const setGoal = (v: number) =>
     updateSettings({
@@ -33,8 +47,9 @@ export default function StepGoalScreen({ navigation }: Props) {
   const panResponder = useRef(
     PanResponder.create({
       onStartShouldSetPanResponder: () => true,
+      onPanResponderTerminationRequest: () => false,
       onPanResponderGrant: () => {
-        dragStartGoal.current = settings.stepGoal;
+        dragStartGoal.current = goalRef.current;
       },
       onPanResponderMove: (_evt, gesture) => {
         if (!trackWidth.current) return;
@@ -96,11 +111,18 @@ export default function StepGoalScreen({ navigation }: Props) {
 
         <GroupLabel>Based on your history</GroupLabel>
         <View style={s.card}>
-          <Text style={s.historyText}>
-            You've averaged <Text style={s.bold}>6,400 steps</Text> over the
-            last 30 days, and reached {settings.stepGoal.toLocaleString()} on 12
-            of them.
-          </Text>
+          {average !== null && recent.length >= 3 ? (
+            <Text style={s.historyText}>
+              You've averaged{' '}
+              <Text style={s.bold}>{average.toLocaleString()} steps</Text> over
+              the last {recent.length} days with step data, and reached your
+              goal on {goalDays} of them.
+            </Text>
+          ) : (
+            <Text style={s.historyText}>
+              Once Tern has a few days of steps, your history shows up here.
+            </Text>
+          )}
         </View>
 
         <GroupLabel>Adjusting</GroupLabel>
@@ -112,6 +134,19 @@ export default function StepGoalScreen({ navigation }: Props) {
             onToggle={(v) => updateSettings({ suggestStepAdjustments: v })}
           />
         </Group>
+
+        {suggestion !== null ? (
+          <View style={[s.card, { marginTop: space.md }]}>
+            <Text style={s.historyText}>
+              {suggestion < settings.stepGoal
+                ? `Most days land below ${settings.stepGoal.toLocaleString()}. A goal of ${suggestion.toLocaleString()} might feel more reachable.`
+                : `You've reached your goal on nearly every day lately. ${suggestion.toLocaleString()} is there if you want a bit more. Staying put is fine too.`}
+            </Text>
+            <Text style={s.suggestLink} onPress={() => setGoal(suggestion)}>
+              Use {suggestion.toLocaleString()}
+            </Text>
+          </View>
+        ) : null}
 
         <Text style={s.footNote}>
           Lowering your goal doesn't reset your streak or lose waypoints. A goal
@@ -164,6 +199,12 @@ const s = StyleSheet.create({
     justifyContent: 'space-between',
     paddingHorizontal: 6,
     marginTop: 4,
+  },
+  suggestLink: {
+    fontFamily: font.semibold,
+    fontSize: 13,
+    color: colors.ink,
+    marginTop: space.sm,
   },
   sliderEndText: { fontFamily: font.body, fontSize: 10.5, color: colors.ink3 },
   presetRow: { flexDirection: 'row', gap: 7, marginTop: 14 },
