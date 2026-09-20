@@ -23,6 +23,8 @@ import {
   portionGrams,
   portionServingLabel,
   scaleForGrams,
+  SERVING_STEP,
+  stepServings,
 } from '../servings';
 import type { LogFoodStackParamList } from '../types';
 
@@ -69,9 +71,9 @@ export default function FoodDetailScreen({ navigation, route }: Props) {
         };
 
   const step = (delta: number) =>
-    setServings((s) => Math.max(0.5, Math.round((s + delta) * 2) / 2));
+    setServings((s) => stepServings(s, delta));
   const stepCount = (delta: number) =>
-    setCount((c) => Math.max(0.5, Math.round((c + delta) * 2) / 2));
+    setCount((c) => stepServings(c, delta));
   // Switching to grams keeps the weight you had chosen.
   const chooseGrams = () => {
     if (gramsValue !== null) setGrams(String(gramsValue));
@@ -113,7 +115,8 @@ export default function FoodDetailScreen({ navigation, route }: Props) {
       return;
     }
     addFoodEntry({ ...food, meal });
-    navigation.getParent()?.goBack();
+    // One screen back (the search, or the scanner), so more foods can be added.
+    navigation.goBack();
   };
 
   return (
@@ -195,11 +198,11 @@ export default function FoodDetailScreen({ navigation, route }: Props) {
                     <Text style={s.weightNote}>= {gramsValue} g</Text>
                   </View>
                   <View style={s.stepper}>
-                    <Pressable onPress={() => stepCount(-0.5)} hitSlop={8}>
+                    <Pressable onPress={() => stepCount(-SERVING_STEP)} hitSlop={8}>
                       <Text style={s.stepperBtn}>−</Text>
                     </Pressable>
                     <Text style={s.stepperVal}>{count}</Text>
-                    <Pressable onPress={() => stepCount(0.5)} hitSlop={8}>
+                    <Pressable onPress={() => stepCount(SERVING_STEP)} hitSlop={8}>
                       <Text style={s.stepperBtn}>+</Text>
                     </Pressable>
                   </View>
@@ -237,11 +240,11 @@ export default function FoodDetailScreen({ navigation, route }: Props) {
               <View style={s.row}>
                 <Text style={[s.rowTitle, { flex: 1 }]}>Servings</Text>
                 <View style={s.stepper}>
-                  <Pressable onPress={() => step(-0.5)} hitSlop={8}>
+                  <Pressable onPress={() => step(-SERVING_STEP)} hitSlop={8}>
                     <Text style={s.stepperBtn}>−</Text>
                   </Pressable>
                   <Text style={s.stepperVal}>{servings}</Text>
-                  <Pressable onPress={() => step(0.5)} hitSlop={8}>
+                  <Pressable onPress={() => step(SERVING_STEP)} hitSlop={8}>
                     <Text style={s.stepperBtn}>+</Text>
                   </Pressable>
                 </View>

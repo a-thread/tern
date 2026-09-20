@@ -15,6 +15,9 @@ import { NativeStackScreenProps } from '@react-navigation/native-stack';
 
 import { colors, font, space } from '@shared/theme';
 import { FoodApiError } from '../http';
+import { useSessionAdditions } from '../useSessionAdditions';
+import { describeAdditions } from '../sessionAdditions';
+import AddedBanner from './AddedBanner';
 import { getProductByBarcode, isValidBarcode } from '../openFoodFacts';
 import type { LogFoodStackParamList } from '../types';
 
@@ -40,6 +43,9 @@ export default function BarcodeScanScreen({ navigation, route }: Props) {
   const [code, setCode] = useState('');
   // One lookup at a time: the camera fires repeatedly while a code is in view.
   const busy = useRef(false);
+  // Adding a food returns here to scan the next one; confirm it and offer Done.
+  const added = useSessionAdditions();
+  const addedMessage = pick ? null : describeAdditions(added);
 
   // Coming back from the details screen (or first arriving) starts a fresh scan.
   useFocusEffect(
@@ -86,7 +92,7 @@ export default function BarcodeScanScreen({ navigation, route }: Props) {
           }
           hitSlop={8}
         >
-          <Text style={s.cancel}>Cancel</Text>
+          <Text style={s.cancel}>{addedMessage ? 'Done' : 'Cancel'}</Text>
         </Pressable>
         <Text style={s.title}>Scan barcode</Text>
         <View style={{ width: 44 }} />
@@ -116,6 +122,8 @@ export default function BarcodeScanScreen({ navigation, route }: Props) {
             </View>
           ) : null}
         </View>
+
+        {addedMessage ? <AddedBanner message={addedMessage} dark /> : null}
 
         {!permission ? (
           <ActivityIndicator color='#C9D4D9' style={{ marginTop: 22 }} />

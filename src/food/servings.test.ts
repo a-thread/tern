@@ -1,4 +1,7 @@
 import {
+  MIN_SERVINGS,
+  SERVING_STEP,
+  stepServings,
   formatCount,
   gramsOf,
   parseGrams,
@@ -80,5 +83,29 @@ describe('portions', () => {
     const label = portionServingLabel(cup, 1.5);
     expect(label).toBe('1.5 cup (237 g)');
     expect(gramsOf(label)).toBe(237);
+  });
+});
+
+describe('stepServings', () => {
+  it('moves in quarters', () => {
+    expect(stepServings(1, SERVING_STEP)).toBe(1.25);
+    expect(stepServings(1, -SERVING_STEP)).toBe(0.75);
+    expect(stepServings(0.5, -SERVING_STEP)).toBe(0.25);
+    expect(stepServings(0.25, SERVING_STEP)).toBe(0.5);
+  });
+
+  it('never goes below a quarter', () => {
+    expect(stepServings(0.25, -SERVING_STEP)).toBe(MIN_SERVINGS);
+    expect(stepServings(1, -10)).toBe(MIN_SERVINGS);
+  });
+
+  it('snaps an odd starting value to the nearest quarter', () => {
+    expect(stepServings(1.13, SERVING_STEP)).toBe(1.5);
+    expect(stepServings(0.9, 0)).toBe(1);
+  });
+
+  it('keeps existing half-step values on the quarter grid', () => {
+    expect(stepServings(1.5, SERVING_STEP)).toBe(1.75);
+    expect(stepServings(2.5, -SERVING_STEP)).toBe(2.25);
   });
 });

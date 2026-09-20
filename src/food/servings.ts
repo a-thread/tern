@@ -33,6 +33,14 @@ export function parseGrams(text: string): number | null {
   return Number.isFinite(g) && g > 0 && g <= 5000 ? g : null;
 }
 
+/** Servings move in quarters: ¼, ½, ¾, 1, 1¼ … and never below a quarter. */
+export const SERVING_STEP = 0.25;
+export const MIN_SERVINGS = 0.25;
+
+/** `value` moved by `delta` (usually ±SERVING_STEP), snapped to a quarter, floor MIN_SERVINGS. */
+export const stepServings = (value: number, delta: number) =>
+  Math.max(MIN_SERVINGS, Math.round((value + delta) * 4) / 4);
+
 /** "1", "1.5", "0.5": a count without a trailing ".0". */
 export const formatCount = (n: number) => String(Math.round(n * 100) / 100);
 

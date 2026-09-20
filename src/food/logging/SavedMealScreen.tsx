@@ -64,7 +64,7 @@ export default function SavedMealScreen({ navigation, route }: Props) {
 
   const add = () => {
     addFoodEntries(itemsToEntries(saved.items, target, scale));
-    navigation.getParent()?.goBack();
+    navigation.goBack();
   };
 
   const editMeal = () => {

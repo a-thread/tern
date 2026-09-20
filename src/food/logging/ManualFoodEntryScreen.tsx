@@ -57,7 +57,7 @@ export default function ManualFoodEntryScreen({ navigation, route }: Props) {
       return;
     }
     addFoodEntry({ ...food, meal });
-    navigation.getParent()?.goBack();
+    navigation.goBack();
   };
 
   return (

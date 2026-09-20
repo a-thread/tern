@@ -20,6 +20,7 @@ import { useFoodDisplay } from '../useFoodDisplay';
 import { useSavedMeals } from '../SavedMealsContext';
 import { isDraftDirty, scaledTotals } from '../mealDraft';
 import { MAX_MEAL_ITEMS, MAX_MEAL_NAME } from '../savedMeals';
+import { SERVING_STEP } from '../servings';
 import type { LogFoodStackParamList } from '../types';
 
 type Props = NativeStackScreenProps<LogFoodStackParamList, 'MealEditor'>;
@@ -134,11 +135,11 @@ export default function MealEditorScreen({ navigation }: Props) {
                 </Text>
               </View>
               <View style={s.stepper}>
-                <Pressable onPress={() => stepDraftItem(i, -0.5)} hitSlop={8} accessibilityLabel={`Less ${item.name}`}>
+                <Pressable onPress={() => stepDraftItem(i, -SERVING_STEP)} hitSlop={8} accessibilityLabel={`Less ${item.name}`}>
                   <Text style={s.stepperBtn}>−</Text>
                 </Pressable>
                 <Text style={s.stepperVal}>{item.servings}×</Text>
-                <Pressable onPress={() => stepDraftItem(i, 0.5)} hitSlop={8} accessibilityLabel={`More ${item.name}`}>
+                <Pressable onPress={() => stepDraftItem(i, SERVING_STEP)} hitSlop={8} accessibilityLabel={`More ${item.name}`}>
                   <Text style={s.stepperBtn}>+</Text>
                 </Pressable>
               </View>

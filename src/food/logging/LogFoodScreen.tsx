@@ -32,6 +32,9 @@ import { isUsdaEnabled } from '../usda';
 import { useSavedMeals } from '../SavedMealsContext';
 import { filterMeals, savedMealTotals, type SavedMeal } from '../savedMeals';
 import { useLoggedFoods } from '../useLoggedFoods';
+import { useSessionAdditions } from '../useSessionAdditions';
+import { describeAdditions } from '../sessionAdditions';
+import AddedBanner from './AddedBanner';
 import { TierDot } from '../components';
 import { useFoodDisplay } from '../useFoodDisplay';
 import type { LogFoodStackParamList } from '../types';
@@ -50,6 +53,10 @@ export default function LogFoodScreen({ navigation, route }: Props) {
   const searching = trimmed.length >= SEARCH_MIN_CHARS;
 
   const logged = useLoggedFoods();
+  // Adding a food returns here, so confirm what went in and offer Done. (Not when
+  // choosing foods for a saved meal: those go to the meal being edited.)
+  const added = useSessionAdditions();
+  const addedMessage = pickMode ? null : describeAdditions(added);
   const { meals: savedMeals, startDraft } = useSavedMeals();
   const yourMeals = useMemo(
     () => (pickMode ? [] : filterMeals(savedMeals, query)),
@@ -105,7 +112,7 @@ export default function LogFoodScreen({ navigation, route }: Props) {
     >
       <SheetNav
         title={pickMode ? 'Add food to meal' : `Add to ${meal}`}
-        leftLabel='Cancel'
+        leftLabel={addedMessage ? 'Done' : 'Cancel'}
         onLeftPress={() =>
           pickMode ? navigation.goBack() : navigation.getParent()?.goBack()
         }
@@ -160,6 +167,8 @@ export default function LogFoodScreen({ navigation, route }: Props) {
           </Pressable>
         ))}
       </View>
+
+      {addedMessage ? <AddedBanner message={addedMessage} /> : null}
 
       <ScrollView
         contentContainerStyle={{

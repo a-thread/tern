@@ -18,6 +18,7 @@ import { MEAL_OPTIONS, type Tier } from '../models';
 import { useFood } from '../FoodContext';
 import { TierPicker, MealPicker } from '../components';
 import { useFoodDisplay } from '../useFoodDisplay';
+import { SERVING_STEP, stepServings } from '../servings';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'EditFood'>;
 
@@ -54,7 +55,7 @@ export default function EditFoodEntryScreen({ navigation, route }: Props) {
   }
 
   const step = (delta: number) =>
-    setServings((v) => Math.max(0.5, Math.round((v + delta) * 2) / 2));
+    setServings((v) => stepServings(v, delta));
 
   const save = () => {
     updateFoodEntry(entry.id, {
@@ -131,11 +132,11 @@ export default function EditFoodEntryScreen({ navigation, route }: Props) {
           <View style={s.row}>
             <Text style={[s.rowTitle, { flex: 1 }]}>Servings</Text>
             <View style={s.stepper}>
-              <Pressable onPress={() => step(-0.5)} hitSlop={8}>
+              <Pressable onPress={() => step(-SERVING_STEP)} hitSlop={8}>
                 <Text style={s.stepperBtn}>−</Text>
               </Pressable>
               <Text style={s.stepperVal}>{servings}</Text>
-              <Pressable onPress={() => step(0.5)} hitSlop={8}>
+              <Pressable onPress={() => step(SERVING_STEP)} hitSlop={8}>
                 <Text style={s.stepperBtn}>+</Text>
               </Pressable>
             </View>

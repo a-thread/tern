@@ -111,7 +111,9 @@ describe('drafts', () => {
     expect(addItem(items, item('C')).map((i) => i.name)).toEqual(['A', 'B', 'C']);
     expect(removeItemAt(items, 0).map((i) => i.name)).toEqual(['B']);
     expect(stepItemServings(items, 1, 0.5)[1].servings).toBe(1.5);
-    expect(stepItemServings(items, 1, -5)[1].servings).toBe(0.5);
+    expect(stepItemServings(items, 1, -5)[1].servings).toBe(0.25); // never below a quarter
+    expect(stepItemServings(items, 1, 0.25)[1].servings).toBe(1.25);
+    expect(stepItemServings(items, 1, -0.25)[1].servings).toBe(0.75);
     expect(items[1].servings).toBe(1);
   });
 

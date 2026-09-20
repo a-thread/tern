@@ -1,4 +1,5 @@
 import { dayTotals } from './models';
+import { stepServings } from './servings';
 import {
   MAX_MEAL_ITEMS,
   cleanName,
@@ -74,7 +75,7 @@ export const addItem = (items: SavedMealItem[], item: SavedMealItem) =>
 export const removeItemAt = (items: SavedMealItem[], index: number) =>
   items.filter((_, i) => i !== index);
 
-/** Changes one item's servings by `delta` (in halves, never below a half). */
+/** Changes one item's servings by `delta`, in quarters and never below a quarter. */
 export function stepItemServings(
   items: SavedMealItem[],
   index: number,
@@ -84,7 +85,7 @@ export function stepItemServings(
     i === index
       ? {
           ...item,
-          servings: Math.max(0.5, Math.round((item.servings + delta) * 2) / 2),
+          servings: stepServings(item.servings, delta),
         }
       : item,
   );
