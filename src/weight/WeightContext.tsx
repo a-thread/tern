@@ -9,6 +9,7 @@ import React, {
 } from 'react';
 import { useBackend } from '@shared/state/BackendContext';
 import { newId } from '@shared/utils/id';
+import { useToast } from '@shared/state/ToastContext';
 import { computeTrend, type WeightEntry } from './models';
 
 type WeightContextValue = {
@@ -24,6 +25,7 @@ const WeightContext = createContext<WeightContextValue | null>(null);
 
 export function WeightProvider({ children }: { children: React.ReactNode }) {
   const { weight } = useBackend();
+  const toast = useToast();
   const [weightEntries, setWeightEntries] = useState<WeightEntry[]>([]);
   const [ready, setReady] = useState(false);
   const mounted = useRef(true);
@@ -55,10 +57,11 @@ export function WeightProvider({ children }: { children: React.ReactNode }) {
       setWeightEntries((prev) => [entry, ...prev]);
       weight.add(entry).catch((e) => {
         console.warn('Could not save weight entry', e);
+        toast.show("Couldn't save that weigh-in — please try again.");
         reload();
       });
     },
-    [weight, reload],
+    [weight, reload, toast],
   );
 
   const weightTrend = useMemo(() => computeTrend(weightEntries), [weightEntries]);

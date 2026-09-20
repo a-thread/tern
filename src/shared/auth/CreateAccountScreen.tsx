@@ -13,6 +13,7 @@ import { useSubmit } from './useSubmit';
 import {
   MIN_PASSWORD,
   isValidEmail,
+  isValidName,
   isValidPassword,
   passwordsMatch,
 } from './validation';
@@ -25,6 +26,7 @@ export default function CreateAccountScreen({
   onBack: () => void;
 }) {
   const auth = useAuth()!;
+  const [firstName, setFirstName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirm, setConfirm] = useState('');
@@ -33,13 +35,14 @@ export default function CreateAccountScreen({
   );
 
   const canSubmit =
+    isValidName(firstName) &&
     isValidEmail(email) &&
     isValidPassword(password) &&
     passwordsMatch(password, confirm);
 
   const submit = async () => {
     if (!canSubmit) return;
-    const ok = await run(() => auth.signUp(email.trim(), password));
+    const ok = await run(() => auth.signUp(email.trim(), password, firstName.trim()));
     // With email confirmation on there's no session yet, so send them back to
     // sign in. (With it off they're already signed in and this unmounts.)
     if (ok) onCreated();
@@ -52,6 +55,15 @@ export default function CreateAccountScreen({
     >
       <AuthBanner variant='error' message={error || null} />
 
+      <FormField
+        label='First name'
+        kind='name'
+        autoComplete='given-name'
+        value={firstName}
+        onChangeText={setFirstName}
+        invalid={!isValidName(firstName)}
+        errorMessage='Enter your first name'
+      />
       <FormField
         label='Email address'
         kind='email'

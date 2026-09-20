@@ -14,6 +14,8 @@ import {
   Chip,
   FootNote,
 } from '@shared/components/ui';
+import { formatLoggedAt } from '@weight/models';
+import { useActivity } from '@today/ActivityContext';
 import { useSettings } from './SettingsContext';
 import type { SettingsStackParamList } from './types';
 
@@ -23,6 +25,7 @@ export default function HealthDataScreen({ navigation }: Props) {
   const insets = useSafeAreaInsets();
   const { settings, updateSettings } = useSettings();
   const hd = settings.healthData;
+  const { status, lastSynced, refresh, connect } = useActivity();
 
   const patchHealthData = (patch: Partial<typeof hd>) =>
     updateSettings({ healthData: { ...hd, ...patch } });
@@ -58,10 +61,18 @@ export default function HealthDataScreen({ navigation }: Props) {
           </IconBadge>
           <View style={{ flex: 1 }}>
             <Text style={s.rowTitle}>Health Connect</Text>
-            <Text style={s.rowSub}>Last synced {hd.lastSynced}</Text>
+            <Text style={s.rowSub}>
+              {status === 'connected'
+                ? lastSynced
+                  ? `Last synced ${formatLoggedAt(lastSynced.toISOString())}`
+                  : 'Connected'
+                : status === 'needs-permission'
+                  ? 'Allow Tern to read your steps'
+                  : 'Not available in this build of the app'}
+            </Text>
           </View>
           <Chip bg='#E4EFE6' color='#3B6B4A'>
-            {hd.connected ? 'On' : 'Off'}
+            {status === 'connected' ? 'On' : 'Off'}
           </Chip>
         </View>
 
@@ -103,31 +114,27 @@ export default function HealthDataScreen({ navigation }: Props) {
           />
         </Group>
 
-        <GroupLabel>If steps aren't syncing</GroupLabel>
+        <GroupLabel>{status === 'needs-permission' ? 'Get started' : "If steps aren't syncing"}</GroupLabel>
         <Group>
-          <View style={s.row}>
-            <Text style={[s.rowTitle, s.link, { flex: 1 }]}>Sync now</Text>
-          </View>
-          <View style={s.row}>
-            <View style={{ flex: 1 }}>
-              <Text style={[s.rowTitle, s.link]}>Enter steps manually</Text>
-              <Text style={s.rowSub}>Works with no connection at all</Text>
-            </View>
-          </View>
+          {status === 'needs-permission' ? (
+            <Pressable style={s.row} onPress={connect}>
+              <Text style={[s.rowTitle, s.link, { flex: 1 }]}>
+                Connect Health Connect
+              </Text>
+            </Pressable>
+          ) : (
+            <Pressable style={s.row} onPress={refresh}>
+              <Text style={[s.rowTitle, s.link, { flex: 1 }]}>Sync now</Text>
+            </Pressable>
+          )}
         </Group>
 
         <FootNote>
           Tern reads only what's switched on above, and never shares your health
-          data with anyone. You can disconnect at any time and keep everything
-          you've logged.
+          data with anyone. To disconnect, remove Tern's access in Health Connect; everything
+          you've logged stays.
         </FootNote>
 
-        <Pressable
-          style={s.dangerBtn}
-          onPress={() => patchHealthData({ connected: false })}
-        >
-          <Text style={s.dangerText}>Disconnect Health Connect</Text>
-        </Pressable>
       </ScrollView>
     </View>
   );

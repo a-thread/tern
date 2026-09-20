@@ -1,5 +1,12 @@
-import React from 'react';
-import { View, Text, ScrollView, StyleSheet, Pressable } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import {
+  View,
+  Text,
+  TextInput,
+  ScrollView,
+  StyleSheet,
+  Pressable,
+} from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import Svg, { Path } from 'react-native-svg';
@@ -16,7 +23,8 @@ import {
   PushHeader,
 } from '@shared/components/ui';
 import { useAuth } from '@shared/auth/AuthContext';
-import { profile } from './mock';
+import { useActivity } from '@today/ActivityContext';
+import { MAX_NAME } from '@shared/auth/validation';
 import { useSettings } from './SettingsContext';
 import { useUnits } from './useUnits';
 import type { SettingsStackParamList } from './types';
@@ -27,7 +35,17 @@ export default function SettingsRootScreen({ navigation }: Props) {
   const insets = useSafeAreaInsets();
   const { settings, updateSettings } = useSettings();
   const auth = useAuth();
+  const { status: stepsStatus } = useActivity();
   const email = auth?.session?.user.email;
+
+  // Edited locally and saved on blur, so each keystroke isn't a settings write.
+  const [name, setName] = useState(settings.firstName);
+  useEffect(() => setName(settings.firstName), [settings.firstName]);
+  const saveName = () => {
+    const trimmed = name.trim();
+    setName(trimmed);
+    if (trimmed !== settings.firstName) updateSettings({ firstName: trimmed });
+  };
 
   const { units, toDisplay, fromDisplay, formatGoal } = useUnits();
 
@@ -61,16 +79,27 @@ export default function SettingsRootScreen({ navigation }: Props) {
           <View style={s.row}>
             <View style={s.avatar}>
               <Text style={s.avatarText}>
-                {(email ?? profile.name)[0].toUpperCase()}
+                {(name.trim() || email || '?')[0].toUpperCase()}
               </Text>
             </View>
             <View style={{ flex: 1 }}>
-              <Text style={s.rowTitle}>
-                {auth?.isGuest ? 'Preview' : email ? 'Account' : profile.name}
-              </Text>
+              <TextInput
+                value={name}
+                onChangeText={setName}
+                onBlur={saveName}
+                onSubmitEditing={saveName}
+                placeholder='First name'
+                placeholderTextColor={colors.ink3}
+                maxLength={MAX_NAME}
+                autoCapitalize='words'
+                autoComplete='given-name'
+                returnKeyType='done'
+                accessibilityLabel='First name'
+                style={s.nameInput}
+              />
               <Text style={s.rowSub}>
                 {auth?.isGuest
-                  ? 'Nothing is saved — this resets when you exit'
+                  ? 'Preview · nothing is saved, this resets when you exit'
                   : (email ?? 'Local profile')}
               </Text>
             </View>
@@ -219,7 +248,7 @@ export default function SettingsRootScreen({ navigation }: Props) {
             }
             title='Health data'
             sub='Steps sync automatically'
-            badge={settings.healthData.connected ? 'Connected' : undefined}
+            badge={stepsStatus === 'connected' ? 'Connected' : undefined}
             onPress={() => navigation.navigate('HealthData')}
           />
         </Group>
@@ -348,6 +377,12 @@ const s = StyleSheet.create({
     paddingVertical: 12,
   },
   rowTitle: { fontFamily: font.medium, fontSize: 14, color: colors.ink },
+  nameInput: {
+    fontFamily: font.medium,
+    fontSize: 14,
+    color: colors.ink,
+    padding: 0,
+  },
   rowSub: {
     fontFamily: font.body,
     fontSize: 11.5,

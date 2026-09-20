@@ -20,6 +20,20 @@ export function createSupabaseWaypointsRepository(
         ),
       };
     },
+    async history() {
+      const { data, error } = await db
+        .from('waypoint_events')
+        .select('source, day, points')
+        .order('day', { ascending: true });
+      if (error) throw error;
+      return (data ?? []).map(
+        (r: { source: WaypointSource; day: string; points: number }) => ({
+          source: r.source,
+          day: r.day,
+          points: Number(r.points),
+        }),
+      );
+    },
     async award(source, points, day) {
       // Unique (user, source, day): a repeat award is silently ignored.
       const { error } = await db

@@ -1,4 +1,9 @@
-import { isValidEmail, isValidPassword, passwordsMatch } from './validation';
+import {
+  isValidEmail,
+  isValidName,
+  isValidPassword,
+  passwordsMatch,
+} from './validation';
 
 describe('auth validation', () => {
   it('accepts plausible emails and rejects malformed ones', () => {
@@ -6,6 +11,14 @@ describe('auth validation', () => {
     expect(isValidEmail('a@b')).toBe(false);
     expect(isValidEmail('a b@c.de')).toBe(false);
     expect(isValidEmail('')).toBe(false);
+  });
+
+  it('needs a non-blank first name of reasonable length', () => {
+    expect(isValidName('Aiden')).toBe(true);
+    expect(isValidName('  Aiden  ')).toBe(true);
+    expect(isValidName('   ')).toBe(false);
+    expect(isValidName('')).toBe(false);
+    expect(isValidName('a'.repeat(41))).toBe(false);
   });
 
   it('requires at least 6 characters', () => {

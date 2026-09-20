@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import { View, Text, ScrollView, StyleSheet } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -16,15 +16,20 @@ import {
 import { JourneyRoute } from '@shared/components/charts';
 import { useFocusEffect } from '@react-navigation/native';
 import { useAnimatedNumber } from '@shared/hooks/useAnimatedNumber';
-import { milestones } from './mock';
-import { waypointRules } from './models';
+import { formatShortDate, monthName } from '@shared/utils/date';
+import {
+  MILESTONE_STOPS,
+  daysWithWaypoints,
+  milestonesFor,
+  waypointRules,
+} from './models';
 import { useWaypoints } from './WaypointsContext';
 
 const MILESTONE_COLORS = [colors.glacier, colors.violet, colors.aurora];
 
 export default function JourneyScreen() {
   const insets = useSafeAreaInsets();
-  const { waypoints } = useWaypoints();
+  const { waypoints, events } = useWaypoints();
   const animatedWaypoints = useAnimatedNumber(waypoints, 900);
 
   // Redraw the route each time the Journey tab comes into view.
@@ -34,13 +39,21 @@ export default function JourneyScreen() {
       setReplayKey((k) => k + 1);
     }, []),
   );
-  const reached = milestones.filter((m) => m.reachedOn);
-  const next = milestones.find((m) => !m.reachedOn);
+  const milestones = useMemo(
+    () => milestonesFor(waypoints, events),
+    [waypoints, events],
+  );
+  const reached = milestones.filter((m) => m.reached);
+  const next = milestones.find((m) => !m.reached);
   const prev = reached[reached.length - 1];
 
   const spanStart = prev?.waypoints ?? 0;
   const spanEnd = next?.waypoints ?? waypoints;
   const progress = (waypoints - spanStart) / Math.max(spanEnd - spanStart, 1);
+  const routeEnd = MILESTONE_STOPS[MILESTONE_STOPS.length - 1].waypoints;
+  const firstDay = events.length
+    ? events.reduce((a, e) => (e.day < a ? e.day : a), events[0].day)
+    : null;
 
   return (
     <View style={{ flex: 1, backgroundColor: colors.paper }}>
@@ -48,16 +61,24 @@ export default function JourneyScreen() {
         colors={[...gradients.journey]}
         style={[s.hero, { paddingTop: insets.top + 8 }]}
       >
-        <Text style={s.heroEyebrow}>Since March</Text>
+        <Text style={s.heroEyebrow}>
+          {firstDay ? `Since ${monthName(firstDay)}` : 'Your route'}
+        </Text>
         <Text style={s.heroTitle}>Journey</Text>
 
         <View style={{ marginTop: space.sm }}>
-          <JourneyRoute progress={0.75} replayKey={replayKey} />
+          <JourneyRoute
+            progress={Math.min(waypoints / routeEnd, 1)}
+            replayKey={replayKey}
+          />
         </View>
 
         <View style={{ alignItems: 'center', marginTop: 6 }}>
           <Text style={s.heroNumber}>{animatedWaypoints.toLocaleString()}</Text>
-          <Text style={s.heroLabel}>waypoints · 184 days logged</Text>
+          <Text style={s.heroLabel}>
+            waypoints · {daysWithWaypoints(events)}{' '}
+            {daysWithWaypoints(events) === 1 ? 'day' : 'days'} earned
+          </Text>
         </View>
       </LinearGradient>
 
@@ -95,7 +116,11 @@ export default function JourneyScreen() {
               <Row
                 key={m.id}
                 title={m.name}
-                sub={`${m.waypoints.toLocaleString()} · ${m.reachedOn}`}
+                sub={
+                  m.reachedOn
+                    ? `${m.waypoints.toLocaleString()} · ${formatShortDate(m.reachedOn)}`
+                    : m.waypoints.toLocaleString()
+                }
                 icon={
                   <View
                     style={[

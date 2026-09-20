@@ -8,13 +8,15 @@ import Svg, { Path } from 'react-native-svg';
 import { colors, font, radius, space, tierColors } from '@shared/theme';
 import { Group, GroupLabel, Chevron, FootNote } from '@shared/components/ui';
 import type { RootStackParamList } from '@shared/navigation/types';
-import { today } from '@today/mock';
+import { useDayKey } from '@shared/hooks/useDayKey';
+import { formatLongDate } from '@shared/utils/date';
 import { useSettings } from '@settings/SettingsContext';
 import { mealTotals, dayTotals, MEAL_OPTIONS, type FoodEntry } from './models';
 import { useFood } from './FoodContext';
 import { TierDot } from './components';
 
 export default function FoodScreen() {
+  const todayKey = useDayKey();
   const insets = useSafeAreaInsets();
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
@@ -31,7 +33,7 @@ export default function FoodScreen() {
       style={{ flex: 1, backgroundColor: colors.paper, paddingTop: insets.top }}
     >
       <View style={{ paddingHorizontal: space.lg, paddingBottom: space.sm }}>
-        <Text style={s.eyebrow}>{today.date}</Text>
+        <Text style={s.eyebrow}>{formatLongDate(todayKey)}</Text>
         <Text style={s.title}>Food</Text>
       </View>
 

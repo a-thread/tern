@@ -87,8 +87,8 @@ export function FormField({
   label: string;
   value: string;
   onChangeText: (v: string) => void;
-  kind: 'email' | 'password';
-  autoComplete: 'email' | 'current-password' | 'new-password';
+  kind: 'email' | 'password' | 'name';
+  autoComplete: 'email' | 'current-password' | 'new-password' | 'given-name';
   invalid?: boolean;
   errorMessage?: string;
   onSubmitEditing?: () => void;
@@ -105,8 +105,8 @@ export function FormField({
         onSubmitEditing={onSubmitEditing}
         secureTextEntry={kind === 'password'}
         keyboardType={kind === 'email' ? 'email-address' : 'default'}
-        autoCapitalize='none'
-        autoCorrect={false}
+        autoCapitalize={kind === 'name' ? 'words' : 'none'}
+        autoCorrect={kind === 'name'}
         autoComplete={autoComplete}
         accessibilityLabel={label}
         style={[s.input, showInvalid && s.inputInvalid]}

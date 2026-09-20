@@ -20,6 +20,17 @@ import {
   type WaypointsRepository,
 } from '@journey/repository';
 import { createSupabaseWaypointsRepository } from '@journey/repository.supabase';
+import {
+  createMemoryStepsRepository,
+  createUnavailableStepsRepository,
+  type StepsRepository,
+} from '@today/steps.repository';
+import { createHealthConnectStepsRepository } from '@today/steps.healthconnect';
+import {
+  createMemoryRestDaysRepository,
+  type RestDaysRepository,
+} from '@today/restDays.repository';
+import { createSupabaseRestDaysRepository } from '@today/restDays.repository.supabase';
 
 /** Every repository the app persists through. Contexts read these; they never touch Supabase directly. */
 export type Backend = {
@@ -27,6 +38,8 @@ export type Backend = {
   weight: WeightRepository;
   settings: SettingsRepository;
   waypoints: WaypointsRepository;
+  steps: StepsRepository;
+  restDays: RestDaysRepository;
 };
 
 /** Local mock data — used when no Supabase keys are configured, and in tests. */
@@ -36,6 +49,8 @@ export function createMemoryBackend(): Backend {
     weight: createMemoryWeightRepository(),
     settings: createMemorySettingsRepository(),
     waypoints: createMemoryWaypointsRepository(),
+    steps: createMemoryStepsRepository(),
+    restDays: createMemoryRestDaysRepository(),
   };
 }
 
@@ -47,6 +62,12 @@ export function createRemoteBackend(): Backend {
     weight: createSupabaseWeightRepository(supabase),
     settings: createSupabaseSettingsRepository(supabase),
     waypoints: createSupabaseWaypointsRepository(supabase),
+    // Real steps only. With no step source the count stays at zero — mock
+    // steps would earn a real account waypoints it didn't earn.
+    steps:
+      createHealthConnectStepsRepository() ??
+      createUnavailableStepsRepository(),
+    restDays: createSupabaseRestDaysRepository(supabase),
   };
 }
 

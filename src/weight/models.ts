@@ -1,3 +1,5 @@
+import { dayKey } from '@shared/utils/date';
+
 /** `loggedAt` is an ISO timestamp; use `formatLoggedAt` to display it. */
 export type WeightEntry = { id: string; lb: number; loggedAt: string };
 
@@ -20,6 +22,11 @@ export function computeTrend(entriesNewestFirst: WeightEntry[]): number[] {
     trend.push(Math.round(next * 100) / 100);
   }
   return trend.slice(-TREND_POINTS);
+}
+
+/** Whether a weigh-in falls on today's local calendar date. */
+export function isLoggedToday(iso: string, now: Date = new Date()): boolean {
+  return dayKey(new Date(iso)) === dayKey(now);
 }
 
 const WEEKDAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];

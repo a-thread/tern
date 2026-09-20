@@ -8,7 +8,8 @@ import React, {
   useState,
 } from 'react';
 import { useBackend } from '@shared/state/BackendContext';
-import { dayKey } from '@shared/utils/date';
+import { useDayKey } from '@shared/hooks/useDayKey';
+import { useToast } from '@shared/state/ToastContext';
 import { newId } from '@shared/utils/id';
 import type { FoodEntry } from './models';
 import type { NewFoodEntry } from './repository';
@@ -16,6 +17,8 @@ import type { NewFoodEntry } from './repository';
 type FoodContextValue = {
   /** Today's entries. */
   foodLog: FoodEntry[];
+  /** The day `foodLog` was loaded for — differs from today briefly after midnight. */
+  loadedDay: string | null;
   /** False until the first load finishes — don't derive "nothing logged" from an unloaded log. */
   ready: boolean;
   addFoodEntry: (entry: NewFoodEntry) => void;
@@ -34,13 +37,18 @@ export function FoodProvider({ children }: { children: React.ReactNode }) {
   const { food } = useBackend();
   const [foodLog, setFoodLog] = useState<FoodEntry[]>([]);
   const [ready, setReady] = useState(false);
-  const day = useRef(dayKey()).current;
+  const day = useDayKey();
+  const toast = useToast();
+  const [loadedDay, setLoadedDay] = useState<string | null>(null);
   const mounted = useRef(true);
 
   const reload = useCallback(async () => {
     try {
       const entries = await food.load(day);
-      if (mounted.current) setFoodLog(entries);
+      if (mounted.current) {
+        setFoodLog(entries);
+        setLoadedDay(day);
+      }
     } catch (e) {
       console.warn('Could not load food log', e);
     }
@@ -58,10 +66,11 @@ export function FoodProvider({ children }: { children: React.ReactNode }) {
     (write: Promise<void>) => {
       write.catch((e) => {
         console.warn('Could not save food change', e);
+        toast.show("Couldn't save that change — your log was refreshed.");
         reload();
       });
     },
-    [reload],
+    [reload, toast],
   );
 
   const addFoodEntry = useCallback(
@@ -92,8 +101,15 @@ export function FoodProvider({ children }: { children: React.ReactNode }) {
   );
 
   const value = useMemo<FoodContextValue>(
-    () => ({ foodLog, ready, addFoodEntry, updateFoodEntry, removeFoodEntry }),
-    [foodLog, ready, addFoodEntry, updateFoodEntry, removeFoodEntry],
+    () => ({
+      foodLog,
+      loadedDay,
+      ready,
+      addFoodEntry,
+      updateFoodEntry,
+      removeFoodEntry,
+    }),
+    [foodLog, loadedDay, ready, addFoodEntry, updateFoodEntry, removeFoodEntry],
   );
 
   return <FoodContext.Provider value={value}>{children}</FoodContext.Provider>;

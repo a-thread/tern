@@ -1,10 +1,6 @@
 import type { Units } from '@shared/utils/units';
 
 /** Seed data only — the values SettingsContext initializes from. */
-export const profile = {
-  name: 'Sam',
-};
-
 export const settingsSeed = {
   units: 'imperial' as Units,
   stepGoal: 8000,

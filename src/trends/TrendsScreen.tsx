@@ -11,18 +11,22 @@ import {
   WeightTrend,
   ConsistencyGrid,
 } from '@shared/components/charts';
-import { weekBars, monthConsistency } from '@today/mock';
+import { useActivity } from '@today/ActivityContext';
+import { useDayKey } from '@shared/hooks/useDayKey';
+import { monthName, weekdayLetter } from '@shared/utils/date';
 import { dayTotals } from '@food/models';
 import { useFood } from '@food/FoodContext';
 import { useWeight } from '@weight/WeightContext';
 import { useSettings } from '@settings/SettingsContext';
 import { useUnits } from '@settings/useUnits';
+import { longestProtectedRun, summarizeSteps } from './models';
 import type { TrendsStackParamList } from './types';
 
 type Props = NativeStackScreenProps<TrendsStackParamList, 'TrendsHome'>;
 
 const RANGES = ['Week', 'Month', '6 months'] as const;
 const WEIGHT_TREND_MIN_ENTRIES = 7;
+const RANGE_DAYS = { Week: 7, Month: 30, '6 months': 180 } as const;
 
 export default function TrendsScreen({ navigation }: Props) {
   const insets = useSafeAreaInsets();
@@ -33,9 +37,17 @@ export default function TrendsScreen({ navigation }: Props) {
   const { formatWeight, toDisplay, weightLabel } = useUnits();
   const totals = dayTotals(foodLog);
 
-  const avgSteps = Math.round(
-    weekBars.reduce((a, b) => a + b.value, 0) / weekBars.length,
-  );
+  const { days, status: stepsStatus } = useActivity();
+  const todayKey = useDayKey();
+  const stepsConnected = stepsStatus === 'connected';
+  const rangeSteps = summarizeSteps(days, RANGE_DAYS[range]);
+  const last7 = days.slice(-7).map((d) => ({
+    label: weekdayLetter(d.day),
+    value: d.steps,
+    state: d.state,
+  }));
+  const last30 = days.slice(-30).map((d) => d.state);
+  const longestRun = longestProtectedRun(days.slice(-RANGE_DAYS[range]).map((d) => d.state));
   const latest = weightTrend[weightTrend.length - 1];
   const delta = latest - weightTrend[0];
   const hasWeightTrend = weightEntries.length >= WEIGHT_TREND_MIN_ENTRIES;
@@ -45,7 +57,7 @@ export default function TrendsScreen({ navigation }: Props) {
       style={{ flex: 1, backgroundColor: colors.paper, paddingTop: insets.top }}
     >
       <View style={{ paddingHorizontal: space.lg, paddingBottom: space.sm }}>
-        <Text style={s.eyebrow}>September</Text>
+        <Text style={s.eyebrow}>{monthName(todayKey)}</Text>
         <Text style={s.title}>Trends</Text>
       </View>
 
@@ -73,16 +85,29 @@ export default function TrendsScreen({ navigation }: Props) {
             <View style={s.metricTop}>
               <View>
                 <Text style={s.metricName}>Steps</Text>
-                <Text style={s.metricValue}>{avgSteps.toLocaleString()}</Text>
+                <Text style={s.metricValue}>
+                  {rangeSteps.average === null
+                    ? '—'
+                    : rangeSteps.average.toLocaleString()}
+                </Text>
                 <Text style={s.metricSub}>daily average</Text>
               </View>
-              <View style={[s.delta, { backgroundColor: colors.glacierTint }]}>
-                <Text style={[s.deltaText, { color: colors.glacierDeep }]}>
-                  +11%
-                </Text>
-              </View>
+              {rangeSteps.changePct !== null ? (
+                <View style={[s.delta, { backgroundColor: colors.glacierTint }]}>
+                  <Text style={[s.deltaText, { color: colors.glacierDeep }]}>
+                    {rangeSteps.changePct > 0 ? '+' : rangeSteps.changePct < 0 ? '−' : ''}
+                    {Math.abs(rangeSteps.changePct)}%
+                  </Text>
+                </View>
+              ) : null}
             </View>
-            <StepBars days={weekBars} goal={settings.stepGoal} />
+            {stepsConnected ? (
+              <StepBars days={last7} goal={settings.stepGoal} />
+            ) : (
+              <Text style={s.metricSub}>
+                Connect step data in Settings → Health data to see this.
+              </Text>
+            )}
           </Card>
         </Pressable>
 
@@ -151,7 +176,7 @@ export default function TrendsScreen({ navigation }: Props) {
             {Math.round(totals.calories).toLocaleString()}
           </Text>
           <Text style={s.metricSub}>
-            daily average
+            today
             {settings.trackCalories
               ? ` · target ${settings.calorieTarget.toLocaleString()}`
               : ''}
@@ -181,23 +206,25 @@ export default function TrendsScreen({ navigation }: Props) {
         <GroupLabel>Consistency</GroupLabel>
         <Card>
           <Text style={s.metricSub}>Last 30 days</Text>
-          <ConsistencyGrid days={monthConsistency} />
+          <ConsistencyGrid days={last30} />
         </Card>
 
-        <Insight
-          icon={
-            <Svg width={13} height={13} viewBox='0 0 24 24' fill='none'>
-              <Path
-                d='M3 17l6-6 4 4 8-8'
-                stroke={colors.aurora}
-                strokeWidth={2}
-                strokeLinecap='round'
-              />
-            </Svg>
-          }
-        >
-          Nine days logged in a row — your most consistent stretch yet.
-        </Insight>
+        {longestRun > 1 ? (
+          <Insight
+            icon={
+              <Svg width={13} height={13} viewBox='0 0 24 24' fill='none'>
+                <Path
+                  d='M3 17l6-6 4 4 8-8'
+                  stroke={colors.aurora}
+                  strokeWidth={2}
+                  strokeLinecap='round'
+                />
+              </Svg>
+            }
+          >
+            {`Your longest stretch in this period is ${longestRun} days, rest days included.`}
+          </Insight>
+        ) : null}
 
         <FootNote>
           Averages smooth out day-to-day noise. Single-day weight changes are

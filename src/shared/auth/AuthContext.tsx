@@ -23,7 +23,11 @@ type AuthContextValue = {
   startOnSignUp: boolean;
   continueAsGuest: () => void;
   signIn: (email: string, password: string) => Promise<void>;
-  signUp: (email: string, password: string) => Promise<void>;
+  signUp: (
+    email: string,
+    password: string,
+    firstName: string,
+  ) => Promise<void>;
   sendPasswordReset: (email: string) => Promise<void>;
   updatePassword: (password: string) => Promise<void>;
   /** Ends the session — or, for a guest, just leaves the preview. */
@@ -84,11 +88,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const signUp = useCallback(
-    async (email: string, password: string) => {
+    async (email: string, password: string, firstName: string) => {
       const { error } = await supabase!.auth.signUp({
         email,
         password,
-        options: { emailRedirectTo: redirectTo },
+        // Carried in user metadata: there is no session (so no settings row to
+        // write) until the email is confirmed.
+        options: {
+          emailRedirectTo: redirectTo,
+          data: { first_name: firstName },
+        },
       });
       if (error) throw error;
     },

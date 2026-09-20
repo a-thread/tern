@@ -1,4 +1,9 @@
-import { computeTrend, formatLoggedAt, type WeightEntry } from './models';
+import {
+  computeTrend,
+  formatLoggedAt,
+  isLoggedToday,
+  type WeightEntry,
+} from './models';
 
 const entry = (lb: number, loggedAt = '2026-09-01T07:00:00'): WeightEntry => ({
   id: String(lb),
@@ -37,5 +42,19 @@ describe('formatLoggedAt', () => {
   it('uses the weekday within the last week, and the date beyond it', () => {
     expect(formatLoggedAt(new Date(2026, 8, 15, 6, 58).toISOString(), now)).toBe('Tue, 6:58 am');
     expect(formatLoggedAt(new Date(2026, 7, 3, 12, 0).toISOString(), now)).toBe('Aug 3, 12:00 pm');
+  });
+});
+
+describe('isLoggedToday', () => {
+  const now = new Date(2026, 8, 18, 12, 0);
+
+  it('is true for any time on the same local day', () => {
+    expect(isLoggedToday(new Date(2026, 8, 18, 0, 5).toISOString(), now)).toBe(true);
+    expect(isLoggedToday(new Date(2026, 8, 18, 23, 55).toISOString(), now)).toBe(true);
+  });
+
+  it('is false for other days', () => {
+    expect(isLoggedToday(new Date(2026, 8, 17, 23, 55).toISOString(), now)).toBe(false);
+    expect(isLoggedToday(new Date(2026, 8, 19, 0, 5).toISOString(), now)).toBe(false);
   });
 });

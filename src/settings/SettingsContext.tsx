@@ -8,6 +8,8 @@ import React, {
   useState,
 } from 'react';
 import { useBackend } from '@shared/state/BackendContext';
+import { useAuth } from '@shared/auth/AuthContext';
+import { useToast } from '@shared/state/ToastContext';
 import type { Units } from '@shared/utils/units';
 import { settingsSeed } from './mock';
 
@@ -18,8 +20,6 @@ export type ReminderSettings = {
 };
 
 export type HealthDataSettings = {
-  connected: boolean;
-  lastSynced: string;
   readSteps: boolean;
   readDistance: boolean;
   readWeight: boolean;
@@ -28,6 +28,7 @@ export type HealthDataSettings = {
 };
 
 export type AppSettings = {
+  firstName: string;
   stepGoal: number;
   suggestStepAdjustments: boolean;
   calorieTarget: number;
@@ -47,6 +48,7 @@ export type AppSettings = {
 };
 
 const initialSettings: AppSettings = {
+  firstName: '',
   stepGoal: settingsSeed.stepGoal,
   suggestStepAdjustments: true,
   calorieTarget: settingsSeed.calorieTarget,
@@ -66,8 +68,6 @@ const initialSettings: AppSettings = {
     stepGoalNudge: { on: false },
   },
   healthData: {
-    connected: true,
-    lastSynced: '4 minutes ago',
     readSteps: true,
     readDistance: true,
     readWeight: false,
@@ -86,10 +86,16 @@ const SettingsContext = createContext<SettingsContextValue | null>(null);
 
 export function SettingsProvider({ children }: { children: React.ReactNode }) {
   const { settings: repo } = useBackend();
+  const toast = useToast();
   const [settings, setSettings] = useState<AppSettings>(initialSettings);
   const [ready, setReady] = useState(false);
   const latest = useRef(settings);
   latest.current = settings;
+  // Sign-up stores the first name in auth metadata (no session, so no settings
+  // row, until the email is confirmed); the first load copies it across.
+  const signedUpName = useAuth()?.session?.user.user_metadata?.first_name;
+  const signedUpNameRef = useRef<string | undefined>(signedUpName);
+  signedUpNameRef.current = signedUpName;
 
   // Saved settings are merged over the defaults, so a setting added in a
   // later version simply takes its default until the user changes it.
@@ -98,7 +104,15 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
     repo
       .load()
       .then((saved) => {
-        if (!cancelled && saved) setSettings({ ...initialSettings, ...saved });
+        if (cancelled) return;
+        const loaded = { ...initialSettings, ...saved };
+        const name = signedUpNameRef.current?.trim();
+        // Only when never set — clearing the name in Settings must stick.
+        if (saved?.firstName === undefined && name) {
+          loaded.firstName = name;
+          repo.save(loaded).catch((e) => console.warn('Could not save settings', e));
+        }
+        setSettings(loaded);
       })
       .catch((e) => console.warn('Could not load settings', e))
       .finally(() => !cancelled && setReady(true));
@@ -112,9 +126,12 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
       const next = { ...latest.current, ...patch };
       latest.current = next;
       setSettings(next);
-      repo.save(next).catch((e) => console.warn('Could not save settings', e));
+      repo.save(next).catch((e) => {
+        console.warn('Could not save settings', e);
+        toast.show("Couldn't save your settings — they may not stick.");
+      });
     },
-    [repo],
+    [repo, toast],
   );
 
   const value = useMemo<SettingsContextValue>(

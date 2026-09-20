@@ -10,8 +10,13 @@ import React, {
 import { allMealsLogged } from '@food/models';
 import { useFood } from '@food/FoodContext';
 import { useBackend } from '@shared/state/BackendContext';
-import { dayKey } from '@shared/utils/date';
-import { waypointRules, type WaypointSource } from './models';
+import { useDayKey } from '@shared/hooks/useDayKey';
+import { useToast } from '@shared/state/ToastContext';
+import {
+  waypointRules,
+  type LedgerEvent,
+  type WaypointSource,
+} from './models';
 
 export type { WaypointSource };
 
@@ -30,8 +35,14 @@ type WaypointsContextValue = {
   waypoints: number;
   /** False until the ledger has loaded. */
   ready: boolean;
+  /** The day the ledger is loaded for; awards are ignored until it matches today (briefly false after midnight). */
+  day: string | null;
+  /** Every award on record, kept current as awards are made and taken back. */
+  events: LedgerEvent[];
   /** Award `points` for `source`. A source can only be awarded once per day, so repeats are ignored. */
   addWaypoints: (points: number, source: WaypointSource) => void;
+  /** Quietly take back today's award for `source` (no-op if there isn't one). */
+  revokeWaypoints: (points: number, source: WaypointSource) => void;
   /** Awards waiting for the Today screen to play their animation, oldest first. */
   celebrations: Celebration[];
   /** Points in `celebrations` — the total the header chip should hold back until they land. */
@@ -44,11 +55,15 @@ const WaypointsContext = createContext<WaypointsContextValue | null>(null);
 
 export function WaypointsProvider({ children }: { children: React.ReactNode }) {
   const { waypoints: ledger } = useBackend();
-  const { foodLog, ready: foodReady } = useFood();
+  const { foodLog, ready: foodReady, loadedDay: foodDay } = useFood();
+  const toast = useToast();
   const [waypoints, setWaypoints] = useState(0);
+  const [events, setEvents] = useState<LedgerEvent[]>([]);
+  const [ledgerDay, setLedgerDay] = useState<string | null>(null);
+  const ledgerDayRef = useRef<string | null>(null);
   const [celebrations, setCelebrations] = useState<Celebration[]>([]);
   const [ready, setReady] = useState(false);
-  const day = useRef(dayKey()).current;
+  const day = useDayKey();
   // Sources already awarded today — the ledger's one-per-day rule, mirrored
   // here so awarding and revoking decide synchronously.
   const awarded = useRef(new Set<WaypointSource>());
@@ -56,11 +71,13 @@ export function WaypointsProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     let cancelled = false;
-    ledger
-      .load(day)
-      .then((snapshot) => {
+    Promise.all([ledger.load(day), ledger.history()])
+      .then(([snapshot, history]) => {
         if (cancelled) return;
         awarded.current = new Set(snapshot.todaySources);
+        ledgerDayRef.current = day;
+        setLedgerDay(day);
+        setEvents(history);
         setWaypoints(snapshot.total);
       })
       .catch((e) => console.warn('Could not load waypoints', e))
@@ -76,31 +93,40 @@ export function WaypointsProvider({ children }: { children: React.ReactNode }) {
 
   const award = useCallback(
     (points: number, source: WaypointSource) => {
+      // Not until today's ledger has loaded, or a stale one would decide.
+      if (ledgerDayRef.current !== day) return;
       if (points <= 0 || awarded.current.has(source)) return;
       awarded.current.add(source);
       setWaypoints((w) => w + points);
+      setEvents((prev) => [...prev, { source, day, points }]);
       enqueue(points, source);
       ledger.award(source, points, day).catch((e) => {
         console.warn('Could not save waypoints', e);
+        toast.show("Couldn't save your waypoints — they'll sync when you're back online.");
       });
     },
-    [ledger, day, enqueue],
+    [ledger, day, enqueue, toast],
   );
 
   /** Taking an award back is quiet, and cancels a celebration that hasn't played yet. */
   const revoke = useCallback(
     (points: number, source: WaypointSource) => {
+      if (ledgerDayRef.current !== day) return;
       if (!awarded.current.delete(source)) return;
       setWaypoints((w) => Math.max(w - points, 0));
+      setEvents((prev) =>
+        prev.filter((e) => !(e.source === source && e.day === day)),
+      );
       setCelebrations((prev) => {
         const i = prev.map((c) => c.source).lastIndexOf(source);
         return i === -1 ? prev : prev.filter((_, idx) => idx !== i);
       });
       ledger.revoke(source, day).catch((e) => {
         console.warn('Could not save waypoints', e);
+        toast.show("Couldn't save your waypoints — they'll sync when you're back online.");
       });
     },
-    [ledger, day],
+    [ledger, day, toast],
   );
 
   /**
@@ -111,10 +137,11 @@ export function WaypointsProvider({ children }: { children: React.ReactNode }) {
    * to load, so an unloaded (empty) log is never mistaken for a dropped one.
    */
   useEffect(() => {
-    if (!ready || !foodReady) return;
+    // Both must be for today: right after midnight each still holds yesterday's data.
+    if (!ready || !foodReady || ledgerDay !== day || foodDay !== day) return;
     if (allMealsLogged(foodLog)) award(MEALS_BONUS_POINTS, 'meals');
     else revoke(MEALS_BONUS_POINTS, 'meals');
-  }, [ready, foodReady, foodLog, award, revoke]);
+  }, [ready, foodReady, ledgerDay, foodDay, day, foodLog, award, revoke]);
 
   const completeCelebration = useCallback((id: number) => {
     setCelebrations((prev) => prev.filter((c) => c.id !== id));
@@ -129,12 +156,25 @@ export function WaypointsProvider({ children }: { children: React.ReactNode }) {
     () => ({
       waypoints,
       ready,
+      day: ledgerDay,
+      events,
       addWaypoints: award,
+      revokeWaypoints: revoke,
       celebrations,
       pendingPoints,
       completeCelebration,
     }),
-    [waypoints, ready, award, celebrations, pendingPoints, completeCelebration],
+    [
+      waypoints,
+      ready,
+      ledgerDay,
+      events,
+      award,
+      revoke,
+      celebrations,
+      pendingPoints,
+      completeCelebration,
+    ],
   );
 
   return (

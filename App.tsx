@@ -20,6 +20,7 @@ import { colors } from '@shared/theme';
 import { AppProviders } from '@shared/state/AppProviders';
 import RootNavigator from '@shared/navigation/RootNavigator';
 import AuthGate from '@shared/auth/AuthGate';
+import { ToastProvider } from '@shared/state/ToastContext';
 
 const navTheme = {
   ...DefaultTheme,
@@ -59,13 +60,15 @@ export default function App() {
   return (
     <SafeAreaProvider>
       <StatusBar style='dark' />
-      <AuthGate>
-        <AppProviders>
-          <NavigationContainer theme={navTheme}>
-            <RootNavigator />
-          </NavigationContainer>
-        </AppProviders>
-      </AuthGate>
+      <ToastProvider>
+        <AuthGate>
+          <AppProviders>
+            <NavigationContainer theme={navTheme}>
+              <RootNavigator />
+            </NavigationContainer>
+          </AppProviders>
+        </AuthGate>
+      </ToastProvider>
     </SafeAreaProvider>
   );
 }

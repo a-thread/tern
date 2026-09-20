@@ -18,6 +18,8 @@ import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import Svg, { Path } from 'react-native-svg';
 
 import { colors, font, radius, space, skyFor } from '@shared/theme';
+import { useDayKey } from '@shared/hooks/useDayKey';
+import { formatLongDate, weekdayLetter, weekdayName } from '@shared/utils/date';
 import {
   Group,
   GroupLabel,
@@ -35,29 +37,21 @@ import {
   usePulseOnIncrease,
 } from '@shared/hooks/useAnimatedNumber';
 import type { RootStackParamList } from '@shared/navigation/types';
-import { CORE_MEALS, dayTotals } from '@food/models';
+import { dayTotals } from '@food/models';
 import { useFood } from '@food/FoodContext';
 import { useWeight } from '@weight/WeightContext';
 import { formatLoggedAt } from '@weight/models';
 import { useSettings } from '@settings/SettingsContext';
 import { useUnits } from '@settings/useUnits';
-import { profile } from '@settings/mock';
 import { waypointRules } from '@journey/models';
 import { useWaypoints, type Celebration } from '@journey/WaypointsContext';
 import WaypointBurst from '@journey/WaypointBurst';
-import { today, week, weekBars } from './mock';
+import { leftToDo } from './models';
+import { useActivity } from './ActivityContext';
+import type { DayRecord } from './models';
 
-const WEEKDAY_NAMES = [
-  'Monday',
-  'Tuesday',
-  'Wednesday',
-  'Thursday',
-  'Friday',
-  'Saturday',
-  'Sunday',
-];
-const STEP_GOAL_POINTS =
-  waypointRules.find((r) => r.id === 'steps')?.points ?? 40;
+const REST_DAY_POINTS =
+  waypointRules.find((r) => r.id === 'rest')?.points ?? 10;
 
 type Point = { x: number; y: number };
 type Playing = { celebration: Celebration; origin: Point; target: Point };
@@ -79,21 +73,29 @@ export default function TodayScreen() {
   const { weightEntries } = useWeight();
   const { settings } = useSettings();
   const { formatWeight } = useUnits();
+  const todayKey = useDayKey();
+  const {
+    todaySteps,
+    streak,
+    week,
+    status: stepsStatus,
+    restLeft,
+    todayIsRest,
+    takeRestDay,
+    undoRestDay,
+  } = useActivity();
   const {
     waypoints,
-    addWaypoints,
     celebrations,
     pendingPoints,
     completeCelebration,
   } = useWaypoints();
   const lastWeight = weightEntries[0];
-  const progress = today.steps / settings.stepGoal;
-  const remaining = Math.max(settings.stepGoal - today.steps, 0);
+  const progress = todaySteps / settings.stepGoal;
+  const remaining = Math.max(settings.stepGoal - todaySteps, 0);
   const totals = dayTotals(foodLog);
   const reached = progress >= 1;
-  const mealsLoggedCount = CORE_MEALS.filter((m) =>
-    foodLog.some((f) => f.meal === m),
-  ).length;
+  const openItems = leftToDo(foodLog, lastWeight);
   // The chip holds back awards that haven't been celebrated yet, so its
   // number ticks up (and pulses) as the feathers land on it.
   const shownWaypoints = Math.max(waypoints - pendingPoints, 0);
@@ -106,7 +108,7 @@ export default function TodayScreen() {
       setReplayKey((k) => k + 1);
     }, []),
   );
-  const animatedSteps = useCountUp(today.steps, replayKey);
+  const animatedSteps = useCountUp(todaySteps, replayKey);
   const waypointsPulse = usePulseOnIncrease(shownWaypoints);
 
   // Play queued awards while Today is actually on screen — an award made in
@@ -143,19 +145,11 @@ export default function TodayScreen() {
     })();
   }, [isFocused, playing, nextCelebration, insets.top]);
 
-  const wasReached = useRef(reached);
-  useEffect(() => {
-    if (reached && !wasReached.current) {
-      addWaypoints(STEP_GOAL_POINTS, 'steps');
-    }
-    wasReached.current = reached;
-  }, [reached, addWaypoints]);
-
-  const openRestDay = (i: number) => {
+  const openRestDay = (d: DayRecord) => {
     navigation.navigate('RestDay', {
-      dayName: WEEKDAY_NAMES[i] ?? week[i].label,
-      steps: weekBars[i]?.value ?? 0,
-      waypoints: waypointRules.find((r) => r.id === 'rest')?.points ?? 10,
+      dayName: weekdayName(d.day),
+      steps: d.steps,
+      waypoints: REST_DAY_POINTS,
     });
   };
 
@@ -167,7 +161,7 @@ export default function TodayScreen() {
     >
       <View style={s.header}>
         <View>
-          <Text style={s.eyebrow}>{today.date}</Text>
+          <Text style={s.eyebrow}>{formatLongDate(todayKey)}</Text>
           <Text style={s.title}>Today</Text>
         </View>
         <View style={s.headerActions}>
@@ -176,7 +170,8 @@ export default function TodayScreen() {
               navigation.navigate('Reward', {
                 kind: 'goal',
                 title: 'Waypoints so far',
-                subtitle: `${today.streak}-day streak`,
+                subtitle:
+                  streak > 0 ? `${streak}-day streak` : 'Every step counts',
                 footer: 'Earned for showing up — never for weight or calories.',
               })
             }
@@ -223,17 +218,23 @@ export default function TodayScreen() {
         <View ref={heroRef} collapsable={false}>
         <LinearGradient colors={skyFor(progress) as string[]} style={s.hero}>
           <View style={s.heroTop}>
-            <Text style={s.greeting}>Morning, {profile.name}</Text>
-            <View style={s.streakChip}>
-              <Text style={s.streakText}>☀ {today.streak} days</Text>
-            </View>
+            <Text style={s.greeting}>{settings.firstName ? `Morning, ${settings.firstName}` : 'Morning'}</Text>
+            {streak > 0 ? (
+              <View style={s.streakChip}>
+                <Text style={s.streakText}>
+                  ☀ {streak} {streak === 1 ? 'day' : 'days'}
+                </Text>
+              </View>
+            ) : null}
           </View>
 
           <FlightPath progress={progress} replayKey={replayKey} />
 
           <Text style={s.stepBig}>{animatedSteps.toLocaleString()}</Text>
           <Text style={s.stepSub}>
-            {reached
+            {stepsStatus !== 'connected'
+              ? "Steps aren't connected yet"
+              : reached
               ? `Goal reached · ${settings.stepGoal.toLocaleString()} steps`
               : `${remaining.toLocaleString()} to go`}
           </Text>
@@ -243,71 +244,110 @@ export default function TodayScreen() {
         <View style={s.weekRow}>
           {week.map((d, i) => (
             <Pressable
-              key={i}
-              onPress={d.rest ? () => openRestDay(i) : undefined}
-              disabled={!d.rest}
+              key={d.day}
+              onPress={d.state === 'rest' ? () => openRestDay(d) : undefined}
+              disabled={d.state !== 'rest'}
             >
               <DayRing
-                progress={d.progress}
+                progress={Math.min(d.steps / settings.stepGoal, 1)}
                 replayKey={replayKey}
                 delay={i * 80}
-                label={d.label}
-                rest={d.rest}
-                today={d.today}
+                label={weekdayLetter(d.day)}
+                rest={d.state === 'rest'}
+                today={d.isToday}
               />
             </Pressable>
           ))}
         </View>
         <Text style={s.caption}>
-          Wednesday was a rest day. Streaks don't break for those.
+          {restCaption(week)} Streaks don't break for rest days.
         </Text>
+        {todayIsRest ? (
+          <Pressable onPress={undoRestDay} hitSlop={8}>
+            <Text style={s.restLink}>Undo today's rest day</Text>
+          </Pressable>
+        ) : restLeft > 0 && !reached ? (
+          <Pressable onPress={takeRestDay} hitSlop={8}>
+            <Text style={s.restLink}>
+              Take today as a rest day · {restLeft} left this week
+            </Text>
+          </Pressable>
+        ) : null}
 
-        <GroupLabel>Left to do</GroupLabel>
-        <Group>
-          <Row
-            title='Log dinner'
-            sub={`${mealsLoggedCount} of ${CORE_MEALS.length} meals logged`}
-            onPress={() => navigation.navigate('LogFood', { meal: 'dinner' })}
-            icon={
-              <IconBadge bg={colors.kelpTint}>
-                <Svg width={14} height={14} viewBox='0 0 24 24' fill='none'>
-                  <Path
-                    d='M2,12 C6,6 14,6 18,12 C14,18 6,18 2,12 Z'
-                    stroke={colors.kelp}
-                    strokeWidth={2}
+        {openItems.length ? (
+          <>
+            <GroupLabel>Left to do</GroupLabel>
+            <Group>
+              {openItems.map((item) =>
+                item.kind === 'meal' ? (
+                  <Row
+                    key='meal'
+                    title={item.title}
+                    sub={item.sub}
+                    onPress={() =>
+                      navigation.navigate('LogFood', { meal: item.meal })
+                    }
+                    icon={
+                      <IconBadge bg={colors.kelpTint}>
+                        <Svg
+                          width={14}
+                          height={14}
+                          viewBox='0 0 24 24'
+                          fill='none'
+                        >
+                          <Path
+                            d='M2,12 C6,6 14,6 18,12 C14,18 6,18 2,12 Z'
+                            stroke={colors.kelp}
+                            strokeWidth={2}
+                          />
+                          <Path
+                            d='M18,12 L22,8.5 L22,15.5 Z'
+                            stroke={colors.kelp}
+                            strokeWidth={2}
+                          />
+                        </Svg>
+                      </IconBadge>
+                    }
+                    chevron
                   />
-                  <Path
-                    d='M18,12 L22,8.5 L22,15.5 Z'
-                    stroke={colors.kelp}
-                    strokeWidth={2}
+                ) : (
+                  <Row
+                    key='weight'
+                    title='Log weight'
+                    sub={
+                      lastWeight
+                        ? `Last: ${formatWeight(lastWeight.lb)}, ${formatLoggedAt(lastWeight.loggedAt)}`
+                        : 'No weight logged yet'
+                    }
+                    onPress={() => navigation.navigate('LogWeight')}
+                    icon={
+                      <IconBadge bg={colors.waterTint}>
+                        <Svg
+                          width={14}
+                          height={14}
+                          viewBox='0 0 24 24'
+                          fill='none'
+                        >
+                          <Path
+                            d='M6 5h12M9 5v2a3 3 0 1 0 6 0V5M7 19h10M9 19c0-4 1-6 3-7 2 1 3 3 3 7'
+                            stroke={colors.water}
+                            strokeWidth={2}
+                          />
+                        </Svg>
+                      </IconBadge>
+                    }
+                    chevron
                   />
-                </Svg>
-              </IconBadge>
-            }
-            chevron
-          />
-          <Row
-            title='Log weight'
-            sub={
-              lastWeight
-                ? `Last: ${formatWeight(lastWeight.lb)},${formatLoggedAt(lastWeight.loggedAt)}`
-                : 'No weight logged yet'
-            }
-            onPress={() => navigation.navigate('LogWeight')}
-            icon={
-              <IconBadge bg={colors.waterTint}>
-                <Svg width={14} height={14} viewBox='0 0 24 24' fill='none'>
-                  <Path
-                    d='M6 5h12M9 5v2a3 3 0 1 0 6 0V5M7 19h10M9 19c0-4 1-6 3-7 2 1 3 3 3 7'
-                    stroke={colors.water}
-                    strokeWidth={2}
-                  />
-                </Svg>
-              </IconBadge>
-            }
-            chevron
-          />
-        </Group>
+                ),
+              )}
+            </Group>
+          </>
+        ) : (
+          <Card style={s.allDone}>
+            <Text style={s.allDoneTitle}>All caught up</Text>
+            <Text style={s.allDoneSub}>Nothing left for today.</Text>
+          </Card>
+        )}
 
         {settings.trackCalories ? (
           <>
@@ -355,7 +395,31 @@ export default function TodayScreen() {
   );
 }
 
+/** "Wednesday was a rest day." / "Wednesday and Friday were rest days." / "Rest days are part of the route." */
+function restCaption(week: DayRecord[]): string {
+  const rests = week.filter((d) => d.state === 'rest' && !d.isToday);
+  if (rests.length === 0) return 'Rest days are part of the route.';
+  const names = rests.map((d) => weekdayName(d.day));
+  if (names.length === 1) return `${names[0]} was a rest day.`;
+  return `${names.slice(0, -1).join(', ')} and ${names[names.length - 1]} were rest days.`;
+}
+
 const s = StyleSheet.create({
+  restLink: {
+    fontFamily: font.semibold,
+    fontSize: 12,
+    color: colors.driftwood,
+    textAlign: 'center',
+    marginTop: space.sm,
+  },
+  allDone: { alignItems: 'center', marginTop: space.md },
+  allDoneTitle: { fontFamily: font.semibold, fontSize: 14, color: colors.ink },
+  allDoneSub: {
+    fontFamily: font.body,
+    fontSize: 12,
+    color: colors.ink2,
+    marginTop: 2,
+  },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',

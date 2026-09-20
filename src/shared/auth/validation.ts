@@ -1,6 +1,13 @@
 /** Matches Lichen (and Supabase's default minimum). */
 export const MIN_PASSWORD = 6;
 
+export const MAX_NAME = 40;
+
+export function isValidName(name: string): boolean {
+  const n = name.trim();
+  return n.length > 0 && n.length <= MAX_NAME;
+}
+
 export function isValidEmail(email: string): boolean {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 }
