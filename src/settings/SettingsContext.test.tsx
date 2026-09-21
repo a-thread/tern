@@ -126,6 +126,26 @@ describe('defaults and older saves', () => {
   });
 });
 
+describe('mood settings', () => {
+  it('is off by default', async () => {
+    const { result } = await setup();
+    expect(result.current.settings.trackMood).toBe(false);
+  });
+
+  it('keeps a saved choice', async () => {
+    const backend = createMemoryBackend();
+    await backend.settings.save({ trackMood: true } as never);
+    const wrapper = ({ children }: { children: React.ReactNode }) => (
+      <BackendProvider backend={backend}>
+        <SettingsProvider>{children}</SettingsProvider>
+      </BackendProvider>
+    );
+    const { result } = renderHook(() => useSettings(), { wrapper });
+    await waitFor(() => expect(result.current.ready).toBe(true));
+    expect(result.current.settings.trackMood).toBe(true);
+  });
+});
+
 describe('water settings', () => {
   it('is off by default, with a 64 oz goal', async () => {
     const { result } = await setup();

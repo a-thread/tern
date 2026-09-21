@@ -8,14 +8,15 @@ import { syncReminders } from './reminders';
 export function RemindersSync() {
   const { settings, ready } = useSettings();
   const toast = useToast();
-  const { reminders, weighInFrequency, medications, trackWater } = settings;
+  const { reminders, weighInFrequency, medications, trackWater, trackMood } = settings;
   // Reschedule when a toggle, a time, the weigh-in frequency or a medication reminder changes.
-  const key = JSON.stringify({ reminders, weighInFrequency, medications, trackWater });
+  const key = JSON.stringify({ reminders, weighInFrequency, medications, trackWater, trackMood });
   const lastKey = useRef<string | null>(null);
   const anyOn =
     reminders.mealLog.on ||
     reminders.weighIn.on ||
     (trackWater && reminders.water.on) ||
+    (trackMood && reminders.mood.on) ||
     medications.some((m) => m.remind);
 
   useEffect(() => {
@@ -24,7 +25,7 @@ export function RemindersSync() {
     const firstRun = lastKey.current === null;
     lastKey.current = key;
 
-    syncReminders(reminders, { weighInFrequency, medications, trackWater })
+    syncReminders(reminders, { weighInFrequency, medications, trackWater, trackMood })
       .then((result) => {
         if (result === 'denied' && anyOn && !firstRun) {
           toast.show('Notifications are off for Tern — turn them on in system settings.');

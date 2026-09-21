@@ -57,6 +57,8 @@ export type AppSettings = {
   trackWater: boolean;
   /** Daily water goal, in ounces (ounces are a display choice). */
   waterGoalOz: number;
+  /** Optional daily mood and stress check-in; off by default so it stays out of the way. */
+  trackMood: boolean;
   healthData: HealthDataSettings;
 };
 
@@ -81,6 +83,7 @@ const initialSettings: AppSettings = {
   medications: [],
   trackWater: false,
   waterGoalOz: DEFAULT_WATER_GOAL_OZ,
+  trackMood: false,
   healthData: {
     readSteps: true,
   },
@@ -135,6 +138,7 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
             saved?.weighInFrequency === 'daily' ? 'daily' : DEFAULT_WEIGH_IN_FREQUENCY,
           medications: mergeMedications(saved?.medications),
           trackWater: saved?.trackWater === true,
+          trackMood: saved?.trackMood === true,
           waterGoalOz:
             typeof saved?.waterGoalOz === 'number' && Number.isFinite(saved.waterGoalOz)
               ? clampWaterGoal(saved.waterGoalOz)

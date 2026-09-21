@@ -367,6 +367,12 @@ describe('leftToDo with weigh-in frequency and medication', () => {
     expect(items.map((i) => i.kind)).toEqual(['water', 'medication', 'medication']);
   });
 
+  it('adds a check-in row only when asked, before the medication rows', () => {
+    expect(leftToDo(log, weighedToday, now, { checkIn: false })).toEqual([]);
+    const items = leftToDo(log, weighedToday, now, { checkIn: true, medications: meds });
+    expect(items.map((i) => i.kind)).toEqual(['checkIn', 'medication', 'medication']);
+  });
+
   it('is empty when everything, medication included, is done', () => {
     expect(leftToDo(log, weighedToday, now, { medications: [] })).toEqual([]);
   });
@@ -396,6 +402,14 @@ describe('todaySummary', () => {
     expect(todaySummary([], undefined, [], false, now, 48).waterOz).toBe(48);
     expect(todaySummary([], undefined, [], false, now, 0).waterOz).toBeNull();
     expect(todaySummary([], undefined, [], false, now).waterOz).toBeNull();
+  });
+
+  it('carries the check-in from today, or null', () => {
+    expect(todaySummary([], undefined, [], false, now, 0, { mood: 7, stress: 3 }).checkIn).toEqual({
+      mood: 7,
+      stress: 3,
+    });
+    expect(todaySummary([], undefined, [], false, now).checkIn).toBeNull();
   });
 
   it('carries the medications taken and whether the step goal was reached', () => {

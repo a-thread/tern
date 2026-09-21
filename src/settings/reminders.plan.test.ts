@@ -22,6 +22,7 @@ const config = (
     on: over.weighIn ?? false,
   },
   water: { ...DEFAULT_REMINDERS.water, on: false },
+  mood: { ...DEFAULT_REMINDERS.mood, on: false },
 });
 
 describe('planReminders', () => {
@@ -139,6 +140,7 @@ describe('time helpers', () => {
       meals: '12:30 pm and 7:00 pm',
       weighIn: 'Sundays, 8:00 am',
       water: 'Every 2 hours, 9:00 am to 7:00 pm',
+      mood: 'Every day, 8:00 pm',
     });
   });
 });
@@ -210,5 +212,35 @@ describe('water reminders', () => {
       end: 19 * 60,
       everyHours: 4,
     });
+  });
+});
+
+describe('check-in reminder', () => {
+  const mood = (over: Partial<ReminderConfig['mood']> = {}): ReminderConfig => ({
+    ...config(),
+    mood: { on: true, at: 20 * 60 + 30, ...over },
+  });
+
+  it('is off by default, at 8:00 pm', () => {
+    expect(DEFAULT_REMINDERS.mood).toEqual({ on: false, at: 20 * 60 });
+  });
+
+  it('is only planned while mood tracking is on and its reminder is on', () => {
+    expect(planReminders(mood())).toEqual([]);
+    expect(planReminders(mood({ on: false }), { trackMood: true })).toEqual([]);
+    const [r] = planReminders(mood(), { trackMood: true });
+    expect(r).toMatchObject({ id: 'tern-mood', key: 'mood', hour: 20, minute: 30 });
+    expect(r.weekday).toBeUndefined();
+    expect(ALL_REMINDER_IDS).toContain(r.id);
+  });
+
+  it('is gentle: no scores, streaks or goals in the text', () => {
+    const [r] = planReminders(mood(), { trackMood: true });
+    expect(`${r.title} ${r.body}`.toLowerCase()).not.toMatch(/streak|score|goal|behind|miss|stress/);
+  });
+
+  it('reads a saved setting back safely', () => {
+    expect(mergeReminders({ mood: { on: true, at: 'x' } }).mood).toEqual({ on: true, at: 20 * 60 });
+    expect(mergeReminders({ mood: { at: 540 } }).mood).toEqual({ on: false, at: 540 });
   });
 });

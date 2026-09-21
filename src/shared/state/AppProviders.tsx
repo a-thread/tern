@@ -9,6 +9,7 @@ import { WaypointsProvider, useWaypoints } from '@journey/WaypointsContext';
 import { ActivityProvider, useActivity } from '@today/ActivityContext';
 import { MedicationProvider, useMedication } from '@medication/MedicationContext';
 import { WaterProvider, useWater } from '@water/WaterContext';
+import { MoodProvider, useMood } from '@mood/MoodContext';
 import { RemindersSync } from '@settings/RemindersSync';
 import { DayKeyProvider } from '@shared/hooks/useDayKey';
 
@@ -23,10 +24,12 @@ export function AppProviders({ children }: { children: React.ReactNode }) {
             <MedicationProvider>
               <WaypointsProvider>
                 <WaterProvider>
-                  <ActivityProvider>
-                    <LoadGate>{children}</LoadGate>
-                    <RemindersSync />
-                  </ActivityProvider>
+                  <MoodProvider>
+                    <ActivityProvider>
+                      <LoadGate>{children}</LoadGate>
+                      <RemindersSync />
+                    </ActivityProvider>
+                  </MoodProvider>
                 </WaterProvider>
               </WaypointsProvider>
             </MedicationProvider>
@@ -46,6 +49,7 @@ function LoadGate({ children }: { children: React.ReactNode }) {
     useWeight().ready,
     useMedication().ready,
     useWater().ready,
+    useMood().ready,
     useWaypoints().ready,
     useActivity().ready,
   ].every(Boolean);

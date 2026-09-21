@@ -21,6 +21,7 @@ import { useFood } from '@food/FoodContext';
 import { useWeight } from '@weight/WeightContext';
 import { useSettings } from '@settings/SettingsContext';
 import WaterTrendCard from '@water/WaterTrendCard';
+import MoodTrendCard from '@mood/MoodTrendCard';
 import { useUnits } from '@settings/useUnits';
 import {
   RANGE_DAYS,
@@ -251,6 +252,8 @@ export default function TrendsScreen({ navigation }: Props) {
         ) : null}
 
         {settings.trackWater ? <WaterTrendCard range={range} /> : null}
+
+        {settings.trackMood ? <MoodTrendCard range={range} /> : null}
 
         <GroupLabel>Consistency</GroupLabel>
         <Card>

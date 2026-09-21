@@ -10,6 +10,7 @@ export type TernExport = {
   savedMeals: unknown[];
   medicationDoses: unknown[];
   waterEntries: unknown[];
+  moodCheckins: unknown[];
 };
 
 /** Whole-account operations: a copy of your data, and erasing it. */

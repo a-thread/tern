@@ -158,7 +158,11 @@ export default function JourneyScreen() {
         <GroupLabel>How waypoints are earned</GroupLabel>
         <Group>
           {waypointRules
-            .filter((rule) => rule.id !== 'water' || settings.trackWater)
+            .filter(
+              (rule) =>
+                (rule.id !== 'water' || settings.trackWater) &&
+                (rule.id !== 'mood' || settings.trackMood),
+            )
             .map((rule) => (
             <Row
               key={rule.id}
@@ -172,7 +176,9 @@ export default function JourneyScreen() {
                         ? colors.kelpTint
                         : rule.id === 'water'
                           ? colors.waterTint
-                          : colors.driftwoodTint
+                          : rule.id === 'mood'
+                            ? colors.violetTint
+                            : colors.driftwoodTint
                   }
                 >
                   <Text
@@ -186,7 +192,9 @@ export default function JourneyScreen() {
                               ? colors.kelp
                               : rule.id === 'water'
                                 ? colors.water
-                                : colors.driftwood,
+                                : rule.id === 'mood'
+                                  ? colors.violet
+                                  : colors.driftwood,
                       },
                     ]}
                   >

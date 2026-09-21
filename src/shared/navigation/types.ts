@@ -19,6 +19,7 @@ export type RootStackParamList = {
   Tabs: undefined;
   LogFood: { meal: FoodEntry['meal'] };
   LogWeight: undefined;
+  CheckIn: undefined;
   EditFood: { entryId: string };
   SaveMeal: { meal: FoodEntry['meal'] };
   Settings: undefined;

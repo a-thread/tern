@@ -20,7 +20,9 @@ tables. With no keys configured, the app runs on local mock data instead.
    [`migrations/20260923000000_medication_doses.sql`](migrations/20260923000000_medication_doses.sql),
    which adds optional medication tracking, and
    [`migrations/20260924000000_water.sql`](migrations/20260924000000_water.sql),
-   which adds optional water tracking and lets reaching the water goal earn a waypoint.
+   which adds optional water tracking and lets reaching the water goal earn a waypoint, and
+   [`migrations/20260925000000_mood_checkins.sql`](migrations/20260925000000_mood_checkins.sql),
+   which adds optional mood and stress check-ins and lets checking in earn a waypoint.
 2. **Expose the schema.** _Project Settings → API → Exposed schemas_ → add `tern`.
    Without this, every request fails with "schema must be one of…".
 3. **Add keys.** Copy `.env.example` to `.env` and fill in the project URL and
@@ -49,6 +51,7 @@ tables. With no keys configured, the app runs on local mock data instead.
 | `tern.rest_days`       | the days you chose to rest (one row per day)                           |
 | `tern.saved_meals`     | named groups of foods you saved (a snapshot of the items and portions) |
 | `tern.medication_doses` | which medications were taken on which day (the medications themselves live in settings) |
+| `tern.mood_checkins`  | one mood and stress check-in (each 1 to 10) per day                 |
 | `tern.water_entries`   | each drink logged, in fluid ounces (ml is a display choice), by day  |
 
 Every table is row-level-secured to `auth.uid()`; signed-out (`anon`) requests

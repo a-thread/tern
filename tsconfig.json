@@ -12,7 +12,8 @@
       "@trends/*": ["src/trends/*"],
       "@settings/*": ["src/settings/*"],
       "@medication/*": ["src/medication/*"],
-      "@water/*": ["src/water/*"]
+      "@water/*": ["src/water/*"],
+      "@mood/*": ["src/mood/*"]
     }
   }
 }

@@ -12,6 +12,8 @@ export type ReminderConfig = {
   weighIn: { on: boolean; weekday: number; at: number };
   /** Drink-water nudges every `everyHours` from `start` to `end` (minutes since midnight). */
   water: { on: boolean; start: number; end: number; everyHours: number };
+  /** A daily nudge to check in on mood and stress. */
+  mood: { on: boolean; at: number };
 };
 
 /** How often the person weighs in: it sets the reminder and how often Today asks. */
@@ -23,11 +25,12 @@ export const DEFAULT_REMINDERS: ReminderConfig = {
   mealLog: { on: true, midday: 12 * 60 + 30, evening: 19 * 60 },
   weighIn: { on: true, weekday: 1, at: 8 * 60 },
   water: { on: false, start: 9 * 60, end: 19 * 60, everyHours: 2 },
+  mood: { on: false, at: 20 * 60 },
 };
 
 export const WATER_EVERY_HOURS = { min: 1, max: 4 };
 
-export type ReminderKey = 'meals' | 'weighIn' | 'water';
+export type ReminderKey = 'meals' | 'weighIn' | 'water' | 'mood';
 
 export type PlannedReminder = {
   /** Stable, so re-syncing replaces rather than duplicates. */
@@ -46,6 +49,7 @@ export const ALL_REMINDER_IDS = [
   'tern-meals-midday',
   'tern-meals-evening',
   'tern-weigh-in',
+  'tern-mood',
 ];
 
 export const medicationReminderId = (medicationId: string) => `tern-med-${medicationId}`;
@@ -62,6 +66,8 @@ export type PlanExtras = {
   medications?: readonly Medication[];
   /** Water reminders only make sense while water tracking is on. */
   trackWater?: boolean;
+  /** The check-in reminder only makes sense while mood tracking is on. */
+  trackMood?: boolean;
 };
 
 export const waterReminderId = (index: number) => `tern-water-${index}`;
@@ -77,7 +83,12 @@ export function waterTimes(w: ReminderConfig['water']): number[] {
 /** The reminders to have scheduled for this configuration. */
 export function planReminders(
   c: ReminderConfig,
-  { weighInFrequency = DEFAULT_WEIGH_IN_FREQUENCY, medications = [], trackWater = false }: PlanExtras = {},
+  {
+    weighInFrequency = DEFAULT_WEIGH_IN_FREQUENCY,
+    medications = [],
+    trackWater = false,
+    trackMood = false,
+  }: PlanExtras = {},
 ): PlannedReminder[] {
   const plan: PlannedReminder[] = [];
   if (c.mealLog.on) {
@@ -120,6 +131,15 @@ export function planReminders(
         body: 'A glass of water, if you feel like one.',
         ...at(t),
       });
+    });
+  }
+  if (trackMood && c.mood.on) {
+    plan.push({
+      id: 'tern-mood',
+      key: 'mood',
+      title: 'Check-in',
+      body: 'How are you feeling today? A quick check-in, if you like.',
+      ...at(c.mood.at),
     });
   }
   for (const m of medications) {
@@ -177,6 +197,7 @@ export function describeReminders(
       weighInFrequency === 'daily'
         ? `Every day, ${formatMinutes(c.weighIn.at)}`
         : `${weekdayPlural(c.weighIn.weekday)}, ${formatMinutes(c.weighIn.at)}`,
+    mood: `Every day, ${formatMinutes(c.mood.at)}`,
     water: `Every ${c.water.everyHours === 1 ? 'hour' : `${c.water.everyHours} hours`}, ${formatMinutes(c.water.start)} to ${formatMinutes(c.water.end)}`,
   };
 }
@@ -188,6 +209,7 @@ export function mergeReminders(saved: unknown): ReminderConfig {
     weighIn?: Partial<ReminderConfig['weighIn']>;
     weeklyWeighIn?: Partial<ReminderConfig['weighIn']>;
     water?: Partial<ReminderConfig['water']>;
+    mood?: Partial<ReminderConfig['mood']>;
   };
   const weigh = s.weighIn ?? s.weeklyWeighIn;
   const num = (v: unknown, fallback: number) =>
@@ -214,6 +236,10 @@ export function mergeReminders(saved: unknown): ReminderConfig {
         Math.max(Math.round(num(s.water?.everyHours, d.water.everyHours)), WATER_EVERY_HOURS.min),
         WATER_EVERY_HOURS.max,
       ),
+    },
+    mood: {
+      on: bool(s.mood?.on, d.mood.on),
+      at: num(s.mood?.at, d.mood.at),
     },
   };
 }
