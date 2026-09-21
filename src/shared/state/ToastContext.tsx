@@ -21,7 +21,7 @@ const VISIBLE_MS = 4000;
 /** A small message at the bottom of the screen, e.g. when a background save fails. */
 export function ToastProvider({ children }: { children: React.ReactNode }) {
   const [message, setMessage] = useState<string | null>(null);
-  const timer = useRef<ReturnType<typeof setTimeout>>();
+  const timer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 
   const show = useCallback((next: string) => {
     setMessage(next);

@@ -1,7 +1,7 @@
 import React from 'react';
-import { Platform } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Svg, { Path } from 'react-native-svg';
 
 import { colors, font } from '../theme';
@@ -23,6 +23,10 @@ const Tab = createBottomTabNavigator<TabParamList>();
 const RootStack = createNativeStackNavigator<RootStackParamList>();
 
 function Tabs() {
+  // The app draws edge-to-edge, so the bar must make room for the system
+  // navigation area itself (a fixed height would sit under it).
+  const insets = useSafeAreaInsets();
+  const bottomPad = Math.max(insets.bottom, 10);
   return (
     <Tab.Navigator
       screenOptions={{
@@ -33,9 +37,9 @@ function Tabs() {
         tabBarStyle: {
           backgroundColor: 'rgba(255,255,255,0.94)',
           borderTopColor: colors.border,
-          height: Platform.OS === 'ios' ? 84 : 64,
+          height: 54 + bottomPad,
           paddingTop: 8,
-          paddingBottom: Platform.OS === 'ios' ? 26 : 10,
+          paddingBottom: bottomPad,
         },
         tabBarLabelStyle: { fontFamily: font.medium, fontSize: 10 },
       }}

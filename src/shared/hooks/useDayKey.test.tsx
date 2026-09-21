@@ -5,10 +5,9 @@ import { renderHook, act } from '@testing-library/react-native';
 import { dayKey } from '@shared/utils/date';
 import { DayKeyProvider, useDayKey } from './useDayKey';
 
-afterEach(() => {
-  jest.restoreAllMocks();
-  jest.useRealTimers();
-});
+// Not restoreAllMocks: that would also wipe React Native's own AppState mock
+// (a jest.fn), leaving addEventListener returning nothing for later tests.
+afterEach(() => jest.useRealTimers());
 
 describe('useDayKey', () => {
   it('returns today without a provider', () => {
@@ -18,16 +17,17 @@ describe('useDayKey', () => {
 
   // How many AppState listeners get registered by `consumers` calls of useDayKey.
   // (Compared between runs rather than against a fixed number, since the test
-  // renderer may run effects more than once.)
+  // renderer may run effects more than once.) React Native's jest setup already
+  // makes addEventListener a mock, so only its call count is cleared; restoring
+  // it would drop the implementation that returns a subscription.
   const listeners = (consumers: number, shared: boolean) => {
-    const spy = jest.spyOn(AppState, 'addEventListener');
+    const mock = AppState.addEventListener as unknown as jest.Mock;
+    mock.mockClear();
     const wrapper = shared
       ? ({ children }: { children: React.ReactNode }) => <DayKeyProvider>{children}</DayKeyProvider>
       : undefined;
     renderHook(() => Array.from({ length: consumers }, () => useDayKey()), { wrapper });
-    const calls = spy.mock.calls.length;
-    spy.mockRestore();
-    return calls;
+    return mock.mock.calls.length;
   };
 
   it('under a provider, more consumers cost no more listeners', () => {

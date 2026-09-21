@@ -44,13 +44,12 @@
         }
       ],
       "react-native-health-connect",
-      "./plugins/withHealthConnectPermissionUsage",
       [
         "expo-build-properties",
         {
           "android": {
-            "compileSdkVersion": 34,
-            "targetSdkVersion": 34,
+            "compileSdkVersion": 36,
+            "targetSdkVersion": 36,
             "minSdkVersion": 26
           }
         }
@@ -61,6 +60,7 @@
         "projectId": "5a0739df-fa83-452d-8c31-92cd473ffa80"
       }
     },
-    "owner": "purlieus-systems"
+    "owner": "purlieus-systems",
+    "newArchEnabled": false
   }
 }

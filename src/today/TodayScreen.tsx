@@ -50,7 +50,7 @@ const REST_DAY_POINTS =
 type Point = { x: number; y: number };
 type Playing = { celebration: Celebration; origin: Point; target: Point };
 
-function measureInWindow(ref: React.RefObject<View>) {
+function measureInWindow(ref: React.RefObject<View | null>) {
   return new Promise<{ x: number; y: number; width: number; height: number }>(
     (resolve) =>
       ref.current?.measureInWindow((x, y, width, height) =>
@@ -202,7 +202,7 @@ export default function TodayScreen() {
         }}
       >
         <View ref={heroRef} collapsable={false}>
-          <LinearGradient colors={skyFor(progress) as string[]} style={s.hero}>
+          <LinearGradient colors={skyFor(progress) as [string, string, ...string[]]} style={s.hero}>
             <View style={s.heroTop}>
               <Text style={s.greeting}>
                 {settings.firstName

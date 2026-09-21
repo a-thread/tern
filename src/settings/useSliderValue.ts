@@ -61,7 +61,6 @@ export function useSliderValue({
         onPanResponderRelease: finish,
         onPanResponderTerminate: finish,
       }).panHandlers,
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     [],
   );
 

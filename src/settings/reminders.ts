@@ -12,6 +12,8 @@ const CHANNEL_ID = 'reminders';
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
     shouldShowAlert: true,
+    shouldShowBanner: true,
+    shouldShowList: true,
     shouldPlaySound: false,
     shouldSetBadge: false,
   }),
@@ -47,13 +49,20 @@ export async function syncReminders(
     await Notifications.scheduleNotificationAsync({
       identifier: r.id,
       content: { title: r.title, body: r.body },
-      trigger: {
-        hour: r.hour,
-        minute: r.minute,
-        ...(r.weekday ? { weekday: r.weekday } : {}),
-        repeats: true,
-        channelId: CHANNEL_ID,
-      },
+      trigger: r.weekday
+        ? {
+            type: Notifications.SchedulableTriggerInputTypes.WEEKLY,
+            weekday: r.weekday,
+            hour: r.hour,
+            minute: r.minute,
+            channelId: CHANNEL_ID,
+          }
+        : {
+            type: Notifications.SchedulableTriggerInputTypes.DAILY,
+            hour: r.hour,
+            minute: r.minute,
+            channelId: CHANNEL_ID,
+          },
     });
   }
   return 'ok';

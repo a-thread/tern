@@ -16,9 +16,9 @@ export function createHealthConnectStepsRepository(): StepsRepository | null {
   // the package installed.
   if (process.env.EXPO_PUBLIC_HEALTH_CONNECT !== '1') return null;
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let hc: any;
   try {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
     hc = require('react-native-health-connect');
   } catch {
     return null;

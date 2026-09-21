@@ -37,7 +37,7 @@ const type = async (ms = SEARCH_DEBOUNCE_MS) => {
 
 describe('useFoodSearch', () => {
   it('does nothing for an empty or one-character query', () => {
-    const { result, rerender } = renderHook(({ q }) => useFoodSearch(q), { initialProps: { q: '' } });
+    const { result, rerender } = renderHook(({ q }: { q: string }) => useFoodSearch(q), { initialProps: { q: '' } });
     expect(result.current.state.status).toBe('idle');
     rerender({ q: 'o' });
     expect(result.current.state.status).toBe('idle');
@@ -46,7 +46,7 @@ describe('useFoodSearch', () => {
 
   it('waits for a pause in typing, then searches once', async () => {
     search.mockResolvedValue([food('Rolled oats')]);
-    const { result, rerender } = renderHook(({ q }) => useFoodSearch(q), { initialProps: { q: 'ro' } });
+    const { result, rerender } = renderHook(({ q }: { q: string }) => useFoodSearch(q), { initialProps: { q: 'ro' } });
     expect(result.current.state.status).toBe('loading');
 
     await type(SEARCH_DEBOUNCE_MS - 100);

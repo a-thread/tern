@@ -67,11 +67,9 @@ settings (minSdk 26) are already set up in `package.json` and `app.json`.
 A native debug build (`assembleDebug`) succeeds with it, but **the adapter has
 not been run on a device.**
 
-`react-native-health-connect` is pinned to exactly `3.3.3` on purpose. Later
-versions need Android compileSdk 35+ (and 4.x also Android Gradle plugin 8.9+),
-which fails to compile Expo SDK 51's own modules. Upgrade it together with Expo.
-`plugins/withHealthConnectPermissionUsage.js` adds the Android 14 permission-usage
-entry that the 3.x plugin lacks.
+`react-native-health-connect` 4.x needs compileSdk 35+, which Expo SDK 54
+provides (the app targets API 36, as Google Play requires). Its config plugin
+adds both the rationale intent and the Android 14 permission-usage alias.
 
 1. Make sure `.env` has `EXPO_PUBLIC_HEALTH_CONNECT=1` (the adapter stays off without it).
 2. `npx expo run:android` with a device or emulator that has Health Connect
