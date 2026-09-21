@@ -18,24 +18,27 @@ import { useWeight } from '@weight/WeightContext';
 import { useSettings } from '@settings/SettingsContext';
 import { useUnits } from '@settings/useUnits';
 import { formatLoggedAt } from '@weight/models';
+import { weightTrendFor } from './models';
 import type { TrendsStackParamList } from './types';
 
 type Props = NativeStackScreenProps<TrendsStackParamList, 'WeightDetail'>;
 
 const RANGES = ['Month', '6 months', 'All'] as const;
-const MIN_TREND_ENTRIES = 7;
+const RANGE_DAYS = { Month: 30, '6 months': 180, All: Infinity } as const;
 
 export default function WeightDetailScreen({ navigation }: Props) {
   const insets = useSafeAreaInsets();
   const [range, setRange] = useState<(typeof RANGES)[number]>('6 months');
-  const { weightEntries, weightTrend } = useWeight();
+  const { weightEntries, weightTrend: overallTrend } = useWeight();
   const { settings } = useSettings();
   const { formatWeight, formatGoal, toDisplay } = useUnits();
 
-  const latest = weightTrend[weightTrend.length - 1];
-  const delta = latest - weightTrend[0];
+  // The line follows the range; the headline weight is always the latest.
+  const weightTrend = weightTrendFor(weightEntries, RANGE_DAYS[range]);
+  const latest = overallTrend[overallTrend.length - 1];
+  const delta = weightTrend.length > 1 ? weightTrend[weightTrend.length - 1] - weightTrend[0] : 0;
   const spread = 1.3; // lb, either side of the trend
-  const hasTrend = weightEntries.length >= MIN_TREND_ENTRIES;
+  const hasTrend = weightTrend.length >= 2;
 
   return (
     <View
@@ -106,12 +109,12 @@ export default function WeightDetailScreen({ navigation }: Props) {
               >
                 <Path d='M4 19V9m6 10V4m6 15v-6' />
               </Svg>
-              <Text style={s.emptyTitle}>Weight trends need a week</Text>
+              <Text style={s.emptyTitle}>Not enough weigh-ins here yet</Text>
               <Text style={s.emptyBody}>
-                You've logged {weightEntries.length} time
-                {weightEntries.length === 1 ? '' : 's'} so far. After about{' '}
-                {MIN_TREND_ENTRIES} entries, Tern can show a trend line that
-                filters out daily noise.
+                {`A trend needs at least two weigh-ins in this range, and you have ${weightTrend.length}.`}
+                {weightEntries.length > weightTrend.length
+                  ? ' Try a longer range.'
+                  : ' Tern can then draw a line that filters out daily noise.'}
               </Text>
             </View>
           )}

@@ -13,7 +13,10 @@ const TREND_ALPHA = 0.3;
  * newest) — what the charts draw, so day-to-day fluctuation never reads as
  * gain or loss. Takes entries newest-first, the order they're stored in.
  */
-export function computeTrend(entriesNewestFirst: WeightEntry[]): number[] {
+export function computeTrend(
+  entriesNewestFirst: WeightEntry[],
+  maxPoints: number = TREND_POINTS,
+): number[] {
   const trend: number[] = [];
   for (const entry of [...entriesNewestFirst].reverse()) {
     const prev = trend[trend.length - 1];
@@ -21,7 +24,7 @@ export function computeTrend(entriesNewestFirst: WeightEntry[]): number[] {
       prev === undefined ? entry.lb : prev + TREND_ALPHA * (entry.lb - prev);
     trend.push(Math.round(next * 100) / 100);
   }
-  return trend.slice(-TREND_POINTS);
+  return maxPoints > 0 ? trend.slice(-maxPoints) : [];
 }
 
 /** Whether a weigh-in falls on today's local calendar date. */
