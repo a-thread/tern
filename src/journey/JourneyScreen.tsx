@@ -23,6 +23,7 @@ import {
   milestonesFor,
   waypointRules,
 } from './models';
+import { useSettings } from '@settings/SettingsContext';
 import { useWaypoints } from './WaypointsContext';
 
 const MILESTONE_COLORS = [colors.glacier, colors.violet, colors.aurora];
@@ -30,6 +31,7 @@ const MILESTONE_COLORS = [colors.glacier, colors.violet, colors.aurora];
 export default function JourneyScreen() {
   const insets = useSafeAreaInsets();
   const { waypoints, events } = useWaypoints();
+  const { settings } = useSettings();
 
   // Redraw the route when Journey comes into view the first time, when the total changes or after a minute away.
   const replayKey = useReplayOnFocus(waypoints);
@@ -155,7 +157,9 @@ export default function JourneyScreen() {
 
         <GroupLabel>How waypoints are earned</GroupLabel>
         <Group>
-          {waypointRules.map((rule) => (
+          {waypointRules
+            .filter((rule) => rule.id !== 'water' || settings.trackWater)
+            .map((rule) => (
             <Row
               key={rule.id}
               title={rule.label}
@@ -166,7 +170,9 @@ export default function JourneyScreen() {
                       ? colors.glacierTint
                       : rule.id === 'meals'
                         ? colors.kelpTint
-                        : colors.driftwoodTint
+                        : rule.id === 'water'
+                          ? colors.waterTint
+                          : colors.driftwoodTint
                   }
                 >
                   <Text
@@ -178,7 +184,9 @@ export default function JourneyScreen() {
                             ? colors.glacierDeep
                             : rule.id === 'meals'
                               ? colors.kelp
-                              : colors.driftwood,
+                              : rule.id === 'water'
+                                ? colors.water
+                                : colors.driftwood,
                       },
                     ]}
                   >

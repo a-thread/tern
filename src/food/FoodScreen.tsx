@@ -13,6 +13,9 @@ import { formatLongDate } from '@shared/utils/date';
 import { useSettings } from '@settings/SettingsContext';
 import { mealTotals, dayTotals, MEAL_OPTIONS, type FoodEntry } from './models';
 import { useFood } from './FoodContext';
+import { useFoodDisplay } from './useFoodDisplay';
+import WaterCard from '@water/WaterCard';
+import { useWater } from '@water/WaterContext';
 import { TierDot } from './components';
 
 export default function FoodScreen() {
@@ -22,6 +25,8 @@ export default function FoodScreen() {
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const { foodLog } = useFood();
   const { settings } = useSettings();
+  const { showCalories } = useFoodDisplay();
+  const water = useWater();
   const totals = dayTotals(foodLog);
   const remainingCalories = Math.max(
     settings.calorieTarget - totals.calories,
@@ -44,7 +49,8 @@ export default function FoodScreen() {
         }}
       >
         <View style={s.statRow}>
-          {settings.trackCalories && settings.showRemainingVsTarget ? (
+          {/* With calorie tracking (or calorie numbers) off there is no calorie chip at all. */}
+          {!showCalories ? null : settings.showRemainingVsTarget ? (
             <Stat
               value={Math.round(remainingCalories).toLocaleString()}
               label='left today'
@@ -67,12 +73,14 @@ export default function FoodScreen() {
           />
         </View>
 
+        {water.enabled ? <WaterCard /> : null}
+
         {MEAL_OPTIONS.map(({ key, label }) => {
           const items = foodLog.filter((f) => f.meal === key);
           const cals = Math.round(mealTotals(foodLog, key));
           return (
             <View key={key}>
-              <GroupLabel>{`${label} · ${cals}`}</GroupLabel>
+              <GroupLabel>{showCalories ? `${label} · ${cals}` : label}</GroupLabel>
               <Group>
                 {[
                   ...items.map((item) => (
@@ -81,7 +89,7 @@ export default function FoodScreen() {
                       item={item}
                       showTiers={settings.showTiers}
                       showTierNumber={settings.showTierNumber}
-                      showCalories={settings.showCalories}
+                      showCalories={showCalories}
                       onPress={() =>
                         navigation.navigate('EditFood', { entryId: item.id })
                       }

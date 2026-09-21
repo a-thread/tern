@@ -240,6 +240,7 @@ export function greetingFor(now: Date = new Date()): string {
 export type LeftToDoItem =
   | { kind: 'meal'; meal: FoodEntry['meal']; title: string; sub: string }
   | { kind: 'weight' }
+  | { kind: 'water'; totalOz: number; goalOz: number }
   | { kind: 'medication'; medicationId: string; name: string; at: number };
 
 /** How often the person weighs in. */
@@ -287,7 +288,12 @@ export function leftToDo(
   foodLog: FoodEntry[],
   lastWeight: WeightEntry | undefined,
   now: Date = new Date(),
-  options: { weighIn?: WeighInPlan; medications?: readonly DueMedication[] } = {},
+  options: {
+    weighIn?: WeighInPlan;
+    medications?: readonly DueMedication[];
+    /** Today's water so far and the goal; omit (or null) when water isn't tracked. */
+    water?: { totalOz: number; goalOz: number } | null;
+  } = {},
 ): LeftToDoItem[] {
   const items: LeftToDoItem[] = [];
 
@@ -312,6 +318,10 @@ export function leftToDo(
     items.push({ kind: 'weight' });
   }
 
+  if (options.water && options.water.totalOz < options.water.goalOz) {
+    items.push({ kind: 'water', ...options.water });
+  }
+
   for (const m of options.medications ?? []) {
     items.push({ kind: 'medication', medicationId: m.id, name: m.name, at: m.at });
   }
@@ -327,6 +337,8 @@ export type TodaySummary = {
   /** Names of the medications taken today. */
   medications: string[];
   stepGoalReached: boolean;
+  /** Ounces of water today; null when none was logged (or water isn't tracked). */
+  waterOz: number | null;
 };
 
 const MEAL_ORDER: FoodEntry['meal'][] = ['breakfast', 'lunch', 'dinner', 'snack'];
@@ -338,6 +350,7 @@ export function todaySummary(
   takenMedicationNames: string[],
   stepGoalReached: boolean,
   now: Date = new Date(),
+  waterOz = 0,
 ): TodaySummary {
   const names = MEAL_ORDER.filter((m) => foodLog.some((f) => f.meal === m));
   const calories = foodLog.reduce((sum, f) => sum + f.calories * f.servings, 0);
@@ -346,5 +359,6 @@ export function todaySummary(
     weighedIn: lastWeight && isLoggedToday(lastWeight.loggedAt, now) ? lastWeight : null,
     medications: takenMedicationNames,
     stepGoalReached,
+    waterOz: waterOz > 0 ? waterOz : null,
   };
 }

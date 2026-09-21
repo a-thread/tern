@@ -20,6 +20,7 @@ import { averageIntake, type IntakeAverage } from '@food/models';
 import { useFood } from '@food/FoodContext';
 import { useWeight } from '@weight/WeightContext';
 import { useSettings } from '@settings/SettingsContext';
+import WaterTrendCard from '@water/WaterTrendCard';
 import { useUnits } from '@settings/useUnits';
 import {
   RANGE_DAYS,
@@ -213,7 +214,8 @@ export default function TrendsScreen({ navigation }: Props) {
           </Card>
         </Pressable>
 
-        {/* nutrition */}
+        {/* nutrition: part of "Track calories & macros", so gone when that is off */}
+        {settings.trackCalories ? (
         <Card style={{ marginBottom: space.md }}>
           <Text style={s.metricName}>Calories</Text>
           <Text style={s.metricValue}>
@@ -223,9 +225,7 @@ export default function TrendsScreen({ navigation }: Props) {
             {intake
               ? `daily average · last ${foodDays} days`
               : 'no food logged yet'}
-            {settings.trackCalories
-              ? ` · target ${settings.calorieTarget.toLocaleString()}`
-              : ''}
+            {` · target ${settings.calorieTarget.toLocaleString()}`}
           </Text>
           <View style={s.macroRow}>
             <MacroBox
@@ -248,6 +248,9 @@ export default function TrendsScreen({ navigation }: Props) {
             />
           </View>
         </Card>
+        ) : null}
+
+        {settings.trackWater ? <WaterTrendCard range={range} /> : null}
 
         <GroupLabel>Consistency</GroupLabel>
         <Card>

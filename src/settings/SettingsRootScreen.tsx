@@ -32,8 +32,10 @@ import { MAX_NAME } from '@shared/auth/validation';
 import { useSettings } from './SettingsContext';
 import { useUnits } from './useUnits';
 import TimeStepperRow from './TimeStepperRow';
+import { clampWaterGoal } from '@water/models';
 import {
   REMINDER_STEP_MINUTES,
+  WATER_EVERY_HOURS,
   describeReminders,
   formatMinutes,
   stepMinutes,
@@ -75,7 +77,7 @@ export default function SettingsRootScreen({ navigation }: Props) {
     if (!dataRepo || dataBusy) return;
     Alert.alert(
       'Delete all your data?',
-      "This erases your food log, saved meals, weigh-ins, medication history, waypoints, rest days and settings from Tern. It can't be undone. You'll be signed out, and your login stays so you can start fresh.",
+      "This erases your food log, saved meals, weigh-ins, water and medication history, waypoints, rest days and settings from Tern. It can't be undone. You'll be signed out, and your login stays so you can start fresh.",
       [
         { text: 'Cancel', style: 'cancel' },
         {
@@ -101,7 +103,7 @@ export default function SettingsRootScreen({ navigation }: Props) {
     if (!dataRepo || dataBusy) return;
     Alert.alert(
       'Delete your account?',
-      "This permanently deletes your account and everything in it: your food log, saved meals, weigh-ins, medication history, waypoints, rest days and settings. It can't be undone.",
+      "This permanently deletes your account and everything in it: your food log, saved meals, weigh-ins, water and medication history, waypoints, rest days and settings. It can't be undone.",
       [
         { text: 'Cancel', style: 'cancel' },
         {
@@ -139,7 +141,7 @@ export default function SettingsRootScreen({ navigation }: Props) {
     if (trimmed !== settings.firstName) updateSettings({ firstName: trimmed });
   };
 
-  const { units, toDisplay, fromDisplay, formatGoal } = useUnits();
+  const { units, toDisplay, fromDisplay, formatGoal, formatVolume, stepWaterGoal } = useUnits();
 
   // Whole pounds, or half kilograms, in whichever unit is showing.
   const stepWeightGoal = (dir: 1 | -1) => {
@@ -373,6 +375,25 @@ export default function SettingsRootScreen({ navigation }: Props) {
           />
         </Group>
 
+        <GroupLabel>Water</GroupLabel>
+        <Group>
+          <ToggleRow
+            title='Track water'
+            sub='Optional. Log drinks from the Food tab'
+            on={settings.trackWater}
+            onToggle={(v) => updateSettings({ trackWater: v })}
+          />
+          {settings.trackWater ? (
+            <TimeStepperRow
+              label='Daily goal'
+              value={formatVolume(settings.waterGoalOz)}
+              onStep={(d) =>
+                updateSettings({ waterGoalOz: clampWaterGoal(stepWaterGoal(settings.waterGoalOz, d)) })
+              }
+            />
+          ) : null}
+        </Group>
+
         <GroupLabel>Reminders</GroupLabel>
         <Group>
           <ToggleRow
@@ -493,6 +514,66 @@ export default function SettingsRootScreen({ navigation }: Props) {
                   })
                 }
               />
+            </>
+          ) : null}
+          {settings.trackWater ? (
+            <>
+              <ToggleRow
+                title='Drink water'
+                sub={reminderText.water}
+                on={reminders.water.on}
+                onToggle={(v) =>
+                  updateSettings({ reminders: { ...reminders, water: { ...reminders.water, on: v } } })
+                }
+              />
+              {reminders.water.on ? (
+                <>
+                  <TimeStepperRow
+                    label='From'
+                    value={formatMinutes(reminders.water.start)}
+                    onStep={(d) => {
+                      const start = Math.min(Math.max(reminders.water.start + d * 60, 0), 23 * 60);
+                      updateSettings({
+                        reminders: {
+                          ...reminders,
+                          water: { ...reminders.water, start, end: Math.max(reminders.water.end, start) },
+                        },
+                      });
+                    }}
+                  />
+                  <TimeStepperRow
+                    label='Until'
+                    value={formatMinutes(reminders.water.end)}
+                    onStep={(d) => {
+                      const end = Math.min(Math.max(reminders.water.end + d * 60, 0), 23 * 60);
+                      updateSettings({
+                        reminders: {
+                          ...reminders,
+                          water: { ...reminders.water, end, start: Math.min(reminders.water.start, end) },
+                        },
+                      });
+                    }}
+                  />
+                  <TimeStepperRow
+                    label='Every'
+                    value={reminders.water.everyHours === 1 ? '1 hour' : `${reminders.water.everyHours} hours`}
+                    onStep={(d) =>
+                      updateSettings({
+                        reminders: {
+                          ...reminders,
+                          water: {
+                            ...reminders.water,
+                            everyHours: Math.min(
+                              Math.max(reminders.water.everyHours + d, WATER_EVERY_HOURS.min),
+                              WATER_EVERY_HOURS.max,
+                            ),
+                          },
+                        },
+                      })
+                    }
+                  />
+                </>
+              ) : null}
             </>
           ) : null}
         </Group>

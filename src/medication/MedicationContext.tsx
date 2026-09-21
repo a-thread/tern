@@ -11,6 +11,7 @@ import React, {
 import { useBackend } from '@shared/state/BackendContext';
 import { useToast } from '@shared/state/ToastContext';
 import { useDayKey } from '@shared/hooks/useDayKey';
+import { parseDayKey } from '@shared/utils/date';
 import { useSettings } from '@settings/SettingsContext';
 import { dueMeds, takenMeds, type Medication } from './medications';
 
@@ -20,7 +21,7 @@ type MedicationContextValue = {
   medications: Medication[];
   /** Ids of the medications taken today. */
   takenToday: ReadonlySet<string>;
-  /** Not yet taken today, earliest due first. */
+  /** Scheduled for today and not yet taken, earliest due first. */
   due: Medication[];
   /** Taken today, earliest due first. */
   taken: Medication[];
@@ -98,7 +99,12 @@ export function MedicationProvider({ children }: { children: React.ReactNode }) 
     () => new Set([...takenIds].filter((id) => medications.some((m) => m.id === id))),
     [takenIds, medications],
   );
-  const due = useMemo(() => dueMeds(medications, takenToday), [medications, takenToday]);
+  // 1 = Sunday … 7 = Saturday, like the reminder weekdays.
+  const weekday = parseDayKey(today).getDay() + 1;
+  const due = useMemo(
+    () => dueMeds(medications, takenToday, weekday),
+    [medications, takenToday, weekday],
+  );
   const taken = useMemo(() => takenMeds(medications, takenToday), [medications, takenToday]);
 
   const value = useMemo<MedicationContextValue>(

@@ -38,7 +38,9 @@ import { formatLoggedAt } from '@weight/models';
 import { useSettings } from '@settings/SettingsContext';
 import { formatMinutes } from '@settings/reminders.plan';
 import { useUnits } from '@settings/useUnits';
+import { useFoodDisplay } from '@food/useFoodDisplay';
 import { useMedication } from '@medication/MedicationContext';
+import { useWater } from '@water/WaterContext';
 import { waypointRules } from '@journey/models';
 import { useWaypoints, type Celebration } from '@journey/WaypointsContext';
 import WaypointBurst from '@journey/WaypointBurst';
@@ -69,7 +71,9 @@ export default function TodayScreen() {
   const { foodLog } = useFood();
   const { weightEntries } = useWeight();
   const { settings } = useSettings();
-  const { formatWeight } = useUnits();
+  const { formatWeight, formatVolume, quickWaterOz } = useUnits();
+  const water = useWater();
+  const { showCalories } = useFoodDisplay();
   const todayKey = useDayKey();
   const greeting = greetingFor();
   const {
@@ -96,12 +100,15 @@ export default function TodayScreen() {
       weekday: settings.reminders.weighIn.weekday,
     },
     medications: dueMedications,
+    water: water.enabled ? { totalOz: water.totalOz, goalOz: water.goalOz } : null,
   });
   const summary = todaySummary(
     foodLog,
     lastWeight,
     takenMedications.map((m) => m.name),
     reached,
+    undefined,
+    water.enabled ? water.totalOz : 0,
   );
   // The chip holds back awards that haven't been celebrated yet, so its
   // number ticks up (and pulses) as the feathers land on it.
@@ -287,7 +294,26 @@ export default function TodayScreen() {
             <GroupLabel>Left to do</GroupLabel>
             <Group>
               {openItems.map((item) =>
-                item.kind === 'medication' ? (
+                item.kind === 'water' ? (
+                  <Row
+                    key='water'
+                    title='Water'
+                    sub={`${formatVolume(item.totalOz)} of ${formatVolume(item.goalOz)}`}
+                    onPress={() => water.addWater(quickWaterOz[0])}
+                    icon={
+                      <IconBadge bg={colors.waterTint}>
+                        <Svg width={14} height={14} viewBox='0 0 24 24' fill='none'>
+                          <Path
+                            d='M12 3c-4 3-6 6-6 9a6 6 0 0 0 12 0c0-3-2-6-6-9z'
+                            stroke={colors.water}
+                            strokeWidth={2}
+                          />
+                        </Svg>
+                      </IconBadge>
+                    }
+                    right={<Text style={s.markText}>{`+${formatVolume(quickWaterOz[0])}`}</Text>}
+                  />
+                ) : item.kind === 'medication' ? (
                   <Row
                     key={`med-${item.medicationId}`}
                     title={`Take ${item.name}`}
@@ -379,7 +405,7 @@ export default function TodayScreen() {
                   title='Meals logged'
                   sub={
                     summary.meals.names.map(capitalize).join(', ') +
-                    (settings.showCalories
+                    (showCalories
                       ? ` · ${summary.meals.calories.toLocaleString()} cal`
                       : '')
                   }
@@ -406,6 +432,14 @@ export default function TodayScreen() {
                   }
                 />
               ))}
+              {summary.waterOz !== null ? (
+                <Row
+                  key='done-water'
+                  title='Water'
+                  sub={`${formatVolume(summary.waterOz)} of ${formatVolume(water.goalOz)}`}
+                  icon={<DoneBadge />}
+                />
+              ) : null}
               {summary.stepGoalReached ? (
                 <Row
                   key='done-steps'

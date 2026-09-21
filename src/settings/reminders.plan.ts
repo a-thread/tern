@@ -10,6 +10,8 @@ export type ReminderConfig = {
   mealLog: { on: boolean; midday: number; evening: number };
   /** `weekday` only matters when weighing in weekly. */
   weighIn: { on: boolean; weekday: number; at: number };
+  /** Drink-water nudges every `everyHours` from `start` to `end` (minutes since midnight). */
+  water: { on: boolean; start: number; end: number; everyHours: number };
 };
 
 /** How often the person weighs in: it sets the reminder and how often Today asks. */
@@ -20,9 +22,12 @@ export const DEFAULT_WEIGH_IN_FREQUENCY: WeighInFrequency = 'weekly';
 export const DEFAULT_REMINDERS: ReminderConfig = {
   mealLog: { on: true, midday: 12 * 60 + 30, evening: 19 * 60 },
   weighIn: { on: true, weekday: 1, at: 8 * 60 },
+  water: { on: false, start: 9 * 60, end: 19 * 60, everyHours: 2 },
 };
 
-export type ReminderKey = 'meals' | 'weighIn';
+export const WATER_EVERY_HOURS = { min: 1, max: 4 };
+
+export type ReminderKey = 'meals' | 'weighIn' | 'water';
 
 export type PlannedReminder = {
   /** Stable, so re-syncing replaces rather than duplicates. */
@@ -55,12 +60,24 @@ const at = (minutes: number) => ({
 export type PlanExtras = {
   weighInFrequency?: WeighInFrequency;
   medications?: readonly Medication[];
+  /** Water reminders only make sense while water tracking is on. */
+  trackWater?: boolean;
 };
+
+export const waterReminderId = (index: number) => `tern-water-${index}`;
+
+/** The times of day (minutes) a water reminder fires: start, then every N hours until end. */
+export function waterTimes(w: ReminderConfig['water']): number[] {
+  const step = Math.max(1, Math.round(w.everyHours)) * 60;
+  const times: number[] = [];
+  for (let t = w.start; t <= w.end && times.length < 12; t += step) times.push(t);
+  return times;
+}
 
 /** The reminders to have scheduled for this configuration. */
 export function planReminders(
   c: ReminderConfig,
-  { weighInFrequency = DEFAULT_WEIGH_IN_FREQUENCY, medications = [] }: PlanExtras = {},
+  { weighInFrequency = DEFAULT_WEIGH_IN_FREQUENCY, medications = [], trackWater = false }: PlanExtras = {},
 ): PlannedReminder[] {
   const plan: PlannedReminder[] = [];
   if (c.mealLog.on) {
@@ -94,6 +111,17 @@ export function planReminders(
       ...at(c.weighIn.at),
     });
   }
+  if (trackWater && c.water.on) {
+    waterTimes(c.water).forEach((t, i) => {
+      plan.push({
+        id: waterReminderId(i),
+        key: 'water',
+        title: 'Water',
+        body: 'A glass of water, if you feel like one.',
+        ...at(t),
+      });
+    });
+  }
   for (const m of medications) {
     if (!m.remind) continue;
     plan.push({
@@ -101,6 +129,7 @@ export function planReminders(
       key: 'medication',
       title: 'Medication',
       body: `Time for ${m.name}, whenever you’re ready.`,
+      ...(m.frequency === 'weekly' ? { weekday: m.weekday } : {}),
       ...at(m.at),
     });
   }
@@ -148,6 +177,7 @@ export function describeReminders(
       weighInFrequency === 'daily'
         ? `Every day, ${formatMinutes(c.weighIn.at)}`
         : `${weekdayPlural(c.weighIn.weekday)}, ${formatMinutes(c.weighIn.at)}`,
+    water: `Every ${c.water.everyHours === 1 ? 'hour' : `${c.water.everyHours} hours`}, ${formatMinutes(c.water.start)} to ${formatMinutes(c.water.end)}`,
   };
 }
 
@@ -157,6 +187,7 @@ export function mergeReminders(saved: unknown): ReminderConfig {
     mealLog?: Partial<ReminderConfig['mealLog']>;
     weighIn?: Partial<ReminderConfig['weighIn']>;
     weeklyWeighIn?: Partial<ReminderConfig['weighIn']>;
+    water?: Partial<ReminderConfig['water']>;
   };
   const weigh = s.weighIn ?? s.weeklyWeighIn;
   const num = (v: unknown, fallback: number) =>
@@ -174,6 +205,15 @@ export function mergeReminders(saved: unknown): ReminderConfig {
       on: bool(weigh?.on, d.weighIn.on),
       weekday: num(weigh?.weekday, d.weighIn.weekday),
       at: num(weigh?.at, d.weighIn.at),
+    },
+    water: {
+      on: bool(s.water?.on, d.water.on),
+      start: num(s.water?.start, d.water.start),
+      end: num(s.water?.end, d.water.end),
+      everyHours: Math.min(
+        Math.max(Math.round(num(s.water?.everyHours, d.water.everyHours)), WATER_EVERY_HOURS.min),
+        WATER_EVERY_HOURS.max,
+      ),
     },
   };
 }

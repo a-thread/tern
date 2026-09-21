@@ -120,6 +120,30 @@ describe('defaults and older saves', () => {
     const { result } = renderHook(() => useSettings(), { wrapper });
     await waitFor(() => expect(result.current.ready).toBe(true));
     expect(result.current.settings.reminders.weighIn).toEqual({ on: false, weekday: 4, at: 420 });
-    expect(result.current.settings.medications).toEqual([{ id: 'm1', name: 'Iron', at: 600, remind: true }]);
+    expect(result.current.settings.medications).toEqual([
+      { id: 'm1', name: 'Iron', at: 600, frequency: 'daily', weekday: 1, remind: true },
+    ]);
+  });
+});
+
+describe('water settings', () => {
+  it('is off by default, with a 64 oz goal', async () => {
+    const { result } = await setup();
+    expect(result.current.settings.trackWater).toBe(false);
+    expect(result.current.settings.waterGoalOz).toBe(64);
+  });
+
+  it('keeps a saved goal but pulls a silly one back into range', async () => {
+    const backend = createMemoryBackend();
+    await backend.settings.save({ trackWater: true, waterGoalOz: 9999 } as never);
+    const wrapper = ({ children }: { children: React.ReactNode }) => (
+      <BackendProvider backend={backend}>
+        <SettingsProvider>{children}</SettingsProvider>
+      </BackendProvider>
+    );
+    const { result } = renderHook(() => useSettings(), { wrapper });
+    await waitFor(() => expect(result.current.ready).toBe(true));
+    expect(result.current.settings.trackWater).toBe(true);
+    expect(result.current.settings.waterGoalOz).toBe(200);
   });
 });

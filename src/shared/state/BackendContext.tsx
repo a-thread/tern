@@ -41,6 +41,11 @@ import {
   type MedicationRepository,
 } from '@medication/repository';
 import { createSupabaseMedicationRepository } from '@medication/repository.supabase';
+import {
+  createMemoryWaterRepository,
+  type WaterRepository,
+} from '@water/repository';
+import { createSupabaseWaterRepository } from '@water/repository.supabase';
 import type { DataRepository } from './dataRepository';
 import { createSupabaseDataRepository } from './dataRepository.supabase';
 
@@ -54,6 +59,7 @@ export type Backend = {
   restDays: RestDaysRepository;
   savedMeals: SavedMealsRepository;
   medication: MedicationRepository;
+  water: WaterRepository;
   /** Export and erase, for signed-in accounts. Absent in local mode, where nothing is stored. */
   data?: DataRepository;
 };
@@ -69,6 +75,7 @@ export function createMemoryBackend(): Backend {
     restDays: createMemoryRestDaysRepository(),
     savedMeals: createMemorySavedMealsRepository(),
     medication: createMemoryMedicationRepository(),
+    water: createMemoryWaterRepository(),
   };
 }
 
@@ -88,6 +95,7 @@ export function createRemoteBackend(): Backend {
     restDays: createSupabaseRestDaysRepository(supabase),
     savedMeals: createSupabaseSavedMealsRepository(supabase),
     medication: createSupabaseMedicationRepository(supabase),
+    water: createSupabaseWaterRepository(supabase),
     data: createSupabaseDataRepository(supabase),
   };
 }

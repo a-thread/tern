@@ -6,6 +6,8 @@ import {
   mergeReminders,
   medicationReminderId,
   planReminders,
+  waterReminderId,
+  waterTimes,
   stepMinutes,
   stepWeekday,
   type ReminderConfig,
@@ -19,6 +21,7 @@ const config = (
     ...DEFAULT_REMINDERS.weighIn,
     on: over.weighIn ?? false,
   },
+  water: { ...DEFAULT_REMINDERS.water, on: false },
 });
 
 describe('planReminders', () => {
@@ -83,10 +86,11 @@ describe('weigh-in frequency', () => {
 });
 
 describe('medication reminders', () => {
+  const base = { frequency: 'daily', weekday: 1 } as const;
   const meds = [
-    { id: 'a', name: 'Vitamin D', at: 9 * 60, remind: true },
-    { id: 'b', name: 'Iron', at: 20 * 60, remind: false },
-    { id: 'c', name: 'Allergy pill', at: 21 * 60 + 15, remind: true },
+    { ...base, id: 'a', name: 'Vitamin D', at: 9 * 60, remind: true },
+    { ...base, id: 'b', name: 'Iron', at: 20 * 60, remind: false },
+    { ...base, id: 'c', name: 'Allergy pill', at: 21 * 60 + 15, remind: true },
   ];
 
   it('plans a daily reminder for each medication that has one, at its time', () => {
@@ -96,6 +100,12 @@ describe('medication reminders', () => {
       [medicationReminderId('c'), 21, 15, undefined],
     ]);
     expect(plan[0].body).toContain('Vitamin D');
+  });
+
+  it('a weekly medication is reminded on its weekday only', () => {
+    const weekly = { ...base, id: 'w', name: 'Injection', at: 10 * 60, remind: true, frequency: 'weekly', weekday: 4 } as const;
+    const [r] = planReminders(config(), { medications: [weekly] });
+    expect(r).toMatchObject({ id: medicationReminderId('w'), weekday: 4, hour: 10, minute: 0 });
   });
 
   it('plans nothing for medications without a reminder', () => {
@@ -128,6 +138,7 @@ describe('time helpers', () => {
     expect(describeReminders(DEFAULT_REMINDERS)).toEqual({
       meals: '12:30 pm and 7:00 pm',
       weighIn: 'Sundays, 8:00 am',
+      water: 'Every 2 hours, 9:00 am to 7:00 pm',
     });
   });
 });
@@ -160,5 +171,44 @@ describe('mergeReminders', () => {
     expect(merged.mealLog.midday).toBe(600);
     expect(merged.mealLog.evening).toBe(DEFAULT_REMINDERS.mealLog.evening);
     expect(mergeReminders(null)).toEqual(DEFAULT_REMINDERS);
+  });
+});
+
+describe('water reminders', () => {
+  const water = (over: Partial<ReminderConfig['water']> = {}): ReminderConfig => ({
+    ...config(),
+    water: { on: true, start: 9 * 60, end: 19 * 60, everyHours: 2, ...over },
+  });
+
+  it('fires from the start time every N hours until the end time', () => {
+    expect(waterTimes(water().water)).toEqual([540, 660, 780, 900, 1020, 1140]);
+    expect(waterTimes(water({ everyHours: 4 }).water)).toEqual([540, 780, 1020]);
+    expect(waterTimes(water({ start: 600, end: 600 }).water)).toEqual([600]);
+  });
+
+  it('plans nothing when the end is before the start', () => {
+    expect(waterTimes(water({ start: 20 * 60, end: 9 * 60 }).water)).toEqual([]);
+  });
+
+  it('is only planned while water is tracked and its reminder is on', () => {
+    expect(planReminders(water())).toEqual([]);
+    expect(planReminders(water({ on: false }), { trackWater: true })).toEqual([]);
+    const plan = planReminders(water(), { trackWater: true });
+    expect(plan.map((r) => r.id)).toEqual([0, 1, 2, 3, 4, 5].map(waterReminderId));
+    expect(plan.every((r) => r.weekday === undefined && r.key === 'water')).toBe(true);
+  });
+
+  it('never plans more reminders than a day can sensibly hold', () => {
+    expect(waterTimes(water({ start: 0, end: 23 * 60, everyHours: 1 }).water).length).toBeLessThanOrEqual(12);
+  });
+
+  it('is off by default and reads a saved setting back safely', () => {
+    expect(DEFAULT_REMINDERS.water.on).toBe(false);
+    expect(mergeReminders({ water: { on: true, everyHours: 99, start: 'x' } }).water).toEqual({
+      on: true,
+      start: 9 * 60,
+      end: 19 * 60,
+      everyHours: 4,
+    });
   });
 });

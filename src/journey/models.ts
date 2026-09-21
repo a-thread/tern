@@ -1,5 +1,5 @@
 /** Which waypoint rule an award came from (matches `waypointRules` ids). */
-export type WaypointSource = 'steps' | 'meals' | 'rest';
+export type WaypointSource = 'steps' | 'meals' | 'rest' | 'water';
 
 export type Milestone = {
   id: string;
@@ -54,5 +54,6 @@ export const waypointRules = [
   { id: 'steps', label: 'Reaching your step goal', points: 40 },
   { id: 'meals', label: 'Logging all meals', points: 15 },
   { id: 'rest', label: 'Taking a rest day', points: 10 },
+  { id: 'water', label: 'Reaching your water goal', points: 10 },
 ];
 

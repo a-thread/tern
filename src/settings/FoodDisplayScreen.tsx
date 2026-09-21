@@ -12,6 +12,7 @@ import {
   FootNote,
 } from '@shared/components/ui';
 import { TierDot } from '@food/components';
+import { useFoodDisplay } from '@food/useFoodDisplay';
 import { useSettings } from './SettingsContext';
 import type { SettingsStackParamList } from './types';
 
@@ -26,6 +27,7 @@ const PREVIEW_ITEMS = [
 export default function FoodDisplayScreen({ navigation }: Props) {
   const insets = useSafeAreaInsets();
   const { settings, updateSettings } = useSettings();
+  const { showCalories } = useFoodDisplay();
 
   return (
     <View
@@ -76,7 +78,7 @@ export default function FoodDisplayScreen({ navigation }: Props) {
                 />
               ) : null}
               <Text style={s.previewName}>{item.name}</Text>
-              {settings.showCalories ? (
+              {showCalories ? (
                 <Text style={s.previewCals}>{item.calories}</Text>
               ) : null}
             </View>
@@ -84,20 +86,26 @@ export default function FoodDisplayScreen({ navigation }: Props) {
         </View>
 
         <GroupLabel>Calories</GroupLabel>
-        <Group>
-          <ToggleRow
-            title='Show calorie counts'
-            sub="Hide if you'd rather track meals without numbers"
-            on={settings.showCalories}
-            onToggle={(v) => updateSettings({ showCalories: v })}
-          />
-          <ToggleRow
-            title='Show remaining vs. target'
-            sub='Off shows totals only, with no "left today" figure'
-            on={settings.showRemainingVsTarget}
-            onToggle={(v) => updateSettings({ showRemainingVsTarget: v })}
-          />
-        </Group>
+        {settings.trackCalories ? (
+          <Group>
+            <ToggleRow
+              title='Show calorie counts'
+              sub="Hide if you'd rather track meals without numbers"
+              on={settings.showCalories}
+              onToggle={(v) => updateSettings({ showCalories: v })}
+            />
+            <ToggleRow
+              title='Show remaining vs. target'
+              sub='Off shows totals only, with no "left today" figure'
+              on={settings.showRemainingVsTarget}
+              onToggle={(v) => updateSettings({ showRemainingVsTarget: v })}
+            />
+          </Group>
+        ) : (
+          <FootNote>
+            Calorie tracking is off, so no calorie numbers are shown. Turn it on under Settings → Calorie & macro targets.
+          </FootNote>
+        )}
         <FootNote>
           Tern never shows exercise as "earning back" calories, and won't warn
           you for going over a target.

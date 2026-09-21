@@ -32,7 +32,13 @@ import {
 } from '@medication/medications';
 import { useSettings } from './SettingsContext';
 import TimeStepperRow from './TimeStepperRow';
-import { REMINDER_STEP_MINUTES, formatMinutes, stepMinutes } from './reminders.plan';
+import {
+  REMINDER_STEP_MINUTES,
+  formatMinutes,
+  stepMinutes,
+  stepWeekday,
+  weekdayPlural,
+} from './reminders.plan';
 import type { SettingsStackParamList } from './types';
 
 type Props = NativeStackScreenProps<SettingsStackParamList, 'Medication'>;
@@ -171,6 +177,31 @@ function MedicationCard({
             style={s.nameInput}
           />
         </View>
+        <View style={s.freqRow}>
+          <Text style={s.freqLabel}>Take it</Text>
+          <View style={s.freqSeg}>
+            {(['daily', 'weekly'] as const).map((f) => (
+              <Pressable
+                key={f}
+                onPress={() => onChange({ frequency: f })}
+                style={[s.freqItem, med.frequency === f && s.freqItemOn]}
+                accessibilityRole='button'
+                accessibilityState={{ selected: med.frequency === f }}
+              >
+                <Text style={[s.freqText, med.frequency === f && s.freqTextOn]}>
+                  {f === 'daily' ? 'Daily' : 'Weekly'}
+                </Text>
+              </Pressable>
+            ))}
+          </View>
+        </View>
+        {med.frequency === 'weekly' ? (
+          <TimeStepperRow
+            label='Day'
+            value={weekdayPlural(med.weekday)}
+            onStep={(d) => onChange({ weekday: stepWeekday(med.weekday, d) })}
+          />
+        ) : null}
         <TimeStepperRow
           label='Due'
           value={formatMinutes(med.at)}
@@ -178,7 +209,13 @@ function MedicationCard({
         />
         <ToggleRow
           title='Remind me'
-          sub={med.remind ? `Every day at ${formatMinutes(med.at)}` : 'No reminder'}
+          sub={
+            med.remind
+              ? med.frequency === 'weekly'
+                ? `${weekdayPlural(med.weekday)} at ${formatMinutes(med.at)}`
+                : `Every day at ${formatMinutes(med.at)}`
+              : 'No reminder'
+          }
           on={med.remind}
           onToggle={(v) => onChange({ remind: v })}
         />
@@ -198,6 +235,24 @@ const s = StyleSheet.create({
     color: colors.ink,
     paddingVertical: 8,
   },
+  freqRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 13,
+    paddingVertical: 10,
+  },
+  freqLabel: { fontFamily: font.medium, fontSize: 14, color: colors.ink },
+  freqSeg: {
+    flexDirection: 'row',
+    backgroundColor: '#E8E5DD',
+    borderRadius: 9,
+    padding: 2,
+  },
+  freqItem: { paddingHorizontal: 12, paddingVertical: 5, borderRadius: 7 },
+  freqItemOn: { backgroundColor: '#fff' },
+  freqText: { fontFamily: font.body, fontSize: 12.5, color: colors.ink2 },
+  freqTextOn: { fontFamily: font.semibold, color: colors.ink },
   removeRow: { paddingHorizontal: 13, paddingVertical: 12 },
   removeText: { fontFamily: font.semibold, fontSize: 13.5, color: '#B3261E' },
   addRow: { flexDirection: 'row', alignItems: 'center', gap: space.sm },

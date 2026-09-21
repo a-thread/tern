@@ -14,6 +14,7 @@ import type { Units } from '@shared/utils/units';
 import { dayKey } from '@shared/utils/date';
 import { recordGoalChange, type GoalChange } from '@today/models';
 import { mergeMedications, type Medication } from '@medication/medications';
+import { DEFAULT_WATER_GOAL_OZ, clampWaterGoal } from '@water/models';
 import { settingsSeed } from './mock';
 import {
   DEFAULT_REMINDERS,
@@ -52,6 +53,10 @@ export type AppSettings = {
   weighInFrequency: WeighInFrequency;
   /** Medications the person tracks. Empty = the feature stays out of the way. */
   medications: Medication[];
+  /** Optional water tracking; off by default so it stays out of the way. */
+  trackWater: boolean;
+  /** Daily water goal, in ounces (ounces are a display choice). */
+  waterGoalOz: number;
   healthData: HealthDataSettings;
 };
 
@@ -74,6 +79,8 @@ const initialSettings: AppSettings = {
   reminders: DEFAULT_REMINDERS,
   weighInFrequency: DEFAULT_WEIGH_IN_FREQUENCY,
   medications: [],
+  trackWater: false,
+  waterGoalOz: DEFAULT_WATER_GOAL_OZ,
   healthData: {
     readSteps: true,
   },
@@ -127,6 +134,11 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
           weighInFrequency:
             saved?.weighInFrequency === 'daily' ? 'daily' : DEFAULT_WEIGH_IN_FREQUENCY,
           medications: mergeMedications(saved?.medications),
+          trackWater: saved?.trackWater === true,
+          waterGoalOz:
+            typeof saved?.waterGoalOz === 'number' && Number.isFinite(saved.waterGoalOz)
+              ? clampWaterGoal(saved.waterGoalOz)
+              : DEFAULT_WATER_GOAL_OZ,
         };
         const name = signedUpNameRef.current?.trim();
         // Only when never set — clearing the name in Settings must stick.

@@ -1,9 +1,15 @@
 import { useMemo } from 'react';
 
 import {
+  formatVolume,
   formatWeight,
+  fromDisplayVolume,
   fromDisplayWeight,
+  quickWaterOz,
+  stepWaterGoal,
+  toDisplayVolume,
   toDisplayWeight,
+  volumeUnitLabel,
   weightUnitLabel,
 } from '@shared/utils/units';
 import { useSettings } from './SettingsContext';
@@ -26,6 +32,14 @@ export function useUnits() {
       /** A goal, without a trailing ".0": "163 lb", "74.5 kg" */
       formatGoal: (lb: number) =>
         `${Number(toDisplayWeight(lb, units).toFixed(1))} ${weightUnitLabel(units)}`,
+      /** Water: stored ounces are shown as oz or oz. */
+      volumeLabel: volumeUnitLabel(units),
+      toDisplayVolume: (oz: number) => toDisplayVolume(oz, units),
+      fromDisplayVolume: (value: number) => fromDisplayVolume(value, units),
+      formatVolume: (oz: number) => formatVolume(oz, units),
+      quickWaterOz: quickWaterOz(units),
+      /** The goal one step up (1) or down (-1), in stored ounces. */
+      stepWaterGoal: (oz: number, direction: 1 | -1) => stepWaterGoal(oz, direction, units),
     }),
     [units],
   );

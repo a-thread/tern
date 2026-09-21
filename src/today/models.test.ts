@@ -351,6 +351,22 @@ describe('leftToDo with weigh-in frequency and medication', () => {
     expect(items[1]).toEqual({ kind: 'medication', medicationId: 'a', name: 'Vitamin D', at: 480 });
   });
 
+  it('asks for water only while tracking it and under the goal', () => {
+    expect(leftToDo(log, weighedToday, now, { water: { totalOz: 16, goalOz: 64 } })).toEqual([
+      { kind: 'water', totalOz: 16, goalOz: 64 },
+    ]);
+    expect(leftToDo(log, weighedToday, now, { water: { totalOz: 64, goalOz: 64 } })).toEqual([]);
+    expect(leftToDo(log, weighedToday, now, { water: null })).toEqual([]);
+  });
+
+  it('puts water before the medication rows', () => {
+    const items = leftToDo(log, weighedToday, now, {
+      water: { totalOz: 0, goalOz: 64 },
+      medications: meds,
+    });
+    expect(items.map((i) => i.kind)).toEqual(['water', 'medication', 'medication']);
+  });
+
   it('is empty when everything, medication included, is done', () => {
     expect(leftToDo(log, weighedToday, now, { medications: [] })).toEqual([]);
   });
@@ -374,6 +390,12 @@ describe('todaySummary', () => {
     expect(todaySummary([], weighedToday, [], false, now).weighedIn).toBe(weighedToday);
     expect(todaySummary([], weighedYesterday, [], false, now).weighedIn).toBeNull();
     expect(todaySummary([], undefined, [], false, now).weighedIn).toBeNull();
+  });
+
+  it('reports water only when some was logged', () => {
+    expect(todaySummary([], undefined, [], false, now, 48).waterOz).toBe(48);
+    expect(todaySummary([], undefined, [], false, now, 0).waterOz).toBeNull();
+    expect(todaySummary([], undefined, [], false, now).waterOz).toBeNull();
   });
 
   it('carries the medications taken and whether the step goal was reached', () => {

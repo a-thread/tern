@@ -16,6 +16,7 @@ module.exports = function (api) {
             '@trends': './src/trends',
             '@settings': './src/settings',
             '@medication': './src/medication',
+            '@water': './src/water',
           },
         },
       ],

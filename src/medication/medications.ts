@@ -4,9 +4,15 @@ export type Medication = {
   name: string;
   /** Minutes since local midnight when it is due. */
   at: number;
-  /** A daily reminder at `at`. */
+  /** Every day, or once a week on `weekday`. */
+  frequency: MedicationFrequency;
+  /** 1 = Sunday … 7 = Saturday. Only used when weekly. */
+  weekday: number;
+  /** A reminder at `at` (on `weekday` when weekly). */
   remind: boolean;
 };
+
+export type MedicationFrequency = 'daily' | 'weekly';
 
 export const MAX_MEDICATIONS = 10;
 export const MAX_MED_NAME = 40;
@@ -36,16 +42,29 @@ export function validateMedName(
 }
 
 export function newMedication(name: string, id: string): Medication {
-  return { id, name: cleanMedName(name), at: DEFAULT_MED_TIME, remind: false };
+  return {
+    id,
+    name: cleanMedName(name),
+    at: DEFAULT_MED_TIME,
+    frequency: 'daily',
+    weekday: 1,
+    remind: false,
+  };
 }
 
-/** Medications not yet taken today, earliest due first. */
+/** Whether a medication is scheduled on a weekday (1 = Sunday … 7 = Saturday). */
+export function isScheduledOn(med: Medication, weekday: number): boolean {
+  return med.frequency === 'daily' || med.weekday === weekday;
+}
+
+/** Medications scheduled for a weekday that are not yet taken today, earliest due first. */
 export function dueMeds(
   meds: readonly Medication[],
   takenToday: ReadonlySet<string>,
+  weekday: number,
 ): Medication[] {
   return meds
-    .filter((m) => !takenToday.has(m.id))
+    .filter((m) => isScheduledOn(m, weekday) && !takenToday.has(m.id))
     .sort((a, b) => a.at - b.at || a.name.localeCompare(b.name));
 }
 
@@ -79,6 +98,9 @@ export function mergeMedications(saved: unknown): Medication[] {
           typeof m.at === 'number' && Number.isFinite(m.at) && m.at >= 0 && m.at < 1440
             ? Math.floor(m.at)
             : DEFAULT_MED_TIME,
+        frequency: m.frequency === 'weekly' ? 'weekly' : 'daily',
+        weekday:
+          Number.isInteger(m.weekday) && m.weekday >= 1 && m.weekday <= 7 ? m.weekday : 1,
         remind: m.remind === true,
       });
     }

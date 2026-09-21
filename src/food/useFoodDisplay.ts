@@ -6,6 +6,8 @@ export function useFoodDisplay() {
   return {
     showTiers: settings.showTiers,
     showTierNumber: settings.showTierNumber,
-    showCalories: settings.showCalories,
+    // No calorie numbers anywhere once calorie tracking is off: there is nothing
+    // to count, so the separate "show calorie counts" switch has nothing to decide.
+    showCalories: settings.trackCalories && settings.showCalories,
   };
 }

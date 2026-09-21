@@ -7,7 +7,7 @@ import {
   type Backend,
 } from '@shared/state/BackendContext';
 import { ToastProvider } from '@shared/state/ToastContext';
-import { dayKey } from '@shared/utils/date';
+import { dayKey, parseDayKey } from '@shared/utils/date';
 import { SettingsProvider, useSettings } from '@settings/SettingsContext';
 import { MedicationProvider, useMedication } from './MedicationContext';
 import { newMedication } from './medications';
@@ -42,7 +42,19 @@ const track = async (
     result.current.settings.updateSettings({ medications: meds });
   });
 
+const weekdayToday = parseDayKey(today).getDay() + 1; // 1 = Sunday … 7 = Saturday
+const otherWeekday = (weekdayToday % 7) + 1;
+
 describe('MedicationProvider', () => {
+  it('a weekly medication is due only on its weekday', async () => {
+    const { result } = await setup();
+    const onToday = { ...newMedication('Weekly today', 'w1'), frequency: 'weekly' as const, weekday: weekdayToday };
+    const another = { ...newMedication('Weekly other', 'w2'), frequency: 'weekly' as const, weekday: otherWeekday };
+    await track(result, onToday, another, vitaminD);
+    expect(result.current.meds.due.map((m) => m.id).sort()).toEqual(['med-d', 'w1']);
+    expect(result.current.meds.medications).toHaveLength(3);
+  });
+
   it('has nothing to show until a medication is added', async () => {
     const { result } = await setup();
     expect(result.current.meds.medications).toEqual([]);
