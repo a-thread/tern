@@ -14,25 +14,35 @@ import {
 } from '@shared/components/charts';
 import { useActivity } from '@today/ActivityContext';
 import { useDayKey } from '@shared/hooks/useDayKey';
-import { addDays, monthName, weekdayLetter } from '@shared/utils/date';
+import { addDays, monthName } from '@shared/utils/date';
 import { useBackend } from '@shared/state/BackendContext';
 import { averageIntake, type IntakeAverage } from '@food/models';
 import { useFood } from '@food/FoodContext';
 import { useWeight } from '@weight/WeightContext';
 import { useSettings } from '@settings/SettingsContext';
 import { useUnits } from '@settings/useUnits';
-import { longestProtectedRun, summarizeSteps } from './models';
+import {
+  RANGE_DAYS,
+  bucketSteps,
+  longestProtectedRun,
+  summarizeSteps,
+  weightTrendFor,
+  type StepRange,
+} from './models';
 import type { TrendsStackParamList } from './types';
 
 type Props = NativeStackScreenProps<TrendsStackParamList, 'TrendsHome'>;
 
 const RANGES = ['Week', 'Month', '6 months'] as const;
-const WEIGHT_TREND_MIN_ENTRIES = 7;
-const RANGE_DAYS = { Week: 7, Month: 30, '6 months': 180 } as const;
+const RANGE_LABEL = {
+  Week: 'this week',
+  Month: 'this month',
+  '6 months': 'over 6 months',
+} as const;
 
 export default function TrendsScreen({ navigation }: Props) {
   const insets = useSafeAreaInsets();
-  const [range, setRange] = useState<(typeof RANGES)[number]>('Month');
+  const [range, setRange] = useState<StepRange>('Month');
   const { foodLog } = useFood();
   const { weightEntries, weightTrend } = useWeight();
   const { settings } = useSettings();
@@ -50,7 +60,9 @@ export default function TrendsScreen({ navigation }: Props) {
       let cancelled = false;
       food
         .history(addDays(todayKey, -(foodDays - 1)), todayKey)
-        .then((byDay) => !cancelled && setIntake(averageIntake(byDay, todayKey)))
+        .then(
+          (byDay) => !cancelled && setIntake(averageIntake(byDay, todayKey)),
+        )
         .catch((e) => console.warn('Could not load food history', e));
       return () => {
         cancelled = true;
@@ -61,16 +73,16 @@ export default function TrendsScreen({ navigation }: Props) {
   );
   const stepsConnected = stepsStatus === 'connected';
   const rangeSteps = summarizeSteps(days, RANGE_DAYS[range]);
-  const last7 = days.slice(-7).map((d) => ({
-    label: weekdayLetter(d.day),
-    value: d.steps,
-    state: d.state,
-  }));
-  const last30 = days.slice(-30).map((d) => d.state);
-  const longestRun = longestProtectedRun(days.slice(-RANGE_DAYS[range]).map((d) => d.state));
+  const bars = bucketSteps(days, range);
+  const inRange = days.slice(-RANGE_DAYS[range]).map((d) => d.state);
+  const longestRun = longestProtectedRun(inRange);
+  const rangeTrend = weightTrendFor(weightEntries, RANGE_DAYS[range]);
   const latest = weightTrend[weightTrend.length - 1];
-  const delta = latest - weightTrend[0];
-  const hasWeightTrend = weightEntries.length >= WEIGHT_TREND_MIN_ENTRIES;
+  const delta =
+    rangeTrend.length > 1
+      ? rangeTrend[rangeTrend.length - 1] - rangeTrend[0]
+      : 0;
+  const hasWeightTrend = rangeTrend.length >= 2;
 
   return (
     <View
@@ -103,26 +115,38 @@ export default function TrendsScreen({ navigation }: Props) {
         <Pressable onPress={() => navigation.navigate('StepsDetail')}>
           <Card style={{ marginBottom: space.md }}>
             <View style={s.metricTop}>
-              <View>
+              <View style={s.metricText}>
                 <Text style={s.metricName}>Steps</Text>
                 <Text style={s.metricValue}>
                   {rangeSteps.average === null
                     ? '—'
                     : rangeSteps.average.toLocaleString()}
                 </Text>
-                <Text style={s.metricSub}>daily average</Text>
+                <Text
+                  style={s.metricSub}
+                >{`daily average ${RANGE_LABEL[range]}`}</Text>
               </View>
               {rangeSteps.changePct !== null ? (
-                <View style={[s.delta, { backgroundColor: colors.glacierTint }]}>
+                <View
+                  style={[s.delta, { backgroundColor: colors.glacierTint }]}
+                >
                   <Text style={[s.deltaText, { color: colors.glacierDeep }]}>
-                    {rangeSteps.changePct > 0 ? '+' : rangeSteps.changePct < 0 ? '−' : ''}
+                    {rangeSteps.changePct > 0
+                      ? '+'
+                      : rangeSteps.changePct < 0
+                        ? '−'
+                        : ''}
                     {Math.abs(rangeSteps.changePct)}%
                   </Text>
                 </View>
               ) : null}
             </View>
             {stepsConnected ? (
-              <StepBars days={last7} goal={settings.stepGoal} />
+              <StepBars
+                days={bars}
+                goal={settings.stepGoal}
+                showLabels={range !== 'Month'}
+              />
             ) : (
               <Text style={s.metricSub}>
                 Connect step data in Settings → Health data to see this.
@@ -137,7 +161,7 @@ export default function TrendsScreen({ navigation }: Props) {
             {hasWeightTrend ? (
               <>
                 <View style={s.metricTop}>
-                  <View>
+                  <View style={s.metricText}>
                     <Text style={s.metricName}>Weight</Text>
                     <Text style={s.metricValue}>{formatWeight(latest)}</Text>
                     <Text style={s.metricSub}>
@@ -156,7 +180,7 @@ export default function TrendsScreen({ navigation }: Props) {
                   </View>
                 </View>
                 <WeightTrend
-                  trend={weightTrend.map(toDisplay)}
+                  trend={rangeTrend.map(toDisplay)}
                   spread={toDisplay(1.3)}
                   goal={toDisplay(settings.weightGoalLb)}
                 />
@@ -177,12 +201,12 @@ export default function TrendsScreen({ navigation }: Props) {
                 >
                   <Path d='M4 19V9m6 10V4m6 15v-6' />
                 </Svg>
-                <Text style={s.emptyTitle}>Weight trends need a week</Text>
+                <Text style={s.emptyTitle}>Not enough weigh-ins here yet</Text>
                 <Text style={s.emptyBody}>
-                  You've logged {weightEntries.length} time
-                  {weightEntries.length === 1 ? '' : 's'} so far. After about{' '}
-                  {WEIGHT_TREND_MIN_ENTRIES} entries, Tern can show a trend line
-                  that filters out daily noise.
+                  {`A trend needs at least two weigh-ins in this range, and you have ${rangeTrend.length}.`}
+                  {weightEntries.length > rangeTrend.length
+                    ? ' Try a longer range.'
+                    : ' Tern can then draw a line that filters out daily noise.'}
                 </Text>
               </View>
             )}
@@ -227,8 +251,12 @@ export default function TrendsScreen({ navigation }: Props) {
 
         <GroupLabel>Consistency</GroupLabel>
         <Card>
-          <Text style={s.metricSub}>Last 30 days</Text>
-          <ConsistencyGrid days={last30} />
+          <Text style={s.metricSub}>
+            {range === '6 months'
+              ? 'Last 6 months'
+              : `Last ${RANGE_DAYS[range]} days`}
+          </Text>
+          <ConsistencyGrid days={inRange} />
         </Card>
 
         {longestRun > 1 ? (
@@ -306,11 +334,11 @@ const s = StyleSheet.create({
     alignItems: 'flex-start',
   },
   metricName: { fontFamily: font.semibold, fontSize: 11.5, color: colors.ink2 },
+  metricText: { flexShrink: 1 },
   metricValue: {
     fontFamily: font.displayMedium,
     fontSize: 24,
     color: colors.ink,
-    lineHeight: 30,
   },
   metricSub: { fontFamily: font.body, fontSize: 11, color: colors.ink2 },
   delta: { borderRadius: 8, paddingHorizontal: 8, paddingVertical: 2 },

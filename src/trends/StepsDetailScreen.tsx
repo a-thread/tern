@@ -13,19 +13,24 @@ import {
 } from '@shared/components/ui';
 import { StepBars, ConsistencyGrid } from '@shared/components/charts';
 import { useActivity } from '@today/ActivityContext';
-import { weekdayLetter, weekdayName } from '@shared/utils/date';
+import { weekdayName } from '@shared/utils/date';
 import { useSettings } from '@settings/SettingsContext';
-import { longestProtectedRun, summarizeSteps } from './models';
+import {
+  RANGE_DAYS,
+  bucketSteps,
+  longestProtectedRun,
+  summarizeSteps,
+  type StepRange,
+} from './models';
 import type { TrendsStackParamList } from './types';
 
 type Props = NativeStackScreenProps<TrendsStackParamList, 'StepsDetail'>;
 
 const RANGES = ['Week', 'Month', '6 months'] as const;
-const RANGE_DAYS = { Week: 7, Month: 30, '6 months': 180 } as const;
 
 export default function StepsDetailScreen({ navigation }: Props) {
   const insets = useSafeAreaInsets();
-  const [range, setRange] = useState<(typeof RANGES)[number]>('Month');
+  const [range, setRange] = useState<StepRange>('Month');
   const { settings } = useSettings();
 
   const { days, status } = useActivity();
@@ -38,11 +43,7 @@ export default function StepsDetailScreen({ navigation }: Props) {
   const longestRun = longestProtectedRun(inRange.map((d) => d.state));
 
   const last7 = days.slice(-7);
-  const bars = last7.map((d) => ({
-    label: weekdayLetter(d.day),
-    value: d.steps,
-    state: d.state,
-  }));
+  const bars = bucketSteps(days, range);
   const withSteps = last7.filter((d) => d.steps > 0);
   const best = withSteps.reduce<(typeof last7)[number] | null>(
     (a, d) => (!a || d.steps > a.steps ? d : a),
@@ -89,7 +90,7 @@ export default function StepsDetailScreen({ navigation }: Props) {
           </Text>
           <Text style={s.metricSub}>daily average {rangeLabel}</Text>
           {connected ? (
-            <StepBars days={bars} goal={settings.stepGoal} height={88} />
+            <StepBars days={bars} goal={settings.stepGoal} height={88} showLabels={range !== 'Month'} />
           ) : (
             <Text style={s.metricSub}>
               Connect step data in Settings → Health data to see this.
@@ -105,8 +106,10 @@ export default function StepsDetailScreen({ navigation }: Props) {
 
         <GroupLabel>Consistency</GroupLabel>
         <Card>
-          <Text style={s.metricSub}>Last 30 days</Text>
-          <ConsistencyGrid days={days.slice(-30).map((d) => d.state)} />
+          <Text style={s.metricSub}>
+            {range === '6 months' ? 'Last 6 months' : `Last ${RANGE_DAYS[range]} days`}
+          </Text>
+          <ConsistencyGrid days={inRange.map((d) => d.state)} />
           <View style={s.legend}>
             <LegendDot color={colors.glacier} label='goal' />
             <LegendDot color={colors.glacierTint} label='partial' />

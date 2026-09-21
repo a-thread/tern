@@ -1,9 +1,80 @@
 import type { DayRecord, DayState } from '@today/models';
+import { monthName, weekdayLetter } from '@shared/utils/date';
+import { computeTrend, type WeightEntry } from '@weight/models';
+
+/** The ranges the Trends screens offer, and how many days each covers. */
+export const RANGE_DAYS = { Week: 7, Month: 30, '6 months': 180 } as const;
+export type StepRange = keyof typeof RANGE_DAYS;
+
+export type StepBar = { label: string; value: number; state: DayState };
+
+/** Half a year is drawn as this many weekly bars (more, and they get too thin to read). */
+const WEEKLY_BARS = 25;
 
 /**
- * Longest run of consecutive days that don't break the streak — 'goal' and
- * 'rest' both count (rest days hold the streak), 'partial'/'none' reset it.
+ * Build step-chart bars: daily bars for a week or month, or weekly averages
+ * for six months. Weekly bars are labelled when a new month begins.
  */
+export function bucketSteps(days: DayRecord[], range: StepRange): StepBar[] {
+  if (range === 'Week' || range === 'Month') {
+    return days.slice(-RANGE_DAYS[range]).map((d) => ({
+      label: range === 'Week' ? weekdayLetter(d.day) : '',
+      value: d.steps,
+      state: d.state,
+    }));
+  }
+
+  const recent = days.slice(-7 * WEEKLY_BARS);
+  const chunks: DayRecord[][] = [];
+  for (let end = recent.length; end > 0; end -= 7) {
+    chunks.unshift(recent.slice(Math.max(end - 7, 0), end));
+  }
+  let lastMonth = '';
+  return chunks.map((chunk) => {
+    const withData = chunk.filter((d) => d.steps > 0);
+    const value = withData.length
+      ? Math.round(
+          withData.reduce((sum, d) => sum + d.steps, 0) / withData.length,
+        )
+      : 0;
+    const goal = chunk.reduce((sum, d) => sum + d.goal, 0) / chunk.length;
+    const month = monthName(chunk[0].day);
+    const label = month !== lastMonth ? month[0] : '';
+    lastMonth = month;
+    return {
+      label,
+      value,
+      state:
+        withData.length === 0 ? 'none' : value >= goal ? 'goal' : 'partial',
+    };
+  });
+}
+
+/**
+ * Returns the smoothed weight trend for the last `rangeDays` days.
+ * Pass `Infinity` to include all entries. Entries must be newest-first; the
+ * trend is calculated from the full history before the range is selected.
+ */
+export function weightTrendFor(
+  entriesNewestFirst: WeightEntry[],
+  rangeDays: number,
+  now: Date = new Date(),
+): number[] {
+  const cutoff = Number.isFinite(rangeDays)
+    ? new Date(
+        now.getFullYear(),
+        now.getMonth(),
+        now.getDate() - (rangeDays - 1),
+      ).getTime()
+    : -Infinity;
+  const inRange = entriesNewestFirst.filter(
+    (e) => new Date(e.loggedAt).getTime() >= cutoff,
+  ).length;
+  const all = computeTrend(entriesNewestFirst, entriesNewestFirst.length);
+  return inRange ? all.slice(all.length - inRange) : [];
+}
+
+/** Longest consecutive run of goal or rest days; partial and none reset it. */
 export function longestProtectedRun(days: DayState[]): number {
   let longest = 0;
   let current = 0;
