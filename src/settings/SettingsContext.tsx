@@ -13,11 +13,14 @@ import { useToast } from '@shared/state/ToastContext';
 import type { Units } from '@shared/utils/units';
 import { dayKey } from '@shared/utils/date';
 import { recordGoalChange, type GoalChange } from '@today/models';
+import { mergeMedications, type Medication } from '@medication/medications';
 import { settingsSeed } from './mock';
 import {
   DEFAULT_REMINDERS,
+  DEFAULT_WEIGH_IN_FREQUENCY,
   mergeReminders,
   type ReminderConfig,
+  type WeighInFrequency,
 } from './reminders.plan';
 
 export type ReminderSettings = ReminderConfig;
@@ -45,6 +48,10 @@ export type AppSettings = {
   restDaysPerWeek: number;
   autoDetectRestDays: boolean;
   reminders: ReminderSettings;
+  /** How often to weigh in: sets the reminder, and how often Today asks. */
+  weighInFrequency: WeighInFrequency;
+  /** Medications the person tracks. Empty = the feature stays out of the way. */
+  medications: Medication[];
   healthData: HealthDataSettings;
 };
 
@@ -65,6 +72,8 @@ const initialSettings: AppSettings = {
   restDaysPerWeek: 2,
   autoDetectRestDays: true,
   reminders: DEFAULT_REMINDERS,
+  weighInFrequency: DEFAULT_WEIGH_IN_FREQUENCY,
+  medications: [],
   healthData: {
     readSteps: true,
   },
@@ -115,6 +124,9 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
           ...saved,
           // Older saves stored reminder times as text; fall back per field.
           reminders: mergeReminders(saved?.reminders),
+          weighInFrequency:
+            saved?.weighInFrequency === 'daily' ? 'daily' : DEFAULT_WEIGH_IN_FREQUENCY,
+          medications: mergeMedications(saved?.medications),
         };
         const name = signedUpNameRef.current?.trim();
         // Only when never set — clearing the name in Settings must stick.

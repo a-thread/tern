@@ -10,6 +10,8 @@ import {
   greetingFor,
   leftToDo,
   mealForTime,
+  todaySummary,
+  weighInDue,
   restDaysLeft,
   weekOf,
   type BuildDaysInput,
@@ -293,5 +295,90 @@ describe('suggestGoal', () => {
   it('stays quiet when the goal fits', () => {
     const steps = Array.from({ length: 20 }, (_, i) => (i % 2 ? 9000 : 6000));
     expect(suggestGoal(series(steps), 8000)).toBeNull();
+  });
+});
+
+describe('weighInDue', () => {
+  // `now` is Friday 2026-09-18, which is weekday 6 (1 = Sunday).
+  const daily = { frequency: 'daily', weekday: 1 } as const;
+  const weekly = (weekday: number) => ({ frequency: 'weekly', weekday }) as const;
+  const daysAgo = (n: number): WeightEntry => ({
+    ...weighedToday,
+    loggedAt: new Date(2026, 8, 18 - n, 7, 0).toISOString(),
+  });
+
+  it('is never due once weighed today', () => {
+    expect(weighInDue(weighedToday, now, daily)).toBe(false);
+    expect(weighInDue(weighedToday, now, weekly(6))).toBe(false);
+  });
+
+  it('daily is due every day it has not been done', () => {
+    expect(weighInDue(weighedYesterday, now, daily)).toBe(true);
+    expect(weighInDue(undefined, now, daily)).toBe(true);
+  });
+
+  it('weekly is due on the chosen weekday', () => {
+    expect(weighInDue(daysAgo(2), now, weekly(6))).toBe(true);
+  });
+
+  it('weekly stays quiet on other days while the last weigh-in is recent', () => {
+    expect(weighInDue(daysAgo(1), now, weekly(2))).toBe(false);
+    expect(weighInDue(daysAgo(6), now, weekly(2))).toBe(false);
+  });
+
+  it('weekly becomes due anyway once a week has passed, and for a first weigh-in', () => {
+    expect(weighInDue(daysAgo(7), now, weekly(2))).toBe(true);
+    expect(weighInDue(daysAgo(20), now, weekly(2))).toBe(true);
+    expect(weighInDue(undefined, now, weekly(2))).toBe(true);
+  });
+});
+
+describe('leftToDo with weigh-in frequency and medication', () => {
+  const log = [food('breakfast'), food('lunch'), food('dinner')];
+  const meds = [
+    { id: 'a', name: 'Vitamin D', at: 480 },
+    { id: 'b', name: 'Iron', at: 1200 },
+  ];
+
+  it('weekly weigh-ins leave Today quiet on an ordinary day', () => {
+    const items = leftToDo(log, weighedYesterday, now, { weighIn: { frequency: 'weekly', weekday: 2 } });
+    expect(items).toEqual([]);
+  });
+
+  it('adds a row for each medication not yet taken, after the other rows', () => {
+    const items = leftToDo([], weighedToday, now, { medications: meds });
+    expect(items.map((i) => i.kind)).toEqual(['meal', 'medication', 'medication']);
+    expect(items[1]).toEqual({ kind: 'medication', medicationId: 'a', name: 'Vitamin D', at: 480 });
+  });
+
+  it('is empty when everything, medication included, is done', () => {
+    expect(leftToDo(log, weighedToday, now, { medications: [] })).toEqual([]);
+  });
+});
+
+describe('todaySummary', () => {
+  it('lists the meals in day order with their calories', () => {
+    const log = [
+      { ...food('dinner'), calories: 600, servings: 1 },
+      { ...food('breakfast'), calories: 200, servings: 1.5 },
+    ];
+    const summary = todaySummary(log, weighedToday, [], false, now);
+    expect(summary.meals).toEqual({ names: ['breakfast', 'dinner'], calories: 900 });
+  });
+
+  it('has no meals when nothing is logged', () => {
+    expect(todaySummary([], undefined, [], false, now).meals).toBeNull();
+  });
+
+  it('only counts a weigh-in from today', () => {
+    expect(todaySummary([], weighedToday, [], false, now).weighedIn).toBe(weighedToday);
+    expect(todaySummary([], weighedYesterday, [], false, now).weighedIn).toBeNull();
+    expect(todaySummary([], undefined, [], false, now).weighedIn).toBeNull();
+  });
+
+  it('carries the medications taken and whether the step goal was reached', () => {
+    const summary = todaySummary([], undefined, ['Vitamin D'], true, now);
+    expect(summary.medications).toEqual(['Vitamin D']);
+    expect(summary.stepGoalReached).toBe(true);
   });
 });

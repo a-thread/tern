@@ -51,7 +51,8 @@ export default function SettingsRootScreen({ navigation }: Props) {
   const { status: stepsStatus } = useActivity();
   const { data: dataRepo } = useBackend();
   const reminders = settings.reminders;
-  const reminderText = describeReminders(reminders);
+  const reminderText = describeReminders(reminders, settings.weighInFrequency);
+  const medicationCount = settings.medications.length;
   const stepStep = REMINDER_STEP_MINUTES;
   const toast = useToast();
   const [dataBusy, setDataBusy] = useState(false);
@@ -74,7 +75,7 @@ export default function SettingsRootScreen({ navigation }: Props) {
     if (!dataRepo || dataBusy) return;
     Alert.alert(
       'Delete all your data?',
-      "This erases your food log, saved meals, weigh-ins, waypoints, rest days and settings from Tern. It can't be undone. You'll be signed out, and your login stays so you can start fresh.",
+      "This erases your food log, saved meals, weigh-ins, medication history, waypoints, rest days and settings from Tern. It can't be undone. You'll be signed out, and your login stays so you can start fresh.",
       [
         { text: 'Cancel', style: 'cancel' },
         {
@@ -100,7 +101,7 @@ export default function SettingsRootScreen({ navigation }: Props) {
     if (!dataRepo || dataBusy) return;
     Alert.alert(
       'Delete your account?',
-      "This permanently deletes your account and everything in it: your food log, saved meals, weigh-ins, waypoints, rest days and settings. It can't be undone.",
+      "This permanently deletes your account and everything in it: your food log, saved meals, weigh-ins, medication history, waypoints, rest days and settings. It can't be undone.",
       [
         { text: 'Cancel', style: 'cancel' },
         {
@@ -344,6 +345,34 @@ export default function SettingsRootScreen({ navigation }: Props) {
           />
         </Group>
 
+        <GroupLabel>Medication</GroupLabel>
+        <Group>
+          <SettingsRow
+            icon={
+              <IconBadge bg={colors.violetTint}>
+                <Svg
+                  width={15}
+                  height={15}
+                  viewBox='0 0 24 24'
+                  fill='none'
+                  stroke={colors.violet}
+                  strokeWidth={2}
+                >
+                  <Path d='M10.5 20.5 3.5 13.5a4.95 4.95 0 0 1 7-7l7 7a4.95 4.95 0 0 1-7 7zM8.5 8.5l7 7' />
+                </Svg>
+              </IconBadge>
+            }
+            title='Medication'
+            sub={
+              medicationCount
+                ? 'Mark each one taken from Today'
+                : 'Optional — track whether you took it'
+            }
+            value={medicationCount ? String(medicationCount) : undefined}
+            onPress={() => navigation.navigate('Medication')}
+          />
+        </Group>
+
         <GroupLabel>Reminders</GroupLabel>
         <Group>
           <ToggleRow
@@ -390,46 +419,75 @@ export default function SettingsRootScreen({ navigation }: Props) {
               />
             </>
           ) : null}
+          <View style={s.row}>
+            <View style={{ flex: 1 }}>
+              <Text style={s.rowTitle}>Weigh in</Text>
+              <Text style={s.rowSub}>
+                {settings.weighInFrequency === 'daily'
+                  ? 'Today asks for a weight every day'
+                  : 'Today asks once a week'}
+              </Text>
+            </View>
+            <View style={s.stepper}>
+              {(['daily', 'weekly'] as const).map((f) => (
+                <Pressable
+                  key={f}
+                  onPress={() => updateSettings({ weighInFrequency: f })}
+                  style={[s.unitItem, settings.weighInFrequency === f && s.unitItemOn]}
+                  accessibilityRole='button'
+                  accessibilityState={{ selected: settings.weighInFrequency === f }}
+                >
+                  <Text
+                    style={[s.unitText, settings.weighInFrequency === f && s.unitTextOn]}
+                  >
+                    {f === 'daily' ? 'Daily' : 'Weekly'}
+                  </Text>
+                </Pressable>
+              ))}
+            </View>
+          </View>
           <ToggleRow
-            title='Weekly weigh-in'
+            title='Weigh-in reminder'
             sub={reminderText.weighIn}
-            on={reminders.weeklyWeighIn.on}
+            on={reminders.weighIn.on}
             onToggle={(v) =>
               updateSettings({
                 reminders: {
                   ...reminders,
-                  weeklyWeighIn: { ...reminders.weeklyWeighIn, on: v },
+                  weighIn: { ...reminders.weighIn, on: v },
                 },
               })
             }
           />
-          {reminders.weeklyWeighIn.on ? (
+          {reminders.weighIn.on ? (
             <>
-              <TimeStepperRow
-                label='Day'
-                value={weekdayPlural(reminders.weeklyWeighIn.weekday)}
-                onStep={(d) =>
-                  updateSettings({
-                    reminders: {
-                      ...reminders,
-                      weeklyWeighIn: {
-                        ...reminders.weeklyWeighIn,
-                        weekday: stepWeekday(reminders.weeklyWeighIn.weekday, d),
+              {settings.weighInFrequency === 'weekly' ? (
+                <TimeStepperRow
+                  label='Day'
+                  value={weekdayPlural(reminders.weighIn.weekday)}
+                  onStep={(d) =>
+                    updateSettings({
+                      reminders: {
+                        ...reminders,
+                        weighIn: {
+                          ...reminders.weighIn,
+                          weekday: stepWeekday(reminders.weighIn.weekday, d),
+                        },
                       },
-                    },
-                  })
-                }
-              />
+                    })
+                  }
+                />
+              ) : null}
               <TimeStepperRow
                 label='Time'
-                value={formatMinutes(reminders.weeklyWeighIn.at)}
+                value={formatMinutes(reminders.weighIn.at)}
                 onStep={(d) =>
                   updateSettings({
                     reminders: {
                       ...reminders,
-                      weeklyWeighIn: {
-                        ...reminders.weeklyWeighIn,
-                        at: stepMinutes(reminders.weeklyWeighIn.at, d * stepStep),
+                      weighIn: {
+                        ...reminders.weighIn,
+                        at: stepMinutes(reminders.weighIn.at, d * stepStep),
                       },
                     },
                   })

@@ -15,6 +15,7 @@ module.exports = function (api) {
             '@journey': './src/journey',
             '@trends': './src/trends',
             '@settings': './src/settings',
+            '@medication': './src/medication',
           },
         },
       ],

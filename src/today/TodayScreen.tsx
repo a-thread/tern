@@ -36,13 +36,16 @@ import { useFood } from '@food/FoodContext';
 import { useWeight } from '@weight/WeightContext';
 import { formatLoggedAt } from '@weight/models';
 import { useSettings } from '@settings/SettingsContext';
+import { formatMinutes } from '@settings/reminders.plan';
 import { useUnits } from '@settings/useUnits';
+import { useMedication } from '@medication/MedicationContext';
 import { waypointRules } from '@journey/models';
 import { useWaypoints, type Celebration } from '@journey/WaypointsContext';
 import WaypointBurst from '@journey/WaypointBurst';
-import { leftToDo } from './models';
+import { leftToDo, todaySummary } from './models';
 import { useActivity } from './ActivityContext';
 import { greetingFor, type DayRecord } from './models';
+import { factForDay } from './ternFacts';
 
 const REST_DAY_POINTS =
   waypointRules.find((r) => r.id === 'rest')?.points ?? 10;
@@ -86,7 +89,20 @@ export default function TodayScreen() {
   const remaining = Math.max(settings.stepGoal - todaySteps, 0);
   const totals = dayTotals(foodLog);
   const reached = progress >= 1;
-  const openItems = leftToDo(foodLog, lastWeight);
+  const { due: dueMedications, taken: takenMedications, setTaken } = useMedication();
+  const openItems = leftToDo(foodLog, lastWeight, new Date(), {
+    weighIn: {
+      frequency: settings.weighInFrequency,
+      weekday: settings.reminders.weighIn.weekday,
+    },
+    medications: dueMedications,
+  });
+  const summary = todaySummary(
+    foodLog,
+    lastWeight,
+    takenMedications.map((m) => m.name),
+    reached,
+  );
   // The chip holds back awards that haven't been celebrated yet, so its
   // number ticks up (and pulses) as the feathers land on it.
   const shownWaypoints = Math.max(waypoints - pendingPoints, 0);
@@ -253,9 +269,7 @@ export default function TodayScreen() {
             </Pressable>
           ))}
         </View>
-        <Text style={s.caption}>
-          {restCaption(week)} Streaks don't break for rest days.
-        </Text>
+        <Text style={s.caption}>{factForDay(todayKey)}</Text>
         {todayIsRest ? (
           <Pressable onPress={undoRestDay} hitSlop={8}>
             <Text style={s.restLink}>Undo today's rest day</Text>
@@ -273,7 +287,26 @@ export default function TodayScreen() {
             <GroupLabel>Left to do</GroupLabel>
             <Group>
               {openItems.map((item) =>
-                item.kind === 'meal' ? (
+                item.kind === 'medication' ? (
+                  <Row
+                    key={`med-${item.medicationId}`}
+                    title={`Take ${item.name}`}
+                    sub={`Due ${formatMinutes(item.at)}`}
+                    onPress={() => setTaken(item.medicationId, true)}
+                    icon={
+                      <IconBadge bg={colors.violetTint}>
+                        <Svg width={14} height={14} viewBox='0 0 24 24' fill='none'>
+                          <Path
+                            d='M10.5 20.5 3.5 13.5a4.95 4.95 0 0 1 7-7l7 7a4.95 4.95 0 0 1-7 7zM8.5 8.5l7 7'
+                            stroke={colors.violet}
+                            strokeWidth={2}
+                          />
+                        </Svg>
+                      </IconBadge>
+                    }
+                    right={<Text style={s.markText}>Mark taken</Text>}
+                  />
+                ) : item.kind === 'meal' ? (
                   <Row
                     key='meal'
                     title={item.title}
@@ -337,10 +370,52 @@ export default function TodayScreen() {
             </Group>
           </>
         ) : (
-          <Card style={s.allDone}>
-            <Text style={s.allDoneTitle}>All caught up</Text>
-            <Text style={s.allDoneSub}>Nothing left for today.</Text>
-          </Card>
+          <>
+            <GroupLabel>Today so far</GroupLabel>
+            <Group>
+              {summary.meals ? (
+                <Row
+                  key='done-meals'
+                  title='Meals logged'
+                  sub={
+                    summary.meals.names.map(capitalize).join(', ') +
+                    (settings.showCalories
+                      ? ` · ${summary.meals.calories.toLocaleString()} cal`
+                      : '')
+                  }
+                  icon={<DoneBadge />}
+                />
+              ) : null}
+              {summary.weighedIn ? (
+                <Row
+                  key='done-weight'
+                  title='Weighed in'
+                  sub={`${formatWeight(summary.weighedIn.lb)}, ${formatLoggedAt(summary.weighedIn.loggedAt)}`}
+                  icon={<DoneBadge />}
+                />
+              ) : null}
+              {takenMedications.map((m) => (
+                <Row
+                  key={`done-med-${m.id}`}
+                  title={`Took ${m.name}`}
+                  icon={<DoneBadge />}
+                  right={
+                    <Pressable onPress={() => setTaken(m.id, false)} hitSlop={8}>
+                      <Text style={s.markText}>Undo</Text>
+                    </Pressable>
+                  }
+                />
+              ))}
+              {summary.stepGoalReached ? (
+                <Row
+                  key='done-steps'
+                  title='Step goal reached'
+                  sub={`${todaySteps.toLocaleString()} steps`}
+                  icon={<DoneBadge />}
+                />
+              ) : null}
+            </Group>
+          </>
         )}
 
         {settings.trackCalories ? (
@@ -389,13 +464,23 @@ export default function TodayScreen() {
   );
 }
 
-/** "Wednesday was a rest day." / "Wednesday and Friday were rest days." / "Rest days are part of the route." */
-function restCaption(week: DayRecord[]): string {
-  const rests = week.filter((d) => d.state === 'rest' && !d.isToday);
-  if (rests.length === 0) return 'Rest days are part of the route.';
-  const names = rests.map((d) => weekdayName(d.day));
-  if (names.length === 1) return `${names[0]} was a rest day.`;
-  return `${names.slice(0, -1).join(', ')} and ${names[names.length - 1]} were rest days.`;
+const capitalize = (word: string) => word.charAt(0).toUpperCase() + word.slice(1);
+
+/** A small green tick for the things already done today. */
+function DoneBadge() {
+  return (
+    <IconBadge bg={colors.kelpTint}>
+      <Svg width={14} height={14} viewBox='0 0 24 24' fill='none'>
+        <Path
+          d='M5 12.5l4.5 4.5L19 7.5'
+          stroke={colors.kelp}
+          strokeWidth={2.4}
+          strokeLinecap='round'
+          strokeLinejoin='round'
+        />
+      </Svg>
+    </IconBadge>
+  );
 }
 
 const s = StyleSheet.create({
@@ -406,14 +491,7 @@ const s = StyleSheet.create({
     textAlign: 'center',
     marginTop: space.sm,
   },
-  allDone: { alignItems: 'center', marginTop: space.md },
-  allDoneTitle: { fontFamily: font.semibold, fontSize: 14, color: colors.ink },
-  allDoneSub: {
-    fontFamily: font.body,
-    fontSize: 12,
-    color: colors.ink2,
-    marginTop: 2,
-  },
+  markText: { fontFamily: font.semibold, fontSize: 12, color: colors.coral },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -467,9 +545,11 @@ const s = StyleSheet.create({
   },
   caption: {
     fontFamily: font.body,
-    fontSize: 11,
+    fontSize: 11.5,
+    lineHeight: 16,
     color: colors.ink3,
     textAlign: 'center',
     marginTop: space.sm,
+    paddingHorizontal: space.md,
   },
 });

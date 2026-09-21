@@ -10,7 +10,8 @@
       "@today/*": ["src/today/*"],
       "@journey/*": ["src/journey/*"],
       "@trends/*": ["src/trends/*"],
-      "@settings/*": ["src/settings/*"]
+      "@settings/*": ["src/settings/*"],
+      "@medication/*": ["src/medication/*"]
     }
   }
 }

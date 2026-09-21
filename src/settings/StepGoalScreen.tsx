@@ -20,7 +20,7 @@ type Props = NativeStackScreenProps<SettingsStackParamList, 'StepGoal'>;
 
 const MIN = STEP_GOAL_MIN;
 const MAX = STEP_GOAL_MAX;
-const PRESETS = [4000, 6000, 8000, 10000];
+const PRESETS = [4800, 6000, 8000, 10000];
 
 export default function StepGoalScreen({ navigation }: Props) {
   const insets = useSafeAreaInsets();

@@ -5,4 +5,5 @@ export type SettingsStackParamList = {
   HealthData: undefined;
   Targets: undefined;
   RestDays: undefined;
+  Medication: undefined;
 };

@@ -20,7 +20,7 @@ type Props = NativeStackScreenProps<SettingsStackParamList, 'FoodDisplay'>;
 const PREVIEW_ITEMS = [
   { tier: 1 as const, name: 'Greek yogurt with berries', calories: 210 },
   { tier: 3 as const, name: 'Turkey sandwich', calories: 460 },
-  { tier: 4 as const, name: 'French fries, side', calories: 380 },
+  { tier: 4 as const, name: 'Graham crackers', calories: 130 },
 ];
 
 export default function FoodDisplayScreen({ navigation }: Props) {

@@ -61,10 +61,14 @@ export function PushHeader({
         >
           <Path d='M15 6l-6 6 6 6' />
         </Svg>
-        <Text style={s.pushBackText}>{backLabel}</Text>
+        <Text style={s.pushBackText} numberOfLines={1}>
+          {backLabel}
+        </Text>
       </Pressable>
-      <Text style={s.pushTitle}>{title}</Text>
-      <View style={{ width: 60 }} />
+      <Text style={s.pushTitle} numberOfLines={1}>
+        {title}
+      </Text>
+      <View style={s.pushSpacer} />
     </View>
   );
 }
@@ -89,7 +93,15 @@ const s = StyleSheet.create({
     borderBottomWidth: StyleSheet.hairlineWidth,
     borderBottomColor: colors.border,
   },
-  pushBack: { flexDirection: 'row', alignItems: 'center', gap: 2, width: 60 },
-  pushBackText: { fontFamily: font.body, fontSize: 14, color: colors.coral },
+  // Equal flexible slots either side keep the title centred without ever
+  // squeezing the back label (a fixed width made "Settings" wrap).
+  pushBack: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: 2 },
+  pushSpacer: { flex: 1 },
+  pushBackText: {
+    flexShrink: 1,
+    fontFamily: font.body,
+    fontSize: 14,
+    color: colors.coral,
+  },
   pushTitle: { fontFamily: font.semibold, fontSize: 15, color: colors.ink },
 });

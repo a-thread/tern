@@ -2,8 +2,8 @@ import { Platform } from 'react-native';
 import * as Notifications from 'expo-notifications';
 
 import {
-  ALL_REMINDER_IDS,
   planReminders,
+  type PlanExtras,
   type ReminderConfig,
 } from './reminders.plan';
 
@@ -24,14 +24,13 @@ export type SyncResult = 'ok' | 'denied';
 /** Syncs scheduled reminders with the enabled settings. */
 export async function syncReminders(
   config: ReminderConfig,
+  extras?: PlanExtras,
 ): Promise<SyncResult> {
-  const plan = planReminders(config);
+  const plan = planReminders(config, extras);
 
-  await Promise.all(
-    ALL_REMINDER_IDS.map((id) =>
-      Notifications.cancelScheduledNotificationAsync(id).catch(() => {}),
-    ),
-  );
+  // Everything scheduled here is one of Tern's reminders (meals, weigh-in and a
+  // variable number of medications), so start clean each time.
+  await Notifications.cancelAllScheduledNotificationsAsync().catch(() => {});
   if (plan.length === 0) return 'ok';
 
   let { granted } = await Notifications.getPermissionsAsync();

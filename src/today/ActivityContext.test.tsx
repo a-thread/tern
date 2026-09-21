@@ -129,3 +129,65 @@ describe('refreshing', () => {
     expect(result.current.activity.todaySteps).toBe(5200);
   });
 });
+
+describe('reporting the result of a refresh and of connecting', () => {
+  it('a refresh reports the step status it found', async () => {
+    const { result } = await setup(stepsRepo(3000));
+    let outcome: unknown;
+    await act(async () => {
+      outcome = await result.current.activity.refresh();
+    });
+    expect(outcome).toBe('connected');
+  });
+
+  it("a refresh reports 'failed' when steps can't be read, instead of throwing", async () => {
+    let broken = false;
+    const repo: StepsRepository = {
+      status: async () => 'connected',
+      connect: async () => 'connected',
+      getRange: async () => {
+        if (broken) throw new Error('Health Connect is unreachable');
+        return { [todayKey]: 3000 };
+      },
+    };
+    const warn = jest.spyOn(console, 'warn').mockImplementation(() => {});
+    const { result } = await setup(repo);
+    broken = true;
+    let outcome: unknown;
+    await act(async () => {
+      outcome = await result.current.activity.refresh();
+    });
+    expect(outcome).toBe('failed');
+    expect(result.current.activity.todaySteps).toBe(3000); // what was there stays
+    warn.mockRestore();
+  });
+
+  it('connecting reports whether access was granted', async () => {
+    let granted = false;
+    const repo: StepsRepository = {
+      status: async () => (granted ? 'connected' : 'needs-permission'),
+      connect: async () => {
+        granted = true;
+        return 'connected';
+      },
+      getRange: async () => ({ [todayKey]: 4200 }),
+    };
+    const { result } = await setup(repo);
+    expect(result.current.activity.status).toBe('needs-permission');
+    let outcome: unknown;
+    await act(async () => {
+      outcome = await result.current.activity.connect();
+    });
+    expect(outcome).toBe('connected');
+    await waitFor(() => expect(result.current.activity.todaySteps).toBe(4200));
+  });
+
+  it("connecting on a device without Health Connect stays 'unavailable'", async () => {
+    const { result } = await setup(stepsRepo(0, 'unavailable'));
+    let outcome: unknown;
+    await act(async () => {
+      outcome = await result.current.activity.connect();
+    });
+    expect(outcome).toBe('unavailable');
+  });
+});

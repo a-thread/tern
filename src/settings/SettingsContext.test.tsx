@@ -76,3 +76,50 @@ describe('changesAnything', () => {
     expect(changesAnything(result.current.settings, {})).toBe(false);
   });
 });
+
+describe('defaults and older saves', () => {
+  it('starts a new account at 4,800 steps, 2,100 calories and a 190 lb goal', async () => {
+    const { result } = await setup();
+    expect(result.current.settings.stepGoal).toBe(4800);
+    expect(result.current.settings.calorieTarget).toBe(2100);
+    expect(result.current.settings.weightGoalLb).toBe(190);
+  });
+
+  it('weighs in weekly and tracks no medication until told otherwise', async () => {
+    const { result } = await setup();
+    expect(result.current.settings.weighInFrequency).toBe('weekly');
+    expect(result.current.settings.medications).toEqual([]);
+  });
+
+  it('keeps what an existing account already saved, whatever the new defaults are', async () => {
+    const backend = createMemoryBackend();
+    await backend.settings.save({ stepGoal: 9000, weightGoalLb: 163, weighInFrequency: 'daily' } as never);
+    const wrapper = ({ children }: { children: React.ReactNode }) => (
+      <BackendProvider backend={backend}>
+        <SettingsProvider>{children}</SettingsProvider>
+      </BackendProvider>
+    );
+    const { result } = renderHook(() => useSettings(), { wrapper });
+    await waitFor(() => expect(result.current.ready).toBe(true));
+    expect(result.current.settings.stepGoal).toBe(9000);
+    expect(result.current.settings.weightGoalLb).toBe(163);
+    expect(result.current.settings.weighInFrequency).toBe('daily');
+  });
+
+  it('carries over a weigh-in reminder saved under the old weeklyWeighIn key', async () => {
+    const backend = createMemoryBackend();
+    await backend.settings.save({
+      reminders: { weeklyWeighIn: { on: false, weekday: 4, at: 420 } },
+      medications: [{ id: 'm1', name: ' Iron ', at: 600, remind: true }, { name: 'broken' }],
+    } as never);
+    const wrapper = ({ children }: { children: React.ReactNode }) => (
+      <BackendProvider backend={backend}>
+        <SettingsProvider>{children}</SettingsProvider>
+      </BackendProvider>
+    );
+    const { result } = renderHook(() => useSettings(), { wrapper });
+    await waitFor(() => expect(result.current.ready).toBe(true));
+    expect(result.current.settings.reminders.weighIn).toEqual({ on: false, weekday: 4, at: 420 });
+    expect(result.current.settings.medications).toEqual([{ id: 'm1', name: 'Iron', at: 600, remind: true }]);
+  });
+});

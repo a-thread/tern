@@ -1,10 +1,11 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { View, Text, ScrollView, StyleSheet, Pressable } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import Svg, { Path } from 'react-native-svg';
 
 import { colors, font, radius, space } from '@shared/theme';
+import { useToast } from '@shared/state/ToastContext';
 import {
   Group,
   GroupLabel,
@@ -27,6 +28,46 @@ export default function HealthDataScreen({ navigation }: Props) {
   const hd = settings.healthData;
   const { status, refresh, connect } = useActivity();
   const lastSynced = useLastSynced();
+  const toast = useToast();
+  const [busy, setBusy] = useState(false);
+
+  /** Asks for access to steps (the Health Connect permission prompt) and says how it went. */
+  const requestAccess = async () => {
+    if (busy) return;
+    setBusy(true);
+    try {
+      const result = await connect();
+      toast.show(
+        result === 'connected'
+          ? 'Health Connect is connected.'
+          : result === 'unavailable'
+            ? "Health Connect isn't available on this device."
+            : 'Tern still needs permission to read your steps.',
+      );
+    } catch (e) {
+      console.warn('Could not connect Health Connect', e);
+      toast.show("Couldn't connect Health Connect — please try again.");
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const syncNow = async () => {
+    if (busy) return;
+    setBusy(true);
+    try {
+      const result = await refresh();
+      toast.show(
+        result === 'failed'
+          ? "Couldn't sync your steps — please try again."
+          : result === 'connected'
+            ? 'Steps synced.'
+            : "Steps aren't connected — tap Off to allow access.",
+      );
+    } finally {
+      setBusy(false);
+    }
+  };
 
   const patchHealthData = (patch: Partial<typeof hd>) =>
     updateSettings({ healthData: { ...hd, ...patch } });
@@ -72,9 +113,23 @@ export default function HealthDataScreen({ navigation }: Props) {
                   : 'Not available in this build of the app'}
             </Text>
           </View>
-          <Chip bg='#E4EFE6' color='#3B6B4A'>
-            {status === 'connected' ? 'On' : 'Off'}
-          </Chip>
+          {status === 'connected' ? (
+            <Chip bg='#E4EFE6' color='#3B6B4A'>
+              On
+            </Chip>
+          ) : (
+            <Pressable
+              onPress={requestAccess}
+              disabled={busy}
+              hitSlop={8}
+              accessibilityRole='button'
+              accessibilityLabel='Off. Tap to allow access to steps'
+            >
+              <Chip bg='#E4EFE6' color='#3B6B4A'>
+                Off
+              </Chip>
+            </Pressable>
+          )}
         </View>
 
         <GroupLabel>Reading from Health Connect</GroupLabel>
@@ -90,13 +145,13 @@ export default function HealthDataScreen({ navigation }: Props) {
         <GroupLabel>{status === 'needs-permission' ? 'Get started' : "If steps aren't syncing"}</GroupLabel>
         <Group>
           {status === 'needs-permission' ? (
-            <Pressable style={s.row} onPress={connect}>
+            <Pressable style={s.row} onPress={requestAccess} disabled={busy}>
               <Text style={[s.rowTitle, s.link, { flex: 1 }]}>
                 Connect Health Connect
               </Text>
             </Pressable>
           ) : (
-            <Pressable style={s.row} onPress={refresh}>
+            <Pressable style={s.row} onPress={syncNow} disabled={busy}>
               <Text style={[s.rowTitle, s.link, { flex: 1 }]}>Sync now</Text>
             </Pressable>
           )}

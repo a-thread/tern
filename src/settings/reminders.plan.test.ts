@@ -4,6 +4,7 @@ import {
   describeReminders,
   formatMinutes,
   mergeReminders,
+  medicationReminderId,
   planReminders,
   stepMinutes,
   stepWeekday,
@@ -14,8 +15,8 @@ const config = (
   over: Partial<{ meals: boolean; weighIn: boolean }> = {},
 ): ReminderConfig => ({
   mealLog: { ...DEFAULT_REMINDERS.mealLog, on: over.meals ?? false },
-  weeklyWeighIn: {
-    ...DEFAULT_REMINDERS.weeklyWeighIn,
+  weighIn: {
+    ...DEFAULT_REMINDERS.weighIn,
     on: over.weighIn ?? false,
   },
 });
@@ -37,8 +38,8 @@ describe('planReminders', () => {
   it('follows edited times and weekday', () => {
     const c = config({ meals: true, weighIn: true });
     c.mealLog.midday = 13 * 60 + 15;
-    c.weeklyWeighIn.weekday = 4;
-    c.weeklyWeighIn.at = 7 * 60 + 45;
+    c.weighIn.weekday = 4;
+    c.weighIn.at = 7 * 60 + 45;
     const plan = planReminders(c);
     expect(plan[0]).toMatchObject({ hour: 13, minute: 15 });
     expect(plan[2]).toMatchObject({ weekday: 4, hour: 7, minute: 45 });
@@ -53,11 +54,57 @@ describe('planReminders', () => {
   });
 
   it('never mentions weight loss, calories or streaks', () => {
-    const text = planReminders(config({ meals: true, weighIn: true }))
+    const text = planReminders(config({ meals: true, weighIn: true }), { weighInFrequency: 'daily' })
       .map((r) => `${r.title} ${r.body}`)
       .join(' ')
       .toLowerCase();
     expect(text).not.toMatch(/streak|calorie|lose|loss|goal|behind|miss/);
+  });
+});
+
+describe('weigh-in frequency', () => {
+  it('is weekly by default, on the chosen weekday', () => {
+    const [r] = planReminders(config({ weighIn: true }));
+    expect(r).toMatchObject({ id: 'tern-weigh-in', title: 'Weekly weigh-in', weekday: 1 });
+  });
+
+  it('daily has no weekday, so it repeats every day at the same time', () => {
+    const c = config({ weighIn: true });
+    c.weighIn.at = 7 * 60 + 30;
+    const [r] = planReminders(c, { weighInFrequency: 'daily' });
+    expect(r).toMatchObject({ title: 'Daily weigh-in', hour: 7, minute: 30 });
+    expect(r.weekday).toBeUndefined();
+  });
+
+  it('reads as "Every day" in Settings when daily', () => {
+    expect(describeReminders(DEFAULT_REMINDERS, 'daily').weighIn).toBe('Every day, 8:00 am');
+    expect(describeReminders(DEFAULT_REMINDERS, 'weekly').weighIn).toBe('Sundays, 8:00 am');
+  });
+});
+
+describe('medication reminders', () => {
+  const meds = [
+    { id: 'a', name: 'Vitamin D', at: 9 * 60, remind: true },
+    { id: 'b', name: 'Iron', at: 20 * 60, remind: false },
+    { id: 'c', name: 'Allergy pill', at: 21 * 60 + 15, remind: true },
+  ];
+
+  it('plans a daily reminder for each medication that has one, at its time', () => {
+    const plan = planReminders(config(), { medications: meds });
+    expect(plan.map((r) => [r.id, r.hour, r.minute, r.weekday])).toEqual([
+      [medicationReminderId('a'), 9, 0, undefined],
+      [medicationReminderId('c'), 21, 15, undefined],
+    ]);
+    expect(plan[0].body).toContain('Vitamin D');
+  });
+
+  it('plans nothing for medications without a reminder', () => {
+    expect(planReminders(config(), { medications: [meds[1]] })).toEqual([]);
+  });
+
+  it('keeps every id unique next to the other reminders', () => {
+    const ids = planReminders(config({ meals: true, weighIn: true }), { medications: meds }).map((r) => r.id);
+    expect(new Set(ids).size).toBe(ids.length);
   });
 });
 
@@ -92,7 +139,20 @@ describe('mergeReminders', () => {
       weeklyWeighIn: { on: true, time: 'Sundays, 8:00 am' },
     });
     expect(merged.mealLog).toEqual({ ...DEFAULT_REMINDERS.mealLog, on: false });
-    expect(merged.weeklyWeighIn).toEqual(DEFAULT_REMINDERS.weeklyWeighIn);
+    expect(merged.weighIn).toEqual(DEFAULT_REMINDERS.weighIn);
+  });
+
+  it('carries over a setting saved under the old weeklyWeighIn key', () => {
+    const merged = mergeReminders({ weeklyWeighIn: { on: false, weekday: 4, at: 420 } });
+    expect(merged.weighIn).toEqual({ on: false, weekday: 4, at: 420 });
+  });
+
+  it('prefers the new weighIn key when both are present', () => {
+    const merged = mergeReminders({
+      weighIn: { on: true, weekday: 2, at: 600 },
+      weeklyWeighIn: { on: false, weekday: 4, at: 420 },
+    });
+    expect(merged.weighIn).toEqual({ on: true, weekday: 2, at: 600 });
   });
 
   it('keeps valid saved values and ignores junk', () => {

@@ -8,6 +8,7 @@ export type TernExport = {
   waypoints: unknown[];
   restDays: unknown[];
   savedMeals: unknown[];
+  medicationDoses: unknown[];
 };
 
 /** Whole-account operations: a copy of your data, and erasing it. */

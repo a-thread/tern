@@ -239,7 +239,35 @@ export function greetingFor(now: Date = new Date()): string {
 
 export type LeftToDoItem =
   | { kind: 'meal'; meal: FoodEntry['meal']; title: string; sub: string }
-  | { kind: 'weight' };
+  | { kind: 'weight' }
+  | { kind: 'medication'; medicationId: string; name: string; at: number };
+
+/** How often the person weighs in. */
+type WeighInPlan = { frequency: 'daily' | 'weekly'; weekday: number };
+
+/** A medication still to be taken today. */
+type DueMedication = { id: string; name: string; at: number };
+
+const startOfDay = (d: Date) => new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime();
+
+/**
+ * Whether Today should ask for a weigh-in. Never once one is logged today.
+ * Daily: every other day. Weekly: on the chosen weekday (1 = Sunday … 7 =
+ * Saturday), or once a week or more has passed since the last one.
+ */
+export function weighInDue(
+  lastWeight: WeightEntry | undefined,
+  now: Date,
+  { frequency, weekday }: WeighInPlan,
+): boolean {
+  if (lastWeight && isLoggedToday(lastWeight.loggedAt, now)) return false;
+  if (frequency === 'daily' || !lastWeight) return true;
+  if (now.getDay() + 1 === weekday) return true;
+  const daysSince = Math.round(
+    (startOfDay(now) - startOfDay(new Date(lastWeight.loggedAt))) / 86_400_000,
+  );
+  return daysSince >= 7;
+}
 
 /** The meal it's most likely time for: breakfast before 11, lunch before 4, then dinner. */
 export function mealForTime(now: Date): FoodEntry['meal'] {
@@ -252,12 +280,14 @@ export function mealForTime(now: Date): FoodEntry['meal'] {
 /**
  * What's still open on Today. A meal row until every core meal is logged
  * (a generic "Log a meal" while nothing is logged, then the next missing
- * meal), and a weight row until a weigh-in exists for today. Empty means done.
+ * meal), a weight row when a weigh-in is due (see `weighInDue`; daily unless
+ * told otherwise), and a row for each medication not yet taken. Empty means done.
  */
 export function leftToDo(
   foodLog: FoodEntry[],
   lastWeight: WeightEntry | undefined,
   now: Date = new Date(),
+  options: { weighIn?: WeighInPlan; medications?: readonly DueMedication[] } = {},
 ): LeftToDoItem[] {
   const items: LeftToDoItem[] = [];
 
@@ -278,9 +308,43 @@ export function leftToDo(
     });
   }
 
-  if (!lastWeight || !isLoggedToday(lastWeight.loggedAt, now)) {
+  if (weighInDue(lastWeight, now, options.weighIn ?? { frequency: 'daily', weekday: 1 })) {
     items.push({ kind: 'weight' });
   }
 
+  for (const m of options.medications ?? []) {
+    items.push({ kind: 'medication', medicationId: m.id, name: m.name, at: m.at });
+  }
+
   return items;
+}
+
+export type TodaySummary = {
+  /** The meals logged today (in day order) and their calories; null when nothing is logged. */
+  meals: { names: FoodEntry['meal'][]; calories: number } | null;
+  /** Today's weigh-in, if there is one. */
+  weighedIn: WeightEntry | null;
+  /** Names of the medications taken today. */
+  medications: string[];
+  stepGoalReached: boolean;
+};
+
+const MEAL_ORDER: FoodEntry['meal'][] = ['breakfast', 'lunch', 'dinner', 'snack'];
+
+/** What has been done today, for the card that replaces "left to do" once it's empty. */
+export function todaySummary(
+  foodLog: FoodEntry[],
+  lastWeight: WeightEntry | undefined,
+  takenMedicationNames: string[],
+  stepGoalReached: boolean,
+  now: Date = new Date(),
+): TodaySummary {
+  const names = MEAL_ORDER.filter((m) => foodLog.some((f) => f.meal === m));
+  const calories = foodLog.reduce((sum, f) => sum + f.calories * f.servings, 0);
+  return {
+    meals: names.length ? { names, calories: Math.round(calories) } : null,
+    weighedIn: lastWeight && isLoggedToday(lastWeight.loggedAt, now) ? lastWeight : null,
+    medications: takenMedicationNames,
+    stepGoalReached,
+  };
 }

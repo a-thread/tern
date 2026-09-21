@@ -209,9 +209,11 @@ export function StepBars({
 }) {
   const max = Math.max(...days.map((d) => d.value), goal ?? 0, 1);
   const goalPct = goal ? Math.min((goal / max) * 100, 100) : null;
+  // Many thin bars (a month, half a year) sit closer together.
+  const gap = days.length > 14 ? 2 : 5;
   return (
     <View>
-      <View style={[cs.bars, { height }]}>
+      <View style={[cs.bars, { height, gap }]}>
         {goalPct !== null ? (
           <View style={[cs.goalLine, { bottom: `${goalPct}%` }]}>
             <Text style={cs.goalTag}>goal</Text>
@@ -234,11 +236,19 @@ export function StepBars({
           return (
             <View key={i} style={cs.barCol}>
               <View style={[cs.bar, style, { height: `${h}%` }]} />
-              {showLabels ? <Text style={cs.barLabel}>{d.label}</Text> : null}
             </View>
           );
         })}
       </View>
+      {showLabels ? (
+        <View style={[cs.labelRow, { gap }]}>
+          {days.map((d, i) => (
+            <Text key={i} style={cs.barLabel} numberOfLines={1}>
+              {d.label}
+            </Text>
+          ))}
+        </View>
+      ) : null}
       {showLegend ? (
         <View style={cs.legend}>
           <LegendSwatch color={colors.glacier} label='goal met' />
@@ -296,12 +306,15 @@ export function WeightTrend({
 }) {
   const W = 280;
   const H = height;
+  if (trend.length === 0) return <Svg width='100%' height={H} viewBox={`0 0 ${W} ${H}`} />;
   const min = Math.min(...trend, goal ?? Infinity) - (spread ?? 0.8);
   const max = Math.max(...trend, goal ?? -Infinity) + (spread ?? 0.8);
   const range = max - min || 1;
 
+  // One reading has no line to draw: sit it in the middle instead of dividing by zero
+  // (a NaN coordinate crashes react-native-svg natively, closing the whole app).
   const pt = (v: number, i: number) => {
-    const x = (i / (trend.length - 1)) * W;
+    const x = trend.length > 1 ? (i / (trend.length - 1)) * W : W / 2;
     const y = H - ((v - min) / range) * (H - 14) - 7;
     return [x, y] as const;
   };
@@ -548,19 +561,26 @@ const cs = StyleSheet.create({
   bars: {
     flexDirection: 'row',
     alignItems: 'flex-end',
-    gap: 5,
     marginTop: space.md,
     position: 'relative',
   },
+  // The bars have their own fixed-height area; the labels sit below it, so the
+  // tallest bar can never grow up into the text above the chart.
   barCol: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'flex-end',
     height: '100%',
-    gap: 4,
   },
   bar: { width: '100%', borderTopLeftRadius: 3, borderTopRightRadius: 3 },
-  barLabel: { fontFamily: font.body, fontSize: 9, color: colors.ink3 },
+  labelRow: { flexDirection: 'row', marginTop: 4 },
+  barLabel: {
+    flex: 1,
+    textAlign: 'center',
+    fontFamily: font.body,
+    fontSize: 9,
+    color: colors.ink3,
+  },
   goalLine: {
     position: 'absolute',
     left: 0,

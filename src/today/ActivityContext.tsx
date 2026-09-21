@@ -50,9 +50,10 @@ type ActivityContextValue = {
   restLeft: number;
   /** Whether the user chose today as a rest day. */
   todayIsRest: boolean;
-  refresh: () => Promise<void>;
-  /** Ask for access to the step source (Health Connect). */
-  connect: () => Promise<void>;
+  /** Re-reads steps. Resolves to the step status afterwards, or 'failed' if it could not be read. */
+  refresh: () => Promise<StepsStatus | 'failed'>;
+  /** Ask for access to the step source (Health Connect). Resolves to the status afterwards. */
+  connect: () => Promise<StepsStatus>;
   /** Take today as a rest day. False if the week's allowance is used up. */
   takeRestDay: () => boolean;
   undoRestDay: () => void;
@@ -81,7 +82,8 @@ export function ActivityProvider({ children }: { children: React.ReactNode }) {
   const [ready, setReady] = useState(false);
   const mounted = useRef(true);
 
-  const load = useCallback(async () => {
+  /** Reads steps and rest days. Resolves to the step status, or null if reading failed. */
+  const load = useCallback(async (): Promise<StepsStatus | null> => {
     const from = addDays(today, -(HISTORY_DAYS - 1));
     try {
       const nextStatus = await stepsRepo.status();
@@ -91,13 +93,15 @@ export function ActivityProvider({ children }: { children: React.ReactNode }) {
           : Promise.resolve({} as Record<string, number>),
         restRepo.load(from, today),
       ]);
-      if (!mounted.current) return;
+      if (!mounted.current) return nextStatus;
       setStatus((prev) => (prev === nextStatus ? prev : nextStatus));
       setStepsByDay((prev) => (sameSteps(prev, steps) ? prev : steps));
       setRestList((prev) => (sameDays(prev, rest) ? prev : rest));
       setLastSynced(new Date());
+      return nextStatus;
     } catch (e) {
       console.warn('Could not load activity', e);
+      return null;
     }
   }, [stepsRepo, restRepo, today]);
 
@@ -202,9 +206,11 @@ export function ActivityProvider({ children }: { children: React.ReactNode }) {
     restRepo.remove(today).catch(saveFailed);
   }, [today, restRepo, saveFailed]);
 
-  const connect = useCallback(async () => {
-    await stepsRepo.connect();
-    await load();
+  const refresh = useCallback(async () => (await load()) ?? 'failed', [load]);
+
+  const connect = useCallback(async (): Promise<StepsStatus> => {
+    const granted = await stepsRepo.connect();
+    return (await load()) ?? granted;
   }, [stepsRepo, load]);
 
   const value = useMemo<ActivityContextValue>(
@@ -217,7 +223,7 @@ export function ActivityProvider({ children }: { children: React.ReactNode }) {
       streak,
       restLeft,
       todayIsRest,
-      refresh: load,
+      refresh,
       connect,
       takeRestDay,
       undoRestDay,
@@ -231,7 +237,7 @@ export function ActivityProvider({ children }: { children: React.ReactNode }) {
       streak,
       restLeft,
       todayIsRest,
-      load,
+      refresh,
       connect,
       takeRestDay,
       undoRestDay,

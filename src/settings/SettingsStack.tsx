@@ -7,6 +7,7 @@ import FoodDisplayScreen from './FoodDisplayScreen';
 import HealthDataScreen from './HealthDataScreen';
 import TargetsScreen from './TargetsScreen';
 import RestDaysScreen from './RestDaysScreen';
+import MedicationScreen from './MedicationScreen';
 import type { SettingsStackParamList } from './types';
 
 const Stack = createNativeStackNavigator<SettingsStackParamList>();
@@ -21,6 +22,7 @@ export default function SettingsStack() {
       <Stack.Screen name='HealthData' component={HealthDataScreen} />
       <Stack.Screen name='Targets' component={TargetsScreen} />
       <Stack.Screen name='RestDays' component={RestDaysScreen} />
+      <Stack.Screen name='Medication' component={MedicationScreen} />
     </Stack.Navigator>
   );
 }
