@@ -17,5 +17,5 @@
       "env": { "EXPO_PUBLIC_HEALTH_CONNECT": "1" }
     }
   },
-  "submit": { "production": {} }
+  "submit": { "production": { "android": { "track": "internal" } } }
 }
