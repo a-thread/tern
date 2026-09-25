@@ -11,5 +11,7 @@ export type LogFoodStackParamList = {
   FoodDetail: { meal: FoodEntry['meal']; result: SearchResult; pick?: boolean };
   ManualFoodEntry: { meal: FoodEntry['meal']; name?: string; pick?: boolean };
   SavedMeal: { meal: FoodEntry['meal']; mealId: string };
+  /** `recentId` is a RecentMeal id: the day and meal it was logged as. */
+  RecentMeal: { meal: FoodEntry['meal']; recentId: string };
   MealEditor: undefined;
 };

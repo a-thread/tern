@@ -62,6 +62,8 @@ FOOD
 • Didn't have lunch? Mark it "nothing today". It counts the same as a logged
 meal, so a complete log never means eating more than you wanted.
 • Save the meals you eat often and add them in a tap, or scale them up and down.
+• Eating the same thing again? Log yesterday’s dinner, or any meal from the
+last two weeks, without searching for it twice.
 • See calories and macros for the day, if you want to see them at all.
 
 WEIGHT

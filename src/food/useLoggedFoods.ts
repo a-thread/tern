@@ -6,11 +6,16 @@ import { addDays } from '@shared/utils/date';
 import { useFood } from './FoodContext';
 import type { FoodEntry } from './models';
 import { recentFoods } from './recentFoods';
+import { recentMeals } from './recentMeals';
 
 const RECENT_DAYS = 14;
 const MINE_DAYS = 90;
 
-/** Foods from your own log: `recent` (last two weeks) and `mine` (last three months), newest first. */
+/**
+ * What you have logged yourself: `recent` foods (last two weeks), `mine` (last
+ * three months) and `meals` — whole meals from the last two weeks, newest
+ * first, ready to log again.
+ */
 export function useLoggedFoods() {
   const { food } = useBackend();
   const { foodLog } = useFood();
@@ -36,6 +41,10 @@ export function useLoggedFoods() {
       loaded,
       recent: recentFoods(byDay, { fromDay: addDays(today, -(RECENT_DAYS - 1)) }),
       mine: recentFoods(byDay, { limit: 200 }),
+      meals: recentMeals(byDay, {
+        today,
+        fromDay: addDays(today, -(RECENT_DAYS - 1)),
+      }),
     }),
     [byDay, loaded, today],
   );

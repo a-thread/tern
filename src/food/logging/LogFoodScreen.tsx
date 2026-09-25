@@ -12,6 +12,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import Svg, { Path } from 'react-native-svg';
 
+import { useDayKey } from '@shared/hooks/useDayKey';
 import { colors, font, radius, space, tierColors } from '@shared/theme';
 import {
   Group,
@@ -22,6 +23,7 @@ import {
 } from '@shared/components/ui';
 import type { SearchResult } from '../searchData';
 import { filterFoods } from '../recentFoods';
+import { filterRecentMeals, type RecentMeal } from '../recentMeals';
 import {
   useFoodSearch,
   offSource,
@@ -63,6 +65,19 @@ export default function LogFoodScreen({ navigation, route }: Props) {
     [savedMeals, query, pickMode],
   );
   const filters = pickMode ? FILTERS.filter((f) => f !== 'Meals') : FILTERS;
+  const today = useDayKey();
+  // The meal you're adding to isn't offered back to you — it's the list you're
+  // already looking at.
+  const pastMeals = useMemo(
+    () =>
+      pickMode
+        ? []
+        : filterRecentMeals(
+            logged.meals.filter((m) => !(m.day === today && m.meal === meal)),
+            query,
+          ),
+    [logged.meals, query, pickMode, today, meal],
+  );
   const mine = useMemo(() => filterFoods(logged.mine, query), [logged.mine, query]);
   const recent = useMemo(() => filterFoods(logged.recent, query), [logged.recent, query]);
 
@@ -105,6 +120,8 @@ export default function LogFoodScreen({ navigation, route }: Props) {
   };
   const openMeal = (m: SavedMeal) =>
     navigation.navigate('SavedMeal', { meal, mealId: m.id });
+  const openPastMeal = (m: RecentMeal) =>
+    navigation.navigate('RecentMeal', { meal, recentId: m.id });
 
   return (
     <View
@@ -184,10 +201,17 @@ export default function LogFoodScreen({ navigation, route }: Props) {
                 {yourMeals.length ? (
                   <MealGroup label='Your meals' meals={yourMeals} onPick={openMeal} />
                 ) : null}
+                {pastMeals.length ? (
+                  <RecentMealGroup
+                    label='Recent meals'
+                    meals={pastMeals.slice(0, 5)}
+                    onPick={openPastMeal}
+                  />
+                ) : null}
                 {recent.length ? (
                   <FoodGroup label='Logged recently' foods={recent} onPick={pick} />
                 ) : null}
-                {!yourMeals.length && !recent.length ? (
+                {!yourMeals.length && !pastMeals.length && !recent.length ? (
                   <Note>
                     Search foods above, or scan a barcode. Foods you log will show
                     up here for next time.
@@ -249,13 +273,21 @@ export default function LogFoodScreen({ navigation, route }: Props) {
             </Pressable>
             {yourMeals.length ? (
               <MealGroup label='Your meals' meals={yourMeals} onPick={openMeal} />
-            ) : (
+            ) : null}
+            {pastMeals.length ? (
+              <RecentMealGroup
+                label='Recent meals'
+                meals={pastMeals}
+                onPick={openPastMeal}
+              />
+            ) : null}
+            {!yourMeals.length && !pastMeals.length ? (
               <Note>
                 {trimmed
-                  ? `None of your meals match “${trimmed}”.`
-                  : 'Build a meal with New meal, or log a few foods and choose “Save as meal” on the Food tab.'}
+                  ? `Nothing matches “${trimmed}”.`
+                  : 'Build a meal with New meal, or log a few foods and choose “Save as meal” on the Food tab. Meals you log show up here too.'}
               </Note>
-            )}
+            ) : null}
           </>
         ) : null}
 
@@ -339,6 +371,58 @@ function MealGroup({
         ))}
       </Group>
     </>
+  );
+}
+
+function RecentMealGroup({
+  label,
+  meals,
+  onPick,
+}: {
+  label: string;
+  meals: RecentMeal[];
+  onPick: (m: RecentMeal) => void;
+}) {
+  return (
+    <>
+      <GroupLabel>{label}</GroupLabel>
+      <Group>
+        {meals.map((m) => (
+          <RecentMealRow key={m.id} meal={m} onPress={() => onPick(m)} />
+        ))}
+      </Group>
+    </>
+  );
+}
+
+/** A meal from a past day: the day and meal it was, and what was in it. */
+function RecentMealRow({ meal, onPress }: { meal: RecentMeal; onPress: () => void }) {
+  const { showCalories } = useFoodDisplay();
+  const cals = Math.round(savedMealTotals(meal.items).calories);
+  const n = meal.items.length;
+  const names = meal.items.map((i) => i.name).join(', ');
+  return (
+    <Pressable style={s.row} android_ripple={{ color: colors.doveTint }} onPress={onPress}>
+      <View style={s.mealIcon}>
+        <Svg width={13} height={13} viewBox='0 0 24 24' fill='none'>
+          <Path
+            d='M12 3a9 9 0 1 0 9 9M12 7v5l3 2'
+            stroke={colors.ink2}
+            strokeWidth={2.2}
+            strokeLinecap='round'
+            strokeLinejoin='round'
+          />
+        </Svg>
+      </View>
+      <View style={{ flex: 1 }}>
+        <Text style={s.rowTitle}>{meal.title}</Text>
+        <Text style={s.rowSub} numberOfLines={1}>
+          {showCalories ? `${cals} cal · ` : `${n} ${n === 1 ? 'food' : 'foods'} · `}
+          {names}
+        </Text>
+      </View>
+      <Chevron />
+    </Pressable>
   );
 }
 

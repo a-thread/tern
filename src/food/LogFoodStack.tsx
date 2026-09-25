@@ -8,6 +8,7 @@ import BarcodeScanScreen from './logging/BarcodeScanScreen';
 import FoodDetailScreen from './logging/FoodDetailScreen';
 import ManualFoodEntryScreen from './logging/ManualFoodEntryScreen';
 import SavedMealScreen from './logging/SavedMealScreen';
+import RecentMealScreen from './logging/RecentMealScreen';
 import MealEditorScreen from './logging/MealEditorScreen';
 import type { LogFoodStackParamList } from './types';
 
@@ -28,6 +29,7 @@ export default function LogFoodStack({ route }: Props) {
       <Stack.Screen name='FoodDetail' component={FoodDetailScreen} />
       <Stack.Screen name='ManualFoodEntry' component={ManualFoodEntryScreen} />
       <Stack.Screen name='SavedMeal' component={SavedMealScreen} />
+      <Stack.Screen name='RecentMeal' component={RecentMealScreen} />
       <Stack.Screen name='MealEditor' component={MealEditorScreen} />
     </Stack.Navigator>
   );

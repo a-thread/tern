@@ -70,7 +70,8 @@ export function createSupabaseFoodRepository(db: TernClient): FoodRepository {
         .select('*')
         .gte('logged_on', from)
         .lte('logged_on', to)
-        .order('logged_on');
+        .order('logged_on')
+        .order('created_at');
       if (error) throw error;
       const byDay: Record<string, FoodEntry[]> = {};
       for (const row of data as FoodRow[]) {
