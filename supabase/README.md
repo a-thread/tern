@@ -6,23 +6,17 @@ tables. With no keys configured, the app runs on local mock data instead.
 
 ## Setup
 
-1. **Run the migration.** In the Supabase dashboard open _SQL Editor_ and run
-   [`migrations/20260918000000_tern_schema.sql`](migrations/20260918000000_tern_schema.sql)
-   (or `supabase db push` if you use the CLI). Then run
-   [`migrations/20260919000000_weight_in_pounds.sql`](migrations/20260919000000_weight_in_pounds.sql),
-   which switches weight storage from kg to lb, and
-   [`migrations/20260920000000_rest_days.sql`](migrations/20260920000000_rest_days.sql),
-   which adds the rest-days table, and
-   [`migrations/20260921000000_saved_meals.sql`](migrations/20260921000000_saved_meals.sql),
-   which adds saved meals, and
-   [`migrations/20260922000000_delete_account.sql`](migrations/20260922000000_delete_account.sql),
-   which lets a signed-in person delete their own account, and
-   [`migrations/20260923000000_medication_doses.sql`](migrations/20260923000000_medication_doses.sql),
-   which adds optional medication tracking, and
-   [`migrations/20260924000000_water.sql`](migrations/20260924000000_water.sql),
-   which adds optional water tracking and lets reaching the water goal earn a waypoint, and
-   [`migrations/20260925000000_mood_checkins.sql`](migrations/20260925000000_mood_checkins.sql),
-   which adds optional mood and stress check-ins and lets checking in earn a waypoint.
+1. **Run the migrations.** Every file in [`migrations/`](migrations/), in filename
+   order, through _SQL Editor_ in the Supabase dashboard (or `supabase db push` if
+   you use the CLI). They're cumulative: a new project needs all of them, an
+   existing one needs whatever is newer than its last. Two are worth knowing
+   before you run them.
+   [`20260926000000_skipped_meals_and_ledger_checks.sql`](migrations/20260926000000_skipped_meals_and_ledger_checks.sql)
+   adds the `skipped_meals` table the Food tab reads on **every** load — without
+   it a day's food comes back empty instead of failing, which reads as data loss.
+   [`20260927000000_prelaunch_reset.sql`](migrations/20260927000000_prelaunch_reset.sql)
+   **deletes every waypoint and rest day** and drops the seeded goal weight; it is
+   only ever what you want before launch.
 2. **Expose the schema.** _Project Settings → API → Exposed schemas_ → add `tern`.
    Without this, every request fails with "schema must be one of…".
 3. **Add keys.** Copy `.env.example` to `.env` and fill in the project URL and
@@ -46,6 +40,7 @@ tables. With no keys configured, the app runs on local mock data instead.
 | ---------------------- | ---------------------------------------------------------------------- |
 | `tern.settings`        | one row per user; the whole settings object as `jsonb`                 |
 | `tern.food_entries`    | each logged food, by day and meal                                      |
+| `tern.skipped_meals`   | core meals marked "nothing today" (one row per day and meal)           |
 | `tern.weight_entries`  | each weigh-in, in pounds (kg is a display setting)                     |
 | `tern.waypoint_events` | the waypoints ledger: one row per award                                |
 | `tern.rest_days`       | the days you chose to rest (one row per day)                           |
@@ -60,8 +55,10 @@ get nothing.
 ## Waypoints ledger
 
 Waypoints are earned for behavior only. `waypoint_events.source` is restricted
-to `steps`, `meals` and `rest`, there is at most one award per source per day
-(so awarding is idempotent), and taking one back deletes its row. The total is
+to `steps`, `meals`, `rest`, `water` and `mood`, each worth fixed points, there
+is at most one award per source per day (so awarding is idempotent), and taking
+one back deletes its row. A row can only be written for the day it happened —
+within a day of UTC now, which covers every time zone's "today". The total is
 the `tern.waypoint_totals` view (the sum of a user's events).
 
 ## Steps from Health Connect
@@ -75,8 +72,8 @@ Health Connect needs a custom dev build (Expo Go can't load native modules).
 The adapter is [src/today/steps.healthconnect.ts](../src/today/steps.healthconnect.ts).
 The package, its config plugin, the `READ_STEPS` permission and Android build
 settings (minSdk 26) are already set up in `package.json` and `app.json`.
-A native debug build (`assembleDebug`) succeeds with it, but **the adapter has
-not been run on a device.**
+A native debug build (`assembleDebug`) succeeds with it, and the adapter has been
+verified by manual testing on an Android device.
 
 `react-native-health-connect` 4.x needs compileSdk 35+, which Expo SDK 54
 provides (the app targets API 36, as Google Play requires). Its config plugin
@@ -131,16 +128,17 @@ it is only ever a suggestion.
 ## Releasing
 
 - **App identity:** `com.purlieus.tern` in `app.json` (Android `package`, iOS
-  `bundleIdentifier`) is a placeholder. Pick your real id before the first store
-  build; it can't be changed afterwards.
+  `bundleIdentifier`), Expo owner `purlieus-systems`. It has shipped, so it is
+  fixed now — Google Play ties the listing to it.
 - **Icon and splash:** generated from the Tern mark into `assets/` (icon,
   adaptive icon, splash, notification icon). Replace them if you have final art.
 - **Builds:** `eas.json` has `development`, `preview` (installable APK) and
   `production` profiles. The Supabase URL and anon key come from `.env` locally;
   for EAS builds add them as EAS environment variables
   (`EXPO_PUBLIC_SUPABASE_URL`, `EXPO_PUBLIC_SUPABASE_ANON_KEY`, and `EXPO_PUBLIC_USDA_API_KEY` for everyday-food search), since `.env` is not committed.
-- **Privacy policy:** [docs/index.html](../docs/index.html) is a draft. Host it at
-  a public URL; Google Play and Health Connect both ask for one.
+- **Privacy policy:** [docs/index.html](../docs/index.html) tracks what Tern
+  stores. It has to be hosted at a public URL; Google Play and Health Connect
+  both ask for one.
 - **Native folders:** `android/` and `ios/` are generated by `expo prebuild` and
   are gitignored.
 
