@@ -77,7 +77,7 @@ export default function SettingsRootScreen({ navigation }: Props) {
     if (!dataRepo || dataBusy) return;
     Alert.alert(
       'Delete all your data?',
-      "This erases your food log, saved meals, weigh-ins, water and medication history, waypoints, rest days and settings from Tern. It can't be undone. You'll be signed out, and your login stays so you can start fresh.",
+      "This erases your food log, saved meals, weigh-ins, water, medication and mood history, waypoints, rest days and settings from Tern. It can't be undone. You'll be signed out, and your login stays so you can start fresh.",
       [
         { text: 'Cancel', style: 'cancel' },
         {
@@ -103,7 +103,7 @@ export default function SettingsRootScreen({ navigation }: Props) {
     if (!dataRepo || dataBusy) return;
     Alert.alert(
       'Delete your account?',
-      "This permanently deletes your account and everything in it: your food log, saved meals, weigh-ins, water and medication history, waypoints, rest days and settings. It can't be undone.",
+      "This permanently deletes your account and everything in it: your food log, saved meals, weigh-ins, water, medication and mood history, waypoints, rest days and settings. It can't be undone.",
       [
         { text: 'Cancel', style: 'cancel' },
         {
@@ -394,6 +394,16 @@ export default function SettingsRootScreen({ navigation }: Props) {
           ) : null}
         </Group>
 
+        <GroupLabel>Mood &amp; stress</GroupLabel>
+        <Group>
+          <ToggleRow
+            title='Track mood and stress'
+            sub='Optional. A quick daily check-in from Today'
+            on={settings.trackMood}
+            onToggle={(v) => updateSettings({ trackMood: v })}
+          />
+        </Group>
+
         <GroupLabel>Reminders</GroupLabel>
         <Group>
           <ToggleRow
@@ -573,6 +583,32 @@ export default function SettingsRootScreen({ navigation }: Props) {
                     }
                   />
                 </>
+              ) : null}
+            </>
+          ) : null}
+          {settings.trackMood ? (
+            <>
+              <ToggleRow
+                title='Check in'
+                sub={reminderText.mood}
+                on={reminders.mood.on}
+                onToggle={(v) =>
+                  updateSettings({ reminders: { ...reminders, mood: { ...reminders.mood, on: v } } })
+                }
+              />
+              {reminders.mood.on ? (
+                <TimeStepperRow
+                  label='Time'
+                  value={formatMinutes(reminders.mood.at)}
+                  onStep={(d) =>
+                    updateSettings({
+                      reminders: {
+                        ...reminders,
+                        mood: { ...reminders.mood, at: stepMinutes(reminders.mood.at, d * stepStep) },
+                      },
+                    })
+                  }
+                />
               ) : null}
             </>
           ) : null}
