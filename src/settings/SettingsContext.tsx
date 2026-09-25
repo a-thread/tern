@@ -41,7 +41,10 @@ export type AppSettings = {
   trackCalories: boolean;
   /** Display only; weight is stored in pounds either way. */
   units: Units;
-  weightGoalLb: number;
+  /** Optional; null (the default) means no goal weight, and no goal line anywhere. */
+  weightGoalLb: number | null;
+  /** Weight is optional too: off, Today never asks for a weigh-in and there's no weigh-in reminder. */
+  trackWeight: boolean;
   showTiers: boolean;
   showTierNumber: boolean;
   showCalories: boolean;
@@ -59,6 +62,12 @@ export type AppSettings = {
   waterGoalOz: number;
   /** Optional daily mood and stress check-in; off by default so it stays out of the way. */
   trackMood: boolean;
+  /**
+   * The waypoint total of the last milestone that was celebrated, so each one
+   * is marked once. Null until the first time Tern looks, when it's set to
+   * whatever has already been passed — an existing journey isn't re-celebrated.
+   */
+  celebratedMilestone: number | null;
   healthData: HealthDataSettings;
 };
 
@@ -71,7 +80,8 @@ const initialSettings: AppSettings = {
   macroTargets: { ...settingsSeed.macroTargets },
   trackCalories: true,
   units: settingsSeed.units,
-  weightGoalLb: settingsSeed.weightGoalLb,
+  weightGoalLb: null,
+  trackWeight: true,
   showTiers: settingsSeed.showTiers,
   showTierNumber: true,
   showCalories: settingsSeed.showCalories,
@@ -84,6 +94,7 @@ const initialSettings: AppSettings = {
   trackWater: false,
   waterGoalOz: DEFAULT_WATER_GOAL_OZ,
   trackMood: false,
+  celebratedMilestone: null,
   healthData: {
     readSteps: true,
   },
@@ -135,12 +146,26 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
           // Older saves stored reminder times as text; fall back per field.
           reminders: mergeReminders(saved?.reminders),
           weighInFrequency:
-            saved?.weighInFrequency === 'daily' ? 'daily' : DEFAULT_WEIGH_IN_FREQUENCY,
+            saved?.weighInFrequency === 'daily'
+              ? 'daily'
+              : DEFAULT_WEIGH_IN_FREQUENCY,
           medications: mergeMedications(saved?.medications),
           trackWater: saved?.trackWater === true,
           trackMood: saved?.trackMood === true,
+          trackWeight: saved?.trackWeight !== false,
+          celebratedMilestone:
+            typeof saved?.celebratedMilestone === 'number' &&
+            Number.isFinite(saved.celebratedMilestone)
+              ? saved.celebratedMilestone
+              : null,
+          weightGoalLb:
+            typeof saved?.weightGoalLb === 'number' &&
+            Number.isFinite(saved.weightGoalLb)
+              ? saved.weightGoalLb
+              : null,
           waterGoalOz:
-            typeof saved?.waterGoalOz === 'number' && Number.isFinite(saved.waterGoalOz)
+            typeof saved?.waterGoalOz === 'number' &&
+            Number.isFinite(saved.waterGoalOz)
               ? clampWaterGoal(saved.waterGoalOz)
               : DEFAULT_WATER_GOAL_OZ,
         };

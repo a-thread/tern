@@ -96,5 +96,25 @@ export function createSupabaseFoodRepository(db: TernClient): FoodRepository {
       const { error } = await db.from('food_entries').delete().eq('id', id);
       if (error) throw error;
     },
+    async loadSkipped(day) {
+      const { data, error } = await db
+        .from('skipped_meals')
+        .select('meal')
+        .eq('day', day);
+      if (error) throw error;
+      return (data ?? []).map((r: { meal: FoodEntry['meal'] }) => r.meal);
+    },
+    async setSkipped(day, meal, skipped) {
+      // Primary key (user, day, meal): marking twice is harmless.
+      const { error } = skipped
+        ? await db
+            .from('skipped_meals')
+            .upsert(
+              { day, meal },
+              { onConflict: 'user_id,day,meal', ignoreDuplicates: true },
+            )
+        : await db.from('skipped_meals').delete().eq('day', day).eq('meal', meal);
+      if (error) throw error;
+    },
   };
 }

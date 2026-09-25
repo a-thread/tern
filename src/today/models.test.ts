@@ -74,6 +74,19 @@ describe('leftToDo', () => {
     expect(leftToDo(log, undefined, now)).toEqual([{ kind: 'weight' }]);
   });
 
+  it('counts a skipped meal as done, and moves on to the next one', () => {
+    const [meal] = leftToDo([food('breakfast')], weighedToday, now, { skippedMeals: ['lunch'] });
+    expect(meal).toMatchObject({ meal: 'dinner', sub: '2 of 3 meals logged' });
+    expect(
+      leftToDo([food('breakfast'), food('dinner')], weighedToday, now, { skippedMeals: ['lunch'] }),
+    ).toEqual([]);
+  });
+
+  it('never asks for a weigh-in when weight is not tracked', () => {
+    const log = [food('breakfast'), food('lunch'), food('dinner')];
+    expect(leftToDo(log, undefined, now, { weighIn: null })).toEqual([]);
+  });
+
   it('drops the weight row once weighed today, but not for an old weigh-in', () => {
     expect(leftToDo([], weighedToday, now).map((i) => i.kind)).toEqual(['meal']);
     expect(leftToDo([], weighedYesterday, now).map((i) => i.kind)).toEqual([
@@ -138,6 +151,28 @@ describe('buildDays', () => {
     const rest = on.filter((d) => d.state === 'rest').map((d) => d.day);
     expect(rest).toEqual(['2026-09-14', '2026-09-15']); // allowance of 2
     expect(on.find((d) => d.day === '2026-09-16')!.state).toBe('partial');
+  });
+
+  it('treats any past day under the goal alike, so partial effort is never worse than none', () => {
+    const d = days({
+      stepsByDay: { '2026-09-14': 6000, '2026-09-15': 7900 },
+      restPerWeek: 2,
+      autoDetect: true,
+    });
+    const by = Object.fromEntries(d.map((x) => [x.day, x.state]));
+    expect(by['2026-09-14']).toBe('rest'); // 75% of the goal
+    expect(by['2026-09-15']).toBe('rest'); // just short
+  });
+
+  it('covers a day with no data once steps have started, but not the time before', () => {
+    const d = days({
+      stepsByDay: { '2026-09-10': 9000, '2026-09-12': 9000 },
+      restPerWeek: 2,
+      autoDetect: true,
+    });
+    const by = Object.fromEntries(d.map((x) => [x.day, x.state]));
+    expect(by['2026-09-11']).toBe('rest'); // phone left at home
+    expect(by['2026-09-08']).toBe('none'); // before any steps at all
   });
 
   it('never detects today as a rest day, and lets chosen days claim the allowance first', () => {
@@ -326,10 +361,14 @@ describe('weighInDue', () => {
     expect(weighInDue(daysAgo(6), now, weekly(2))).toBe(false);
   });
 
-  it('weekly becomes due anyway once a week has passed, and for a first weigh-in', () => {
+  it('weekly becomes due anyway once a week has passed', () => {
     expect(weighInDue(daysAgo(7), now, weekly(2))).toBe(true);
     expect(weighInDue(daysAgo(20), now, weekly(2))).toBe(true);
-    expect(weighInDue(undefined, now, weekly(2))).toBe(true);
+  });
+
+  it('with no weigh-in yet, weekly asks only on the chosen day, not every day', () => {
+    expect(weighInDue(undefined, now, weekly(2))).toBe(false);
+    expect(weighInDue(undefined, now, weekly(now.getDay() + 1))).toBe(true);
   });
 });
 

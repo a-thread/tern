@@ -55,7 +55,12 @@ const WaypointsContext = createContext<WaypointsContextValue | null>(null);
 
 export function WaypointsProvider({ children }: { children: React.ReactNode }) {
   const { waypoints: ledger } = useBackend();
-  const { foodLog, ready: foodReady, loadedDay: foodDay } = useFood();
+  const {
+    foodLog,
+    skippedMeals,
+    ready: foodReady,
+    loadedDay: foodDay,
+  } = useFood();
   const toast = useToast();
   const [waypoints, setWaypoints] = useState(0);
   const [events, setEvents] = useState<LedgerEvent[]>([]);
@@ -131,7 +136,7 @@ export function WaypointsProvider({ children }: { children: React.ReactNode }) {
 
   /**
    * Keeps the "logging all meals" bonus honest: awards it the moment every
-   * core meal has an entry, and takes it back if a removal or edit drops
+   * core meal has an entry (or is marked "nothing today"), and takes it back if a removal or edit drops
    * coverage below that again — waypoints reflect the log as it stands now,
    * not just its high-water mark. Waits for both the food log and the ledger
    * to load, so an unloaded (empty) log is never mistaken for a dropped one.
@@ -139,9 +144,9 @@ export function WaypointsProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     // Both must be for today: right after midnight each still holds yesterday's data.
     if (!ready || !foodReady || ledgerDay !== day || foodDay !== day) return;
-    if (allMealsLogged(foodLog)) award(MEALS_BONUS_POINTS, 'meals');
+    if (allMealsLogged(foodLog, skippedMeals)) award(MEALS_BONUS_POINTS, 'meals');
     else revoke(MEALS_BONUS_POINTS, 'meals');
-  }, [ready, foodReady, ledgerDay, foodDay, day, foodLog, award, revoke]);
+  }, [ready, foodReady, ledgerDay, foodDay, day, foodLog, skippedMeals, award, revoke]);
 
   const completeCelebration = useCallback((id: number) => {
     setCelebrations((prev) => prev.filter((c) => c.id !== id));

@@ -28,6 +28,7 @@ import { useAuth } from '@shared/auth/AuthContext';
 import { useBackend } from '@shared/state/BackendContext';
 import { useToast } from '@shared/state/ToastContext';
 import { useActivity } from '@today/ActivityContext';
+import { useWeight } from '@weight/WeightContext';
 import { MAX_NAME } from '@shared/auth/validation';
 import { useSettings } from './SettingsContext';
 import { useUnits } from './useUnits';
@@ -143,8 +144,14 @@ export default function SettingsRootScreen({ navigation }: Props) {
 
   const { units, toDisplay, fromDisplay, formatGoal, formatVolume, stepWaterGoal } = useUnits();
 
+  const { weightEntries } = useWeight();
+  // A new goal starts at the latest weigh-in, so it suggests no direction.
+  const startWeightGoal = () =>
+    updateSettings({ weightGoalLb: Math.round(weightEntries[0]?.lb ?? 150) });
+
   // Whole pounds, or half kilograms, in whichever unit is showing.
   const stepWeightGoal = (dir: 1 | -1) => {
+    if (settings.weightGoalLb === null) return;
     const shown = toDisplay(settings.weightGoalLb);
     const next =
       units === 'imperial'
@@ -244,30 +251,6 @@ export default function SettingsRootScreen({ navigation }: Props) {
             }
             onPress={() => navigation.navigate('Targets')}
           />
-          <View style={s.row}>
-            <IconBadge bg='#EDF1E9'>
-              <Svg
-                width={15}
-                height={15}
-                viewBox='0 0 24 24'
-                fill='none'
-                stroke='#4C6B4F'
-                strokeWidth={2}
-              >
-                <Path d='M6 5h12M9 5v2a3 3 0 1 0 6 0V5M7 19h10M9 19c0-4 1-6 3-7 2 1 3 3 3 7' />
-              </Svg>
-            </IconBadge>
-            <Text style={[s.rowTitle, { flex: 1 }]}>Weight goal</Text>
-            <View style={s.stepper}>
-              <Pressable onPress={() => stepWeightGoal(-1)} hitSlop={8}>
-                <Text style={s.stepperBtn}>−</Text>
-              </Pressable>
-              <Text style={s.stepperVal}>{formatGoal(settings.weightGoalLb)}</Text>
-              <Pressable onPress={() => stepWeightGoal(1)} hitSlop={8}>
-                <Text style={s.stepperBtn}>+</Text>
-              </Pressable>
-            </View>
-          </View>
           <SettingsRow
             icon={
               <IconBadge bg={colors.driftwoodTint}>
@@ -375,6 +358,53 @@ export default function SettingsRootScreen({ navigation }: Props) {
           />
         </Group>
 
+        <GroupLabel>Weight</GroupLabel>
+        <Group>
+          <ToggleRow
+            title='Track weight'
+            sub='Off, Today never asks for a weigh-in'
+            on={settings.trackWeight}
+            onToggle={(v) => updateSettings({ trackWeight: v })}
+          />
+          {settings.trackWeight ? (
+            <View style={s.row}>
+              <View style={{ flex: 1 }}>
+                <Text style={s.rowTitle}>Goal weight</Text>
+                <Text style={s.rowSub}>
+                  {settings.weightGoalLb === null
+                    ? 'Optional. No goal line is shown without one'
+                    : 'Shown as a line on your trend'}
+                </Text>
+              </View>
+              {settings.weightGoalLb === null ? (
+                <Pressable onPress={startWeightGoal} hitSlop={8} accessibilityRole='button'>
+                  <Text style={s.linkText}>Set a goal</Text>
+                </Pressable>
+              ) : (
+                <>
+                  <View style={s.stepper}>
+                    <Pressable onPress={() => stepWeightGoal(-1)} hitSlop={8}>
+                      <Text style={s.stepperBtn}>−</Text>
+                    </Pressable>
+                    <Text style={s.stepperVal}>{formatGoal(settings.weightGoalLb)}</Text>
+                    <Pressable onPress={() => stepWeightGoal(1)} hitSlop={8}>
+                      <Text style={s.stepperBtn}>+</Text>
+                    </Pressable>
+                  </View>
+                  <Pressable
+                    onPress={() => updateSettings({ weightGoalLb: null })}
+                    hitSlop={8}
+                    accessibilityRole='button'
+                    accessibilityLabel='Remove goal weight'
+                  >
+                    <Text style={s.linkText}>Remove</Text>
+                  </Pressable>
+                </>
+              )}
+            </View>
+          ) : null}
+        </Group>
+
         <GroupLabel>Water</GroupLabel>
         <Group>
           <ToggleRow
@@ -450,80 +480,84 @@ export default function SettingsRootScreen({ navigation }: Props) {
               />
             </>
           ) : null}
-          <View style={s.row}>
-            <View style={{ flex: 1 }}>
-              <Text style={s.rowTitle}>Weigh in</Text>
-              <Text style={s.rowSub}>
-                {settings.weighInFrequency === 'daily'
-                  ? 'Today asks for a weight every day'
-                  : 'Today asks once a week'}
-              </Text>
-            </View>
-            <View style={s.stepper}>
-              {(['daily', 'weekly'] as const).map((f) => (
-                <Pressable
-                  key={f}
-                  onPress={() => updateSettings({ weighInFrequency: f })}
-                  style={[s.unitItem, settings.weighInFrequency === f && s.unitItemOn]}
-                  accessibilityRole='button'
-                  accessibilityState={{ selected: settings.weighInFrequency === f }}
-                >
-                  <Text
-                    style={[s.unitText, settings.weighInFrequency === f && s.unitTextOn]}
-                  >
-                    {f === 'daily' ? 'Daily' : 'Weekly'}
-                  </Text>
-                </Pressable>
-              ))}
-            </View>
-          </View>
-          <ToggleRow
-            title='Weigh-in reminder'
-            sub={reminderText.weighIn}
-            on={reminders.weighIn.on}
-            onToggle={(v) =>
-              updateSettings({
-                reminders: {
-                  ...reminders,
-                  weighIn: { ...reminders.weighIn, on: v },
-                },
-              })
-            }
-          />
-          {reminders.weighIn.on ? (
+          {settings.trackWeight ? (
             <>
-              {settings.weighInFrequency === 'weekly' ? (
-                <TimeStepperRow
-                  label='Day'
-                  value={weekdayPlural(reminders.weighIn.weekday)}
-                  onStep={(d) =>
-                    updateSettings({
-                      reminders: {
-                        ...reminders,
-                        weighIn: {
-                          ...reminders.weighIn,
-                          weekday: stepWeekday(reminders.weighIn.weekday, d),
-                        },
-                      },
-                    })
-                  }
-                />
-              ) : null}
-              <TimeStepperRow
-                label='Time'
-                value={formatMinutes(reminders.weighIn.at)}
-                onStep={(d) =>
+              <View style={s.row}>
+                <View style={{ flex: 1 }}>
+                  <Text style={s.rowTitle}>Weigh in</Text>
+                  <Text style={s.rowSub}>
+                    {settings.weighInFrequency === 'daily'
+                      ? 'Today asks for a weight every day'
+                      : 'Today asks once a week'}
+                  </Text>
+                </View>
+                <View style={s.stepper}>
+                  {(['daily', 'weekly'] as const).map((f) => (
+                    <Pressable
+                      key={f}
+                      onPress={() => updateSettings({ weighInFrequency: f })}
+                      style={[s.unitItem, settings.weighInFrequency === f && s.unitItemOn]}
+                      accessibilityRole='button'
+                      accessibilityState={{ selected: settings.weighInFrequency === f }}
+                    >
+                      <Text
+                        style={[s.unitText, settings.weighInFrequency === f && s.unitTextOn]}
+                      >
+                        {f === 'daily' ? 'Daily' : 'Weekly'}
+                      </Text>
+                    </Pressable>
+                  ))}
+                </View>
+              </View>
+              <ToggleRow
+                title='Weigh-in reminder'
+                sub={reminderText.weighIn}
+                on={reminders.weighIn.on}
+                onToggle={(v) =>
                   updateSettings({
                     reminders: {
                       ...reminders,
-                      weighIn: {
-                        ...reminders.weighIn,
-                        at: stepMinutes(reminders.weighIn.at, d * stepStep),
-                      },
+                      weighIn: { ...reminders.weighIn, on: v },
                     },
                   })
                 }
               />
+              {reminders.weighIn.on ? (
+                <>
+                  {settings.weighInFrequency === 'weekly' ? (
+                    <TimeStepperRow
+                      label='Day'
+                      value={weekdayPlural(reminders.weighIn.weekday)}
+                      onStep={(d) =>
+                        updateSettings({
+                          reminders: {
+                            ...reminders,
+                            weighIn: {
+                              ...reminders.weighIn,
+                              weekday: stepWeekday(reminders.weighIn.weekday, d),
+                            },
+                          },
+                        })
+                      }
+                    />
+                  ) : null}
+                  <TimeStepperRow
+                    label='Time'
+                    value={formatMinutes(reminders.weighIn.at)}
+                    onStep={(d) =>
+                      updateSettings({
+                        reminders: {
+                          ...reminders,
+                          weighIn: {
+                            ...reminders.weighIn,
+                            at: stepMinutes(reminders.weighIn.at, d * stepStep),
+                          },
+                        },
+                      })
+                    }
+                  />
+                </>
+              ) : null}
             </>
           ) : null}
           {settings.trackWater ? (
@@ -778,4 +812,5 @@ const s = StyleSheet.create({
     minWidth: 52,
     textAlign: 'center',
   },
+  linkText: { fontFamily: font.medium, fontSize: 13, color: colors.coral },
 });

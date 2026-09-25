@@ -7,7 +7,7 @@ import {
   type Backend,
 } from '@shared/state/BackendContext';
 import { dayKey } from '@shared/utils/date';
-import { SettingsProvider } from '@settings/SettingsContext';
+import { SettingsProvider, useSettings } from '@settings/SettingsContext';
 import { FoodProvider } from '@food/FoodContext';
 import { WaypointsProvider, useWaypoints } from '@journey/WaypointsContext';
 import { ActivityProvider, useActivity } from './ActivityContext';
@@ -36,7 +36,7 @@ async function setup(steps: StepsRepository) {
     </BackendProvider>
   );
   const hook = renderHook(
-    () => ({ activity: useActivity(), points: useWaypoints() }),
+    () => ({ activity: useActivity(), points: useWaypoints(), settings: useSettings() }),
     { wrapper },
   );
   await waitFor(() => {
@@ -55,6 +55,17 @@ describe('ActivityProvider awards', () => {
     const snapshot = await backend.waypoints.load(todayKey);
     expect(snapshot.todaySources).toContain('steps');
     expect(result.current.activity.todaySteps).toBe(9000);
+  });
+
+  it("takes today's step award back if the goal is raised past today's steps", async () => {
+    const { result } = await setup(stepsRepo(5000)); // the default goal is 4,800
+    await waitFor(() =>
+      expect(result.current.points.events.some((e) => e.source === 'steps')).toBe(true),
+    );
+    const withSteps = result.current.points.waypoints;
+
+    await act(async () => result.current.settings.updateSettings({ stepGoal: 8000 }));
+    await waitFor(() => expect(result.current.points.waypoints).toBe(withSteps - 40));
   });
 
   it('awards nothing below the goal', async () => {
@@ -87,6 +98,34 @@ describe('rest days', () => {
     await act(async () => result.current.activity.undoRestDay());
     await waitFor(() => expect(result.current.points.waypoints).toBe(before));
     expect(result.current.activity.todayIsRest).toBe(false);
+  });
+
+  it('a rest day taken early gives way to the goal: one award, and the allowance comes back', async () => {
+    let steps = 1000;
+    const repo: StepsRepository = {
+      status: async () => 'connected',
+      connect: async () => 'connected',
+      getRange: async () => ({ [todayKey]: steps }),
+    };
+    const { result } = await setup(repo);
+    const before = result.current.points.waypoints;
+    await act(async () => {
+      result.current.activity.takeRestDay();
+    });
+    await waitFor(() => expect(result.current.points.waypoints).toBe(before + 10));
+    expect(result.current.activity.restLeft).toBe(1);
+
+    steps = 9000;
+    await act(async () => {
+      await result.current.activity.refresh();
+    });
+    await waitFor(() => expect(result.current.points.waypoints).toBe(before + 40));
+    const sources = result.current.points.events
+      .filter((e) => e.day === todayKey)
+      .map((e) => e.source);
+    expect(sources).toContain('steps');
+    expect(sources).not.toContain('rest');
+    expect(result.current.activity.restLeft).toBe(2);
   });
 
   it('keeps the streak through a rest day, and stops at the weekly allowance', async () => {

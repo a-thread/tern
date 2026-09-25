@@ -10,6 +10,7 @@ const TABLES = {
   medicationDoses: 'medication_doses',
   waterEntries: 'water_entries',
   moodCheckins: 'mood_checkins',
+  skippedMeals: 'skipped_meals',
 } as const;
 
 export function createSupabaseDataRepository(db: TernClient): DataRepository {
@@ -21,7 +22,18 @@ export function createSupabaseDataRepository(db: TernClient): DataRepository {
 
   return {
     async exportAll(): Promise<TernExport> {
-      const [settings, food, weight, waypoints, restDays, savedMeals, medicationDoses, waterEntries, moodCheckins] = await Promise.all([
+      const [
+        settings,
+        food,
+        weight,
+        waypoints,
+        restDays,
+        savedMeals,
+        medicationDoses,
+        waterEntries,
+        moodCheckins,
+        skippedMeals,
+      ] = await Promise.all([
         db.from('settings').select('data').maybeSingle(),
         all(TABLES.food),
         all(TABLES.weight),
@@ -31,6 +43,7 @@ export function createSupabaseDataRepository(db: TernClient): DataRepository {
         all(TABLES.medicationDoses),
         all(TABLES.waterEntries),
         all(TABLES.moodCheckins),
+        all(TABLES.skippedMeals),
       ]);
       if (settings.error) throw settings.error;
       return {
@@ -45,6 +58,7 @@ export function createSupabaseDataRepository(db: TernClient): DataRepository {
         medicationDoses,
         waterEntries,
         moodCheckins,
+        skippedMeals,
       };
     },
 

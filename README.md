@@ -137,21 +137,23 @@ create table waypoint_events (     -- append-only ledger
 
 Enable RLS on every table with the standard `auth.uid() = user_id` policy.
 
-Keep `waypoint_events` append-only — never recompute or claw back earned points. That's
-what makes the "nothing you've earned is taken back" promise true at the data layer.
+Past days in `waypoint_events` are never recomputed or clawed back. Today's awards follow
+today as it stands (removing a meal, a drink or a check-in quietly takes that award back),
+and once the day is over its awards are settled. The migrations add sanity checks: fixed
+points per rule, and only today's date.
 
 ### Health data
 
-Steps currently come from mock data. For real device steps use
-[`@capgo/capacitor-health`'s RN equivalent] — in Expo terms, either:
+Android steps come from Health Connect (`react-native-health-connect`), through
+`src/today/steps.healthconnect.ts`. It is off unless `EXPO_PUBLIC_HEALTH_CONNECT=1`,
+and has been verified by manual testing on a device. Without it (and in the preview,
+and in tests) steps come from the in-memory repository.
 
-- `react-native-health` (iOS HealthKit) + `react-native-health-connect` (Android), or
-- a config plugin wrapping both.
-
-Either way you'll need to leave Expo Go and build a **dev client**
-(`npx expo prebuild` + `npx expo run:ios`). Health Connect also requires declaring each
-permission in `AndroidManifest.xml`, and Google Play reviews every declared health
-permission — declare only what you actually read.
+It needs a custom dev build — Expo Go can't load native modules — so leave Expo Go and
+build a **dev client** (`npx expo prebuild` + `npx expo run:android`). Health Connect
+also requires declaring each permission in `AndroidManifest.xml`, and Google Play
+reviews every declared health permission — declare only what you actually read. iOS
+HealthKit (`react-native-health`) is not wired up yet.
 
 Always keep the manual step-entry path working; permissions fail often enough that it
 can't be the only route.

@@ -1,4 +1,6 @@
+import type { NavigatorScreenParams } from '@react-navigation/native';
 import type { FoodEntry } from '@food/models';
+import type { SettingsStackParamList } from '@settings/types';
 
 export type RewardParams = {
   kind: 'goal' | 'milestone' | 'loafing';
@@ -22,7 +24,7 @@ export type RootStackParamList = {
   CheckIn: undefined;
   EditFood: { entryId: string };
   SaveMeal: { meal: FoodEntry['meal'] };
-  Settings: undefined;
+  Settings: NavigatorScreenParams<SettingsStackParamList> | undefined;
   Reward: RewardParams;
   RestDay: RestDayParams;
 };

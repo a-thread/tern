@@ -45,6 +45,7 @@ import { useMood } from '@mood/MoodContext';
 import { scoreWord } from '@mood/models';
 import { waypointRules } from '@journey/models';
 import { useWaypoints, type Celebration } from '@journey/WaypointsContext';
+import { usePendingMilestone } from '@journey/usePendingMilestone';
 import WaypointBurst from '@journey/WaypointBurst';
 import { leftToDo, todaySummary } from './models';
 import { useActivity } from './ActivityContext';
@@ -70,7 +71,7 @@ export default function TodayScreen() {
   const insets = useSafeAreaInsets();
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
-  const { foodLog } = useFood();
+  const { foodLog, skippedMeals } = useFood();
   const { weightEntries } = useWeight();
   const { settings } = useSettings();
   const { formatWeight, formatVolume, quickWaterOz } = useUnits();
@@ -96,14 +97,23 @@ export default function TodayScreen() {
   const remaining = Math.max(settings.stepGoal - todaySteps, 0);
   const totals = dayTotals(foodLog);
   const reached = progress >= 1;
-  const { due: dueMedications, taken: takenMedications, setTaken } = useMedication();
+  const {
+    due: dueMedications,
+    taken: takenMedications,
+    setTaken,
+  } = useMedication();
   const openItems = leftToDo(foodLog, lastWeight, new Date(), {
-    weighIn: {
-      frequency: settings.weighInFrequency,
-      weekday: settings.reminders.weighIn.weekday,
-    },
+    weighIn: settings.trackWeight
+      ? {
+          frequency: settings.weighInFrequency,
+          weekday: settings.reminders.weighIn.weekday,
+        }
+      : null,
+    skippedMeals,
     medications: dueMedications,
-    water: water.enabled ? { totalOz: water.totalOz, goalOz: water.goalOz } : null,
+    water: water.enabled
+      ? { totalOz: water.totalOz, goalOz: water.goalOz }
+      : null,
     checkIn: mood.enabled && !mood.today,
   });
   const summary = todaySummary(
@@ -113,8 +123,25 @@ export default function TodayScreen() {
     reached,
     undefined,
     water.enabled ? water.totalOz : 0,
-    mood.enabled && mood.today ? { mood: mood.today.mood, stress: mood.today.stress } : null,
+    mood.enabled && mood.today
+      ? { mood: mood.today.mood, stress: mood.today.stress }
+      : null,
   );
+  // Meals done: those with food, then those marked "nothing today".
+  const mealsDone = [
+    ...(summary.meals?.names ?? []).map(capitalize),
+    ...skippedMeals.map((m) => `no ${m}`),
+  ];
+  const waterDone = summary.waterOz !== null && water.reached;
+  // "Today so far" sits alongside "Left to do" as soon as anything is done, so
+  // there's always somewhere to see (and undo) it — nothing waits on finishing everything.
+  const anythingDone =
+    mealsDone.length > 0 ||
+    summary.weighedIn !== null ||
+    summary.checkIn !== null ||
+    takenMedications.length > 0 ||
+    waterDone ||
+    summary.stepGoalReached;
   // The chip holds back awards that haven't been celebrated yet, so its
   // number ticks up (and pulses) as the feathers land on it.
   const shownWaypoints = Math.max(waypoints - pendingPoints, 0);
@@ -157,6 +184,32 @@ export default function TodayScreen() {
       starting.current = false;
     })();
   }, [isFocused, playing, nextCelebration, insets.top]);
+
+  // A milestone is marked once the feathers have landed, so the total on the
+  // card is the one that crossed it. Like the bursts, an award earned elsewhere
+  // (logging a meal, say) waits until Today is back on screen.
+  const { pending: pendingMilestone, markCelebrated } = usePendingMilestone();
+  useEffect(() => {
+    if (!isFocused || playing || celebrations.length || !pendingMilestone)
+      return;
+    markCelebrated(pendingMilestone);
+    navigation.navigate('Reward', {
+      kind: 'milestone',
+      title: pendingMilestone.name,
+      subtitle:
+        pendingMilestone.lap > 1
+          ? `Milestone reached · Migration ${pendingMilestone.lap}`
+          : 'Milestone reached',
+      footer: 'Earned for showing up — never for weight or calories.',
+    });
+  }, [
+    isFocused,
+    playing,
+    celebrations.length,
+    pendingMilestone,
+    markCelebrated,
+    navigation,
+  ]);
 
   const openRestDay = (d: DayRecord) => {
     navigation.navigate('RestDay', {
@@ -230,7 +283,10 @@ export default function TodayScreen() {
         }}
       >
         <View ref={heroRef} collapsable={false}>
-          <LinearGradient colors={skyFor(progress) as [string, string, ...string[]]} style={s.hero}>
+          <LinearGradient
+            colors={skyFor(progress) as [string, string, ...string[]]}
+            style={s.hero}
+          >
             <View style={s.heroTop}>
               <Text style={s.greeting}>
                 {settings.firstName
@@ -253,13 +309,23 @@ export default function TodayScreen() {
               replayKey={replayKey}
               style={s.stepBig}
             />
-            <Text style={s.stepSub}>
-              {stepsStatus !== 'connected'
-                ? "Steps aren't connected yet"
-                : reached
+            {stepsStatus !== 'connected' ? (
+              <Pressable
+                onPress={() =>
+                  navigation.navigate('Settings', { screen: 'HealthData' })
+                }
+                hitSlop={8}
+                accessibilityRole='button'
+              >
+                <Text style={s.stepSub}>Connect steps to start a streak ›</Text>
+              </Pressable>
+            ) : (
+              <Text style={s.stepSub}>
+                {reached
                   ? `Goal reached · ${settings.stepGoal.toLocaleString()} steps`
                   : `${remaining.toLocaleString()} to go`}
-            </Text>
+              </Text>
+            )}
           </LinearGradient>
         </View>
 
@@ -282,16 +348,21 @@ export default function TodayScreen() {
           ))}
         </View>
         <Text style={s.caption}>{factForDay(todayKey)}</Text>
-        {todayIsRest ? (
+        {/* Once the goal is reached today is a goal day, so there's no rest day to take or undo. */}
+        {reached ? null : todayIsRest ? (
           <Pressable onPress={undoRestDay} hitSlop={8}>
             <Text style={s.restLink}>Undo today's rest day</Text>
           </Pressable>
-        ) : restLeft > 0 && !reached ? (
+        ) : restLeft > 0 ? (
           <Pressable onPress={takeRestDay} hitSlop={8}>
             <Text style={s.restLink}>
               Take today as a rest day · {restLeft} left this week
             </Text>
           </Pressable>
+        ) : stepsStatus === 'connected' ? (
+          <Text style={[s.restLink, s.restNote]}>
+            This week's rest days are used · more on Monday
+          </Text>
         ) : null}
 
         {openItems.length ? (
@@ -304,10 +375,14 @@ export default function TodayScreen() {
                     key='water'
                     title='Water'
                     sub={`${formatVolume(item.totalOz)} of ${formatVolume(item.goalOz)}`}
-                    onPress={() => water.addWater(quickWaterOz[0])}
                     icon={
                       <IconBadge bg={colors.waterTint}>
-                        <Svg width={14} height={14} viewBox='0 0 24 24' fill='none'>
+                        <Svg
+                          width={14}
+                          height={14}
+                          viewBox='0 0 24 24'
+                          fill='none'
+                        >
                           <Path
                             d='M12 3c-4 3-6 6-6 9a6 6 0 0 0 12 0c0-3-2-6-6-9z'
                             stroke={colors.water}
@@ -316,7 +391,20 @@ export default function TodayScreen() {
                         </Svg>
                       </IconBadge>
                     }
-                    right={<Text style={s.markText}>{`+${formatVolume(quickWaterOz[0])}`}</Text>}
+                    right={
+                      // Only the button logs a drink, so a stray tap on the row can't.
+                      <Pressable
+                        onPress={() => water.addWater(quickWaterOz[0])}
+                        hitSlop={8}
+                        style={s.addBtn}
+                        accessibilityRole='button'
+                        accessibilityLabel={`Add ${formatVolume(quickWaterOz[0])} of water`}
+                      >
+                        <Text
+                          style={s.markText}
+                        >{`+${formatVolume(quickWaterOz[0])}`}</Text>
+                      </Pressable>
+                    }
                   />
                 ) : item.kind === 'checkIn' ? (
                   <Row
@@ -326,7 +414,12 @@ export default function TodayScreen() {
                     onPress={() => navigation.navigate('CheckIn')}
                     icon={
                       <IconBadge bg={colors.violetTint}>
-                        <Svg width={14} height={14} viewBox='0 0 24 24' fill='none'>
+                        <Svg
+                          width={14}
+                          height={14}
+                          viewBox='0 0 24 24'
+                          fill='none'
+                        >
                           <Path
                             d='M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM8.5 14.5s1 1.5 3.5 1.5 3.5-1.5 3.5-1.5M9 9.5h.01M15 9.5h.01'
                             stroke={colors.violet}
@@ -345,7 +438,12 @@ export default function TodayScreen() {
                     onPress={() => setTaken(item.medicationId, true)}
                     icon={
                       <IconBadge bg={colors.violetTint}>
-                        <Svg width={14} height={14} viewBox='0 0 24 24' fill='none'>
+                        <Svg
+                          width={14}
+                          height={14}
+                          viewBox='0 0 24 24'
+                          fill='none'
+                        >
                           <Path
                             d='M10.5 20.5 3.5 13.5a4.95 4.95 0 0 1 7-7l7 7a4.95 4.95 0 0 1-7 7zM8.5 8.5l7 7'
                             stroke={colors.violet}
@@ -419,17 +517,18 @@ export default function TodayScreen() {
               )}
             </Group>
           </>
-        ) : (
+        ) : null}
+        {anythingDone ? (
           <>
             <GroupLabel>Today so far</GroupLabel>
             <Group>
-              {summary.meals ? (
+              {mealsDone.length ? (
                 <Row
                   key='done-meals'
                   title='Meals logged'
                   sub={
-                    summary.meals.names.map(capitalize).join(', ') +
-                    (showCalories
+                    mealsDone.join(', ') +
+                    (showCalories && summary.meals
                       ? ` · ${summary.meals.calories.toLocaleString()} cal`
                       : '')
                   }
@@ -451,7 +550,10 @@ export default function TodayScreen() {
                   sub={`Mood ${summary.checkIn.mood} · ${scoreWord('mood', summary.checkIn.mood)} · Stress ${summary.checkIn.stress} · ${scoreWord('stress', summary.checkIn.stress)}`}
                   icon={<DoneBadge />}
                   right={
-                    <Pressable onPress={() => navigation.navigate('CheckIn')} hitSlop={8}>
+                    <Pressable
+                      onPress={() => navigation.navigate('CheckIn')}
+                      hitSlop={8}
+                    >
                       <Text style={s.markText}>Edit</Text>
                     </Pressable>
                   }
@@ -463,13 +565,16 @@ export default function TodayScreen() {
                   title={`Took ${m.name}`}
                   icon={<DoneBadge />}
                   right={
-                    <Pressable onPress={() => setTaken(m.id, false)} hitSlop={8}>
+                    <Pressable
+                      onPress={() => setTaken(m.id, false)}
+                      hitSlop={8}
+                    >
                       <Text style={s.markText}>Undo</Text>
                     </Pressable>
                   }
                 />
               ))}
-              {summary.waterOz !== null ? (
+              {waterDone && summary.waterOz !== null ? (
                 <Row
                   key='done-water'
                   title='Water'
@@ -487,7 +592,7 @@ export default function TodayScreen() {
               ) : null}
             </Group>
           </>
-        )}
+        ) : null}
 
         {settings.trackCalories ? (
           <>
@@ -535,7 +640,8 @@ export default function TodayScreen() {
   );
 }
 
-const capitalize = (word: string) => word.charAt(0).toUpperCase() + word.slice(1);
+const capitalize = (word: string) =>
+  word.charAt(0).toUpperCase() + word.slice(1);
 
 /** A small green tick for the things already done today. */
 function DoneBadge() {
@@ -562,7 +668,14 @@ const s = StyleSheet.create({
     textAlign: 'center',
     marginTop: space.sm,
   },
+  restNote: { fontFamily: font.body, color: colors.ink3 },
   markText: { fontFamily: font.semibold, fontSize: 12, color: colors.coral },
+  addBtn: {
+    backgroundColor: colors.coralTint,
+    borderRadius: radius.md,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+  },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',

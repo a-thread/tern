@@ -26,6 +26,10 @@ type FoodContextValue = {
   addFoodEntries: (entries: NewFoodEntry[]) => void;
   updateFoodEntry: (id: string, patch: Partial<NewFoodEntry>) => void;
   removeFoodEntry: (id: string) => void;
+  /** Core meals marked "nothing today". Logging food to one un-marks it. */
+  skippedMeals: FoodEntry['meal'][];
+  /** Marks (or unmarks) a core meal as "nothing today". */
+  setMealSkipped: (meal: FoodEntry['meal'], skipped: boolean) => void;
 };
 
 const FoodContext = createContext<FoodContextValue | null>(null);
@@ -38,6 +42,7 @@ const FoodContext = createContext<FoodContextValue | null>(null);
 export function FoodProvider({ children }: { children: React.ReactNode }) {
   const { food } = useBackend();
   const [foodLog, setFoodLog] = useState<FoodEntry[]>([]);
+  const [skippedMeals, setSkippedMeals] = useState<FoodEntry['meal'][]>([]);
   const [ready, setReady] = useState(false);
   const day = useDayKey();
   const toast = useToast();
@@ -46,9 +51,13 @@ export function FoodProvider({ children }: { children: React.ReactNode }) {
 
   const reload = useCallback(async () => {
     try {
-      const entries = await food.load(day);
+      const [entries, skipped] = await Promise.all([
+        food.load(day),
+        food.loadSkipped(day),
+      ]);
       if (mounted.current) {
         setFoodLog(entries);
+        setSkippedMeals(skipped);
         setLoadedDay(day);
       }
     } catch (e) {
@@ -112,6 +121,25 @@ export function FoodProvider({ children }: { children: React.ReactNode }) {
     [food, persist],
   );
 
+  const setMealSkipped = useCallback(
+    (meal: FoodEntry['meal'], skipped: boolean) => {
+      setSkippedMeals((prev) => {
+        const rest = prev.filter((m) => m !== meal);
+        return skipped ? [...rest, meal] : rest;
+      });
+      persist(food.setSkipped(day, meal, skipped));
+    },
+    [food, day, persist],
+  );
+
+  // A meal with food in it isn't skipped any more, however the food got there
+  // (added, moved from another meal, or a saved meal).
+  useEffect(() => {
+    for (const meal of skippedMeals) {
+      if (foodLog.some((f) => f.meal === meal)) setMealSkipped(meal, false);
+    }
+  }, [foodLog, skippedMeals, setMealSkipped]);
+
   const value = useMemo<FoodContextValue>(
     () => ({
       foodLog,
@@ -121,6 +149,8 @@ export function FoodProvider({ children }: { children: React.ReactNode }) {
       addFoodEntries,
       updateFoodEntry,
       removeFoodEntry,
+      skippedMeals,
+      setMealSkipped,
     }),
     [
       foodLog,
@@ -130,6 +160,8 @@ export function FoodProvider({ children }: { children: React.ReactNode }) {
       addFoodEntries,
       updateFoodEntry,
       removeFoodEntry,
+      skippedMeals,
+      setMealSkipped,
     ],
   );
 

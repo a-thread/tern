@@ -48,3 +48,13 @@ export function formatLoggedAt(iso: string, now: Date = new Date()): string {
   if (daysAgo > 1 && daysAgo < 7) return `${WEEKDAYS[d.getDay()]}, ${time}`;
   return `${MONTHS[d.getMonth()]} ${d.getDate()}, ${time}`;
 }
+
+/**
+ * A change in weight with its sign: "+1.2", "−1.2", or "0.0" when it rounds to
+ * nothing (never "−0.0").
+ */
+export function signedChange(value: number, digits = 1): string {
+  const rounded = Number(value.toFixed(digits));
+  if (rounded === 0) return (0).toFixed(digits);
+  return `${rounded > 0 ? '+' : '−'}${Math.abs(rounded).toFixed(digits)}`;
+}
