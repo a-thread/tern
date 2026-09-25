@@ -8,7 +8,14 @@ import { syncReminders } from './reminders';
 export function RemindersSync() {
   const { settings, ready } = useSettings();
   const toast = useToast();
-  const { reminders, weighInFrequency, medications, trackWater, trackMood, trackWeight } = settings;
+  const {
+    reminders,
+    weighInFrequency,
+    medications,
+    trackWater,
+    trackMood,
+    trackWeight,
+  } = settings;
   // Reschedule when a toggle, a time, the weigh-in frequency or a medication reminder changes.
   const key = JSON.stringify({
     reminders,
@@ -32,10 +39,18 @@ export function RemindersSync() {
     const firstRun = lastKey.current === null;
     lastKey.current = key;
 
-    syncReminders(reminders, { weighInFrequency, medications, trackWater, trackMood, trackWeight })
+    syncReminders(reminders, {
+      weighInFrequency,
+      medications,
+      trackWater,
+      trackMood,
+      trackWeight,
+    })
       .then((result) => {
         if (result === 'denied' && anyOn && !firstRun) {
-          toast.show('Notifications are off for Tern — turn them on in system settings.');
+          toast.show(
+            'Notifications are off for Tern — turn them on in system settings.',
+          );
         }
       })
       .catch((e) => console.warn('Could not schedule reminders', e));

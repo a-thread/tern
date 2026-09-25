@@ -22,7 +22,18 @@ export function createSupabaseDataRepository(db: TernClient): DataRepository {
 
   return {
     async exportAll(): Promise<TernExport> {
-      const [settings, food, weight, waypoints, restDays, savedMeals, medicationDoses, waterEntries, moodCheckins, skippedMeals] = await Promise.all([
+      const [
+        settings,
+        food,
+        weight,
+        waypoints,
+        restDays,
+        savedMeals,
+        medicationDoses,
+        waterEntries,
+        moodCheckins,
+        skippedMeals,
+      ] = await Promise.all([
         db.from('settings').select('data').maybeSingle(),
         all(TABLES.food),
         all(TABLES.weight),

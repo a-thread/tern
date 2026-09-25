@@ -146,7 +146,9 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
           // Older saves stored reminder times as text; fall back per field.
           reminders: mergeReminders(saved?.reminders),
           weighInFrequency:
-            saved?.weighInFrequency === 'daily' ? 'daily' : DEFAULT_WEIGH_IN_FREQUENCY,
+            saved?.weighInFrequency === 'daily'
+              ? 'daily'
+              : DEFAULT_WEIGH_IN_FREQUENCY,
           medications: mergeMedications(saved?.medications),
           trackWater: saved?.trackWater === true,
           trackMood: saved?.trackMood === true,
@@ -157,11 +159,13 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
               ? saved.celebratedMilestone
               : null,
           weightGoalLb:
-            typeof saved?.weightGoalLb === 'number' && Number.isFinite(saved.weightGoalLb)
+            typeof saved?.weightGoalLb === 'number' &&
+            Number.isFinite(saved.weightGoalLb)
               ? saved.weightGoalLb
               : null,
           waterGoalOz:
-            typeof saved?.waterGoalOz === 'number' && Number.isFinite(saved.waterGoalOz)
+            typeof saved?.waterGoalOz === 'number' &&
+            Number.isFinite(saved.waterGoalOz)
               ? clampWaterGoal(saved.waterGoalOz)
               : DEFAULT_WATER_GOAL_OZ,
         };

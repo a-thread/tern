@@ -406,6 +406,25 @@ export default function TodayScreen() {
                     }
                     chevron
                   />
+                ) : item.kind === 'checkIn' ? (
+                  <Row
+                    key='check-in'
+                    title='Check in'
+                    sub='How are your mood and stress today?'
+                    onPress={() => navigation.navigate('CheckIn')}
+                    icon={
+                      <IconBadge bg={colors.violetTint}>
+                        <Svg width={14} height={14} viewBox='0 0 24 24' fill='none'>
+                          <Path
+                            d='M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM8.5 14.5s1 1.5 3.5 1.5 3.5-1.5 3.5-1.5M9 9.5h.01M15 9.5h.01'
+                            stroke={colors.violet}
+                            strokeWidth={2}
+                          />
+                        </Svg>
+                      </IconBadge>
+                    }
+                    chevron
+                  />
                 ) : item.kind === 'medication' ? (
                   <Row
                     key={`med-${item.medicationId}`}

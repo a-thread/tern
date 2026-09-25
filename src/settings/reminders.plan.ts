@@ -52,7 +52,8 @@ export const ALL_REMINDER_IDS = [
   'tern-mood',
 ];
 
-export const medicationReminderId = (medicationId: string) => `tern-med-${medicationId}`;
+export const medicationReminderId = (medicationId: string) =>
+  `tern-med-${medicationId}`;
 
 const MEALS_BODY = 'A quick log, if you have a minute.';
 
@@ -78,7 +79,8 @@ export const waterReminderId = (index: number) => `tern-water-${index}`;
 export function waterTimes(w: ReminderConfig['water']): number[] {
   const step = Math.max(1, Math.round(w.everyHours)) * 60;
   const times: number[] = [];
-  for (let t = w.start; t <= w.end && times.length < 12; t += step) times.push(t);
+  for (let t = w.start; t <= w.end && times.length < 12; t += step)
+    times.push(t);
   return times;
 }
 
@@ -236,7 +238,10 @@ export function mergeReminders(saved: unknown): ReminderConfig {
       start: num(s.water?.start, d.water.start),
       end: num(s.water?.end, d.water.end),
       everyHours: Math.min(
-        Math.max(Math.round(num(s.water?.everyHours, d.water.everyHours)), WATER_EVERY_HOURS.min),
+        Math.max(
+          Math.round(num(s.water?.everyHours, d.water.everyHours)),
+          WATER_EVERY_HOURS.min,
+        ),
         WATER_EVERY_HOURS.max,
       ),
     },
