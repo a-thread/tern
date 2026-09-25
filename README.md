@@ -19,20 +19,29 @@ Then scan the QR code with Expo Go (iOS/Android), or press `i` / `a` for a simul
 
 ## Structure
 
+One folder per domain. Within a folder: `models.ts` for the pure rules (with
+`models.test.ts` beside it), a `*Context.tsx` holding the state, `repository.ts` and
+`repository.supabase.ts` for storage, and the screens.
+
 ```
-App.tsx                    fonts + bottom tab navigation
+App.tsx                    fonts, providers, navigation
 src/
-  theme/index.ts           all design tokens, the palette rule, gradient sets
-  components/
-    TernMark.tsx           the logo as a tintable SVG path
-    ui.tsx                 Group, Row, Chip, TierDot, MacroBar, Toggle, Insight
-    charts.tsx             FlightPath, StepBars, WeightTrend, ConsistencyGrid, DayRing
-  screens/
-    TodayScreen.tsx        hero + week rings + flight plan + macros
-    FoodScreen.tsx         meals, tier dots, totals
-    TrendsScreen.tsx       steps + weight merged, range switcher
-    JourneyScreen.tsx      waypoints, milestones, earning rules
-  data/mock.ts             all mock data — shaped like the eventual DB tables
+  shared/
+    theme/index.ts         all design tokens, the palette rule, gradient sets
+    components/ui/         Group, Row, Chip, Toggle, SheetNav, FootNote…
+    components/charts.tsx  FlightPath, StepBars, WeightTrend, ConsistencyGrid, DayRing
+    components/TernMark.tsx  the logo as a tintable SVG path
+    navigation/            root navigator and every param list
+    state/                 BackendContext (memory or Supabase), providers, toasts
+    auth/                  sign in, create account, password reset, AuthGate
+    hooks/, utils/         day keys, dates, units, ids, replay-on-focus
+  today/                   TodayScreen, steps, rest days, "left to do"
+  food/                    the Food tab, the Add food stack, saved meals, search
+  journey/                 waypoints ledger, the map, milestones, reward cards
+  trends/                  steps, weight, water and mood over time
+  weight/, water/, mood/, medication/
+  settings/                every settings screen, the settings document, reminders
+supabase/migrations/       the schema, in order
 ```
 
 ## The palette rule
@@ -69,12 +78,18 @@ These are deliberate and worth preserving as the app grows:
    shows the number alongside the color (accessibility), is user-overridable, and can be
    switched off entirely in settings.
 
-## Next: wiring the backend
+## The backend
 
-Everything currently reads from `src/data/mock.ts`. The shapes there match the intended
-tables, so this is mostly a swap.
+Supabase, reached through one repository per domain. Each has an in-memory
+implementation — used in the preview, when there are no keys, and in every test — and a
+Supabase one; `src/shared/state/BackendContext.tsx` chooses between them, and nothing
+above that line knows which it got.
 
 ### Supabase schema sketch
+
+`supabase/migrations/` is the schema of record. The sketch below is what it grew from,
+and it has drifted: settings live in a single jsonb document rather than columns on
+`profiles`, and there are tables it doesn't mention.
 
 ```sql
 create table profiles (
@@ -130,7 +145,7 @@ create table waypoint_events (     -- append-only ledger
   id uuid primary key default gen_random_uuid(),
   user_id uuid references profiles on delete cascade,
   date date not null,
-  rule text not null,              -- 'steps' | 'meals' | 'rest'
+  rule text not null,              -- 'steps' | 'meals' | 'rest' | 'water' | 'mood'
   points int not null
 );
 ```
@@ -173,8 +188,5 @@ Facts in-app** (already present in the Food screen footer).
 
 ## Not built yet
 
-- Logging flows (food search, barcode scan, food detail, manual entry, weight entry)
-- Settings screens
-- Onboarding / day-one empty states
-- Reward modal on goal completion
-- Auth
+- Onboarding, and the day-one empty states that go with it
+- iOS HealthKit (`react-native-health`) — steps are Android-only for now

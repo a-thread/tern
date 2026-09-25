@@ -1,6 +1,7 @@
 # Releasing Tern
 
-Builds run on EAS (Expo), started from GitHub Actions. App id: `codes.athread.tern`.
+Builds run on EAS (Expo), started from GitHub Actions. App id: `com.purlieus.tern`,
+Expo owner `purlieus-systems`.
 
 ## One-time setup
 1. Add the GitHub secret `EXPO_TOKEN` (expo.dev > Account settings > Access tokens).
