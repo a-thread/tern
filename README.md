@@ -137,8 +137,10 @@ create table waypoint_events (     -- append-only ledger
 
 Enable RLS on every table with the standard `auth.uid() = user_id` policy.
 
-Keep `waypoint_events` append-only — never recompute or claw back earned points. That's
-what makes the "nothing you've earned is taken back" promise true at the data layer.
+Past days in `waypoint_events` are never recomputed or clawed back. Today's awards follow
+today as it stands (removing a meal, a drink or a check-in quietly takes that award back),
+and once the day is over its awards are settled. The migrations add sanity checks: fixed
+points per rule, and only today's date.
 
 ### Health data
 

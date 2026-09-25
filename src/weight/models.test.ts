@@ -1,6 +1,7 @@
 import {
   computeTrend,
   formatLoggedAt,
+  signedChange,
   isLoggedToday,
   type WeightEntry,
 } from './models';
@@ -56,5 +57,14 @@ describe('isLoggedToday', () => {
   it('is false for other days', () => {
     expect(isLoggedToday(new Date(2026, 8, 17, 23, 55).toISOString(), now)).toBe(false);
     expect(isLoggedToday(new Date(2026, 8, 19, 0, 5).toISOString(), now)).toBe(false);
+  });
+});
+
+describe('signedChange', () => {
+  it('signs a change, and never shows "−0.0"', () => {
+    expect(signedChange(1.24)).toBe('+1.2');
+    expect(signedChange(-1.26)).toBe('−1.3');
+    expect(signedChange(-0.02)).toBe('0.0');
+    expect(signedChange(0)).toBe('0.0');
   });
 });

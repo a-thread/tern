@@ -6,7 +6,6 @@ export const settingsSeed = {
   stepGoal: 4800,
   calorieTarget: 2100,
   macroTargets: { protein: 119, carbs: 253, fat: 62 },
-  weightGoalLb: 190,
   showTiers: true,
   showCalories: true,
 };

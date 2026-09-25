@@ -18,8 +18,8 @@ import { useReplayOnFocus } from '@shared/hooks/useReplayOnFocus';
 import { AnimatedNumber } from '@shared/components/AnimatedNumber';
 import { formatShortDate, monthName } from '@shared/utils/date';
 import {
-  MILESTONE_STOPS,
   daysWithWaypoints,
+  migrationProgress,
   milestonesFor,
   waypointRules,
 } from './models';
@@ -46,7 +46,7 @@ export default function JourneyScreen() {
   const spanStart = prev?.waypoints ?? 0;
   const spanEnd = next?.waypoints ?? waypoints;
   const progress = (waypoints - spanStart) / Math.max(spanEnd - spanStart, 1);
-  const routeEnd = MILESTONE_STOPS[MILESTONE_STOPS.length - 1].waypoints;
+  const migration = migrationProgress(waypoints);
   const firstDay = events.length
     ? events.reduce((a, e) => (e.day < a ? e.day : a), events[0].day)
     : null;
@@ -58,13 +58,17 @@ export default function JourneyScreen() {
         style={[s.hero, { paddingTop: insets.top + 8 }]}
       >
         <Text style={s.heroEyebrow}>
-          {firstDay ? `Since ${monthName(firstDay)}` : 'Your route'}
+          {migration.lap > 1
+            ? `Migration ${migration.lap}`
+            : firstDay
+              ? `Since ${monthName(firstDay)}`
+              : 'Your route'}
         </Text>
         <Text style={s.heroTitle}>Journey</Text>
 
         <View style={{ marginTop: space.sm }}>
           <JourneyRoute
-            progress={Math.min(waypoints / routeEnd, 1)}
+            progress={migration.progress}
             replayKey={replayKey}
           />
         </View>
@@ -116,11 +120,13 @@ export default function JourneyScreen() {
               <Row
                 key={m.id}
                 title={m.name}
-                sub={
-                  m.reachedOn
-                    ? `${m.waypoints.toLocaleString()} · ${formatShortDate(m.reachedOn)}`
-                    : m.waypoints.toLocaleString()
-                }
+                sub={[
+                  m.lap > 1 ? `Migration ${m.lap}` : null,
+                  m.waypoints.toLocaleString(),
+                  m.reachedOn ? formatShortDate(m.reachedOn) : null,
+                ]
+                  .filter(Boolean)
+                  .join(' · ')}
                 icon={
                   <View
                     style={[

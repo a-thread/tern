@@ -24,19 +24,30 @@ export type FoodEntry = {
 export const CORE_MEALS: FoodEntry['meal'][] = ['breakfast', 'lunch', 'dinner'];
 
 /**
- * Meals selectable when logging or reassigning a food entry. Deliberately
- * excludes 'snack' — the Food tab only renders breakfast/lunch/dinner
- * sections, so a snack-tagged entry would have nowhere to appear.
+ * Meals selectable when logging or reassigning a food entry, in the order the
+ * Food tab shows them. Snacks are optional: they never count toward (or
+ * against) the "logging all meals" rule.
  */
 export const MEAL_OPTIONS: { key: FoodEntry['meal']; label: string }[] = [
   { key: 'breakfast', label: 'Breakfast' },
   { key: 'lunch', label: 'Lunch' },
   { key: 'dinner', label: 'Dinner' },
+  { key: 'snack', label: 'Snacks' },
 ];
 
-/** Single source of truth for "every core meal has at least one entry" — feeds both the waypoints bonus and any UI that shows meal-logging progress. */
-export function allMealsLogged(log: FoodEntry[]): boolean {
-  return CORE_MEALS.every((meal) => log.some((f) => f.meal === meal));
+/**
+ * Single source of truth for "every core meal is accounted for": it has an
+ * entry, or was marked as "nothing today". Feeds both the waypoints bonus and
+ * any UI that shows meal-logging progress. A skipped meal counts exactly like
+ * a logged one, so the rule rewards a complete log, never skipping or eating more.
+ */
+export function allMealsLogged(
+  log: FoodEntry[],
+  skipped: readonly FoodEntry['meal'][] = [],
+): boolean {
+  return CORE_MEALS.every(
+    (meal) => skipped.includes(meal) || log.some((f) => f.meal === meal),
+  );
 }
 
 export type IntakeAverage = {

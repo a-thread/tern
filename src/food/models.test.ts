@@ -41,6 +41,13 @@ describe('allMealsLogged', () => {
     expect(allMealsLogged(log)).toBe(true);
   });
 
+  it('counts a meal marked "nothing today" exactly like a logged one', () => {
+    const log = [entry({ id: 'a', meal: 'breakfast' }), entry({ id: 'b', meal: 'dinner' })];
+    expect(allMealsLogged(log, ['lunch'])).toBe(true);
+    expect(allMealsLogged([], ['breakfast', 'lunch', 'dinner'])).toBe(true);
+    expect(allMealsLogged(log, [])).toBe(false);
+  });
+
   it('ignores snack entries — they do not count toward coverage', () => {
     const log = [
       entry({ id: 'a', meal: 'breakfast' }),

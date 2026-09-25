@@ -78,11 +78,12 @@ describe('changesAnything', () => {
 });
 
 describe('defaults and older saves', () => {
-  it('starts a new account at 4,800 steps, 2,100 calories and a 190 lb goal', async () => {
+  it('starts a new account at 4,800 steps, 2,100 calories and no goal weight', async () => {
     const { result } = await setup();
     expect(result.current.settings.stepGoal).toBe(4800);
     expect(result.current.settings.calorieTarget).toBe(2100);
-    expect(result.current.settings.weightGoalLb).toBe(190);
+    expect(result.current.settings.weightGoalLb).toBeNull();
+    expect(result.current.settings.trackWeight).toBe(true);
   });
 
   it('weighs in weekly and tracks no medication until told otherwise', async () => {

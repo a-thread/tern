@@ -135,8 +135,10 @@ export default function StepGoalScreen({ navigation }: Props) {
         ) : null}
 
         <Text style={s.footNote}>
-          Lowering your goal doesn't reset your streak or lose waypoints. A goal
-          you can hit most days works better than one you can't.
+          Changing your goal never touches past days: your streak and the
+          waypoints you've earned stay yours. Today counts toward whichever goal
+          you finish the day with. A goal you can hit most days works better
+          than one you can't.
         </Text>
       </ScrollView>
     </View>

@@ -164,26 +164,37 @@ export function ActivityProvider({ children }: { children: React.ReactNode }) {
 
   // Awards. The waypoints ledger ignores repeats (one per source per day), so
   // these can run freely; they wait for today's ledger so a stale one never decides.
+  // Like meals and water, they follow the day as it stands now, not its high-water mark.
+  const goalReachedToday = todaySteps >= settings.stepGoal;
+  // Steps are only judged while they can be read: with Health Connect
+  // disconnected or "read steps" switched off, what was earned stays put.
+  const stepsReadable = status === 'connected' && readSteps;
+
   useEffect(() => {
-    if (!ready || awardDay !== today) return;
-    if (status === 'connected' && todaySteps >= settings.stepGoal) {
-      addWaypoints(STEP_GOAL_POINTS, 'steps');
-    }
+    if (!ready || awardDay !== today || !stepsReadable) return;
+    // Lowering the goal to collect the award and raising it again doesn't
+    // keep it: today is judged against the goal it ends up with.
+    if (goalReachedToday) addWaypoints(STEP_GOAL_POINTS, 'steps');
+    else revokeWaypoints(STEP_GOAL_POINTS, 'steps');
   }, [
     ready,
     awardDay,
     today,
-    status,
-    todaySteps,
-    settings.stepGoal,
+    stepsReadable,
+    goalReachedToday,
     addWaypoints,
+    revokeWaypoints,
   ]);
 
+  // A day is either a goal day or a rest day, never both: a rest day taken
+  // early earns its waypoints only if the goal isn't reached after all. So
+  // taking one "just in case" is never better than waiting to see.
+  const restCounts = todayIsRest && !(stepsReadable && goalReachedToday);
   useEffect(() => {
     if (!ready || awardDay !== today) return;
-    if (todayIsRest) addWaypoints(REST_DAY_POINTS, 'rest');
+    if (restCounts) addWaypoints(REST_DAY_POINTS, 'rest');
     else revokeWaypoints(REST_DAY_POINTS, 'rest');
-  }, [ready, awardDay, today, todayIsRest, addWaypoints, revokeWaypoints]);
+  }, [ready, awardDay, today, restCounts, addWaypoints, revokeWaypoints]);
 
   const saveFailed = useCallback(
     (e: unknown) => {

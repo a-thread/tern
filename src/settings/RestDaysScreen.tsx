@@ -72,7 +72,7 @@ export default function RestDaysScreen({ navigation }: Props) {
           </View>
           <ToggleRow
             title='Auto-detect'
-            sub='Mark a low-step day as rest instead of missed'
+            sub='Count a past day under your goal as rest, within your allowance'
             on={settings.autoDetectRestDays}
             onToggle={(v) => updateSettings({ autoDetectRestDays: v })}
           />
@@ -86,7 +86,7 @@ export default function RestDaysScreen({ navigation }: Props) {
           />
           <InfoRow
             text='Earns 10 waypoints'
-            sub='Resting counts as showing up'
+            sub="Resting counts as showing up. If you reach your step goal anyway, it's a goal day instead"
           />
           <View style={s.row}>
             <IconBadge bg={colors.driftwoodTint}>
@@ -114,8 +114,9 @@ export default function RestDaysScreen({ navigation }: Props) {
         <View style={s.card}>
           <Text style={s.intro}>
             Running out of rest days won't erase your waypoints or your history
-            — a streak just starts counting again. Nothing you've already earned
-            is ever taken back.
+            — a streak just starts counting again. Once a day is over, what it
+            earned is yours for good. (Today's waypoints follow today: remove a
+            meal or a drink and that award steps back until it's there again.)
           </Text>
         </View>
       </ScrollView>

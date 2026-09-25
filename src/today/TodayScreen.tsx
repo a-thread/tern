@@ -70,7 +70,7 @@ export default function TodayScreen() {
   const insets = useSafeAreaInsets();
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
-  const { foodLog } = useFood();
+  const { foodLog, skippedMeals } = useFood();
   const { weightEntries } = useWeight();
   const { settings } = useSettings();
   const { formatWeight, formatVolume, quickWaterOz } = useUnits();
@@ -98,10 +98,13 @@ export default function TodayScreen() {
   const reached = progress >= 1;
   const { due: dueMedications, taken: takenMedications, setTaken } = useMedication();
   const openItems = leftToDo(foodLog, lastWeight, new Date(), {
-    weighIn: {
-      frequency: settings.weighInFrequency,
-      weekday: settings.reminders.weighIn.weekday,
-    },
+    weighIn: settings.trackWeight
+      ? {
+          frequency: settings.weighInFrequency,
+          weekday: settings.reminders.weighIn.weekday,
+        }
+      : null,
+    skippedMeals,
     medications: dueMedications,
     water: water.enabled ? { totalOz: water.totalOz, goalOz: water.goalOz } : null,
     checkIn: mood.enabled && !mood.today,
@@ -115,6 +118,21 @@ export default function TodayScreen() {
     water.enabled ? water.totalOz : 0,
     mood.enabled && mood.today ? { mood: mood.today.mood, stress: mood.today.stress } : null,
   );
+  // Meals done: those with food, then those marked "nothing today".
+  const mealsDone = [
+    ...(summary.meals?.names ?? []).map(capitalize),
+    ...skippedMeals.map((m) => `no ${m}`),
+  ];
+  const waterDone = summary.waterOz !== null && water.reached;
+  // "Today so far" sits alongside "Left to do" as soon as anything is done, so
+  // there's always somewhere to see (and undo) it — nothing waits on finishing everything.
+  const anythingDone =
+    mealsDone.length > 0 ||
+    summary.weighedIn !== null ||
+    summary.checkIn !== null ||
+    takenMedications.length > 0 ||
+    waterDone ||
+    summary.stepGoalReached;
   // The chip holds back awards that haven't been celebrated yet, so its
   // number ticks up (and pulses) as the feathers land on it.
   const shownWaypoints = Math.max(waypoints - pendingPoints, 0);
@@ -253,13 +271,23 @@ export default function TodayScreen() {
               replayKey={replayKey}
               style={s.stepBig}
             />
-            <Text style={s.stepSub}>
-              {stepsStatus !== 'connected'
-                ? "Steps aren't connected yet"
-                : reached
+            {stepsStatus !== 'connected' ? (
+              <Pressable
+                onPress={() => navigation.navigate('Settings', { screen: 'HealthData' })}
+                hitSlop={8}
+                accessibilityRole='button'
+              >
+                <Text style={s.stepSub}>
+                  Connect steps to start a streak ›
+                </Text>
+              </Pressable>
+            ) : (
+              <Text style={s.stepSub}>
+                {reached
                   ? `Goal reached · ${settings.stepGoal.toLocaleString()} steps`
                   : `${remaining.toLocaleString()} to go`}
-            </Text>
+              </Text>
+            )}
           </LinearGradient>
         </View>
 
@@ -282,16 +310,21 @@ export default function TodayScreen() {
           ))}
         </View>
         <Text style={s.caption}>{factForDay(todayKey)}</Text>
-        {todayIsRest ? (
+        {/* Once the goal is reached today is a goal day, so there's no rest day to take or undo. */}
+        {reached ? null : todayIsRest ? (
           <Pressable onPress={undoRestDay} hitSlop={8}>
             <Text style={s.restLink}>Undo today's rest day</Text>
           </Pressable>
-        ) : restLeft > 0 && !reached ? (
+        ) : restLeft > 0 ? (
           <Pressable onPress={takeRestDay} hitSlop={8}>
             <Text style={s.restLink}>
               Take today as a rest day · {restLeft} left this week
             </Text>
           </Pressable>
+        ) : stepsStatus === 'connected' ? (
+          <Text style={[s.restLink, s.restNote]}>
+            This week's rest days are used · more on Monday
+          </Text>
         ) : null}
 
         {openItems.length ? (
@@ -304,7 +337,6 @@ export default function TodayScreen() {
                     key='water'
                     title='Water'
                     sub={`${formatVolume(item.totalOz)} of ${formatVolume(item.goalOz)}`}
-                    onPress={() => water.addWater(quickWaterOz[0])}
                     icon={
                       <IconBadge bg={colors.waterTint}>
                         <Svg width={14} height={14} viewBox='0 0 24 24' fill='none'>
@@ -316,7 +348,18 @@ export default function TodayScreen() {
                         </Svg>
                       </IconBadge>
                     }
-                    right={<Text style={s.markText}>{`+${formatVolume(quickWaterOz[0])}`}</Text>}
+                    right={
+                      // Only the button logs a drink, so a stray tap on the row can't.
+                      <Pressable
+                        onPress={() => water.addWater(quickWaterOz[0])}
+                        hitSlop={8}
+                        style={s.addBtn}
+                        accessibilityRole='button'
+                        accessibilityLabel={`Add ${formatVolume(quickWaterOz[0])} of water`}
+                      >
+                        <Text style={s.markText}>{`+${formatVolume(quickWaterOz[0])}`}</Text>
+                      </Pressable>
+                    }
                   />
                 ) : item.kind === 'checkIn' ? (
                   <Row
@@ -419,17 +462,18 @@ export default function TodayScreen() {
               )}
             </Group>
           </>
-        ) : (
+        ) : null}
+        {anythingDone ? (
           <>
             <GroupLabel>Today so far</GroupLabel>
             <Group>
-              {summary.meals ? (
+              {mealsDone.length ? (
                 <Row
                   key='done-meals'
                   title='Meals logged'
                   sub={
-                    summary.meals.names.map(capitalize).join(', ') +
-                    (showCalories
+                    mealsDone.join(', ') +
+                    (showCalories && summary.meals
                       ? ` · ${summary.meals.calories.toLocaleString()} cal`
                       : '')
                   }
@@ -469,7 +513,7 @@ export default function TodayScreen() {
                   }
                 />
               ))}
-              {summary.waterOz !== null ? (
+              {waterDone && summary.waterOz !== null ? (
                 <Row
                   key='done-water'
                   title='Water'
@@ -487,7 +531,7 @@ export default function TodayScreen() {
               ) : null}
             </Group>
           </>
-        )}
+        ) : null}
 
         {settings.trackCalories ? (
           <>
@@ -562,7 +606,14 @@ const s = StyleSheet.create({
     textAlign: 'center',
     marginTop: space.sm,
   },
+  restNote: { fontFamily: font.body, color: colors.ink3 },
   markText: { fontFamily: font.semibold, fontSize: 12, color: colors.coral },
+  addBtn: {
+    backgroundColor: colors.coralTint,
+    borderRadius: radius.md,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+  },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',

@@ -19,6 +19,7 @@ import { useBackend } from '@shared/state/BackendContext';
 import { averageIntake, type IntakeAverage } from '@food/models';
 import { useFood } from '@food/FoodContext';
 import { useWeight } from '@weight/WeightContext';
+import { signedChange } from '@weight/models';
 import { useSettings } from '@settings/SettingsContext';
 import WaterTrendCard from '@water/WaterTrendCard';
 import MoodTrendCard from '@mood/MoodTrendCard';
@@ -157,7 +158,8 @@ export default function TrendsScreen({ navigation }: Props) {
           </Card>
         </Pressable>
 
-        {/* weight */}
+        {/* weight: gone when weight isn't tracked */}
+        {settings.trackWeight ? (
         <Pressable onPress={() => navigation.navigate('WeightDetail')}>
           <Card style={{ marginBottom: space.md }}>
             {hasWeightTrend ? (
@@ -167,24 +169,27 @@ export default function TrendsScreen({ navigation }: Props) {
                     <Text style={s.metricName}>Weight</Text>
                     <Text style={s.metricValue}>{formatWeight(latest)}</Text>
                     <Text style={s.metricSub}>
-                      7-day average ·{' '}
-                      {toDisplay(latest - settings.weightGoalLb).toFixed(1)}{' '}
-                      {weightLabel} from goal
+                      {settings.weightGoalLb === null
+                        ? '7-day average'
+                        : `7-day average · ${Math.abs(toDisplay(latest - settings.weightGoalLb)).toFixed(1)} ${weightLabel} from goal`}
                     </Text>
                   </View>
                   <View
                     style={[s.delta, { backgroundColor: colors.waterTint }]}
                   >
                     <Text style={[s.deltaText, { color: colors.water }]}>
-                      {delta > 0 ? '+' : '−'}
-                      {toDisplay(Math.abs(delta)).toFixed(1)}
+                      {signedChange(toDisplay(delta))}
                     </Text>
                   </View>
                 </View>
                 <WeightTrend
                   trend={rangeTrend.map(toDisplay)}
                   spread={toDisplay(1.3)}
-                  goal={toDisplay(settings.weightGoalLb)}
+                  goal={
+                    settings.weightGoalLb === null
+                      ? undefined
+                      : toDisplay(settings.weightGoalLb)
+                  }
                 />
                 <Text style={s.legendNote}>
                   The shaded band is your day-to-day spread — normal
@@ -214,6 +219,7 @@ export default function TrendsScreen({ navigation }: Props) {
             )}
           </Card>
         </Pressable>
+        ) : null}
 
         {/* nutrition: part of "Track calories & macros", so gone when that is off */}
         {settings.trackCalories ? (

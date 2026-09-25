@@ -36,6 +36,21 @@ async function setup(backend: Backend = createMemoryBackend()) {
  * coverage drops, not just awarded once and left stuck.
  */
 describe('waypoints meals bonus (reactive to foodLog)', () => {
+  it('earns the bonus for a meal marked "nothing today", and un-marks it once food is added', async () => {
+    const { result } = await setup();
+    const initial = result.current.waypoints;
+    const lunch = result.current.foodLog.filter((f) => f.meal === 'lunch');
+    await act(async () => lunch.forEach((f) => result.current.removeFoodEntry(f.id)));
+    expect(result.current.waypoints).toBe(initial - 15);
+
+    await act(async () => result.current.setMealSkipped('lunch', true));
+    await waitFor(() => expect(result.current.waypoints).toBe(initial));
+
+    await act(async () => result.current.addFoodEntry(lunch[0])); // a fresh id is given on add
+    await waitFor(() => expect(result.current.skippedMeals).toEqual([]));
+    expect(result.current.waypoints).toBe(initial); // still covered, by food now
+  });
+
   it('starts with the seed log already covering all meals, so no double-award on mount', async () => {
     const { result } = await setup();
     expect(result.current.waypoints).toBe(INITIAL_WAYPOINTS);

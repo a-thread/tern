@@ -68,6 +68,8 @@ export type PlanExtras = {
   trackWater?: boolean;
   /** The check-in reminder only makes sense while mood tracking is on. */
   trackMood?: boolean;
+  /** The weigh-in reminder only makes sense while weight tracking is on. */
+  trackWeight?: boolean;
 };
 
 export const waterReminderId = (index: number) => `tern-water-${index}`;
@@ -88,6 +90,7 @@ export function planReminders(
     medications = [],
     trackWater = false,
     trackMood = false,
+    trackWeight = true,
   }: PlanExtras = {},
 ): PlannedReminder[] {
   const plan: PlannedReminder[] = [];
@@ -109,7 +112,7 @@ export function planReminders(
       },
     );
   }
-  if (c.weighIn.on) {
+  if (trackWeight && c.weighIn.on) {
     const daily = weighInFrequency === 'daily';
     plan.push({
       id: 'tern-weigh-in',

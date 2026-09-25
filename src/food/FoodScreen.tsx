@@ -11,7 +11,13 @@ import type { RootStackParamList } from '@shared/navigation/types';
 import { useDayKey } from '@shared/hooks/useDayKey';
 import { formatLongDate } from '@shared/utils/date';
 import { useSettings } from '@settings/SettingsContext';
-import { mealTotals, dayTotals, MEAL_OPTIONS, type FoodEntry } from './models';
+import {
+  mealTotals,
+  dayTotals,
+  CORE_MEALS,
+  MEAL_OPTIONS,
+  type FoodEntry,
+} from './models';
 import { useFood } from './FoodContext';
 import { useFoodDisplay } from './useFoodDisplay';
 import WaterCard from '@water/WaterCard';
@@ -23,7 +29,7 @@ export default function FoodScreen() {
   const insets = useSafeAreaInsets();
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
-  const { foodLog } = useFood();
+  const { foodLog, skippedMeals, setMealSkipped } = useFood();
   const { settings } = useSettings();
   const { showCalories } = useFoodDisplay();
   const water = useWater();
@@ -78,11 +84,23 @@ export default function FoodScreen() {
         {MEAL_OPTIONS.map(({ key, label }) => {
           const items = foodLog.filter((f) => f.meal === key);
           const cals = Math.round(mealTotals(foodLog, key));
+          const core = CORE_MEALS.includes(key);
+          const skipped = skippedMeals.includes(key);
+          const name = label.toLowerCase();
           return (
             <View key={key}>
               <GroupLabel>{showCalories ? `${label} · ${cals}` : label}</GroupLabel>
               <Group>
                 {[
+                  ...(skipped && !items.length
+                    ? [
+                        <SkippedRow
+                          key='skipped'
+                          text={`No ${name} today`}
+                          onUndo={() => setMealSkipped(key, false)}
+                        />,
+                      ]
+                    : []),
                   ...items.map((item) => (
                     <FoodRow
                       key={item.id}
@@ -110,7 +128,15 @@ export default function FoodScreen() {
                           }
                         />,
                       ]
-                    : []),
+                    : core && !skipped
+                      ? [
+                          <SkipMealRow
+                            key='skip'
+                            text={`No ${name} today`}
+                            onPress={() => setMealSkipped(key, true)}
+                          />,
+                        ]
+                      : []),
                 ]}
               </Group>
             </View>
@@ -213,6 +239,45 @@ function SaveMealRow({ onPress }: { onPress: () => void }) {
       </Svg>
       <Text style={[s.foodName, { color: colors.ink2 }]}>Save as meal</Text>
     </Pressable>
+  );
+}
+
+/**
+ * Marks an empty core meal as "nothing today". It counts toward "logging all
+ * meals" exactly like food does, so a complete log never means eating more.
+ */
+function SkipMealRow({ text, onPress }: { text: string; onPress: () => void }) {
+  return (
+    <Pressable
+      style={s.foodRow}
+      android_ripple={{ color: colors.doveTint }}
+      onPress={onPress}
+      accessibilityRole='button'
+    >
+      <Svg width={13} height={13} viewBox='0 0 24 24' fill='none'>
+        <Path
+          d='M5 12h14'
+          stroke={colors.ink2}
+          strokeWidth={2.4}
+          strokeLinecap='round'
+        />
+      </Svg>
+      <Text style={[s.foodName, { color: colors.ink2 }]}>{text}</Text>
+    </Pressable>
+  );
+}
+
+function SkippedRow({ text, onUndo }: { text: string; onUndo: () => void }) {
+  return (
+    <View style={s.foodRow}>
+      <View style={{ flex: 1 }}>
+        <Text style={s.foodName}>{text}</Text>
+        <Text style={s.foodSub}>Counts as logged</Text>
+      </View>
+      <Pressable onPress={onUndo} hitSlop={8} accessibilityRole='button'>
+        <Text style={[s.foodCals, { color: colors.coral }]}>Undo</Text>
+      </Pressable>
+    </View>
   );
 }
 

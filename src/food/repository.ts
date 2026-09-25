@@ -17,12 +17,17 @@ export interface FoodRepository {
   add(day: string, entry: FoodEntry): Promise<void>;
   update(id: string, patch: Partial<NewFoodEntry>): Promise<void>;
   remove(id: string): Promise<void>;
+  /** Core meals marked "nothing today" on `day`. */
+  loadSkipped(day: string): Promise<FoodEntry['meal'][]>;
+  /** Marks (or unmarks) a meal as "nothing today". Idempotent. */
+  setSkipped(day: string, meal: FoodEntry['meal'], skipped: boolean): Promise<void>;
 }
 
 export function createMemoryFoodRepository(
   initial: FoodEntry[] = seed,
 ): FoodRepository {
   let entries = [...initial];
+  let skippedMeals: FoodEntry['meal'][] = [];
   return {
     load: async () => [...entries],
     // Local mode keeps one day's log, so history is just that day (the end of the range).
@@ -35,6 +40,12 @@ export function createMemoryFoodRepository(
     },
     remove: async (id) => {
       entries = entries.filter((e) => e.id !== id);
+    },
+    // Local mode keeps one day, like the log itself.
+    loadSkipped: async () => [...skippedMeals],
+    setSkipped: async (_day, meal, skipped) => {
+      skippedMeals = skippedMeals.filter((m) => m !== meal);
+      if (skipped) skippedMeals.push(meal);
     },
   };
 }

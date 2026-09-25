@@ -17,7 +17,7 @@ import { WeightTrend } from '@shared/components/charts';
 import { useWeight } from '@weight/WeightContext';
 import { useSettings } from '@settings/SettingsContext';
 import { useUnits } from '@settings/useUnits';
-import { formatLoggedAt } from '@weight/models';
+import { formatLoggedAt, signedChange } from '@weight/models';
 import { weightTrendFor } from './models';
 import type { TrendsStackParamList } from './types';
 
@@ -39,6 +39,8 @@ export default function WeightDetailScreen({ navigation }: Props) {
   const delta = weightTrend.length > 1 ? weightTrend[weightTrend.length - 1] - weightTrend[0] : 0;
   const spread = 1.3; // lb, either side of the trend
   const hasTrend = weightTrend.length >= 2;
+  const goal = settings.weightGoalLb;
+  const change = signedChange(toDisplay(delta));
 
   return (
     <View
@@ -75,13 +77,14 @@ export default function WeightDetailScreen({ navigation }: Props) {
                 <View>
                   <Text style={s.metricValue}>{formatWeight(latest)}</Text>
                   <Text style={s.metricSub}>
-                    7-day average · goal {formatGoal(settings.weightGoalLb)}
+                    {goal === null ? '7-day average' : `7-day average · goal ${formatGoal(goal)}`}
                   </Text>
                 </View>
                 <View style={s.delta}>
                   <Text style={s.deltaText}>
-                    {delta > 0 ? '+' : '−'}
-                    {formatWeight(Math.abs(delta))}
+                    {change === signedChange(0)
+                      ? 'No change'
+                      : `${change[0]}${formatWeight(Math.abs(delta))}`}
                   </Text>
                 </View>
               </View>
@@ -89,12 +92,12 @@ export default function WeightDetailScreen({ navigation }: Props) {
                 trend={weightTrend.map(toDisplay)}
                 spread={toDisplay(spread)}
                 height={110}
-                goal={toDisplay(settings.weightGoalLb)}
+                goal={goal === null ? undefined : toDisplay(goal)}
               />
               <View style={s.legend}>
                 <LegendDot color={colors.water} label='trend' />
                 <LegendDot color={colors.doveTint} label='daily range' />
-                <LegendDot color={colors.kelp} label='goal' />
+                {goal === null ? null : <LegendDot color={colors.kelp} label='goal' />}
               </View>
             </>
           ) : (

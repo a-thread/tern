@@ -17,9 +17,6 @@ export type DayRecord = {
   future: boolean;
 };
 
-/** A past day with some steps, but under this share of the goal, can be detected as a rest day. */
-export const AUTO_REST_BELOW = 0.4;
-
 export type BuildDaysInput = {
   stepsByDay: Record<string, number>;
   /** Day keys the user marked as rest days. */
@@ -36,9 +33,15 @@ export type BuildDaysInput = {
 /**
  * Turns raw step counts into a day-by-day record, oldest to newest, ending
  * today. Reaching the goal always reads as 'goal'. Otherwise a chosen rest
- * day (or, with auto-detect on, a past low-step day) reads as 'rest' —
+ * day (or, with auto-detect on, any past day under the goal) reads as 'rest' —
  * within the weekly allowance, chosen days first — and anything else is
  * 'partial' (some steps) or 'none'. Weeks run Monday to Sunday.
+ *
+ * Auto-detect treats every day under the goal alike, so walking part of the
+ * way is never worse for the streak than not walking at all, and a day with no
+ * data (phone left at home, a sync that didn't happen) is covered too. It
+ * starts from the first day with any steps, so the time before someone began
+ * using Tern isn't read as rest.
  */
 export function buildDays(input: BuildDaysInput): DayRecord[] {
   const {
@@ -64,6 +67,7 @@ export function buildDays(input: BuildDaysInput): DayRecord[] {
     }
   }
   const detectedPerWeek = new Map<string, number>();
+  const firstWithSteps = keys.find((k) => (stepsByDay[k] ?? 0) > 0);
 
   return keys.map((k) => {
     const steps = stepsByDay[k] ?? 0;
@@ -78,8 +82,8 @@ export function buildDays(input: BuildDaysInput): DayRecord[] {
     } else if (
       autoDetect &&
       k < today &&
-      steps > 0 && // no data is not a rest day
-      steps < goal * AUTO_REST_BELOW &&
+      firstWithSteps !== undefined &&
+      k >= firstWithSteps &&
       (chosenPerWeek.get(w) ?? 0) + (detectedPerWeek.get(w) ?? 0) < restPerWeek
     ) {
       detectedPerWeek.set(w, (detectedPerWeek.get(w) ?? 0) + 1);
@@ -254,8 +258,10 @@ const startOfDay = (d: Date) => new Date(d.getFullYear(), d.getMonth(), d.getDat
 
 /**
  * Whether Today should ask for a weigh-in. Never once one is logged today.
- * Daily: every other day. Weekly: on the chosen weekday (1 = Sunday … 7 =
- * Saturday), or once a week or more has passed since the last one.
+ * Daily: every day. Weekly: on the chosen weekday (1 = Sunday … 7 =
+ * Saturday), or once a week or more has passed since the last one. With no
+ * weigh-in on record, weekly asks only on the chosen weekday, so someone who
+ * hasn't started weighing in isn't asked every day.
  */
 export function weighInDue(
   lastWeight: WeightEntry | undefined,
@@ -263,8 +269,9 @@ export function weighInDue(
   { frequency, weekday }: WeighInPlan,
 ): boolean {
   if (lastWeight && isLoggedToday(lastWeight.loggedAt, now)) return false;
-  if (frequency === 'daily' || !lastWeight) return true;
+  if (frequency === 'daily') return true;
   if (now.getDay() + 1 === weekday) return true;
+  if (!lastWeight) return false;
   const daysSince = Math.round(
     (startOfDay(now) - startOfDay(new Date(lastWeight.loggedAt))) / 86_400_000,
   );
@@ -280,17 +287,21 @@ export function mealForTime(now: Date): FoodEntry['meal'] {
 }
 
 /**
- * What's still open on Today. A meal row until every core meal is logged
- * (a generic "Log a meal" while nothing is logged, then the next missing
- * meal), a weight row when a weigh-in is due (see `weighInDue`; daily unless
- * told otherwise), and a row for each medication not yet taken. Empty means done.
+ * What's still open on Today. A meal row until every core meal is logged or
+ * marked as skipped (a generic "Log a meal" while none is, then the next
+ * missing meal), a weight row when a weigh-in is due (see `weighInDue`; daily
+ * unless told otherwise, never when weight isn't tracked), and a row for each
+ * medication not yet taken. Empty means done.
  */
 export function leftToDo(
   foodLog: FoodEntry[],
   lastWeight: WeightEntry | undefined,
   now: Date = new Date(),
   options: {
-    weighIn?: WeighInPlan;
+    /** How often to ask for a weigh-in; null when weight isn't tracked. */
+    weighIn?: WeighInPlan | null;
+    /** Core meals marked "nothing today"; they count as covered. */
+    skippedMeals?: readonly FoodEntry['meal'][];
     medications?: readonly DueMedication[];
     /** Today's water so far and the goal; omit (or null) when water isn't tracked. */
     water?: { totalOz: number; goalOz: number } | null;
@@ -300,7 +311,10 @@ export function leftToDo(
 ): LeftToDoItem[] {
   const items: LeftToDoItem[] = [];
 
-  const missing = CORE_MEALS.filter((m) => !foodLog.some((f) => f.meal === m));
+  const skipped = options.skippedMeals ?? [];
+  const missing = CORE_MEALS.filter(
+    (m) => !skipped.includes(m) && !foodLog.some((f) => f.meal === m),
+  );
   if (missing.length === CORE_MEALS.length) {
     items.push({
       kind: 'meal',
@@ -317,7 +331,9 @@ export function leftToDo(
     });
   }
 
-  if (weighInDue(lastWeight, now, options.weighIn ?? { frequency: 'daily', weekday: 1 })) {
+  const weighIn =
+    options.weighIn === undefined ? { frequency: 'daily' as const, weekday: 1 } : options.weighIn;
+  if (weighIn && weighInDue(lastWeight, now, weighIn)) {
     items.push({ kind: 'weight' });
   }
 
