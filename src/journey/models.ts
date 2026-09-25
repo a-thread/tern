@@ -77,6 +77,35 @@ export function milestonesFor(total: number, events: LedgerEvent[]): Milestone[]
   }
 }
 
+/**
+ * The stop `total` has most recently reached, or null before the first one.
+ * Between the end of one migration and the first stop of the next, that's the
+ * last stop of the migration just finished.
+ */
+export function latestMilestone(total: number): Milestone | null {
+  if (total < MILESTONE_STOPS[0].waypoints) return null;
+  const lap = Math.floor(total / MIGRATION_LENGTH) + 1;
+  const within = total % MIGRATION_LENGTH;
+  const stop = [...MILESTONE_STOPS].reverse().find((s) => s.waypoints <= within);
+  if (stop) {
+    return {
+      ...stop,
+      id: `${lap}-${stop.id}`,
+      waypoints: (lap - 1) * MIGRATION_LENGTH + stop.waypoints,
+      lap,
+      reached: true,
+    };
+  }
+  const last = MILESTONE_STOPS[MILESTONE_STOPS.length - 1];
+  return {
+    ...last,
+    id: `${lap - 1}-${last.id}`,
+    waypoints: (lap - 1) * MIGRATION_LENGTH,
+    lap: lap - 1,
+    reached: true,
+  };
+}
+
 /** Distinct days that earned at least one waypoint. */
 export function daysWithWaypoints(events: LedgerEvent[]): number {
   return new Set(events.map((e) => e.day)).size;

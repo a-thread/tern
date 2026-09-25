@@ -2,6 +2,7 @@ import {
   MIGRATION_LENGTH,
   MILESTONE_STOPS,
   daysWithWaypoints,
+  latestMilestone,
   migrationProgress,
   milestonesFor,
   type LedgerEvent,
@@ -40,6 +41,41 @@ describe('daysWithWaypoints', () => {
     expect(
       daysWithWaypoints([ev('2026-03-01', 40), ev('2026-03-01', 15, 'meals'), ev('2026-03-02', 40)]),
     ).toBe(2);
+  });
+});
+
+describe('latestMilestone', () => {
+  const LAST = MILESTONE_STOPS[MILESTONE_STOPS.length - 1];
+
+  it('is null before the first stop', () => {
+    expect(latestMilestone(0)).toBeNull();
+    expect(latestMilestone(MILESTONE_STOPS[0].waypoints - 1)).toBeNull();
+  });
+
+  it('names the stop just reached, on the right migration', () => {
+    expect(latestMilestone(MILESTONE_STOPS[0].waypoints)).toMatchObject({
+      name: MILESTONE_STOPS[0].name,
+      lap: 1,
+    });
+    expect(latestMilestone(MILESTONE_STOPS[1].waypoints + 10)).toMatchObject({
+      name: MILESTONE_STOPS[1].name,
+      lap: 1,
+    });
+    expect(
+      latestMilestone(MIGRATION_LENGTH + MILESTONE_STOPS[1].waypoints),
+    ).toMatchObject({ name: MILESTONE_STOPS[1].name, lap: 2 });
+  });
+
+  it('holds the last stop of a finished migration until the next one begins', () => {
+    expect(latestMilestone(MIGRATION_LENGTH)).toMatchObject({
+      name: LAST.name,
+      lap: 1,
+      waypoints: MIGRATION_LENGTH,
+    });
+    expect(latestMilestone(MIGRATION_LENGTH + 10)).toMatchObject({
+      name: LAST.name,
+      lap: 1,
+    });
   });
 });
 

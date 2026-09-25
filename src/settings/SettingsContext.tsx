@@ -62,6 +62,12 @@ export type AppSettings = {
   waterGoalOz: number;
   /** Optional daily mood and stress check-in; off by default so it stays out of the way. */
   trackMood: boolean;
+  /**
+   * The waypoint total of the last milestone that was celebrated, so each one
+   * is marked once. Null until the first time Tern looks, when it's set to
+   * whatever has already been passed — an existing journey isn't re-celebrated.
+   */
+  celebratedMilestone: number | null;
   healthData: HealthDataSettings;
 };
 
@@ -88,6 +94,7 @@ const initialSettings: AppSettings = {
   trackWater: false,
   waterGoalOz: DEFAULT_WATER_GOAL_OZ,
   trackMood: false,
+  celebratedMilestone: null,
   healthData: {
     readSteps: true,
   },
@@ -144,6 +151,11 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
           trackWater: saved?.trackWater === true,
           trackMood: saved?.trackMood === true,
           trackWeight: saved?.trackWeight !== false,
+          celebratedMilestone:
+            typeof saved?.celebratedMilestone === 'number' &&
+            Number.isFinite(saved.celebratedMilestone)
+              ? saved.celebratedMilestone
+              : null,
           weightGoalLb:
             typeof saved?.weightGoalLb === 'number' && Number.isFinite(saved.weightGoalLb)
               ? saved.weightGoalLb

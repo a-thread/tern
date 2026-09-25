@@ -45,6 +45,7 @@ import { useMood } from '@mood/MoodContext';
 import { scoreWord } from '@mood/models';
 import { waypointRules } from '@journey/models';
 import { useWaypoints, type Celebration } from '@journey/WaypointsContext';
+import { usePendingMilestone } from '@journey/usePendingMilestone';
 import WaypointBurst from '@journey/WaypointBurst';
 import { leftToDo, todaySummary } from './models';
 import { useActivity } from './ActivityContext';
@@ -175,6 +176,31 @@ export default function TodayScreen() {
       starting.current = false;
     })();
   }, [isFocused, playing, nextCelebration, insets.top]);
+
+  // A milestone is marked once the feathers have landed, so the total on the
+  // card is the one that crossed it. Like the bursts, an award earned elsewhere
+  // (logging a meal, say) waits until Today is back on screen.
+  const { pending: pendingMilestone, markCelebrated } = usePendingMilestone();
+  useEffect(() => {
+    if (!isFocused || playing || celebrations.length || !pendingMilestone) return;
+    markCelebrated(pendingMilestone);
+    navigation.navigate('Reward', {
+      kind: 'milestone',
+      title: pendingMilestone.name,
+      subtitle:
+        pendingMilestone.lap > 1
+          ? `Milestone reached · Migration ${pendingMilestone.lap}`
+          : 'Milestone reached',
+      footer: 'Earned for showing up — never for weight or calories.',
+    });
+  }, [
+    isFocused,
+    playing,
+    celebrations.length,
+    pendingMilestone,
+    markCelebrated,
+    navigation,
+  ]);
 
   const openRestDay = (d: DayRecord) => {
     navigation.navigate('RestDay', {
