@@ -97,7 +97,11 @@ export default function TodayScreen() {
   const remaining = Math.max(settings.stepGoal - todaySteps, 0);
   const totals = dayTotals(foodLog);
   const reached = progress >= 1;
-  const { due: dueMedications, taken: takenMedications, setTaken } = useMedication();
+  const {
+    due: dueMedications,
+    taken: takenMedications,
+    setTaken,
+  } = useMedication();
   const openItems = leftToDo(foodLog, lastWeight, new Date(), {
     weighIn: settings.trackWeight
       ? {
@@ -107,7 +111,9 @@ export default function TodayScreen() {
       : null,
     skippedMeals,
     medications: dueMedications,
-    water: water.enabled ? { totalOz: water.totalOz, goalOz: water.goalOz } : null,
+    water: water.enabled
+      ? { totalOz: water.totalOz, goalOz: water.goalOz }
+      : null,
     checkIn: mood.enabled && !mood.today,
   });
   const summary = todaySummary(
@@ -117,7 +123,9 @@ export default function TodayScreen() {
     reached,
     undefined,
     water.enabled ? water.totalOz : 0,
-    mood.enabled && mood.today ? { mood: mood.today.mood, stress: mood.today.stress } : null,
+    mood.enabled && mood.today
+      ? { mood: mood.today.mood, stress: mood.today.stress }
+      : null,
   );
   // Meals done: those with food, then those marked "nothing today".
   const mealsDone = [
@@ -182,7 +190,8 @@ export default function TodayScreen() {
   // (logging a meal, say) waits until Today is back on screen.
   const { pending: pendingMilestone, markCelebrated } = usePendingMilestone();
   useEffect(() => {
-    if (!isFocused || playing || celebrations.length || !pendingMilestone) return;
+    if (!isFocused || playing || celebrations.length || !pendingMilestone)
+      return;
     markCelebrated(pendingMilestone);
     navigation.navigate('Reward', {
       kind: 'milestone',
@@ -274,7 +283,10 @@ export default function TodayScreen() {
         }}
       >
         <View ref={heroRef} collapsable={false}>
-          <LinearGradient colors={skyFor(progress) as [string, string, ...string[]]} style={s.hero}>
+          <LinearGradient
+            colors={skyFor(progress) as [string, string, ...string[]]}
+            style={s.hero}
+          >
             <View style={s.heroTop}>
               <Text style={s.greeting}>
                 {settings.firstName
@@ -299,13 +311,13 @@ export default function TodayScreen() {
             />
             {stepsStatus !== 'connected' ? (
               <Pressable
-                onPress={() => navigation.navigate('Settings', { screen: 'HealthData' })}
+                onPress={() =>
+                  navigation.navigate('Settings', { screen: 'HealthData' })
+                }
                 hitSlop={8}
                 accessibilityRole='button'
               >
-                <Text style={s.stepSub}>
-                  Connect steps to start a streak ›
-                </Text>
+                <Text style={s.stepSub}>Connect steps to start a streak ›</Text>
               </Pressable>
             ) : (
               <Text style={s.stepSub}>
@@ -365,7 +377,12 @@ export default function TodayScreen() {
                     sub={`${formatVolume(item.totalOz)} of ${formatVolume(item.goalOz)}`}
                     icon={
                       <IconBadge bg={colors.waterTint}>
-                        <Svg width={14} height={14} viewBox='0 0 24 24' fill='none'>
+                        <Svg
+                          width={14}
+                          height={14}
+                          viewBox='0 0 24 24'
+                          fill='none'
+                        >
                           <Path
                             d='M12 3c-4 3-6 6-6 9a6 6 0 0 0 12 0c0-3-2-6-6-9z'
                             stroke={colors.water}
@@ -383,7 +400,9 @@ export default function TodayScreen() {
                         accessibilityRole='button'
                         accessibilityLabel={`Add ${formatVolume(quickWaterOz[0])} of water`}
                       >
-                        <Text style={s.markText}>{`+${formatVolume(quickWaterOz[0])}`}</Text>
+                        <Text
+                          style={s.markText}
+                        >{`+${formatVolume(quickWaterOz[0])}`}</Text>
                       </Pressable>
                     }
                   />
@@ -395,26 +414,12 @@ export default function TodayScreen() {
                     onPress={() => navigation.navigate('CheckIn')}
                     icon={
                       <IconBadge bg={colors.violetTint}>
-                        <Svg width={14} height={14} viewBox='0 0 24 24' fill='none'>
-                          <Path
-                            d='M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM8.5 14.5s1 1.5 3.5 1.5 3.5-1.5 3.5-1.5M9 9.5h.01M15 9.5h.01'
-                            stroke={colors.violet}
-                            strokeWidth={2}
-                          />
-                        </Svg>
-                      </IconBadge>
-                    }
-                    chevron
-                  />
-                ) : item.kind === 'checkIn' ? (
-                  <Row
-                    key='check-in'
-                    title='Check in'
-                    sub='How are your mood and stress today?'
-                    onPress={() => navigation.navigate('CheckIn')}
-                    icon={
-                      <IconBadge bg={colors.violetTint}>
-                        <Svg width={14} height={14} viewBox='0 0 24 24' fill='none'>
+                        <Svg
+                          width={14}
+                          height={14}
+                          viewBox='0 0 24 24'
+                          fill='none'
+                        >
                           <Path
                             d='M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM8.5 14.5s1 1.5 3.5 1.5 3.5-1.5 3.5-1.5M9 9.5h.01M15 9.5h.01'
                             stroke={colors.violet}
@@ -433,7 +438,12 @@ export default function TodayScreen() {
                     onPress={() => setTaken(item.medicationId, true)}
                     icon={
                       <IconBadge bg={colors.violetTint}>
-                        <Svg width={14} height={14} viewBox='0 0 24 24' fill='none'>
+                        <Svg
+                          width={14}
+                          height={14}
+                          viewBox='0 0 24 24'
+                          fill='none'
+                        >
                           <Path
                             d='M10.5 20.5 3.5 13.5a4.95 4.95 0 0 1 7-7l7 7a4.95 4.95 0 0 1-7 7zM8.5 8.5l7 7'
                             stroke={colors.violet}
@@ -540,7 +550,10 @@ export default function TodayScreen() {
                   sub={`Mood ${summary.checkIn.mood} · ${scoreWord('mood', summary.checkIn.mood)} · Stress ${summary.checkIn.stress} · ${scoreWord('stress', summary.checkIn.stress)}`}
                   icon={<DoneBadge />}
                   right={
-                    <Pressable onPress={() => navigation.navigate('CheckIn')} hitSlop={8}>
+                    <Pressable
+                      onPress={() => navigation.navigate('CheckIn')}
+                      hitSlop={8}
+                    >
                       <Text style={s.markText}>Edit</Text>
                     </Pressable>
                   }
@@ -552,7 +565,10 @@ export default function TodayScreen() {
                   title={`Took ${m.name}`}
                   icon={<DoneBadge />}
                   right={
-                    <Pressable onPress={() => setTaken(m.id, false)} hitSlop={8}>
+                    <Pressable
+                      onPress={() => setTaken(m.id, false)}
+                      hitSlop={8}
+                    >
                       <Text style={s.markText}>Undo</Text>
                     </Pressable>
                   }
@@ -624,7 +640,8 @@ export default function TodayScreen() {
   );
 }
 
-const capitalize = (word: string) => word.charAt(0).toUpperCase() + word.slice(1);
+const capitalize = (word: string) =>
+  word.charAt(0).toUpperCase() + word.slice(1);
 
 /** A small green tick for the things already done today. */
 function DoneBadge() {
