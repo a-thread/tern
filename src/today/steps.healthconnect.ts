@@ -5,9 +5,9 @@ import type { StepsRepository, StepsStatus } from './steps.repository';
  * Steps from Android Health Connect.
  *
  * Verified by manual testing on an Android device. It needs a custom dev build
- * (Expo Go can't load native modules); to turn it on, see supabase/README.md
- * ("Steps from Health Connect"). It is off unless EXPO_PUBLIC_HEALTH_CONNECT=1,
- * and returns null (steps unavailable) if the package isn't installed.
+ * (Expo Go can't load native modules); to turn it on, see docs/health-connect.md.
+ * It is off unless EXPO_PUBLIC_HEALTH_CONNECT=1, and returns null (steps
+ * unavailable) if the package isn't installed.
  */
 export function createHealthConnectStepsRepository(): StepsRepository | null {
   // Off unless asked for. Metro turns a require of a missing package into a

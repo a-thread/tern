@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import {
   ActivityIndicator,
   View,
@@ -59,12 +59,22 @@ export default function LogFoodScreen({ navigation, route }: Props) {
   // choosing foods for a saved meal: those go to the meal being edited.)
   const added = useSessionAdditions();
   const addedMessage = pickMode ? null : describeAdditions(added);
-  const { meals: savedMeals, startDraft } = useSavedMeals();
+  const { meals: savedMeals, draft, startDraft } = useSavedMeals();
   const yourMeals = useMemo(
     () => (pickMode ? [] : filterMeals(savedMeals, query)),
     [savedMeals, query, pickMode],
   );
   const filters = pickMode ? FILTERS.filter((f) => f !== 'Meals') : FILTERS;
+
+  // Once a food goes in, the search that found it has done its job: the next
+  // one is rarely the same words, and a stale query hides your own foods and
+  // meals underneath it. (In pick mode the food lands in the draft, not the log.)
+  const goneIn = pickMode ? (draft?.items.length ?? 0) : added.length;
+  const lastGoneIn = useRef(goneIn);
+  useEffect(() => {
+    if (goneIn > lastGoneIn.current) setQuery('');
+    lastGoneIn.current = goneIn;
+  }, [goneIn]);
   const today = useDayKey();
   // The meal you're adding to isn't offered back to you — it's the list you're
   // already looking at.

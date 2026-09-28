@@ -63,31 +63,13 @@ the `tern.waypoint_totals` view (the sum of a user's events).
 
 ## Steps from Health Connect
 
-Steps are read on the device, not stored on the server. In local (no-keys) mode
-and the guest preview the app shows sample steps. With an account and no step
-source, steps stay at zero and no step waypoints are awarded — sample data would
-earn a real account waypoints it didn't earn.
+Steps are read on the device, not stored on the server — there is no steps table. In
+local (no-keys) mode and the guest preview the app shows sample steps. With an account
+and no step source, steps stay at zero and no step waypoints are awarded, because sample
+data would earn a real account waypoints it didn't earn.
 
-Health Connect needs a custom dev build (Expo Go can't load native modules).
-The adapter is [src/today/steps.healthconnect.ts](../src/today/steps.healthconnect.ts).
-The package, its config plugin, the `READ_STEPS` permission and Android build
-settings (minSdk 26) are already set up in `package.json` and `app.json`.
-A native debug build (`assembleDebug`) succeeds with it, and the adapter has been
-verified by manual testing on an Android device.
-
-`react-native-health-connect` 4.x needs compileSdk 35+, which Expo SDK 54
-provides (the app targets API 36, as Google Play requires). Its config plugin
-adds both the rationale intent and the Android 14 permission-usage alias.
-
-1. Make sure `.env` has `EXPO_PUBLIC_HEALTH_CONNECT=1` (the adapter stays off without it).
-2. `npx expo run:android` with a device or emulator that has Health Connect
-   (built in on Android 14+; a Play Store app before that), or an EAS build:
-   `eas build --profile development --platform android`.
-3. In the app: Settings → Health data → _Connect Health Connect_.
-
-If the app shows "Not available in this build", the flag is off or the module
-didn't load. Check the `aggregateGroupByPeriod` call against the library docs
-if step counts look wrong.
+Turning Health Connect on, what's already configured and what Google Play reviews:
+[docs/health-connect.md](../docs/health-connect.md).
 
 ## Rest days and the streak
 

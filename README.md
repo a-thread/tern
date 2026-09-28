@@ -1,192 +1,154 @@
 # Tern
 
-A personal health tracker built around the Arctic tern's migration — steps, food, weight,
-and a long-horizon reward system that pays out for **showing up**, never for weight or
-calorie totals.
+**Move, eat, rest. A kinder tracker for the life you're actually living.**
 
-## Running it
+[![CI](https://github.com/a-thread/tern/actions/workflows/ci.yml/badge.svg)](https://github.com/a-thread/tern/actions/workflows/ci.yml)
+![Platform: Android](https://img.shields.io/badge/platform-Android-3DDC84)
+![Expo SDK 54](https://img.shields.io/badge/Expo-SDK%2054-000020)
+![TypeScript](https://img.shields.io/badge/TypeScript-strict-3178C6)
+
+Tern is a health tracker for steps, food, weight, water and mood, inspired by the Arctic
+tern, the bird with the longest regular migration on Earth. Each day you show up, your
+tern travels a little further along its journey.
+
+Waypoints are earned for things within reach: meeting your step goal, logging your meals,
+taking a rest day. **Weight and calories never earn or lose anything.** They're there to
+inform you, with no verdict attached.
+
+| ![The Today tab](assets/store/home.png) | ![The Food tab](assets/store/food.png) | ![The Journey tab](assets/store/journey.png) | ![The Trends tab](assets/store/trends.png) |
+| :-------------------------------------: | :------------------------------------: | :------------------------------------------: | :----------------------------------------: |
+|                **Today**                |                **Food**                |                 **Journey**                  |                 **Trends**                 |
+
+## Features
+
+- **Rewards for behavior only.** Waypoints are milestones on a map. Reach the Weddell Sea
+  and your tern turns north for home, then sets off again, so the journey never runs out.
+- **Rest counts.** A rest day counts as showing up and the streak carries through it.
+- **Optional numbers.** Hide calories, turn off "remaining today", turn weight off.
+  Nothing warns you for going over, and exercise never earns food back.
+- **Food without a verdict.** Search everyday foods (USDA) and packaged products (Open
+  Food Facts), scan barcodes, save meals, or re-log yesterday's dinner in a tap.
+- **Steps from Health Connect.** Read on the device and never uploaded.
+- **Your data is yours.** No ads, nothing sold. Export everything as JSON, or delete your
+  data or account from Settings. A guest preview works without an account.
+
+## Tech stack
+
+| Layer      | Choice                                                                   |
+| ---------- | ------------------------------------------------------------------------ |
+| App        | [Expo](https://expo.dev) SDK 54, React Native 0.81, React 19, TypeScript |
+| Navigation | React Navigation 7 (bottom tabs + native stack)                          |
+| Backend    | [Supabase](https://supabase.com) (Postgres, auth, row-level security)    |
+| Steps      | Android Health Connect via `react-native-health-connect`                 |
+| Food data  | Open Food Facts, USDA FoodData Central                                   |
+| Tests      | Jest, `jest-expo`, React Native Testing Library                          |
+| Builds     | EAS Build, triggered from GitHub Actions                                 |
+
+With no Supabase keys the app runs against an in-memory backend seeded with sample data,
+so you can work on the UI without setting anything up.
+
+## Getting started
+
+**Prerequisites:** Node (the version in [.node-version](.node-version)), and either the
+[Expo Go](https://expo.dev/go) app or an Android emulator.
 
 ```bash
+git clone https://github.com/a-thread/tern.git
+cd tern
 npm install
+cp .env.example .env   # optional, see Configuration
 npx expo start
 ```
 
-Then scan the QR code with Expo Go (iOS/Android), or press `i` / `a` for a simulator.
+Scan the QR code with Expo Go, or press `a` to open an Android emulator.
 
-> Note: `react-native-svg` and `expo-linear-gradient` are native modules, but both ship
-> inside Expo Go, so no custom dev client is needed yet. You'll need one once you add
-> the health plugin (below).
+Health Connect steps need a development client instead of Expo Go. See
+[docs/health-connect.md](docs/health-connect.md).
 
-## Structure
+## Configuration
 
-One folder per domain. Within a folder: `models.ts` for the pure rules (with
-`models.test.ts` beside it), a `*Context.tsx` holding the state, `repository.ts` and
-`repository.supabase.ts` for storage, and the screens.
+Copy [.env.example](.env.example) to `.env` (gitignored). Every variable is optional.
 
-```
-App.tsx                    fonts, providers, navigation
+| Variable                        | Purpose                                                            |
+| ------------------------------- | ------------------------------------------------------------------ |
+| `EXPO_PUBLIC_SUPABASE_URL`      | Supabase project URL. Blank runs on local sample data.             |
+| `EXPO_PUBLIC_SUPABASE_ANON_KEY` | Supabase anon key. Safe to ship, since RLS protects the data.      |
+| `EXPO_PUBLIC_HEALTH_CONNECT`    | Set to `1` in a dev build with Health Connect installed.           |
+| `EXPO_PUBLIC_USDA_API_KEY`      | Enables everyday-food search. Blank falls back to Open Food Facts. |
+
+To run against your own backend, follow [supabase/README.md](supabase/README.md) to create
+a project and apply the migrations in [supabase/migrations/](supabase/migrations).
+
+## Scripts
+
+| Command              | What it does                   |
+| -------------------- | ------------------------------ |
+| `npm start`          | Start the Expo dev server      |
+| `npm run android`    | Start and open on Android      |
+| `npm run typecheck`  | Type-check with `tsc --noEmit` |
+| `npm run lint`       | Lint with ESLint               |
+| `npm test`           | Run the Jest suite             |
+| `npm run test:watch` | Run Jest in watch mode         |
+
+## Project layout
+
+One folder per domain under [src/](src). Each holds its pure rules in `models.ts` (with
+`models.test.ts` beside it), state in a `*Context.tsx`, storage behind a `repository.ts`
+interface, and its screens.
+
+```text
+App.tsx          fonts, providers, navigation
 src/
-  shared/
-    theme/index.ts         all design tokens, the palette rule, gradient sets
-    components/ui/         Group, Row, Chip, Toggle, SheetNav, FootNote…
-    components/charts.tsx  FlightPath, StepBars, WeightTrend, ConsistencyGrid, DayRing
-    components/TernMark.tsx  the logo as a tintable SVG path
-    navigation/            root navigator and every param list
-    state/                 BackendContext (memory or Supabase), providers, toasts
-    auth/                  sign in, create account, password reset, AuthGate
-    hooks/, utils/         day keys, dates, units, ids, replay-on-focus
-  today/                   TodayScreen, steps, rest days, "left to do"
-  food/                    the Food tab, the Add food stack, saved meals, search
-  journey/                 waypoints ledger, the map, milestones, reward cards
-  trends/                  steps, weight, water and mood over time
-  weight/, water/, mood/, medication/
-  settings/                every settings screen, the settings document, reminders
-supabase/migrations/       the schema, in order
+  shared/        theme tokens, UI components, charts, navigation, auth, backend context
+  today/         the Today tab, steps, rest days
+  food/          the Food tab, add-food flow, saved meals, search
+  journey/       the waypoints ledger, map, milestones
+  trends/        steps, weight, water and mood over time
+  weight/ water/ mood/ medication/ settings/
+supabase/        migrations and setup
+docs/            architecture, design, release notes, hosted store pages
 ```
 
-## The palette rule
+The full tour is in [docs/architecture.md](docs/architecture.md).
 
-`coral (#D8431F)` is the **primary action color only** — the way the bill is one small
-bright mark on a mostly-white bird. Every other domain has its own hue:
+## Continuous integration
 
-| Domain                | Color                                 |
-| --------------------- | ------------------------------------- |
-| Steps, movement       | glacier `#5FA8B8`                     |
-| Weight, trends        | deep water `#3E5A6C`                  |
-| Journey, milestones   | aurora `#4E8C7D` + twilight `#6B5B9A` |
-| Streaks, goal moments | midnight sun `#E0A32E`                |
-| Whole foods           | kelp `#5C6B4E`                        |
-| Rest days             | driftwood `#5B4636`                   |
+Workflows live in [.github/workflows/](.github/workflows).
 
-If you find yourself reaching for coral to make something stand out, reach for the
-domain color instead.
+- **[CI](.github/workflows/ci.yml)** runs typecheck, lint and tests on every pull request
+  and on pushes to `main`.
+- **[Build](.github/workflows/build.yml)** runs CI, then starts an EAS build. Push a
+  `v*` tag for a production build, or run it manually from the Actions tab for an
+  installable `preview` APK.
 
-## Design commitments
+Release steps and required secrets are in [docs/RELEASING.md](docs/RELEASING.md).
 
-These are deliberate and worth preserving as the app grows:
+## Contributing
 
-1. **Rewards are for behavior, never outcomes.** Waypoints come from logging, moving,
-   and resting. Nothing pays out for a number on the scale or staying under a calorie
-   target.
-2. **No compensatory mechanics.** Exercise never "earns back" food. There is no
-   equivalent of banking steps for a treat.
-3. **Rest days are first-class.** They hold the streak (don't increment it), earn
-   waypoints, and render in driftwood — visually distinct from a missed day.
-4. **Weight is shown as a trend with a visible fluctuation band.** Day-to-day deltas are
-   deliberately de-emphasized because they're mostly water.
-5. **Food color is information, not judgment.** It maps to NOVA processing level, always
-   shows the number alongside the color (accessibility), is user-overridable, and can be
-   switched off entirely in settings.
+Issues and pull requests are welcome.
 
-## The backend
+1. Fork the repo and create a branch from `main`.
+2. Make your change, with tests where the logic is pure (`models.ts` is the usual place).
+3. Run `npm run typecheck && npm run lint && npm test`. CI runs the same three.
+4. Open a pull request describing what changed and why.
 
-Supabase, reached through one repository per domain. Each has an in-memory
-implementation — used in the preview, when there are no keys, and in every test — and a
-Supabase one; `src/shared/state/BackendContext.tsx` chooses between them, and nothing
-above that line knows which it got.
+Before touching anything the user sees, read [docs/design.md](docs/design.md). It sets the
+palette rule and the earning rules, and the central one is that **waypoints reward
+behavior, never weight or calorie totals**.
 
-### Supabase schema sketch
+## Documentation
 
-`supabase/migrations/` is the schema of record. The sketch below is what it grew from,
-and it has drifted: settings live in a single jsonb document rather than columns on
-`profiles`, and there are tables it doesn't mention.
+| Document                                         | What's in it                                              |
+| ------------------------------------------------ | --------------------------------------------------------- |
+| [docs/](docs/README.md)                          | the index, and the pages hosted for the store listing     |
+| [docs/architecture.md](docs/architecture.md)     | folder layout, repositories, the waypoints ledger, schema |
+| [docs/design.md](docs/design.md)                 | the palette rule, design commitments, earning rules       |
+| [docs/health-connect.md](docs/health-connect.md) | turning on Android steps, what's configured               |
+| [docs/food-search.md](docs/food-search.md)       | Open Food Facts and USDA, caching, attribution            |
+| [supabase/README.md](supabase/README.md)         | setting up a project, migrations, what each table holds   |
+| [docs/RELEASING.md](docs/RELEASING.md)           | EAS builds, the GitHub workflow, submitting to Play       |
 
-```sql
-create table profiles (
-  id uuid primary key references auth.users on delete cascade,
-  name text,
-  step_goal int default 8000,
-  calorie_target int,
-  macro_targets jsonb,
-  weight_goal_lb numeric,
-  units text default 'imperial',
-  show_tiers bool default true,
-  show_calories bool default true
-);
+## Status
 
-create table step_days (
-  id uuid primary key default gen_random_uuid(),
-  user_id uuid references profiles on delete cascade,
-  date date not null,
-  steps int not null,
-  is_rest_day bool default false,
-  unique (user_id, date)
-);
-
-create table foods (              -- cached Open Food Facts + user-created
-  id uuid primary key default gen_random_uuid(),
-  barcode text,
-  name text not null,
-  brand text,
-  serving_label text,
-  calories numeric, protein numeric, carbs numeric, fat numeric,
-  nova_group int,                 -- 1–4, drives the default tier
-  created_by uuid references profiles
-);
-
-create table food_entries (
-  id uuid primary key default gen_random_uuid(),
-  user_id uuid references profiles on delete cascade,
-  food_id uuid references foods,
-  date date not null,
-  meal text not null,
-  servings numeric default 1,
-  tier_override int                -- user's choice wins over nova_group
-);
-
-create table weight_entries (
-  id uuid primary key default gen_random_uuid(),
-  user_id uuid references profiles on delete cascade,
-  logged_at timestamptz not null,
-  lb numeric not null
-);
-
-create table waypoint_events (     -- append-only ledger
-  id uuid primary key default gen_random_uuid(),
-  user_id uuid references profiles on delete cascade,
-  date date not null,
-  rule text not null,              -- 'steps' | 'meals' | 'rest' | 'water' | 'mood'
-  points int not null
-);
-```
-
-Enable RLS on every table with the standard `auth.uid() = user_id` policy.
-
-Past days in `waypoint_events` are never recomputed or clawed back. Today's awards follow
-today as it stands (removing a meal, a drink or a check-in quietly takes that award back),
-and once the day is over its awards are settled. The migrations add sanity checks: fixed
-points per rule, and only today's date.
-
-### Health data
-
-Android steps come from Health Connect (`react-native-health-connect`), through
-`src/today/steps.healthconnect.ts`. It is off unless `EXPO_PUBLIC_HEALTH_CONNECT=1`,
-and has been verified by manual testing on a device. Without it (and in the preview,
-and in tests) steps come from the in-memory repository.
-
-It needs a custom dev build — Expo Go can't load native modules — so leave Expo Go and
-build a **dev client** (`npx expo prebuild` + `npx expo run:android`). Health Connect
-also requires declaring each permission in `AndroidManifest.xml`, and Google Play
-reviews every declared health permission — declare only what you actually read. iOS
-HealthKit (`react-native-health`) is not wired up yet.
-
-Always keep the manual step-entry path working; permissions fail often enough that it
-can't be the only route.
-
-### Food search
-
-Open Food Facts, free and keyless:
-
-```
-https://world.openfoodfacts.org/api/v2/search?categories_tags=...&fields=code,product_name,brands,nutriments,nova_group
-https://world.openfoodfacts.org/api/v0/product/{barcode}.json
-```
-
-Cache every product you look up into the `foods` table — the project runs on donations
-and asks that you avoid hammering the live API. Data is ODbL, so **credit Open Food
-Facts in-app** (already present in the Food screen footer).
-
-## Not built yet
-
-- Onboarding, and the day-one empty states that go with it
-- iOS HealthKit (`react-native-health`) — steps are Android-only for now
+Android first. iOS builds aren't wired up yet, and HealthKit steps aren't implemented.
+Tern is a tracking tool, not medical advice.
