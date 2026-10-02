@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet, Pressable } from 'react-native';
 import { colors, font, radius, tierColors } from '@shared/theme';
-import type { Tier } from '@food/models';
+import type { Tier } from '@food/models/foodEntry';
 import { TierDot } from './TierDot';
 
 const tierPickerOptions: { tier: Tier; label: string }[] = [

@@ -5,7 +5,7 @@ import { createRequiredContext } from '@shared/state/createRequiredContext';
 import { useLoader } from '@shared/hooks/useLoader';
 import { usePersist } from '@shared/hooks/usePersist';
 import { newId } from '@shared/utils/id';
-import type { FoodEntry } from './models';
+import type { FoodEntry } from '@food/models/foodEntry';
 import {
   addItem,
   draftFromMeal,
@@ -14,7 +14,7 @@ import {
   stepItemServings,
   validateDraft,
   type MealDraft,
-} from '@food/utils/mealDraft';
+} from '@food/models/mealDraft';
 import {
   cleanName,
   findMealByName,
@@ -23,7 +23,7 @@ import {
   validateMealName,
   type SavedMeal,
   type SavedMealItem,
-} from '@food/utils/savedMeals';
+} from '@food/models/savedMeals';
 
 type SaveOutcome =
   | { ok: true; replaced: boolean; meal: SavedMeal }

@@ -1,4 +1,4 @@
-import type { MoodEntry } from '@mood/models';
+import type { MoodEntry } from '@mood/models/moodEntry';
 
 /** One mood and stress check-in per local day. */
 export interface MoodRepository {

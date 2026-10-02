@@ -5,17 +5,13 @@ import React, {
   useRef,
   useState,
 } from 'react';
-import { allMealsLogged } from '@food/models';
+import { allMealsLogged } from '@food/models/meals';
 import { useFood } from '@food/FoodContext';
 import { useBackend } from '@shared/state/BackendContext';
 import { createRequiredContext } from '@shared/state/createRequiredContext';
 import { useDayKey } from '@shared/hooks/useDayKey';
 import { useToast } from '@shared/state/ToastContext';
-import {
-  pointsFor,
-  type LedgerEvent,
-  type WaypointSource,
-} from './models';
+import { pointsFor, type LedgerEvent, type WaypointSource } from '@journey/models/waypoint';
 
 export type { WaypointSource };
 

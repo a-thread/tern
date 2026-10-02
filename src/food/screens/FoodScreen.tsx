@@ -11,13 +11,8 @@ import type { RootStackParamList } from '@shared/navigation/types';
 import { useDayKey } from '@shared/hooks/useDayKey';
 import { formatLongDate } from '@shared/utils/date';
 import { useSettings } from '@settings/SettingsContext';
-import {
-  mealTotals,
-  dayTotals,
-  CORE_MEALS,
-  MEAL_OPTIONS,
-  type FoodEntry,
-} from '@food/models';
+import { mealTotals, Meals } from '@food/models/meals';
+import { dayTotals, type FoodEntry } from '@food/models/foodEntry';
 import { useFood } from '@food/FoodContext';
 import { useFoodDisplay } from '@food/hooks/useFoodDisplay';
 import WaterCard from '@water/components/WaterCard';
@@ -81,10 +76,10 @@ export default function FoodScreen() {
 
         {water.enabled ? <WaterCard /> : null}
 
-        {MEAL_OPTIONS.map(({ key, label }) => {
+        {Meals.OPTIONS.map(({ key, label }) => {
           const items = foodLog.filter((f) => f.meal === key);
           const cals = Math.round(mealTotals(foodLog, key));
-          const core = CORE_MEALS.includes(key);
+          const core = Meals.CORE.includes(key);
           const skipped = skippedMeals.includes(key);
           const name = label.toLowerCase();
           return (

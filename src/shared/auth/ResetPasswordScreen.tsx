@@ -8,7 +8,7 @@ import {
   SubmitButton,
 } from './components';
 import { useSubmit } from './useSubmit';
-import { MIN_PASSWORD, isValidPassword, passwordsMatch } from './validation';
+import { isValidPassword, passwordsMatch, AccountLimits } from './validation';
 
 /** Shown when a password-reset link brings someone back into the app. */
 export default function ResetPasswordScreen() {
@@ -39,7 +39,7 @@ export default function ResetPasswordScreen() {
         value={password}
         onChangeText={setPassword}
         invalid={!isValidPassword(password)}
-        errorMessage={`Password must be at least ${MIN_PASSWORD} characters`}
+        errorMessage={`Password must be at least ${AccountLimits.MIN_PASSWORD_LENGTH} characters`}
       />
       <FormField
         label='Confirm password'

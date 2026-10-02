@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo } from 'react';
 
 import { useSettings } from '@settings/SettingsContext';
 import { useWaypoints } from '@journey/WaypointsContext';
-import { latestMilestone, type Milestone } from '@journey/models';
+import { latestMilestone, type Milestone } from '@journey/models/milestone';
 
 type PendingMilestone = {
   /** A milestone reached but not yet marked, or null when there's nothing to celebrate. */

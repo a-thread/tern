@@ -1,5 +1,5 @@
 import { round1, toFiniteNumber } from '@shared/utils/number';
-import type { Tier } from '@food/models';
+import type { Tier } from '@food/models/foodEntry';
 import { getJson } from './http';
 import type { SearchResult } from './searchResult';
 

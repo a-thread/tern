@@ -12,21 +12,14 @@ import { NativeStackScreenProps } from '@react-navigation/native-stack';
 
 import { colors, font, radius, space } from '@shared/theme';
 import { Group, GroupLabel, SheetNav, Stepper } from '@shared/components/ui';
-import { MEAL_OPTIONS, type Tier } from '@food/models';
+import { Meals } from '@food/models/meals';
+import type { Tier } from '@food/models/foodEntry';
 import { useFood } from '@food/FoodContext';
 import { useSavedMeals } from '@food/SavedMealsContext';
 import { TierPicker } from '@food/components/TierPicker';
 import { MealPicker } from '@food/components/MealPicker';
 import { useFoodDisplay } from '@food/hooks/useFoodDisplay';
-import {
-  gramsOf,
-  parseGrams,
-  portionGrams,
-  portionServingLabel,
-  scaleForGrams,
-  SERVING_STEP,
-  stepServings,
-} from '@food/utils/servings';
+import { gramsOf, parseGrams, portionGrams, portionServingLabel, scaleForGrams, stepServings, Servings } from '@food/models/servings';
 import type { LogFoodStackParamList } from '@food/navigation';
 
 type Props = NativeStackScreenProps<LogFoodStackParamList, 'FoodDetail'>;
@@ -198,7 +191,7 @@ export default function FoodDetailScreen({ navigation, route }: Props) {
                     <Text style={s.rowTitle}>How many</Text>
                     <Text style={s.weightNote}>= {gramsValue} g</Text>
                   </View>
-                  <Stepper value={count} onDecrement={() => stepCount(-SERVING_STEP)} onIncrement={() => stepCount(SERVING_STEP)} />
+                  <Stepper value={count} onDecrement={() => stepCount(-Servings.STEP)} onIncrement={() => stepCount(Servings.STEP)} />
                 </View>
               ) : (
                 <View style={s.row}>
@@ -232,7 +225,7 @@ export default function FoodDetailScreen({ navigation, route }: Props) {
               </View>
               <View style={s.row}>
                 <Text style={[s.rowTitle, { flex: 1 }]}>Servings</Text>
-                <Stepper value={servings} onDecrement={() => step(-SERVING_STEP)} onIncrement={() => step(SERVING_STEP)} />
+                <Stepper value={servings} onDecrement={() => step(-Servings.STEP)} onIncrement={() => step(Servings.STEP)} />
               </View>
             </>
           )}
@@ -242,7 +235,7 @@ export default function FoodDetailScreen({ navigation, route }: Props) {
           <>
             <GroupLabel>Meal</GroupLabel>
             <View style={s.card}>
-              <MealPicker value={meal} onChange={setMeal} options={MEAL_OPTIONS} />
+              <MealPicker value={meal} onChange={setMeal} options={Meals.OPTIONS} />
             </View>
           </>
         )}

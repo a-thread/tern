@@ -20,20 +20,12 @@ import { useBackend } from '@shared/state/BackendContext';
 import { useToast } from '@shared/state/ToastContext';
 import { useActivity } from '@today/ActivityContext';
 import { useWeight } from '@weight/WeightContext';
-import { MAX_NAME } from '@shared/auth/validation';
+import { AccountLimits } from '@shared/auth/validation';
 import { useSettings } from '@settings/SettingsContext';
 import { useUnits } from '@settings/hooks/useUnits';
 import TimeStepperRow from '@settings/components/TimeStepperRow';
-import { clampWaterGoal } from '@water/models';
-import {
-  REMINDER_STEP_MINUTES,
-  WATER_EVERY_HOURS,
-  describeReminders,
-  formatMinutes,
-  stepMinutes,
-  stepWeekday,
-  weekdayPlural,
-} from '@settings/utils/reminders.plan';
+import { clampWaterGoal } from '@water/models/waterEntry';
+import { describeReminders, formatMinutes, stepMinutes, stepWeekday, weekdayPlural, Reminders } from '@settings/models/reminderPlan';
 import type { SettingsStackParamList } from '@settings/navigation';
 
 type Props = NativeStackScreenProps<SettingsStackParamList, 'SettingsRoot'>;
@@ -47,7 +39,7 @@ export default function SettingsRootScreen({ navigation }: Props) {
   const reminders = settings.reminders;
   const reminderText = describeReminders(reminders, settings.weighInFrequency);
   const medicationCount = settings.medications.length;
-  const stepStep = REMINDER_STEP_MINUTES;
+  const stepStep = Reminders.STEP_MINUTES;
   const toast = useToast();
   const [dataBusy, setDataBusy] = useState(false);
 
@@ -182,7 +174,7 @@ export default function SettingsRootScreen({ navigation }: Props) {
                 onSubmitEditing={saveName}
                 placeholder='First name'
                 placeholderTextColor={colors.ink3}
-                maxLength={MAX_NAME}
+                maxLength={AccountLimits.MAX_NAME_LENGTH}
                 autoCapitalize='words'
                 autoComplete='given-name'
                 returnKeyType='done'
@@ -591,8 +583,8 @@ export default function SettingsRootScreen({ navigation }: Props) {
                           water: {
                             ...reminders.water,
                             everyHours: Math.min(
-                              Math.max(reminders.water.everyHours + d, WATER_EVERY_HOURS.min),
-                              WATER_EVERY_HOURS.max,
+                              Math.max(reminders.water.everyHours + d, Reminders.WATER_EVERY_HOURS.min),
+                              Reminders.WATER_EVERY_HOURS.max,
                             ),
                           },
                         },

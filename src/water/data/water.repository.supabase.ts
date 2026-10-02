@@ -1,5 +1,5 @@
 import type { TernClient } from '@shared/backend/supabase';
-import type { WaterEntry } from '@water/models';
+import type { WaterEntry } from '@water/models/waterEntry';
 import type { WaterRepository } from './water.repository';
 
 type WaterRow = { id: string; oz: number; logged_on: string; logged_at: string };

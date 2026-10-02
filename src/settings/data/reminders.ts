@@ -5,7 +5,7 @@ import {
   planReminders,
   type PlanExtras,
   type ReminderConfig,
-} from '@settings/utils/reminders.plan';
+} from '@settings/models/reminderPlan';
 
 const CHANNEL_ID = 'reminders';
 

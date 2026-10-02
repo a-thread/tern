@@ -10,13 +10,7 @@ import {
   SubmitButton,
 } from './components';
 import { useSubmit } from './useSubmit';
-import {
-  MIN_PASSWORD,
-  isValidEmail,
-  isValidName,
-  isValidPassword,
-  passwordsMatch,
-} from './validation';
+import { isValidEmail, isValidName, isValidPassword, passwordsMatch, AccountLimits } from './validation';
 
 export default function CreateAccountScreen({
   onCreated,
@@ -80,7 +74,7 @@ export default function CreateAccountScreen({
         value={password}
         onChangeText={setPassword}
         invalid={!isValidPassword(password)}
-        errorMessage={`Password must be at least ${MIN_PASSWORD} characters`}
+        errorMessage={`Password must be at least ${AccountLimits.MIN_PASSWORD_LENGTH} characters`}
       />
       <FormField
         label='Confirm password'

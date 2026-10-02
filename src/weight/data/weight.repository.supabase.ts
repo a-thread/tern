@@ -1,5 +1,5 @@
 import type { TernClient } from '@shared/backend/supabase';
-import type { WeightEntry } from '@weight/models';
+import type { WeightEntry } from '@weight/models/weightEntry';
 import type { WeightRepository } from './weight.repository';
 
 type WeightRow = { id: string; lb: number | string; logged_at: string };

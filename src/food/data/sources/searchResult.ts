@@ -1,4 +1,4 @@
-import type { Tier } from '@food/models';
+import type { Tier } from '@food/models/foodEntry';
 
 /** A named amount of a food and what it weighs, e.g. "cup" = 158 g. */
 export type Portion = { label: string; grams: number };

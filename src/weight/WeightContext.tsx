@@ -4,7 +4,8 @@ import { createRequiredContext } from '@shared/state/createRequiredContext';
 import { useLoader } from '@shared/hooks/useLoader';
 import { usePersist } from '@shared/hooks/usePersist';
 import { newId } from '@shared/utils/id';
-import { computeTrend, type WeightEntry } from './models';
+import { computeTrend } from '@weight/models/weightTrend';
+import type { WeightEntry } from '@weight/models/weightEntry';
 
 type WeightContextValue = {
   /** Newest first. */

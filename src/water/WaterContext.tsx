@@ -8,7 +8,7 @@ import { usePersist } from '@shared/hooks/usePersist';
 import { newId } from '@shared/utils/id';
 import { useSettings } from '@settings/SettingsContext';
 import { useAward } from '@journey/hooks/useAward';
-import { dayTotal, isValidDrink, lastDrink, waterProgress, type WaterEntry } from './models';
+import { dayTotal, isValidDrink, lastDrink, waterProgress, type WaterEntry } from '@water/models/waterEntry';
 
 type WaterContextValue = {
   /** False until today's drinks have loaded once. */

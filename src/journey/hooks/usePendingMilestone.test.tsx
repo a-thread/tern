@@ -11,11 +11,11 @@ import { FoodProvider } from '@food/FoodContext';
 import { createMemoryFoodRepository } from '@food/data/food.repository';
 import { createMemoryWaypointsRepository } from '@journey/data/waypoints.repository';
 import { WaypointsProvider, useWaypoints } from '@journey/WaypointsContext';
-import { MILESTONE_STOPS } from '@journey/models';
+import { Milestones } from '@journey/models/milestone';
 import { usePendingMilestone } from './usePendingMilestone';
 
-const FIRST_STOP = MILESTONE_STOPS[0];
-const SECOND_STOP = MILESTONE_STOPS[1];
+const FIRST_STOP = Milestones.STOPS[0];
+const SECOND_STOP = Milestones.STOPS[1];
 
 /** A ledger holding `total` from before today, with no awards made today. */
 const ledgerWith = (total: number) => createMemoryWaypointsRepository(total, []);

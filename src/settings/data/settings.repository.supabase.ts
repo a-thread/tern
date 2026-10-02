@@ -1,5 +1,5 @@
 import type { TernClient } from '@shared/backend/supabase';
-import type { AppSettings } from '@settings/SettingsContext';
+import type { AppSettings } from '@settings/models/appSettings';
 import type { SettingsRepository } from './settings.repository';
 
 export function createSupabaseSettingsRepository(

@@ -16,7 +16,7 @@ import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { colors, font, space } from '@shared/theme';
 import { FoodApiError } from '@food/data/sources/http';
 import { useSessionAdditions } from '@food/hooks/useSessionAdditions';
-import { describeAdditions } from '@food/utils/sessionAdditions';
+import { describeAdditions } from '@food/models/sessionAdditions';
 import AddedBanner from '@food/components/AddedBanner';
 import { getProductByBarcode, isValidBarcode } from '@food/data/sources/openFoodFacts';
 import type { LogFoodStackParamList } from '@food/navigation';

@@ -4,9 +4,9 @@ import { useBackend } from '@shared/state/BackendContext';
 import { useDayKey } from '@shared/hooks/useDayKey';
 import { addDays } from '@shared/utils/date';
 import { useFood } from '@food/FoodContext';
-import type { FoodEntry } from '@food/models';
-import { recentFoods } from '@food/utils/recentFoods';
-import { recentMeals } from '@food/utils/recentMeals';
+import type { FoodEntry } from '@food/models/foodEntry';
+import { recentFoods } from '@food/models/recentFoods';
+import { recentMeals } from '@food/models/recentMeals';
 
 const RECENT_DAYS = 14;
 const MINE_DAYS = 90;

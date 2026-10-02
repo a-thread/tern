@@ -22,23 +22,10 @@ import {
 import { useToast } from '@shared/state/ToastContext';
 import { newId } from '@shared/utils/id';
 import { useMedication } from '@medication/MedicationContext';
-import {
-  MAX_MEDICATIONS,
-  MAX_MED_NAME,
-  cleanMedName,
-  newMedication,
-  validateMedName,
-  type Medication,
-} from '@medication/models';
+import { cleanMedName, newMedication, validateMedName, type Medication, MedicationLimits } from '@medication/models/medication';
 import { useSettings } from '@settings/SettingsContext';
 import TimeStepperRow from '@settings/components/TimeStepperRow';
-import {
-  REMINDER_STEP_MINUTES,
-  formatMinutes,
-  stepMinutes,
-  stepWeekday,
-  weekdayPlural,
-} from '@settings/utils/reminders.plan';
+import { formatMinutes, stepMinutes, stepWeekday, weekdayPlural, Reminders } from '@settings/models/reminderPlan';
 import type { SettingsStackParamList } from '@settings/navigation';
 
 type Props = NativeStackScreenProps<SettingsStackParamList, 'Medication'>;
@@ -98,7 +85,7 @@ export default function MedicationScreen({ navigation }: Props) {
           />
         ))}
 
-        {meds.length < MAX_MEDICATIONS ? (
+        {meds.length < MedicationLimits.MAX_COUNT ? (
           <>
             <GroupLabel>{meds.length ? 'Add another' : 'Add a medication'}</GroupLabel>
             <View style={s.addRow}>
@@ -108,7 +95,7 @@ export default function MedicationScreen({ navigation }: Props) {
                 onSubmitEditing={add}
                 placeholder='Name, e.g. Vitamin D'
                 placeholderTextColor={colors.ink3}
-                maxLength={MAX_MED_NAME}
+                maxLength={MedicationLimits.MAX_NAME_LENGTH}
                 autoCapitalize='sentences'
                 returnKeyType='done'
                 accessibilityLabel='Medication name'
@@ -125,7 +112,7 @@ export default function MedicationScreen({ navigation }: Props) {
             </View>
           </>
         ) : (
-          <FootNote>{`You’re tracking the most Tern can hold (${MAX_MEDICATIONS}).`}</FootNote>
+          <FootNote>{`You’re tracking the most Tern can hold (${MedicationLimits.MAX_COUNT}).`}</FootNote>
         )}
       </ScrollView>
     </View>
@@ -171,7 +158,7 @@ function MedicationCard({
             onChangeText={setName}
             onBlur={saveName}
             onSubmitEditing={saveName}
-            maxLength={MAX_MED_NAME}
+            maxLength={MedicationLimits.MAX_NAME_LENGTH}
             returnKeyType='done'
             accessibilityLabel={`Name of ${med.name}`}
             style={s.nameInput}
@@ -205,7 +192,7 @@ function MedicationCard({
         <TimeStepperRow
           label='Due'
           value={formatMinutes(med.at)}
-          onStep={(d) => onChange({ at: stepMinutes(med.at, d * REMINDER_STEP_MINUTES) })}
+          onStep={(d) => onChange({ at: stepMinutes(med.at, d * Reminders.STEP_MINUTES) })}
         />
         <ToggleRow
           title='Remind me'

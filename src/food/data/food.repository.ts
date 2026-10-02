@@ -1,5 +1,5 @@
 import { foodLog as seed } from './food.mock';
-import type { FoodEntry } from '@food/models';
+import type { FoodEntry } from '@food/models/foodEntry';
 
 export type NewFoodEntry = Omit<FoodEntry, 'id'>;
 

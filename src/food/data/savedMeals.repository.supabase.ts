@@ -1,5 +1,5 @@
 import type { TernClient } from '@shared/backend/supabase';
-import type { SavedMeal, SavedMealItem } from '@food/utils/savedMeals';
+import type { SavedMeal, SavedMealItem } from '@food/models/savedMeals';
 import type { SavedMealsRepository } from './savedMeals.repository';
 
 type Row = { id: string; name: string; items: SavedMealItem[]; created_at: string };

@@ -10,7 +10,8 @@ import { useDayKey } from '@shared/hooks/useDayKey';
 import { addDays } from '@shared/utils/date';
 import { useSettings } from '@settings/SettingsContext';
 import { useUnits } from '@settings/hooks/useUnits';
-import { averageDaily, bucketWater, totalsByDay } from '@water/models';
+import { averageDaily, bucketWater } from '@water/models/waterBars';
+import { totalsByDay } from '@water/models/waterEntry';
 import { TrendRanges, type TrendRange } from '@shared/models/trendRange';
 import { useWater } from '@water/WaterContext';
 

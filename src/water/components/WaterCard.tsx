@@ -6,7 +6,7 @@ import { colors, font, radius, space } from '@shared/theme';
 import { Card, ProgressBar } from '@shared/components/ui';
 import { useToast } from '@shared/state/ToastContext';
 import { useUnits } from '@settings/hooks/useUnits';
-import { MAX_DRINK_OZ } from '@water/models';
+import { WaterLimits } from '@water/models/waterEntry';
 import { useWater } from '@water/WaterContext';
 
 /** Today's water on the Food screen: progress toward the goal, quick-add drink sizes and an undo. */
@@ -20,7 +20,7 @@ export default function WaterCard() {
     const typed = parseFloat((custom ?? '').replace(',', '.'));
     const oz = Number.isFinite(typed) ? fromDisplayVolume(typed) : NaN;
     if (!addWater(oz)) {
-      toast.show(`Enter an amount up to ${toDisplayVolume(MAX_DRINK_OZ)} ${volumeLabel}.`);
+      toast.show(`Enter an amount up to ${toDisplayVolume(WaterLimits.MAX_DRINK_OZ)} ${volumeLabel}.`);
       return;
     }
     setCustom(null);

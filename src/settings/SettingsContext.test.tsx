@@ -5,7 +5,8 @@ import {
   BackendProvider,
   createMemoryBackend,
 } from '@shared/state/BackendContext';
-import { SettingsProvider, changesAnything, useSettings } from './SettingsContext';
+import { SettingsProvider, useSettings } from './SettingsContext';
+import { changesAnything } from '@settings/models/appSettings';
 
 async function setup() {
   const backend = createMemoryBackend();

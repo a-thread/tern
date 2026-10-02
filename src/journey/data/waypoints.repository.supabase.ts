@@ -1,5 +1,5 @@
 import type { TernClient } from '@shared/backend/supabase';
-import type { WaypointSource } from '@journey/models';
+import type { WaypointSource } from '@journey/models/waypoint';
 import type { WaypointsRepository } from './waypoints.repository';
 
 export function createSupabaseWaypointsRepository(

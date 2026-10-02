@@ -1,6 +1,6 @@
 import React from 'react';
 import { SegmentedControl } from '@shared/components/ui';
-import type { FoodEntry } from '@food/models';
+import type { FoodEntry } from '@food/models/foodEntry';
 
 type Meal = FoodEntry['meal'];
 

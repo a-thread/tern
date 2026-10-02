@@ -2,7 +2,7 @@ import { renderHook, act, waitFor } from '@testing-library/react-native';
 
 import { FoodApiError } from '@food/data/sources/http';
 import { searchProducts } from '@food/data/sources/openFoodFacts';
-import { SEARCH_DEBOUNCE_MS, clearSearchCache, useFoodSearch } from './useFoodSearch';
+import { clearSearchCache, useFoodSearch, FoodSearch } from './useFoodSearch';
 import type { SearchResult } from '@food/data/sources/searchResult';
 
 jest.mock('@food/data/sources/openFoodFacts', () => {
@@ -29,7 +29,7 @@ beforeEach(() => {
 });
 afterEach(() => jest.useRealTimers());
 
-const type = async (ms = SEARCH_DEBOUNCE_MS) => {
+const type = async (ms = FoodSearch.DEBOUNCE_MS) => {
   await act(async () => {
     jest.advanceTimersByTime(ms);
   });
@@ -49,9 +49,9 @@ describe('useFoodSearch', () => {
     const { result, rerender } = renderHook(({ q }: { q: string }) => useFoodSearch(q), { initialProps: { q: 'ro' } });
     expect(result.current.state.status).toBe('loading');
 
-    await type(SEARCH_DEBOUNCE_MS - 100);
+    await type(FoodSearch.DEBOUNCE_MS - 100);
     rerender({ q: 'rol' });
-    await type(SEARCH_DEBOUNCE_MS - 100);
+    await type(FoodSearch.DEBOUNCE_MS - 100);
     expect(search).not.toHaveBeenCalled(); // still typing
 
     await type(200);

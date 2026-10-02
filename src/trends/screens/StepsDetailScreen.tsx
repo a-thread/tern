@@ -10,11 +10,8 @@ import { StepBars, ConsistencyGrid } from '@shared/components/charts';
 import { useActivity } from '@today/ActivityContext';
 import { weekdayName } from '@shared/utils/date';
 import { useSettings } from '@settings/SettingsContext';
-import {
-  bucketSteps,
-  longestProtectedRun,
-  summarizeSteps,
-} from '@trends/models';
+import { bucketSteps } from '@trends/models/stepBars';
+import { longestProtectedRun, summarizeSteps } from '@trends/models/stepsSummary';
 import type { TrendsStackParamList } from '@trends/navigation';
 
 type Props = NativeStackScreenProps<TrendsStackParamList, 'StepsDetail'>;

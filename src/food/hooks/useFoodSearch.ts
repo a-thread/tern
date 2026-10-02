@@ -5,8 +5,12 @@ import { searchProducts } from '@food/data/sources/openFoodFacts';
 import { searchUsda } from '@food/data/sources/usda';
 import type { SearchResult } from '@food/data/sources/searchResult';
 
-export const SEARCH_DEBOUNCE_MS = 400;
-export const SEARCH_MIN_CHARS = 2;
+/** When food search starts looking. */
+export class FoodSearch {
+  static readonly DEBOUNCE_MS = 400;
+
+  static readonly MIN_CHARS = 2;
+}
 const CACHE_MAX = 60;
 
 export type SearchState =
@@ -55,7 +59,7 @@ export function useFoodSearch(
   const [state, setState] = useState<SearchState>({ status: 'idle' });
   const [attempt, setAttempt] = useState(0);
   const q = query.trim();
-  const active = enabled && q.length >= SEARCH_MIN_CHARS;
+  const active = enabled && q.length >= FoodSearch.MIN_CHARS;
   const cacheKey = `${source.key}:${q.toLowerCase()}`;
 
   useEffect(() => {
@@ -81,7 +85,7 @@ export function useFoodSearch(
         if (ctrl.signal.aborted) return;
         setState({ status: 'error', kind: e instanceof FoodApiError ? e.kind : 'network' });
       }
-    }, SEARCH_DEBOUNCE_MS);
+    }, FoodSearch.DEBOUNCE_MS);
 
     return () => {
       clearTimeout(timer);

@@ -15,10 +15,10 @@ import { colors, font, radius, space } from '@shared/theme';
 import { Group, GroupLabel, SheetNav } from '@shared/components/ui';
 import type { RootStackParamList } from '@shared/navigation/types';
 import { useToast } from '@shared/state/ToastContext';
-import { MEAL_OPTIONS } from '@food/models';
+import { Meals } from '@food/models/meals';
 import { useFood } from '@food/FoodContext';
 import { useSavedMeals } from '@food/SavedMealsContext';
-import { MAX_MEAL_NAME, findMealByName, validateMealName } from '@food/utils/savedMeals';
+import { findMealByName, validateMealName, SavedMealLimits } from '@food/models/savedMeals';
 import { useFoodDisplay } from '@food/hooks/useFoodDisplay';
 import ItemRow from '@food/components/ItemRow';
 
@@ -36,7 +36,7 @@ export default function SaveMealScreen({ navigation, route }: Props) {
   const [error, setError] = useState<string | null>(null);
 
   const items = foodLog.filter((f) => f.meal === meal);
-  const mealLabel = MEAL_OPTIONS.find((m) => m.key === meal)?.label ?? meal;
+  const mealLabel = Meals.OPTIONS.find((m) => m.key === meal)?.label ?? meal;
   const calories = Math.round(items.reduce((sum, f) => sum + f.calories * f.servings, 0));
 
   const submit = () => {
@@ -91,7 +91,7 @@ export default function SaveMealScreen({ navigation, route }: Props) {
             }}
             placeholder={`e.g. Usual ${mealLabel.toLowerCase()}`}
             placeholderTextColor={colors.ink3}
-            maxLength={MAX_MEAL_NAME}
+            maxLength={SavedMealLimits.MAX_NAME_LENGTH}
             autoFocus
             returnKeyType='done'
             onSubmitEditing={submit}

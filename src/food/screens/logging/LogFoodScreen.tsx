@@ -16,20 +16,15 @@ import { useDayKey } from '@shared/hooks/useDayKey';
 import { colors, font, radius, space, tierColors } from '@shared/theme';
 import { Group, GroupLabel, SheetNav, FootNote, Chevron, SegmentedControl } from '@shared/components/ui';
 import type { SearchResult } from '@food/data/sources/searchResult';
-import { filterFoods } from '@food/utils/recentFoods';
-import { filterRecentMeals, type RecentMeal } from '@food/utils/recentMeals';
-import {
-  useFoodSearch,
-  offSource,
-  usdaSource,
-  SEARCH_MIN_CHARS,
-} from '@food/hooks/useFoodSearch';
+import { filterFoods } from '@food/models/recentFoods';
+import { filterRecentMeals, type RecentMeal } from '@food/models/recentMeals';
+import { useFoodSearch, offSource, usdaSource, FoodSearch } from '@food/hooks/useFoodSearch';
 import { isUsdaEnabled } from '@food/data/sources/usda';
 import { useSavedMeals } from '@food/SavedMealsContext';
-import { filterMeals, savedMealTotals, type SavedMeal } from '@food/utils/savedMeals';
+import { filterMeals, savedMealTotals, type SavedMeal } from '@food/models/savedMeals';
 import { useLoggedFoods } from '@food/hooks/useLoggedFoods';
 import { useSessionAdditions } from '@food/hooks/useSessionAdditions';
-import { describeAdditions } from '@food/utils/sessionAdditions';
+import { describeAdditions } from '@food/models/sessionAdditions';
 import AddedBanner from '@food/components/AddedBanner';
 import { TierDot } from '@food/components/TierDot';
 import { useFoodDisplay } from '@food/hooks/useFoodDisplay';
@@ -46,7 +41,7 @@ export default function LogFoodScreen({ navigation, route }: Props) {
   const [query, setQuery] = useState('');
   const [filter, setFilter] = useState<(typeof FILTERS)[number]>('All');
   const trimmed = query.trim();
-  const searching = trimmed.length >= SEARCH_MIN_CHARS;
+  const searching = trimmed.length >= FoodSearch.MIN_CHARS;
 
   const logged = useLoggedFoods();
   // Adding a food returns here, so confirm what went in and offer Done. (Not when

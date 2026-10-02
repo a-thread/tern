@@ -1,5 +1,5 @@
 import { seedWeightEntries } from './weight.mock';
-import type { WeightEntry } from '@weight/models';
+import type { WeightEntry } from '@weight/models/weightEntry';
 
 export interface WeightRepository {
   /** Newest first. */

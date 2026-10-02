@@ -31,29 +31,31 @@ import { usePulseOnIncrease } from '@shared/hooks/useAnimatedNumber';
 import { useReplayOnFocus } from '@shared/hooks/useReplayOnFocus';
 import { AnimatedNumber, CountUp } from '@shared/components/AnimatedNumber';
 import type { RootStackParamList } from '@shared/navigation/types';
-import { dayTotals } from '@food/models';
+import { dayTotals } from '@food/models/foodEntry';
 import { useFood } from '@food/FoodContext';
 import { useWeight } from '@weight/WeightContext';
-import { formatLoggedAt } from '@weight/models';
+import { formatLoggedAt } from '@weight/models/weightEntry';
 import { useSettings } from '@settings/SettingsContext';
-import { formatMinutes } from '@settings/utils/reminders.plan';
+import { formatMinutes } from '@settings/models/reminderPlan';
 import { useUnits } from '@settings/hooks/useUnits';
 import { useFoodDisplay } from '@food/hooks/useFoodDisplay';
 import { useMedication } from '@medication/MedicationContext';
 import { useWater } from '@water/WaterContext';
 import { useMood } from '@mood/MoodContext';
-import { scoreWord } from '@mood/models';
-import { waypointRules } from '@journey/models';
+import { scoreWord } from '@mood/models/moodEntry';
+import { WaypointRules } from '@journey/models/waypoint';
 import { useWaypoints, type Celebration } from '@journey/WaypointsContext';
 import { usePendingMilestone } from '@journey/hooks/usePendingMilestone';
 import WaypointBurst from '@journey/components/WaypointBurst';
-import { leftToDo, todaySummary } from '@today/models';
+import { leftToDo } from '@today/models/leftToDo';
+import { todaySummary } from '@today/models/todaySummary';
 import { useActivity } from '@today/ActivityContext';
-import { greetingFor, type DayRecord } from '@today/models';
+import { greetingFor } from '@today/models/greeting';
+import type { DayRecord } from '@today/models/dayRecord';
 import { factForDay } from '@today/utils/ternFacts';
 
 const REST_DAY_POINTS =
-  waypointRules.find((r) => r.id === 'rest')?.points ?? 10;
+  WaypointRules.ALL.find((r) => r.id === 'rest')?.points ?? 10;
 
 type Point = { x: number; y: number };
 type Playing = { celebration: Celebration; origin: Point; target: Point };
@@ -627,7 +629,7 @@ export default function TodayScreen() {
           id={playing.celebration.id}
           points={playing.celebration.points}
           label={
-            waypointRules.find((r) => r.id === playing.celebration.source)
+            WaypointRules.ALL.find((r) => r.id === playing.celebration.source)
               ?.label ?? ''
           }
           origin={playing.origin}

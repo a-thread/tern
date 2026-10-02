@@ -7,7 +7,8 @@ import { useLoader } from '@shared/hooks/useLoader';
 import { usePersist } from '@shared/hooks/usePersist';
 import { parseDayKey } from '@shared/utils/date';
 import { useSettings } from '@settings/SettingsContext';
-import { dueMeds, takenMeds, type Medication } from './models';
+import { dueMeds, takenMeds } from '@medication/models/schedule';
+import type { Medication } from '@medication/models/medication';
 
 type MedicationContextValue = {
   /** False until today's doses have loaded once. */

@@ -1,4 +1,4 @@
-import type { FoodEntry } from './models';
+import type { FoodEntry } from '@food/models/foodEntry';
 import type { SearchResult } from '@food/data/sources/searchResult';
 
 /**

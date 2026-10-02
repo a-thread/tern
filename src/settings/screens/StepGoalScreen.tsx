@@ -11,15 +11,15 @@ import {
   ToggleRow,
 } from '@shared/components/ui';
 import { useActivity } from '@today/ActivityContext';
-import { STEP_GOAL_MAX, STEP_GOAL_MIN, suggestGoal } from '@today/models';
+import { suggestGoal, StepGoal } from '@today/models/stepGoal';
 import { useSettings } from '@settings/SettingsContext';
 import { useSliderValue } from '@settings/hooks/useSliderValue';
 import type { SettingsStackParamList } from '@settings/navigation';
 
 type Props = NativeStackScreenProps<SettingsStackParamList, 'StepGoal'>;
 
-const MIN = STEP_GOAL_MIN;
-const MAX = STEP_GOAL_MAX;
+const MIN = StepGoal.MIN;
+const MAX = StepGoal.MAX;
 const PRESETS = [4800, 6000, 8000, 10000];
 
 export default function StepGoalScreen({ navigation }: Props) {

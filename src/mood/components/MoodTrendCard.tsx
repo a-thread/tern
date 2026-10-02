@@ -10,7 +10,8 @@ import type { RootStackParamList } from '@shared/navigation/types';
 import { useDayKey } from '@shared/hooks/useDayKey';
 import { addDays } from '@shared/utils/date';
 import { TrendRanges, type TrendRange } from '@shared/models/trendRange';
-import { average, entriesBetween, seriesOf, type MoodMetric } from '@mood/models';
+import { average, entriesBetween, seriesOf } from '@mood/models/moodStats';
+import type { MoodMetric } from '@mood/models/moodEntry';
 import { useMood } from '@mood/MoodContext';
 
 

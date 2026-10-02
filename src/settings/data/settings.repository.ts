@@ -1,4 +1,4 @@
-import type { AppSettings } from '@settings/SettingsContext';
+import type { AppSettings } from '@settings/models/appSettings';
 
 export interface SettingsRepository {
   /** Saved settings, or null if the user has never saved any. */

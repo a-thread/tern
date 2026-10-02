@@ -18,9 +18,9 @@ import { useToast } from '@shared/state/ToastContext';
 import { TierDot } from '@food/components/TierDot';
 import { useFoodDisplay } from '@food/hooks/useFoodDisplay';
 import { useSavedMeals } from '@food/SavedMealsContext';
-import { isDraftDirty, scaledTotals } from '@food/utils/mealDraft';
-import { MAX_MEAL_ITEMS, MAX_MEAL_NAME } from '@food/utils/savedMeals';
-import { SERVING_STEP } from '@food/utils/servings';
+import { isDraftDirty, scaledTotals } from '@food/models/mealDraft';
+import { SavedMealLimits } from '@food/models/savedMeals';
+import { Servings } from '@food/models/servings';
 import type { LogFoodStackParamList } from '@food/navigation';
 
 type Props = NativeStackScreenProps<LogFoodStackParamList, 'MealEditor'>;
@@ -55,7 +55,7 @@ export default function MealEditorScreen({ navigation }: Props) {
 
   const isNew = draft.id === null;
   const totals = scaledTotals(draft.items, 1);
-  const atLimit = draft.items.length >= MAX_MEAL_ITEMS;
+  const atLimit = draft.items.length >= SavedMealLimits.MAX_ITEMS;
 
   const cancel = () => {
     const close = () => {
@@ -105,7 +105,7 @@ export default function MealEditorScreen({ navigation }: Props) {
             }}
             placeholder='e.g. Post-run snack'
             placeholderTextColor={colors.ink3}
-            maxLength={MAX_MEAL_NAME}
+            maxLength={SavedMealLimits.MAX_NAME_LENGTH}
             autoFocus={isNew}
             returnKeyType='done'
             accessibilityLabel='Meal name'
@@ -136,8 +136,8 @@ export default function MealEditorScreen({ navigation }: Props) {
               </View>
               <Stepper
                 value={`${item.servings}×`}
-                onDecrement={() => stepDraftItem(i, -SERVING_STEP)}
-                onIncrement={() => stepDraftItem(i, SERVING_STEP)}
+                onDecrement={() => stepDraftItem(i, -Servings.STEP)}
+                onIncrement={() => stepDraftItem(i, Servings.STEP)}
                 decrementLabel={`Less ${item.name}`}
                 incrementLabel={`More ${item.name}`}
                 valueMinWidth={32}
@@ -158,7 +158,7 @@ export default function MealEditorScreen({ navigation }: Props) {
               <Path d='M12 5v14M5 12h14' stroke={colors.coral} strokeWidth={3} strokeLinecap='round' />
             </Svg>
             <Text style={[s.name, { color: colors.coral }]}>
-              {atLimit ? `Up to ${MAX_MEAL_ITEMS} foods` : 'Add food'}
+              {atLimit ? `Up to ${SavedMealLimits.MAX_ITEMS} foods` : 'Add food'}
             </Text>
           </Pressable>
         </Group>

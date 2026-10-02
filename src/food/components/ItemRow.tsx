@@ -2,7 +2,7 @@ import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 
 import { colors, font, tierColors } from '@shared/theme';
-import type { FoodEntry } from '@food/models';
+import type { FoodEntry } from '@food/models/foodEntry';
 import { TierDot } from './TierDot';
 import { useFoodDisplay } from '@food/hooks/useFoodDisplay';
 

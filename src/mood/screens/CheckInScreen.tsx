@@ -18,17 +18,8 @@ import { WeightTrend } from '@shared/components/charts';
 import type { RootStackParamList } from '@shared/navigation/types';
 import { useDayKey } from '@shared/hooks/useDayKey';
 import { addDays } from '@shared/utils/date';
-import {
-  DEFAULT_SCORE,
-  MAX_SCORE,
-  MIN_SCORE,
-  average,
-  clampScore,
-  entriesBetween,
-  scoreWord,
-  seriesOf,
-  type MoodMetric,
-} from '@mood/models';
+import { clampScore, scoreWord, type MoodMetric, MoodScale } from '@mood/models/moodEntry';
+import { average, entriesBetween, seriesOf } from '@mood/models/moodStats';
 import { scoreColor, scoreTint, smile } from '@mood/utils/scoreColor';
 import MoodFace from '@mood/components/MoodFace';
 import { useMood } from '@mood/MoodContext';
@@ -44,7 +35,7 @@ const METRICS: { id: MoodMetric; label: string; hint: string }[] = [
   { id: 'stress', label: 'Stress', hint: '1 is calm, 10 is very high.' },
 ];
 
-const PIPS = Array.from({ length: MAX_SCORE - MIN_SCORE + 1 }, (_, i) => MIN_SCORE + i);
+const PIPS = Array.from({ length: MoodScale.MAX - MoodScale.MIN + 1 }, (_, i) => MoodScale.MIN + i);
 
 export default function CheckInScreen({ navigation }: Props) {
   const insets = useSafeAreaInsets();
@@ -52,7 +43,7 @@ export default function CheckInScreen({ navigation }: Props) {
   const { entries, today: todays, checkIn, clearToday } = useMood();
 
   const last = entries[entries.length - 1];
-  const start = (m: MoodMetric) => todays?.[m] ?? last?.[m] ?? DEFAULT_SCORE;
+  const start = (m: MoodMetric) => todays?.[m] ?? last?.[m] ?? MoodScale.DEFAULT;
   const [scores, setScores] = useState({ mood: start('mood'), stress: start('stress') });
   const [active, setActive] = useState<MoodMetric>('mood');
   const scoresRef = useRef(scores);
@@ -96,7 +87,7 @@ export default function CheckInScreen({ navigation }: Props) {
     const list: { v: number; d: number; visible: boolean }[] = [];
     for (let d = -TICKS_EACH_SIDE; d <= TICKS_EACH_SIDE; d++) {
       const v = value + d;
-      list.push({ v, d, visible: v >= MIN_SCORE && v <= MAX_SCORE });
+      list.push({ v, d, visible: v >= MoodScale.MIN && v <= MoodScale.MAX });
     }
     return list;
   }, [value]);
@@ -153,11 +144,11 @@ export default function CheckInScreen({ navigation }: Props) {
           <Animated.View style={[s.display, { transform: [{ scale: pop }] }]}>
             <Text
               style={[s.val, { color }]}
-              accessibilityLabel={`${meta.label} ${value} out of ${MAX_SCORE}`}
+              accessibilityLabel={`${meta.label} ${value} out of ${MoodScale.MAX}`}
             >
               {value}
             </Text>
-            <Text style={s.unit}>{`/ ${MAX_SCORE}`}</Text>
+            <Text style={s.unit}>{`/ ${MoodScale.MAX}`}</Text>
           </Animated.View>
           <Text style={[s.word, { color }]}>{scoreWord(active, value)}</Text>
 

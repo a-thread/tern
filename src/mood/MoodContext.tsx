@@ -8,7 +8,8 @@ import { usePersist } from '@shared/hooks/usePersist';
 import { addDays } from '@shared/utils/date';
 import { useSettings } from '@settings/SettingsContext';
 import { useAward } from '@journey/hooks/useAward';
-import { entryFor, isValidScore, type MoodEntry } from './models';
+import { entryFor } from '@mood/models/moodStats';
+import { isValidScore, type MoodEntry } from '@mood/models/moodEntry';
 
 /** How far back the context keeps check-ins: enough for the longest Trends range. */
 export const HISTORY_DAYS = 180;

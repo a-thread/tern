@@ -1,4 +1,4 @@
-import type { WaterEntry } from '@water/models';
+import type { WaterEntry } from '@water/models/waterEntry';
 
 /** Each drink, by local day. */
 export interface WaterRepository {

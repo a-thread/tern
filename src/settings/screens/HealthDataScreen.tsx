@@ -15,7 +15,7 @@ import {
   Chip,
   FootNote,
 } from '@shared/components/ui';
-import { formatLoggedAt } from '@weight/models';
+import { formatLoggedAt } from '@weight/models/weightEntry';
 import { useActivity, useLastSynced } from '@today/ActivityContext';
 import { useSettings } from '@settings/SettingsContext';
 import type { SettingsStackParamList } from '@settings/navigation';

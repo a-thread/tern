@@ -2,7 +2,7 @@ import { useEffect } from 'react';
 
 import { useDayKey } from '@shared/hooks/useDayKey';
 import { useWaypoints } from '@journey/WaypointsContext';
-import { pointsFor, type WaypointSource } from '@journey/models';
+import { pointsFor, type WaypointSource } from '@journey/models/waypoint';
 
 /**
  * Keeps today's award for `source` in step with `earned`: given when it becomes true,

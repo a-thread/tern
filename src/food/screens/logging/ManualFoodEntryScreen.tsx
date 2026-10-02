@@ -12,7 +12,7 @@ import { NativeStackScreenProps } from '@react-navigation/native-stack';
 
 import { colors, font, radius, space } from '@shared/theme';
 import { Group, GroupLabel, SheetNav } from '@shared/components/ui';
-import type { Tier } from '@food/models';
+import type { Tier } from '@food/models/foodEntry';
 import { useFood } from '@food/FoodContext';
 import { useSavedMeals } from '@food/SavedMealsContext';
 import { TierPicker } from '@food/components/TierPicker';

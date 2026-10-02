@@ -1,5 +1,5 @@
 import type { TernClient } from '@shared/backend/supabase';
-import type { MoodEntry } from '@mood/models';
+import type { MoodEntry } from '@mood/models/moodEntry';
 import type { MoodRepository } from './mood.repository';
 
 type MoodRow = { day: string; mood: number; stress: number };

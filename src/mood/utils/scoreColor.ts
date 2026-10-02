@@ -1,5 +1,5 @@
 import { colors } from '@shared/theme';
-import { MAX_SCORE, MIN_SCORE, clampScore, type MoodMetric } from '@mood/models';
+import { clampScore, type MoodMetric, MoodScale } from '@mood/models/moodEntry';
 
 const channels = (hex: string) =>
   [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16)) as [number, number, number];
@@ -27,7 +27,7 @@ const STOPS: Record<MoodMetric, [string, string, string]> = {
 };
 
 export function scoreColor(metric: MoodMetric, score: number): string {
-  const t = (clampScore(score) - MIN_SCORE) / (MAX_SCORE - MIN_SCORE);
+  const t = (clampScore(score) - MoodScale.MIN) / (MoodScale.MAX - MoodScale.MIN);
   const [low, mid, high] = STOPS[metric];
   return t < 0.5 ? mix(low, mid, t * 2) : mix(mid, high, (t - 0.5) * 2);
 }

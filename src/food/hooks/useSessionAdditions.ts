@@ -1,8 +1,8 @@
 import { useMemo, useState } from 'react';
 
 import { useFood } from '@food/FoodContext';
-import type { FoodEntry } from '@food/models';
-import { additionsSince } from '@food/utils/sessionAdditions';
+import type { FoodEntry } from '@food/models/foodEntry';
+import { additionsSince } from '@food/models/sessionAdditions';
 
 /**
  * The foods added to today's log since this screen appeared. The Add food

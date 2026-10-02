@@ -5,13 +5,13 @@ import { NativeStackScreenProps } from '@react-navigation/native-stack';
 
 import { colors, font, radius, space } from '@shared/theme';
 import { Group, GroupLabel, SheetNav, Stepper } from '@shared/components/ui';
-import { MEAL_OPTIONS } from '@food/models';
+import { Meals } from '@food/models/meals';
 import { useFood } from '@food/FoodContext';
 import { MealPicker } from '@food/components/MealPicker';
 import { useFoodDisplay } from '@food/hooks/useFoodDisplay';
 import { useLoggedFoods } from '@food/hooks/useLoggedFoods';
-import { itemsToEntries, scaleServings } from '@food/utils/savedMeals';
-import { scaledTotals, stepScale } from '@food/utils/mealDraft';
+import { itemsToEntries, scaleServings } from '@food/models/savedMeals';
+import { scaledTotals, stepScale } from '@food/models/mealDraft';
 import type { LogFoodStackParamList } from '@food/navigation';
 import ItemRow from '@food/components/ItemRow';
 
@@ -44,7 +44,7 @@ export default function RecentMealScreen({ navigation, route }: Props) {
   }
 
   const totals = scaledTotals(recent.items, scale);
-  const targetLabel = MEAL_OPTIONS.find((m) => m.key === target)?.label ?? target;
+  const targetLabel = Meals.OPTIONS.find((m) => m.key === target)?.label ?? target;
 
   const add = () => {
     addFoodEntries(itemsToEntries(recent.items, target, scale));
@@ -97,7 +97,7 @@ export default function RecentMealScreen({ navigation, route }: Props) {
 
         <GroupLabel>Add to</GroupLabel>
         <View style={s.card}>
-          <MealPicker value={target} onChange={setTarget} options={MEAL_OPTIONS} />
+          <MealPicker value={target} onChange={setTarget} options={Meals.OPTIONS} />
         </View>
 
         <Pressable style={s.bigBtn} onPress={add}>

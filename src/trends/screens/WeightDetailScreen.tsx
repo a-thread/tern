@@ -10,8 +10,8 @@ import { WeightTrend } from '@shared/components/charts';
 import { useWeight } from '@weight/WeightContext';
 import { useSettings } from '@settings/SettingsContext';
 import { useUnits } from '@settings/hooks/useUnits';
-import { formatLoggedAt, signedChange } from '@weight/models';
-import { weightTrendFor } from '@trends/models';
+import { formatLoggedAt, signedChange } from '@weight/models/weightEntry';
+import { weightTrendFor } from '@trends/models/weightTrend';
 import type { TrendsStackParamList } from '@trends/navigation';
 
 type Props = NativeStackScreenProps<TrendsStackParamList, 'WeightDetail'>;

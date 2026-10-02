@@ -17,12 +17,8 @@ import { JourneyRoute } from '@shared/components/charts';
 import { useReplayOnFocus } from '@shared/hooks/useReplayOnFocus';
 import { AnimatedNumber } from '@shared/components/AnimatedNumber';
 import { formatShortDate, monthName } from '@shared/utils/date';
-import {
-  daysWithWaypoints,
-  migrationProgress,
-  milestonesFor,
-  waypointRules,
-} from '@journey/models';
+import { daysWithWaypoints, WaypointRules } from '@journey/models/waypoint';
+import { migrationProgress, milestonesFor } from '@journey/models/milestone';
 import { useSettings } from '@settings/SettingsContext';
 import { useWaypoints } from '@journey/WaypointsContext';
 
@@ -163,7 +159,7 @@ export default function JourneyScreen() {
 
         <GroupLabel>How waypoints are earned</GroupLabel>
         <Group>
-          {waypointRules
+          {WaypointRules.ALL
             .filter(
               (rule) =>
                 (rule.id !== 'water' || settings.trackWater) &&

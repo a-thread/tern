@@ -17,20 +17,17 @@ import { useActivity } from '@today/ActivityContext';
 import { useDayKey } from '@shared/hooks/useDayKey';
 import { addDays, monthName } from '@shared/utils/date';
 import { useBackend } from '@shared/state/BackendContext';
-import { averageIntake, type IntakeAverage } from '@food/models';
+import { averageIntake, type IntakeAverage } from '@food/models/intake';
 import { useFood } from '@food/FoodContext';
 import { useWeight } from '@weight/WeightContext';
-import { signedChange } from '@weight/models';
+import { signedChange } from '@weight/models/weightEntry';
 import { useSettings } from '@settings/SettingsContext';
 import WaterTrendCard from '@water/components/WaterTrendCard';
 import MoodTrendCard from '@mood/components/MoodTrendCard';
 import { useUnits } from '@settings/hooks/useUnits';
-import {
-  bucketSteps,
-  longestProtectedRun,
-  summarizeSteps,
-  weightTrendFor,
-} from '@trends/models';
+import { bucketSteps } from '@trends/models/stepBars';
+import { longestProtectedRun, summarizeSteps } from '@trends/models/stepsSummary';
+import { weightTrendFor } from '@trends/models/weightTrend';
 import type { TrendsStackParamList } from '@trends/navigation';
 
 type Props = NativeStackScreenProps<TrendsStackParamList, 'TrendsHome'>;

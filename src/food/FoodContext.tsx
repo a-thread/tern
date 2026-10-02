@@ -5,7 +5,7 @@ import { useDayKey } from '@shared/hooks/useDayKey';
 import { useLoader } from '@shared/hooks/useLoader';
 import { usePersist } from '@shared/hooks/usePersist';
 import { newId } from '@shared/utils/id';
-import type { FoodEntry } from './models';
+import type { FoodEntry } from '@food/models/foodEntry';
 import type { NewFoodEntry } from '@food/data/food.repository';
 
 type FoodContextValue = {

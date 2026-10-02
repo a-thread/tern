@@ -9,14 +9,8 @@ import { usePersist } from '@shared/hooks/usePersist';
 import { addDays } from '@shared/utils/date';
 import { useSettings } from '@settings/SettingsContext';
 import { useAward } from '@journey/hooks/useAward';
-import {
-  buildDays,
-  computeStreak,
-  goalFor,
-  restDaysLeft,
-  weekOf,
-  type DayRecord,
-} from './models';
+import { buildDays, computeStreak, restDaysLeft, weekOf, type DayRecord } from '@today/models/dayRecord';
+import { goalFor } from '@today/models/stepGoal';
 import type { StepsStatus } from '@today/data/steps.repository';
 import { sameDays, sameSteps } from '@today/utils/sameData';
 

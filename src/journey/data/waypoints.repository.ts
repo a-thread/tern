@@ -1,6 +1,6 @@
 import { addDays } from '@shared/utils/date';
 import { INITIAL_WAYPOINTS } from './waypoints.mock';
-import { pointsFor, type LedgerEvent, type WaypointSource } from '@journey/models';
+import { pointsFor, type LedgerEvent, type WaypointSource } from '@journey/models/waypoint';
 
 export type WaypointsSnapshot = {
   /** Lifetime total: the sum of every award in the ledger. */

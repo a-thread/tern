@@ -1,5 +1,5 @@
 import type { TernClient } from '@shared/backend/supabase';
-import type { FoodEntry, Tier } from '@food/models';
+import type { FoodEntry, Tier } from '@food/models/foodEntry';
 import type { FoodRepository, NewFoodEntry } from './food.repository';
 
 type FoodRow = {
