@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-import { colors, font, space } from '../../theme';
+import { colors, font, space } from '@shared/theme';
 
 export function ProgressBar({
   value,

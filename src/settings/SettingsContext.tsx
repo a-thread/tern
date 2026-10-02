@@ -13,16 +13,16 @@ import { useToast } from '@shared/state/ToastContext';
 import type { Units } from '@shared/utils/units';
 import { dayKey } from '@shared/utils/date';
 import { recordGoalChange, type GoalChange } from '@today/models';
-import { mergeMedications, type Medication } from '@medication/medications';
+import { mergeMedications, type Medication } from '@medication/models';
 import { DEFAULT_WATER_GOAL_OZ, clampWaterGoal } from '@water/models';
-import { settingsSeed } from './mock';
+import { settingsSeed } from '@settings/data/settings.mock';
 import {
   DEFAULT_REMINDERS,
   DEFAULT_WEIGH_IN_FREQUENCY,
   mergeReminders,
   type ReminderConfig,
   type WeighInFrequency,
-} from './reminders.plan';
+} from '@settings/utils/reminders.plan';
 
 export type ReminderSettings = ReminderConfig;
 

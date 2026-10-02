@@ -12,7 +12,7 @@ import Svg, {
   G,
   Text as SvgText,
 } from 'react-native-svg';
-import { colors, font, space } from '../theme';
+import { colors, font, space } from '@shared/theme';
 import { TERN_PATH } from './TernMark';
 
 const AnimatedPath = Animated.createAnimatedComponent(Path);

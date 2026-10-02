@@ -3,54 +3,54 @@ import { supabase } from '@shared/backend/supabase';
 import {
   createMemoryFoodRepository,
   type FoodRepository,
-} from '@food/repository';
-import { createSupabaseFoodRepository } from '@food/repository.supabase';
+} from '@food/data/food.repository';
+import { createSupabaseFoodRepository } from '@food/data/food.repository.supabase';
 import {
   createMemoryWeightRepository,
   type WeightRepository,
-} from '@weight/repository';
-import { createSupabaseWeightRepository } from '@weight/repository.supabase';
+} from '@weight/data/weight.repository';
+import { createSupabaseWeightRepository } from '@weight/data/weight.repository.supabase';
 import {
   createMemorySettingsRepository,
   type SettingsRepository,
-} from '@settings/repository';
-import { createSupabaseSettingsRepository } from '@settings/repository.supabase';
+} from '@settings/data/settings.repository';
+import { createSupabaseSettingsRepository } from '@settings/data/settings.repository.supabase';
 import {
   createMemoryWaypointsRepository,
   type WaypointsRepository,
-} from '@journey/repository';
-import { createSupabaseWaypointsRepository } from '@journey/repository.supabase';
+} from '@journey/data/waypoints.repository';
+import { createSupabaseWaypointsRepository } from '@journey/data/waypoints.repository.supabase';
 import {
   createMemoryStepsRepository,
   createUnavailableStepsRepository,
   type StepsRepository,
-} from '@today/steps.repository';
-import { createHealthConnectStepsRepository } from '@today/steps.healthconnect';
+} from '@today/data/steps.repository';
+import { createHealthConnectStepsRepository } from '@today/data/steps.healthconnect';
 import {
   createMemoryRestDaysRepository,
   type RestDaysRepository,
-} from '@today/restDays.repository';
-import { createSupabaseRestDaysRepository } from '@today/restDays.repository.supabase';
+} from '@today/data/restDays.repository';
+import { createSupabaseRestDaysRepository } from '@today/data/restDays.repository.supabase';
 import {
   createMemorySavedMealsRepository,
   type SavedMealsRepository,
-} from '@food/savedMeals.repository';
-import { createSupabaseSavedMealsRepository } from '@food/savedMeals.repository.supabase';
+} from '@food/data/savedMeals.repository';
+import { createSupabaseSavedMealsRepository } from '@food/data/savedMeals.repository.supabase';
 import {
   createMemoryMedicationRepository,
   type MedicationRepository,
-} from '@medication/repository';
-import { createSupabaseMedicationRepository } from '@medication/repository.supabase';
+} from '@medication/data/medication.repository';
+import { createSupabaseMedicationRepository } from '@medication/data/medication.repository.supabase';
 import {
   createMemoryWaterRepository,
   type WaterRepository,
-} from '@water/repository';
-import { createSupabaseWaterRepository } from '@water/repository.supabase';
+} from '@water/data/water.repository';
+import { createSupabaseWaterRepository } from '@water/data/water.repository.supabase';
 import {
   createMemoryMoodRepository,
   type MoodRepository,
-} from '@mood/repository';
-import { createSupabaseMoodRepository } from '@mood/repository.supabase';
+} from '@mood/data/mood.repository';
+import { createSupabaseMoodRepository } from '@mood/data/mood.repository.supabase';
 import type { DataRepository } from './dataRepository';
 import { createSupabaseDataRepository } from './dataRepository.supabase';
 

@@ -1,6 +1,6 @@
 import React from 'react';
 import Svg, { Path } from 'react-native-svg';
-import { colors } from '../../theme';
+import { colors } from '@shared/theme';
 
 export function Chevron({ color = colors.ink3 }: { color?: string }) {
   return (

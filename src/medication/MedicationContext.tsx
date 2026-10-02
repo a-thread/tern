@@ -13,7 +13,7 @@ import { useToast } from '@shared/state/ToastContext';
 import { useDayKey } from '@shared/hooks/useDayKey';
 import { parseDayKey } from '@shared/utils/date';
 import { useSettings } from '@settings/SettingsContext';
-import { dueMeds, takenMeds, type Medication } from './medications';
+import { dueMeds, takenMeds, type Medication } from './models';
 
 type MedicationContextValue = {
   /** False until today's doses have loaded once. */

@@ -20,7 +20,7 @@ import {
   stepItemServings,
   validateDraft,
   type MealDraft,
-} from './mealDraft';
+} from '@food/utils/mealDraft';
 import {
   cleanName,
   findMealByName,
@@ -29,7 +29,7 @@ import {
   validateMealName,
   type SavedMeal,
   type SavedMealItem,
-} from './savedMeals';
+} from '@food/utils/savedMeals';
 
 type SaveOutcome =
   | { ok: true; replaced: boolean; meal: SavedMeal }

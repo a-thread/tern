@@ -10,7 +10,7 @@ import { ToastProvider } from '@shared/state/ToastContext';
 import { dayKey, parseDayKey } from '@shared/utils/date';
 import { SettingsProvider, useSettings } from '@settings/SettingsContext';
 import { MedicationProvider, useMedication } from './MedicationContext';
-import { newMedication } from './medications';
+import { newMedication } from './models';
 
 const today = dayKey();
 const vitaminD = newMedication('Vitamin D', 'med-d');

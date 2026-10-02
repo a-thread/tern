@@ -1,6 +1,6 @@
 import type { NavigatorScreenParams } from '@react-navigation/native';
 import type { FoodEntry } from '@food/models';
-import type { SettingsStackParamList } from '@settings/types';
+import type { SettingsStackParamList } from '@settings/navigation';
 
 export type RewardParams = {
   kind: 'goal' | 'milestone' | 'loafing';

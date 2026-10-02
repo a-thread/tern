@@ -11,7 +11,7 @@ import { SettingsProvider, useSettings } from '@settings/SettingsContext';
 import { FoodProvider } from '@food/FoodContext';
 import { WaypointsProvider, useWaypoints } from '@journey/WaypointsContext';
 import { ActivityProvider, useActivity } from './ActivityContext';
-import type { StepsRepository } from './steps.repository';
+import type { StepsRepository } from '@today/data/steps.repository';
 
 const todayKey = dayKey();
 

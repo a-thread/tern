@@ -1,7 +1,7 @@
 import React from 'react';
 import { Text, type TextProps } from 'react-native';
 
-import { useAnimatedNumber, useCountUp } from '../hooks/useAnimatedNumber';
+import { useAnimatedNumber, useCountUp } from '@shared/hooks/useAnimatedNumber';
 
 /* Small components keep animation updates local to the number. */
 

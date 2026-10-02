@@ -12,7 +12,7 @@ import { useDayKey } from '@shared/hooks/useDayKey';
 import { useToast } from '@shared/state/ToastContext';
 import { newId } from '@shared/utils/id';
 import type { FoodEntry } from './models';
-import type { NewFoodEntry } from './repository';
+import type { NewFoodEntry } from '@food/data/food.repository';
 
 type FoodContextValue = {
   /** Today's entries. */

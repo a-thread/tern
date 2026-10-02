@@ -1,8 +1,69 @@
 # Architecture
 
-One folder per domain. Within a folder: `models.ts` for the pure rules (with
-`models.test.ts` beside it), a `*Context.tsx` holding the state, `repository.ts` and
-`repository.supabase.ts` for storage, and the screens.
+One folder per domain, and every domain has the same shape. The layout is a rule, not a
+habit: a file belongs in the folder for its kind, and code that passes CI but breaks the
+layout is still a review comment.
+
+## Feature layout
+
+```text
+src/<feature>/
+  <Feature>Context.tsx       the Feature Store: state, actions, derived values
+  <Feature>Context.test.tsx
+  models.ts                  types, enums and the core pure rules (+ models.test.ts)
+  navigation.ts              the feature's stack param list, if it has a stack
+  utils/                     other pure modules: no React, no storage, no network
+  data/                      every touch of the outside world, and nothing else
+    <name>.repository.ts           interface + in-memory implementation
+    <name>.repository.supabase.ts  Supabase implementation
+    <name>.mock.ts                 seed data for the preview and tests
+    sources/                       third-party read APIs (food: usda, openFoodFacts)
+  hooks/                     feature-local hooks
+  components/                feature-local UI, one component per file
+  screens/                   *Screen.tsx and *Stack.tsx
+```
+
+| Layer     | Lives in                              | Rule                                                                                                                    |
+| --------- | ------------------------------------- | ----------------------------------------------------------------------------------------------------------------------- |
+| Data      | `data/`                               | I/O only. No React, no state. Hidden behind a repository interface; the memory implementation is what tests use.        |
+| Rules     | `models.ts`, `utils/`                 | Pure functions and types. Never imports React or `data/`, so it is testable without rendering.                          |
+| State     | `*Context.tsx`                        | Composes `data/` and `utils/`. Owns the actions. Exposes what the UI reads; screens never touch a repository.           |
+| UI        | `screens/`, `components/`, `hooks/`   | Reads the context and wires the view. No business rules — if it needs one, it belongs in `models.ts` or `utils/`.       |
+
+The rules:
+
+1. **`data/` is mandatory for anything with I/O.** Repositories, mocks, device adapters
+   (`steps.healthconnect.ts`), notification scheduling (`reminders.ts`) and third-party
+   APIs all live there. Outside `data/` (and `shared/backend`, `shared/auth`), nothing
+   touches `supabase-js`, `fetch`, notifications, Health Connect or AsyncStorage.
+2. **Repository naming** is `<resource>.repository.ts`, `<resource>.repository.supabase.ts`
+   and `<resource>.mock.ts`, where the resource is what the interface is named for
+   (`waypoints`, `savedMeals`, `restDays`). A feature may have several resources.
+3. **`models.ts` is one file at the feature root.** More pure code goes in `utils/`, not in
+   a `models/` folder or a second root file. Tests sit beside what they test.
+4. **Props are for shared components.** Components inside a feature read the context
+   directly rather than drilling props. `shared/components` take props.
+5. **Provider scope.** Mount a context at the root (`AppProviders`) only if it is
+   genuinely app-wide. State owned by one flow is provided at that flow's navigator.
+6. **Screens of one navigator share a subfolder** (`food/screens/logging/` holds
+   `LogFoodStack` and its screens) once a feature has more than one navigator. A feature
+   with a single stack keeps `screens/` flat.
+7. **No generic names.** No `types.ts`, `components.tsx`, `helpers.ts`, and no `index.ts`
+   barrels inside a feature. Name the file for what it holds.
+8. **Imports.** `./x` inside the same folder; the `@feature/...` alias for anything else.
+   No `../`.
+9. **Promotion.** Code used by two or more features moves to `shared/`. A feature never
+   imports another feature's `data/` — go through its context or `models.ts`. Only the
+   composition root (`shared/state/BackendContext`) and tests may.
+10. **Only create a folder when it has a file.** A feature does not get an empty
+    `components/` for symmetry. But once a file of that kind exists, it goes in the folder.
+11. **Sub-features.** A flow big enough to have its own context and repository may become
+    a nested feature with the same layout. Nothing needs that yet.
+
+`shared/` is organised by kind (`auth`, `components`, `hooks`, `navigation`, `state`,
+`theme`, `utils`) and follows the import rule above.
+
+## Where things are
 
 ```
 App.tsx                    fonts, providers, navigation

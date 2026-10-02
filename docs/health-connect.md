@@ -5,7 +5,7 @@ preview the app shows sample steps. With an account and no step source, steps st
 zero and no step waypoints are awarded — sample data would earn a real account waypoints
 it didn't earn.
 
-The adapter is [`src/today/steps.healthconnect.ts`](../src/today/steps.healthconnect.ts).
+The adapter is [`src/today/data/steps.healthconnect.ts`](../src/today/data/steps.healthconnect.ts).
 It stays off unless `EXPO_PUBLIC_HEALTH_CONNECT=1`, and has been verified by manual
 testing on an Android device.
 

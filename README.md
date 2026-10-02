@@ -92,9 +92,10 @@ a project and apply the migrations in [supabase/migrations/](supabase/migrations
 
 ## Project layout
 
-One folder per domain under [src/](src). Each holds its pure rules in `models.ts` (with
-`models.test.ts` beside it), state in a `*Context.tsx`, storage behind a `repository.ts`
-interface, and its screens.
+One folder per domain under [src/](src). Each follows the same layout: pure rules in
+`models.ts` and `utils/`, state in a `*Context.tsx`, all I/O in `data/`, and its UI in
+`screens/` and `components/`. The rules are in
+[docs/architecture.md](docs/architecture.md#feature-layout).
 
 ```text
 App.tsx          fonts, providers, navigation

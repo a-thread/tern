@@ -10,7 +10,7 @@ import { ActivityProvider, useActivity } from '@today/ActivityContext';
 import { MedicationProvider, useMedication } from '@medication/MedicationContext';
 import { WaterProvider, useWater } from '@water/WaterContext';
 import { MoodProvider, useMood } from '@mood/MoodContext';
-import { RemindersSync } from '@settings/RemindersSync';
+import { RemindersSync } from '@settings/components/RemindersSync';
 import { DayKeyProvider } from '@shared/hooks/useDayKey';
 
 /** App-wide providers, rendered inside BackendProvider by AuthGate. */

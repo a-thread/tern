@@ -16,7 +16,7 @@ food screen, and in the store listing. The project runs on donations and asks th
 don't hammer the live API.
 
 Tern caches search results in memory for the session
-([`useFoodSearch.ts`](../src/food/useFoodSearch.ts), the last 60 queries per source) and
+([`useFoodSearch.ts`](../src/food/hooks/useFoodSearch.ts), the last 60 queries per source) and
 nothing beyond it. There is no server-side product cache; if you add one, that is what
 Open Food Facts asks for.
 
@@ -24,7 +24,7 @@ Open Food Facts asks for.
 
 Everyday foods, with household portions ("1 medium apple") that Open Food Facts rarely
 has. Needs a free API key in `EXPO_PUBLIC_USDA_API_KEY` — without it the source is
-switched off ([`isUsdaEnabled`](../src/food/usda.ts)) and search falls back to Open Food
+switched off ([`isUsdaEnabled`](../src/food/data/sources/usda.ts)) and search falls back to Open Food
 Facts alone.
 
 ## What the user sees

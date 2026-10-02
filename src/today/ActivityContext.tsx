@@ -24,8 +24,8 @@ import {
   weekOf,
   type DayRecord,
 } from './models';
-import type { StepsStatus } from './steps.repository';
-import { sameDays, sameSteps } from './sameData';
+import type { StepsStatus } from '@today/data/steps.repository';
+import { sameDays, sameSteps } from '@today/utils/sameData';
 
 /** How much history is read: enough for the 6-month views. */
 export const HISTORY_DAYS = 180;

@@ -8,7 +8,7 @@ import {
 } from '@shared/state/BackendContext';
 import { dayKey } from '@shared/utils/date';
 import { WaypointsProvider, useWaypoints } from './WaypointsContext';
-import { INITIAL_WAYPOINTS } from './mock';
+import { INITIAL_WAYPOINTS } from '@journey/data/waypoints.mock';
 
 function useHarness() {
   const food = useFood();

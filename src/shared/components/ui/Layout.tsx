@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet, Pressable, ViewStyle } from 'react-native';
-import { colors, font, radius, space } from '../../theme';
+import { colors, font, radius, space } from '@shared/theme';
 import { Chevron } from './Chevron';
 
 /* ---------- typography ---------- */

@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet, Pressable } from 'react-native';
-import { colors, font } from '../../theme';
+import { colors, font } from '@shared/theme';
 
 export function Toggle({ on, onPress }: { on: boolean; onPress?: () => void }) {
   const body = (

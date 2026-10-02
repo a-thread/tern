@@ -10,7 +10,7 @@ import { dayKey } from '@shared/utils/date';
 import { WaypointsProvider, useWaypoints } from '@journey/WaypointsContext';
 import { FoodProvider, useFood } from './FoodContext';
 import { SavedMealsProvider, useSavedMeals } from './SavedMealsContext';
-import { itemsToEntries, snapshotItems } from './savedMeals';
+import { itemsToEntries, snapshotItems } from '@food/utils/savedMeals';
 import type { FoodEntry } from './models';
 
 const entry = (name: string, over: Partial<FoodEntry> = {}): FoodEntry => ({
