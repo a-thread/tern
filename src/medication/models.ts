@@ -1,3 +1,4 @@
+import { cleanSpaces, sameName } from '@shared/utils/text';
 /** A medication the user chose to track. Stored in settings; doses are stored separately. */
 export type Medication = {
   id: string;
@@ -19,12 +20,7 @@ export const MAX_MED_NAME = 40;
 export const DEFAULT_MED_TIME = 8 * 60;
 
 /** Trimmed, with runs of spaces collapsed. */
-export function cleanMedName(name: string): string {
-  return name.trim().replace(/\s+/g, ' ');
-}
-
-const sameName = (a: string, b: string) =>
-  cleanMedName(a).toLowerCase() === cleanMedName(b).toLowerCase();
+export const cleanMedName = cleanSpaces;
 
 /** Why `name` can't be used for a medication, or null when it can. `selfId` is the one being renamed. */
 export function validateMedName(

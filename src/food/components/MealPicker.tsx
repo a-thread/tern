@@ -1,7 +1,8 @@
 import React from 'react';
-import { View, Text, StyleSheet, Pressable } from 'react-native';
-import { colors, font } from '@shared/theme';
+import { SegmentedControl } from '@shared/components/ui';
 import type { FoodEntry } from '@food/models';
+
+type Meal = FoodEntry['meal'];
 
 /** Reassigns which meal a food entry counts toward. */
 export function MealPicker({
@@ -9,45 +10,16 @@ export function MealPicker({
   onChange,
   options,
 }: {
-  value: FoodEntry['meal'];
-  onChange: (meal: FoodEntry['meal']) => void;
-  options: { key: FoodEntry['meal']; label: string }[];
+  value: Meal;
+  onChange: (meal: Meal) => void;
+  options: { key: Meal; label: string }[];
 }) {
   return (
-    <View style={s.mealPicker}>
-      {options.map((opt) => {
-        const selected = value === opt.key;
-        return (
-          <Pressable
-            key={opt.key}
-            onPress={() => onChange(opt.key)}
-            style={[s.mealOpt, selected && s.mealOptSel]}
-          >
-            <Text style={[s.mealOptLabel, selected && s.mealOptLabelSel]}>
-              {opt.label}
-            </Text>
-          </Pressable>
-        );
-      })}
-    </View>
+    <SegmentedControl
+      options={options.map((o) => o.key)}
+      value={value}
+      onChange={onChange}
+      label={(key) => options.find((o) => o.key === key)?.label ?? key}
+    />
   );
 }
-
-const s = StyleSheet.create({
-  mealPicker: {
-    flexDirection: 'row',
-    backgroundColor: '#E8E5DD',
-    borderRadius: 10,
-    padding: 3,
-    gap: 3,
-  },
-  mealOpt: {
-    flex: 1,
-    alignItems: 'center',
-    paddingVertical: 7,
-    borderRadius: 8,
-  },
-  mealOptSel: { backgroundColor: '#fff' },
-  mealOptLabel: { fontFamily: font.body, fontSize: 12.5, color: colors.ink2 },
-  mealOptLabelSel: { fontFamily: font.semibold, color: colors.ink },
-});

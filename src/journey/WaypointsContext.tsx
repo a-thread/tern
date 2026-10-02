@@ -1,7 +1,5 @@
 import React, {
-  createContext,
   useCallback,
-  useContext,
   useEffect,
   useMemo,
   useRef,
@@ -10,18 +8,18 @@ import React, {
 import { allMealsLogged } from '@food/models';
 import { useFood } from '@food/FoodContext';
 import { useBackend } from '@shared/state/BackendContext';
+import { createRequiredContext } from '@shared/state/createRequiredContext';
 import { useDayKey } from '@shared/hooks/useDayKey';
 import { useToast } from '@shared/state/ToastContext';
 import {
-  waypointRules,
+  pointsFor,
   type LedgerEvent,
   type WaypointSource,
 } from './models';
 
 export type { WaypointSource };
 
-const MEALS_BONUS_POINTS =
-  waypointRules.find((r) => r.id === 'meals')?.points ?? 15;
+const MEALS_BONUS_POINTS = pointsFor('meals');
 
 /** An award the UI hasn't celebrated yet. */
 export type Celebration = {
@@ -51,7 +49,11 @@ type WaypointsContextValue = {
   completeCelebration: (id: number) => void;
 };
 
-const WaypointsContext = createContext<WaypointsContextValue | null>(null);
+const [WaypointsContext, useWaypoints] = createRequiredContext<WaypointsContextValue>(
+  'useWaypoints',
+  'WaypointsProvider',
+);
+export { useWaypoints };
 
 export function WaypointsProvider({ children }: { children: React.ReactNode }) {
   const { waypoints: ledger } = useBackend();
@@ -187,11 +189,4 @@ export function WaypointsProvider({ children }: { children: React.ReactNode }) {
       {children}
     </WaypointsContext.Provider>
   );
-}
-
-export function useWaypoints() {
-  const ctx = useContext(WaypointsContext);
-  if (!ctx)
-    throw new Error('useWaypoints must be used within WaypointsProvider');
-  return ctx;
 }

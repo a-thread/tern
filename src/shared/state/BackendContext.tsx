@@ -1,4 +1,5 @@
-import React, { createContext, useContext } from 'react';
+import React from 'react';
+import { createRequiredContext } from './createRequiredContext';
 import { supabase } from '@shared/backend/supabase';
 import {
   createMemoryFoodRepository,
@@ -108,7 +109,8 @@ export function createRemoteBackend(): Backend {
   };
 }
 
-const BackendContext = createContext<Backend | null>(null);
+const [BackendContext, useBackend] = createRequiredContext<Backend>('useBackend', 'BackendProvider');
+export { useBackend };
 
 export function BackendProvider({
   backend,
@@ -122,10 +124,4 @@ export function BackendProvider({
       {children}
     </BackendContext.Provider>
   );
-}
-
-export function useBackend() {
-  const ctx = useContext(BackendContext);
-  if (!ctx) throw new Error('useBackend must be used within BackendProvider');
-  return ctx;
 }

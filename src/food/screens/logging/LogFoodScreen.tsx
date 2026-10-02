@@ -14,13 +14,7 @@ import Svg, { Path } from 'react-native-svg';
 
 import { useDayKey } from '@shared/hooks/useDayKey';
 import { colors, font, radius, space, tierColors } from '@shared/theme';
-import {
-  Group,
-  GroupLabel,
-  SheetNav,
-  FootNote,
-  Chevron,
-} from '@shared/components/ui';
+import { Group, GroupLabel, SheetNav, FootNote, Chevron, SegmentedControl } from '@shared/components/ui';
 import type { SearchResult } from '@food/data/sources/searchResult';
 import { filterFoods } from '@food/utils/recentFoods';
 import { filterRecentMeals, type RecentMeal } from '@food/utils/recentMeals';
@@ -183,17 +177,7 @@ export default function LogFoodScreen({ navigation, route }: Props) {
         </Pressable>
       </View>
 
-      <View style={s.seg}>
-        {filters.map((f) => (
-          <Pressable
-            key={f}
-            onPress={() => setFilter(f)}
-            style={[s.segItem, filter === f && s.segOn]}
-          >
-            <Text style={[s.segText, filter === f && s.segTextOn]}>{f}</Text>
-          </Pressable>
-        ))}
-      </View>
+      <SegmentedControl options={filters} value={filter} onChange={setFilter} style={s.seg} />
 
       {addedMessage ? <AddedBanner message={addedMessage} /> : null}
 
@@ -544,7 +528,7 @@ const s = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
-    backgroundColor: '#E8E5DD',
+    backgroundColor: colors.track,
     borderRadius: radius.md - 1,
     paddingHorizontal: 12,
     paddingVertical: 9,
@@ -566,22 +550,9 @@ const s = StyleSheet.create({
     justifyContent: 'center',
   },
   seg: {
-    flexDirection: 'row',
-    backgroundColor: '#E8E5DD',
-    borderRadius: 10,
-    padding: 3,
     marginHorizontal: space.lg,
     marginVertical: space.md,
   },
-  segItem: {
-    flex: 1,
-    alignItems: 'center',
-    paddingVertical: 6,
-    borderRadius: 8,
-  },
-  segOn: { backgroundColor: '#fff' },
-  segText: { fontFamily: font.body, fontSize: 12.5, color: colors.ink2 },
-  segTextOn: { fontFamily: font.semibold, color: colors.ink },
   row: {
     flexDirection: 'row',
     alignItems: 'center',

@@ -1,15 +1,9 @@
-import React, {
-  createContext,
-  useCallback,
-  useContext,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from 'react';
+import React, { useCallback, useMemo, useRef, useState } from 'react';
 
 import { useBackend } from '@shared/state/BackendContext';
-import { useToast } from '@shared/state/ToastContext';
+import { createRequiredContext } from '@shared/state/createRequiredContext';
+import { useLoader } from '@shared/hooks/useLoader';
+import { usePersist } from '@shared/hooks/usePersist';
 import { newId } from '@shared/utils/id';
 import type { FoodEntry } from './models';
 import {
@@ -65,7 +59,11 @@ type SavedMealsContextValue = {
   commitDraft: () => CommitOutcome;
 };
 
-const SavedMealsContext = createContext<SavedMealsContextValue | null>(null);
+const [SavedMealsContext, useSavedMeals] = createRequiredContext<SavedMealsContextValue>(
+  'useSavedMeals',
+  'SavedMealsProvider',
+);
+export { useSavedMeals };
 
 /**
  * Edits apply to the screen immediately and are saved in the background; if a
@@ -73,12 +71,9 @@ const SavedMealsContext = createContext<SavedMealsContextValue | null>(null);
  */
 export function SavedMealsProvider({ children }: { children: React.ReactNode }) {
   const { savedMeals: repo } = useBackend();
-  const toast = useToast();
   const [meals, setMeals] = useState<SavedMeal[]>([]);
-  const [ready, setReady] = useState(false);
   const [draft, setDraft] = useState<MealDraft | null>(null);
   const draftRef = useRef<MealDraft | null>(null);
-  const mounted = useRef(true);
   // The latest list, so saveMeal/renameMeal can decide synchronously.
   const latest = useRef<SavedMeal[]>([]);
   latest.current = meals;
@@ -90,32 +85,19 @@ export function SavedMealsProvider({ children }: { children: React.ReactNode }) 
     setMeals(next);
   }, []);
 
-  const reload = useCallback(async () => {
-    try {
-      const list = await repo.list();
-      if (mounted.current) commit(sortMeals(list));
-    } catch (e) {
-      console.warn('Could not load saved meals', e);
-    }
-  }, [repo, commit]);
-
-  useEffect(() => {
-    mounted.current = true;
-    reload().finally(() => mounted.current && setReady(true));
-    return () => {
-      mounted.current = false;
-    };
-  }, [reload]);
-
+  const { ready, reload } = useLoader(
+    useCallback(() => repo.list(), [repo]),
+    (list) => commit(sortMeals(list)),
+    'Could not load saved meals',
+  );
+  const persistWith = usePersist(reload);
   const persist = useCallback(
-    (write: Promise<void>) => {
-      write.catch((e) => {
-        console.warn('Could not save meal change', e);
-        toast.show("Couldn't save that meal — your list was refreshed.");
-        reload();
-      });
-    },
-    [reload, toast],
+    (write: Promise<unknown>) =>
+      persistWith(write, {
+        log: 'Could not save meal change',
+        toast: "Couldn't save that meal — your list was refreshed.",
+      }),
+    [persistWith],
   );
 
   const saveMeal = useCallback(
@@ -279,11 +261,5 @@ export function SavedMealsProvider({ children }: { children: React.ReactNode }) 
   return (
     <SavedMealsContext.Provider value={value}>{children}</SavedMealsContext.Provider>
   );
-}
-
-export function useSavedMeals() {
-  const ctx = useContext(SavedMealsContext);
-  if (!ctx) throw new Error('useSavedMeals must be used within SavedMealsProvider');
-  return ctx;
 }
 

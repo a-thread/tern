@@ -1,13 +1,12 @@
 import React, {
-  createContext,
   useCallback,
-  useContext,
   useEffect,
   useMemo,
   useRef,
   useState,
 } from 'react';
 import { useBackend } from '@shared/state/BackendContext';
+import { createRequiredContext } from '@shared/state/createRequiredContext';
 import { useAuth } from '@shared/auth/AuthContext';
 import { useToast } from '@shared/state/ToastContext';
 import type { Units } from '@shared/utils/units';
@@ -117,7 +116,11 @@ type SettingsContextValue = {
   updateSettings: (patch: Partial<AppSettings>) => void;
 };
 
-const SettingsContext = createContext<SettingsContextValue | null>(null);
+const [SettingsContext, useSettings] = createRequiredContext<SettingsContextValue>(
+  'useSettings',
+  'SettingsProvider',
+);
+export { useSettings };
 
 export function SettingsProvider({ children }: { children: React.ReactNode }) {
   const { settings: repo } = useBackend();
@@ -220,10 +223,4 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
       {children}
     </SettingsContext.Provider>
   );
-}
-
-export function useSettings() {
-  const ctx = useContext(SettingsContext);
-  if (!ctx) throw new Error('useSettings must be used within SettingsProvider');
-  return ctx;
 }

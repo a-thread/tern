@@ -1,3 +1,4 @@
+import { cleanSpaces, sameName } from '@shared/utils/text';
 import { dayTotals, type FoodEntry } from '@food/models';
 import type { NewFoodEntry } from '@food/data/food.repository';
 
@@ -15,11 +16,7 @@ export const MAX_MEAL_NAME = 60;
 export const MAX_MEAL_ITEMS = 50;
 
 /** A name as it will be stored: trimmed, with inner runs of spaces collapsed. */
-export const cleanName = (name: string) => name.trim().replace(/\s+/g, ' ');
-
-/** Whether two names are the same meal (case and extra spaces don't matter). */
-export const sameName = (a: string, b: string) =>
-  cleanName(a).toLowerCase() === cleanName(b).toLowerCase();
+export const cleanName = cleanSpaces;
 
 /** A message for the user, or null when the name is fine. */
 export function validateMealName(name: string): string | null {

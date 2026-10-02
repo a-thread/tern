@@ -14,16 +14,7 @@ import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import Svg, { Path } from 'react-native-svg';
 
 import { colors, font, space } from '@shared/theme';
-import {
-  Group,
-  GroupLabel,
-  IconBadge,
-  Chip,
-  Chevron,
-  ToggleRow,
-  FootNote,
-  PushHeader,
-} from '@shared/components/ui';
+import { Group, GroupLabel, IconBadge, Chip, Chevron, ToggleRow, FootNote, PushHeader, Stepper } from '@shared/components/ui';
 import { useAuth } from '@shared/auth/AuthContext';
 import { useBackend } from '@shared/state/BackendContext';
 import { useToast } from '@shared/state/ToastContext';
@@ -382,15 +373,7 @@ export default function SettingsRootScreen({ navigation }: Props) {
                 </Pressable>
               ) : (
                 <>
-                  <View style={s.stepper}>
-                    <Pressable onPress={() => stepWeightGoal(-1)} hitSlop={8}>
-                      <Text style={s.stepperBtn}>−</Text>
-                    </Pressable>
-                    <Text style={s.stepperVal}>{formatGoal(settings.weightGoalLb)}</Text>
-                    <Pressable onPress={() => stepWeightGoal(1)} hitSlop={8}>
-                      <Text style={s.stepperBtn}>+</Text>
-                    </Pressable>
-                  </View>
+                  <Stepper value={formatGoal(settings.weightGoalLb)} onDecrement={() => stepWeightGoal(-1)} onIncrement={() => stepWeightGoal(1)} valueMinWidth={52} />
                   <Pressable
                     onPress={() => updateSettings({ weightGoalLb: null })}
                     hitSlop={8}
@@ -790,27 +773,13 @@ const s = StyleSheet.create({
   stepper: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#E8E5DD',
+    backgroundColor: colors.track,
     borderRadius: 10,
     overflow: 'hidden',
-  },
-  stepperBtn: {
-    fontFamily: font.body,
-    fontSize: 17,
-    color: colors.coral,
-    paddingHorizontal: 12,
-    paddingVertical: 6,
   },
   unitItem: { paddingHorizontal: 16, paddingVertical: 7 },
   unitItemOn: { backgroundColor: colors.ink },
   unitText: { fontFamily: font.semibold, fontSize: 13, color: colors.ink2 },
   unitTextOn: { color: colors.paper },
-  stepperVal: {
-    fontFamily: font.semibold,
-    fontSize: 13,
-    color: colors.ink,
-    minWidth: 52,
-    textAlign: 'center',
-  },
   linkText: { fontFamily: font.medium, fontSize: 13, color: colors.coral },
 });

@@ -1,3 +1,4 @@
+import { round1, toFiniteNumber } from '@shared/utils/number';
 import { getJson } from './http';
 import type { Portion, SearchResult } from './searchResult';
 
@@ -42,11 +43,6 @@ export type UsdaFood = {
   foodPortions?: UsdaMeasure[];
 };
 
-const num = (v: unknown): number | undefined => {
-  const n = typeof v === 'string' ? parseFloat(v) : (v as number);
-  return typeof n === 'number' && Number.isFinite(n) ? n : undefined;
-};
-const round1 = (n: number) => Math.round(n * 10) / 10;
 
 // USDA identifies nutrients by id and by the older "nutrient number".
 // Foundation foods often report energy as an Atwater estimate instead of 1008.
@@ -59,12 +55,12 @@ const KJ = { ids: [1062], numbers: ['268'] };
 function nutrient(list: UsdaNutrient[], want: { ids: number[]; numbers: string[] }): number | undefined {
   for (const id of want.ids) {
     const hit = list.find((n) => n.nutrientId === id);
-    const v = num(hit?.value);
+    const v = toFiniteNumber(hit?.value);
     if (v !== undefined) return v;
   }
   for (const no of want.numbers) {
     const hit = list.find((n) => n.nutrientNumber !== undefined && String(n.nutrientNumber) === no);
-    const v = num(hit?.value);
+    const v = toFiniteNumber(hit?.value);
     if (v !== undefined) return v;
   }
   return undefined;
@@ -97,7 +93,7 @@ function splitLeadingAmount(text: string): { amount: number; rest: string } | nu
  * separately and the name in `modifier` ("medium (3" dia)").
  */
 export function measureToPortion(m: UsdaMeasure): Portion | null {
-  const grams = num(m.gramWeight);
+  const grams = toFiniteNumber(m.gramWeight);
   if (grams === undefined || grams <= 0 || grams > 5000) return null;
   const unit = m.measureUnit?.name ?? m.measureUnitName;
   const modifier = (m.modifier ?? '').trim();
@@ -116,7 +112,7 @@ export function measureToPortion(m: UsdaMeasure): Portion | null {
   // "2 slices = 56 g" is a portion of one slice weighing 28 g. Without a
   // quantity in the text, `amount` (if any) says how many the weight covers.
   const lead = splitLeadingAmount(text);
-  const amount = lead ? lead.amount : (num(m.amount) ?? 1);
+  const amount = lead ? lead.amount : (toFiniteNumber(m.amount) ?? 1);
   const label = lead ? lead.rest : text;
   const per = amount > 0 ? grams / amount : grams;
   return { label, grams: round1(per) };

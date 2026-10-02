@@ -245,7 +245,7 @@ const s = StyleSheet.create({
   freqLabel: { fontFamily: font.medium, fontSize: 14, color: colors.ink },
   freqSeg: {
     flexDirection: 'row',
-    backgroundColor: '#E8E5DD',
+    backgroundColor: colors.track,
     borderRadius: 9,
     padding: 2,
   },

@@ -9,12 +9,10 @@ import { WeightTrend } from '@shared/components/charts';
 import type { RootStackParamList } from '@shared/navigation/types';
 import { useDayKey } from '@shared/hooks/useDayKey';
 import { addDays } from '@shared/utils/date';
+import { TrendRanges, type TrendRange } from '@shared/models/trendRange';
 import { average, entriesBetween, seriesOf, type MoodMetric } from '@mood/models';
 import { useMood } from '@mood/MoodContext';
 
-type Range = 'Week' | 'Month' | '6 months';
-const RANGE_DAYS = { Week: 7, Month: 30, '6 months': 180 } as const;
-const RANGE_LABEL = { Week: 'this week', Month: 'this month', '6 months': 'over 6 months' } as const;
 
 const METRICS: { id: MoodMetric; label: string }[] = [
   { id: 'mood', label: 'Mood' },
@@ -22,11 +20,11 @@ const METRICS: { id: MoodMetric; label: string }[] = [
 ];
 
 /** Average mood and stress for the Trends range, each with its line. Tapping opens today's check-in. */
-export default function MoodTrendCard({ range }: { range: Range }) {
+export default function MoodTrendCard({ range }: { range: TrendRange }) {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const { entries } = useMood();
   const today = useDayKey();
-  const inRange = entriesBetween(entries, addDays(today, -(RANGE_DAYS[range] - 1)), today);
+  const inRange = entriesBetween(entries, addDays(today, -(TrendRanges.DAYS[range] - 1)), today);
 
   return (
     <Pressable onPress={() => navigation.navigate('CheckIn')}>
@@ -40,7 +38,7 @@ export default function MoodTrendCard({ range }: { range: Range }) {
             return (
               <View key={m.id} style={i > 0 ? s.block : undefined}>
                 <Text style={s.value}>{avg === null ? '—' : `${m.label} ${avg.toFixed(1)}`}</Text>
-                <Text style={s.sub}>{`average ${RANGE_LABEL[range]} · out of 10`}</Text>
+                <Text style={s.sub}>{`average ${TrendRanges.LABEL[range]} · out of 10`}</Text>
                 {inRange.length > 1 ? (
                   <WeightTrend trend={seriesOf(inRange, m.id)} spread={0.5} height={60} />
                 ) : null}

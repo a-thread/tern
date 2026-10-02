@@ -1,4 +1,5 @@
 import React, { useMemo, useRef, useState } from 'react';
+import { round1 } from '@shared/utils/number';
 import {
   View,
   Text,
@@ -40,7 +41,7 @@ export default function LogWeightScreen({ navigation }: Props) {
   const [weight, setWeightState] = useState(latest);
   const weightRef = useRef(latest);
   const setWeight = (v: number) => {
-    const next = clamp(Math.round(v * 10) / 10);
+    const next = clamp(round1(v));
     weightRef.current = next;
     setWeightState(next);
   };
@@ -69,7 +70,7 @@ export default function LogWeightScreen({ navigation }: Props) {
   const ticks = useMemo(() => {
     const list: { v: number; major: boolean }[] = [];
     for (let i = -16; i <= 16; i++) {
-      const v = Math.round((weight + i * 0.1) * 10) / 10;
+      const v = round1(weight + i * 0.1);
       list.push({ v, major: Math.round(v * 10) % 5 === 0 });
     }
     return list;

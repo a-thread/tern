@@ -4,7 +4,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 
 import { colors, font, radius, space } from '@shared/theme';
-import { Group, GroupLabel, SheetNav } from '@shared/components/ui';
+import { Group, GroupLabel, SheetNav, Stepper } from '@shared/components/ui';
 import { MEAL_OPTIONS } from '@food/models';
 import { useFood } from '@food/FoodContext';
 import { MealPicker } from '@food/components/MealPicker';
@@ -92,15 +92,7 @@ export default function RecentMealScreen({ navigation, route }: Props) {
             </Text>
             <Text style={s.scaleSub}>Scales every food in this meal</Text>
           </View>
-          <View style={s.stepper}>
-            <Pressable onPress={() => setScale((v) => stepScale(v, -1))} hitSlop={8} accessibilityLabel='Smaller portion'>
-              <Text style={s.stepperBtn}>−</Text>
-            </Pressable>
-            <Text style={s.stepperVal}>{scale}×</Text>
-            <Pressable onPress={() => setScale((v) => stepScale(v, 1))} hitSlop={8} accessibilityLabel='Larger portion'>
-              <Text style={s.stepperBtn}>+</Text>
-            </Pressable>
-          </View>
+          <Stepper value={`${scale}×`} onDecrement={() => setScale((v) => stepScale(v, -1))} onIncrement={() => setScale((v) => stepScale(v, 1))} decrementLabel='Smaller portion' incrementLabel='Larger portion' valueMinWidth={44} />
         </View>
 
         <GroupLabel>Add to</GroupLabel>
@@ -145,27 +137,6 @@ const s = StyleSheet.create({
   scaleRow: { flexDirection: 'row', alignItems: 'center' },
   scaleTitle: { fontFamily: font.medium, fontSize: 14, color: colors.ink },
   scaleSub: { fontFamily: font.body, fontSize: 11.5, color: colors.ink2, marginTop: 1 },
-  stepper: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#E8E5DD',
-    borderRadius: 10,
-    overflow: 'hidden',
-  },
-  stepperBtn: {
-    fontFamily: font.body,
-    fontSize: 17,
-    color: colors.coral,
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-  },
-  stepperVal: {
-    fontFamily: font.semibold,
-    fontSize: 13,
-    color: colors.ink,
-    minWidth: 44,
-    textAlign: 'center',
-  },
   note: {
     fontFamily: font.body,
     fontSize: 12,

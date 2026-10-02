@@ -1,4 +1,5 @@
-import { RANGE_DAYS, bucketSteps, longestProtectedRun, summarizeSteps, weightTrendFor } from './models';
+import { TrendRanges } from '@shared/models/trendRange';
+import { bucketSteps, longestProtectedRun, summarizeSteps, weightTrendFor } from './models';
 import type { DayRecord, DayState } from '@today/models';
 
 describe('longestProtectedRun', () => {
@@ -129,7 +130,7 @@ describe('bucketSteps', () => {
   });
 
   it('exposes the days in each range', () => {
-    expect(RANGE_DAYS).toEqual({ Week: 7, Month: 30, '6 months': 180 });
+    expect(TrendRanges.DAYS).toEqual({ Week: 7, Month: 30, '6 months': 180 });
   });
 });
 

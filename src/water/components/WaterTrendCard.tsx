@@ -10,14 +10,13 @@ import { useDayKey } from '@shared/hooks/useDayKey';
 import { addDays } from '@shared/utils/date';
 import { useSettings } from '@settings/SettingsContext';
 import { useUnits } from '@settings/hooks/useUnits';
-import { averageDaily, bucketWater, totalsByDay, type WaterRange } from '@water/models';
+import { averageDaily, bucketWater, totalsByDay } from '@water/models';
+import { TrendRanges, type TrendRange } from '@shared/models/trendRange';
 import { useWater } from '@water/WaterContext';
 
-const RANGE_DAYS = { Week: 7, Month: 30, '6 months': 180 } as const;
-const RANGE_LABEL = { Week: 'this week', Month: 'this month', '6 months': 'over 6 months' } as const;
 
 /** Average water per day, and a bar per day (or week), for the Trends range. */
-export default function WaterTrendCard({ range }: { range: WaterRange }) {
+export default function WaterTrendCard({ range }: { range: TrendRange }) {
   const { water } = useBackend();
   const { settings } = useSettings();
   const { formatVolume } = useUnits();
@@ -29,7 +28,7 @@ export default function WaterTrendCard({ range }: { range: WaterRange }) {
     useCallback(() => {
       let cancelled = false;
       water
-        .load(addDays(today, -(RANGE_DAYS[range] - 1)), today)
+        .load(addDays(today, -(TrendRanges.DAYS[range] - 1)), today)
         .then((entries) => !cancelled && setByDay(totalsByDay(entries)))
         .catch((e) => console.warn('Could not load water history', e));
       return () => {
@@ -40,7 +39,7 @@ export default function WaterTrendCard({ range }: { range: WaterRange }) {
     }, [water, today, range, totalOz]),
   );
 
-  const average = averageDaily(byDay, today, RANGE_DAYS[range]);
+  const average = averageDaily(byDay, today, TrendRanges.DAYS[range]);
   const bars = bucketWater(byDay, settings.waterGoalOz, range, today);
 
   return (
@@ -51,7 +50,7 @@ export default function WaterTrendCard({ range }: { range: WaterRange }) {
         <Text style={s.sub}>
           {average === null
             ? 'no water logged yet'
-            : `daily average ${RANGE_LABEL[range]} · goal ${formatVolume(settings.waterGoalOz)}`}
+            : `daily average ${TrendRanges.LABEL[range]} · goal ${formatVolume(settings.waterGoalOz)}`}
         </Text>
       </View>
       <StepBars

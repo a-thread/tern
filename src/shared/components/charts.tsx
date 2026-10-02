@@ -13,6 +13,7 @@ import Svg, {
   Text as SvgText,
 } from 'react-native-svg';
 import { colors, font, space } from '@shared/theme';
+import { LegendDot } from '@shared/components/ui';
 import { TERN_PATH } from './TernMark';
 
 const AnimatedPath = Animated.createAnimatedComponent(Path);
@@ -251,38 +252,15 @@ export function StepBars({
       ) : null}
       {showLegend ? (
         <View style={cs.legend}>
-          <LegendSwatch color={colors.glacier} label='goal met' />
-          <LegendSwatch color={colors.glacierTint} label='partial' />
-          <LegendSwatch
+          <LegendDot color={colors.glacier} label='goal met' />
+          <LegendDot color={colors.glacierTint} label='partial' />
+          <LegendDot
             color={colors.driftwoodTint}
             label='rest'
             border={colors.driftwood}
           />
         </View>
       ) : null}
-    </View>
-  );
-}
-
-function LegendSwatch({
-  color,
-  label,
-  border,
-}: {
-  color: string;
-  label: string;
-  border?: string;
-}) {
-  return (
-    <View style={cs.legendItem}>
-      <View
-        style={[
-          cs.sw,
-          { backgroundColor: color },
-          border ? { borderWidth: 1, borderColor: border } : null,
-        ]}
-      />
-      <Text style={cs.legendText}>{label}</Text>
     </View>
   );
 }
@@ -605,9 +583,6 @@ const cs = StyleSheet.create({
     gap: 14,
     marginTop: space.sm,
   },
-  legendItem: { flexDirection: 'row', alignItems: 'center', gap: 5 },
-  sw: { width: 9, height: 9, borderRadius: 2 },
-  legendText: { fontFamily: font.body, fontSize: 10, color: colors.ink2 },
   dotWrap: {
     flexDirection: 'row',
     flexWrap: 'wrap',

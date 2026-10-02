@@ -1,3 +1,4 @@
+import { round1 } from '@shared/utils/number';
 /** One day's check-in: mood and stress, each 1 to 10. `day` is the local day (YYYY-MM-DD). */
 export type MoodEntry = { day: string; mood: number; stress: number };
 
@@ -23,8 +24,6 @@ export function scoreWord(metric: MoodMetric, score: number): string {
   const words = metric === 'mood' ? MOOD_WORDS : STRESS_WORDS;
   return words[clampScore(score) - 1];
 }
-
-const round1 = (n: number) => Math.round(n * 10) / 10;
 
 /** The entry for a day, if there is one. */
 export const entryFor = (entries: readonly MoodEntry[], day: string) =>

@@ -1,30 +1,24 @@
 import type { DayRecord, DayState } from '@today/models';
 import { monthName, weekdayLetter } from '@shared/utils/date';
+import { TrendRanges, type TrendRange } from '@shared/models/trendRange';
 import { computeTrend, type WeightEntry } from '@weight/models';
 
-/** The ranges the Trends screens offer, and how many days each covers. */
-export const RANGE_DAYS = { Week: 7, Month: 30, '6 months': 180 } as const;
-export type StepRange = keyof typeof RANGE_DAYS;
-
 export type StepBar = { label: string; value: number; state: DayState };
-
-/** Half a year is drawn as this many weekly bars (more, and they get too thin to read). */
-const WEEKLY_BARS = 25;
 
 /**
  * Build step-chart bars: daily bars for a week or month, or weekly averages
  * for six months. Weekly bars are labelled when a new month begins.
  */
-export function bucketSteps(days: DayRecord[], range: StepRange): StepBar[] {
+export function bucketSteps(days: DayRecord[], range: TrendRange): StepBar[] {
   if (range === 'Week' || range === 'Month') {
-    return days.slice(-RANGE_DAYS[range]).map((d) => ({
+    return days.slice(-TrendRanges.DAYS[range]).map((d) => ({
       label: range === 'Week' ? weekdayLetter(d.day) : '',
       value: d.steps,
       state: d.state,
     }));
   }
 
-  const recent = days.slice(-7 * WEEKLY_BARS);
+  const recent = days.slice(-7 * TrendRanges.WEEKLY_BARS);
   const chunks: DayRecord[][] = [];
   for (let end = recent.length; end > 0; end -= 7) {
     chunks.unshift(recent.slice(Math.max(end - 7, 0), end));

@@ -1,18 +1,11 @@
 import React, { useState } from 'react';
-import { View, Text, ScrollView, StyleSheet, Pressable } from 'react-native';
+import { View, Text, ScrollView, StyleSheet } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import Svg, { Path } from 'react-native-svg';
 
 import { colors, font, space } from '@shared/theme';
-import {
-  Card,
-  GroupLabel,
-  PushHeader,
-  Row,
-  Insight,
-  FootNote,
-} from '@shared/components/ui';
+import { Card, GroupLabel, PushHeader, Row, Insight, FootNote, LegendDot, SegmentedControl } from '@shared/components/ui';
 import { WeightTrend } from '@shared/components/charts';
 import { useWeight } from '@weight/WeightContext';
 import { useSettings } from '@settings/SettingsContext';
@@ -58,17 +51,7 @@ export default function WeightDetailScreen({ navigation }: Props) {
           paddingBottom: 40,
         }}
       >
-        <View style={s.seg}>
-          {RANGES.map((r) => (
-            <Pressable
-              key={r}
-              onPress={() => setRange(r)}
-              style={[s.segItem, range === r && s.segOn]}
-            >
-              <Text style={[s.segText, range === r && s.segTextOn]}>{r}</Text>
-            </Pressable>
-          ))}
-        </View>
+        <SegmentedControl options={RANGES} value={range} onChange={setRange} style={s.seg} />
 
         <Card style={{ marginBottom: space.md }}>
           {hasTrend ? (
@@ -167,32 +150,10 @@ export default function WeightDetailScreen({ navigation }: Props) {
   );
 }
 
-function LegendDot({ color, label }: { color: string; label: string }) {
-  return (
-    <View style={s.legendItem}>
-      <View style={[s.sw, { backgroundColor: color }]} />
-      <Text style={s.legendText}>{label}</Text>
-    </View>
-  );
-}
-
 const s = StyleSheet.create({
   seg: {
-    flexDirection: 'row',
-    backgroundColor: '#E8E5DD',
-    borderRadius: 10,
-    padding: 3,
     marginVertical: space.md,
   },
-  segItem: {
-    flex: 1,
-    alignItems: 'center',
-    paddingVertical: 6,
-    borderRadius: 8,
-  },
-  segOn: { backgroundColor: '#fff' },
-  segText: { fontFamily: font.body, fontSize: 12.5, color: colors.ink2 },
-  segTextOn: { fontFamily: font.semibold, color: colors.ink },
   metricTop: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -222,9 +183,6 @@ const s = StyleSheet.create({
     gap: 14,
     marginTop: space.sm,
   },
-  legendItem: { flexDirection: 'row', alignItems: 'center', gap: 5 },
-  sw: { width: 9, height: 9, borderRadius: 2 },
-  legendText: { fontFamily: font.body, fontSize: 10, color: colors.ink2 },
   emptyWeight: { alignItems: 'center', paddingVertical: 10 },
   emptyTitle: {
     fontFamily: font.display,

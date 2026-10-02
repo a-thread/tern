@@ -1,6 +1,6 @@
 import { addDays } from '@shared/utils/date';
 import { INITIAL_WAYPOINTS } from './waypoints.mock';
-import { waypointRules, type LedgerEvent, type WaypointSource } from '@journey/models';
+import { pointsFor, type LedgerEvent, type WaypointSource } from '@journey/models';
 
 export type WaypointsSnapshot = {
   /** Lifetime total: the sum of every award in the ledger. */
@@ -21,9 +21,6 @@ export interface WaypointsRepository {
   award(source: WaypointSource, points: number, day: string): Promise<void>;
   revoke(source: WaypointSource, day: string): Promise<void>;
 }
-
-const pointsFor = (source: WaypointSource) =>
-  waypointRules.find((r) => r.id === source)?.points ?? 0;
 
 /** Spreads `total` points over past days so local mode has a believable journey. */
 function syntheticHistory(total: number, today: string): LedgerEvent[] {

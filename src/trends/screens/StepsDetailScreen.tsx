@@ -1,43 +1,35 @@
 import React, { useState } from 'react';
-import { View, Text, ScrollView, StyleSheet, Pressable } from 'react-native';
+import { View, Text, ScrollView, StyleSheet } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 
 import { colors, font, radius, space } from '@shared/theme';
-import {
-  Card,
-  GroupLabel,
-  PushHeader,
-  Row,
-  FootNote,
-} from '@shared/components/ui';
+import { TrendRanges, type TrendRange } from '@shared/models/trendRange';
+import { Card, GroupLabel, PushHeader, Row, FootNote, LegendDot, SegmentedControl } from '@shared/components/ui';
 import { StepBars, ConsistencyGrid } from '@shared/components/charts';
 import { useActivity } from '@today/ActivityContext';
 import { weekdayName } from '@shared/utils/date';
 import { useSettings } from '@settings/SettingsContext';
 import {
-  RANGE_DAYS,
   bucketSteps,
   longestProtectedRun,
   summarizeSteps,
-  type StepRange,
 } from '@trends/models';
 import type { TrendsStackParamList } from '@trends/navigation';
 
 type Props = NativeStackScreenProps<TrendsStackParamList, 'StepsDetail'>;
 
-const RANGES = ['Week', 'Month', '6 months'] as const;
 
 export default function StepsDetailScreen({ navigation }: Props) {
   const insets = useSafeAreaInsets();
-  const [range, setRange] = useState<StepRange>('Month');
+  const [range, setRange] = useState<TrendRange>('Month');
   const { settings } = useSettings();
 
   const { days, status } = useActivity();
   const connected = status === 'connected';
 
-  const inRange = days.slice(-RANGE_DAYS[range]);
-  const { average } = summarizeSteps(days, RANGE_DAYS[range]);
+  const inRange = days.slice(-TrendRanges.DAYS[range]);
+  const { average } = summarizeSteps(days, TrendRanges.DAYS[range]);
   const goalDays = inRange.filter((d) => d.state === 'goal').length;
   const restDays = inRange.filter((d) => d.state === 'rest').length;
   const longestRun = longestProtectedRun(inRange.map((d) => d.state));
@@ -72,17 +64,7 @@ export default function StepsDetailScreen({ navigation }: Props) {
           paddingBottom: 40,
         }}
       >
-        <View style={s.seg}>
-          {RANGES.map((r) => (
-            <Pressable
-              key={r}
-              onPress={() => setRange(r)}
-              style={[s.segItem, range === r && s.segOn]}
-            >
-              <Text style={[s.segText, range === r && s.segTextOn]}>{r}</Text>
-            </Pressable>
-          ))}
-        </View>
+        <SegmentedControl options={TrendRanges.ALL} value={range} onChange={setRange} style={s.seg} />
 
         <Card style={{ marginBottom: space.md }}>
           <Text style={s.metricValue}>
@@ -107,7 +89,7 @@ export default function StepsDetailScreen({ navigation }: Props) {
         <GroupLabel>Consistency</GroupLabel>
         <Card>
           <Text style={s.metricSub}>
-            {range === '6 months' ? 'Last 6 months' : `Last ${RANGE_DAYS[range]} days`}
+            {range === '6 months' ? 'Last 6 months' : `Last ${TrendRanges.DAYS[range]} days`}
           </Text>
           <ConsistencyGrid days={inRange.map((d) => d.state)} />
           <View style={s.legend}>
@@ -155,46 +137,10 @@ function StatBox({ value, label }: { value: number; label: string }) {
   );
 }
 
-function LegendDot({
-  color,
-  label,
-  border,
-}: {
-  color: string;
-  label: string;
-  border?: string;
-}) {
-  return (
-    <View style={s.legendItem}>
-      <View
-        style={[
-          s.sw,
-          { backgroundColor: color },
-          border ? { borderWidth: 1, borderColor: border } : null,
-        ]}
-      />
-      <Text style={s.legendText}>{label}</Text>
-    </View>
-  );
-}
-
 const s = StyleSheet.create({
   seg: {
-    flexDirection: 'row',
-    backgroundColor: '#E8E5DD',
-    borderRadius: 10,
-    padding: 3,
     marginVertical: space.md,
   },
-  segItem: {
-    flex: 1,
-    alignItems: 'center',
-    paddingVertical: 6,
-    borderRadius: 8,
-  },
-  segOn: { backgroundColor: '#fff' },
-  segText: { fontFamily: font.body, fontSize: 12.5, color: colors.ink2 },
-  segTextOn: { fontFamily: font.semibold, color: colors.ink },
   metricValue: {
     fontFamily: font.displayMedium,
     fontSize: 30,
@@ -217,7 +163,4 @@ const s = StyleSheet.create({
     gap: 14,
     marginTop: space.sm,
   },
-  legendItem: { flexDirection: 'row', alignItems: 'center', gap: 5 },
-  sw: { width: 9, height: 9, borderRadius: 2 },
-  legendText: { fontFamily: font.body, fontSize: 10, color: colors.ink2 },
 });

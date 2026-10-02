@@ -1,16 +1,10 @@
-import React, {
-  createContext,
-  useCallback,
-  useContext,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 
 import { useBackend } from '@shared/state/BackendContext';
-import { useToast } from '@shared/state/ToastContext';
+import { createRequiredContext } from '@shared/state/createRequiredContext';
 import { useDayKey } from '@shared/hooks/useDayKey';
+import { useLoader } from '@shared/hooks/useLoader';
+import { usePersist } from '@shared/hooks/usePersist';
 import { parseDayKey } from '@shared/utils/date';
 import { useSettings } from '@settings/SettingsContext';
 import { dueMeds, takenMeds, type Medication } from './models';
@@ -31,36 +25,26 @@ type MedicationContextValue = {
   removeMedication: (medicationId: string) => void;
 };
 
-const MedicationContext = createContext<MedicationContextValue | null>(null);
+const [MedicationContext, useMedication] = createRequiredContext<MedicationContextValue>(
+  'useMedication',
+  'MedicationProvider',
+);
+export { useMedication };
 
 /** Today's doses, next to the medications in settings. Must sit inside SettingsProvider. */
 export function MedicationProvider({ children }: { children: React.ReactNode }) {
   const { medication: repo } = useBackend();
   const { settings, updateSettings } = useSettings();
-  const toast = useToast();
   const today = useDayKey();
   const medications = settings.medications;
 
   const [takenIds, setTakenIds] = useState<ReadonlySet<string>>(new Set());
-  const [ready, setReady] = useState(false);
-  const mounted = useRef(true);
-
-  const reload = useCallback(async () => {
-    try {
-      const doses = await repo.load(today, today);
-      if (mounted.current) setTakenIds(new Set(doses.map((d) => d.medicationId)));
-    } catch (e) {
-      console.warn('Could not load medication doses', e);
-    }
-  }, [repo, today]);
-
-  useEffect(() => {
-    mounted.current = true;
-    reload().finally(() => mounted.current && setReady(true));
-    return () => {
-      mounted.current = false;
-    };
-  }, [reload]);
+  const { ready, reload } = useLoader(
+    useCallback(() => repo.load(today, today), [repo, today]),
+    (doses) => setTakenIds(new Set(doses.map((d) => d.medicationId))),
+    'Could not load medication doses',
+  );
+  const persist = usePersist(reload);
 
   const setTaken = useCallback(
     (medicationId: string, taken: boolean) => {
@@ -71,13 +55,12 @@ export function MedicationProvider({ children }: { children: React.ReactNode }) 
         else next.delete(medicationId);
         return next;
       });
-      (taken ? repo.take(medicationId, today) : repo.untake(medicationId, today)).catch((e) => {
-        console.warn('Could not save medication dose', e);
-        toast.show("Couldn't save that — please try again.");
-        reload();
+      persist(taken ? repo.take(medicationId, today) : repo.untake(medicationId, today), {
+        log: 'Could not save medication dose',
+        toast: "Couldn't save that — please try again.",
       });
     },
-    [repo, today, toast, reload],
+    [repo, today, persist],
   );
 
   const removeMedication = useCallback(
@@ -113,10 +96,4 @@ export function MedicationProvider({ children }: { children: React.ReactNode }) 
   );
 
   return <MedicationContext.Provider value={value}>{children}</MedicationContext.Provider>;
-}
-
-export function useMedication() {
-  const ctx = useContext(MedicationContext);
-  if (!ctx) throw new Error('useMedication must be used within MedicationProvider');
-  return ctx;
 }

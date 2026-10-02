@@ -16,6 +16,8 @@ export const colors = {
   border: '#E7E3D9',
   dove: '#B7BCBA',
   doveTint: '#EEEFEC',
+  /** The recessed fill behind steppers, segmented controls and search fields. */
+  track: '#E8E5DD',
 
   // primary action — use sparingly
   coral: '#D8431F',

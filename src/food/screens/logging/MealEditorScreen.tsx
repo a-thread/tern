@@ -13,7 +13,7 @@ import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import Svg, { Path } from 'react-native-svg';
 
 import { colors, font, radius, space, tierColors } from '@shared/theme';
-import { Group, GroupLabel, SheetNav } from '@shared/components/ui';
+import { Group, GroupLabel, SheetNav, Stepper } from '@shared/components/ui';
 import { useToast } from '@shared/state/ToastContext';
 import { TierDot } from '@food/components/TierDot';
 import { useFoodDisplay } from '@food/hooks/useFoodDisplay';
@@ -134,15 +134,15 @@ export default function MealEditorScreen({ navigation }: Props) {
                   {showCalories ? ` · ${Math.round(item.calories * item.servings)} cal` : ''}
                 </Text>
               </View>
-              <View style={s.stepper}>
-                <Pressable onPress={() => stepDraftItem(i, -SERVING_STEP)} hitSlop={8} accessibilityLabel={`Less ${item.name}`}>
-                  <Text style={s.stepperBtn}>−</Text>
-                </Pressable>
-                <Text style={s.stepperVal}>{item.servings}×</Text>
-                <Pressable onPress={() => stepDraftItem(i, SERVING_STEP)} hitSlop={8} accessibilityLabel={`More ${item.name}`}>
-                  <Text style={s.stepperBtn}>+</Text>
-                </Pressable>
-              </View>
+              <Stepper
+                value={`${item.servings}×`}
+                onDecrement={() => stepDraftItem(i, -SERVING_STEP)}
+                onIncrement={() => stepDraftItem(i, SERVING_STEP)}
+                decrementLabel={`Less ${item.name}`}
+                incrementLabel={`More ${item.name}`}
+                valueMinWidth={32}
+                compact
+              />
               <Pressable onPress={() => removeDraftItem(i)} hitSlop={10} accessibilityLabel={`Remove ${item.name}`}>
                 <Text style={s.remove}>✕</Text>
               </Pressable>
@@ -194,27 +194,6 @@ const s = StyleSheet.create({
   },
   name: { fontFamily: font.medium, fontSize: 14, color: colors.ink },
   sub: { fontFamily: font.body, fontSize: 11, color: colors.ink2, marginTop: 1 },
-  stepper: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#E8E5DD',
-    borderRadius: 10,
-    overflow: 'hidden',
-  },
-  stepperBtn: {
-    fontFamily: font.body,
-    fontSize: 16,
-    color: colors.coral,
-    paddingHorizontal: 9,
-    paddingVertical: 4,
-  },
-  stepperVal: {
-    fontFamily: font.semibold,
-    fontSize: 12,
-    color: colors.ink,
-    minWidth: 32,
-    textAlign: 'center',
-  },
   remove: { fontSize: 13, color: colors.ink3, paddingHorizontal: 2 },
   bigBtn: {
     backgroundColor: colors.coral,

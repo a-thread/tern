@@ -12,7 +12,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 
 import { colors, font, radius, space } from '@shared/theme';
-import { Group, GroupLabel, SheetNav } from '@shared/components/ui';
+import { Group, GroupLabel, SheetNav, Stepper } from '@shared/components/ui';
 import type { RootStackParamList } from '@shared/navigation/types';
 import { MEAL_OPTIONS, type Tier } from '@food/models';
 import { useFood } from '@food/FoodContext';
@@ -132,15 +132,7 @@ export default function EditFoodEntryScreen({ navigation, route }: Props) {
           </View>
           <View style={s.row}>
             <Text style={[s.rowTitle, { flex: 1 }]}>Servings</Text>
-            <View style={s.stepper}>
-              <Pressable onPress={() => step(-SERVING_STEP)} hitSlop={8}>
-                <Text style={s.stepperBtn}>−</Text>
-              </Pressable>
-              <Text style={s.stepperVal}>{servings}</Text>
-              <Pressable onPress={() => step(SERVING_STEP)} hitSlop={8}>
-                <Text style={s.stepperBtn}>+</Text>
-              </Pressable>
-            </View>
+            <Stepper value={servings} onDecrement={() => step(-SERVING_STEP)} onIncrement={() => step(SERVING_STEP)} />
           </View>
         </Group>
 
@@ -223,27 +215,6 @@ const s = StyleSheet.create({
     color: colors.ink2,
     padding: 0,
     textAlign: 'right',
-  },
-  stepper: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#E8E5DD',
-    borderRadius: 10,
-    overflow: 'hidden',
-  },
-  stepperBtn: {
-    fontFamily: font.body,
-    fontSize: 17,
-    color: colors.coral,
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-  },
-  stepperVal: {
-    fontFamily: font.semibold,
-    fontSize: 13.5,
-    color: colors.ink,
-    minWidth: 40,
-    textAlign: 'center',
   },
   card: {
     backgroundColor: colors.card,

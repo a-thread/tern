@@ -1,3 +1,4 @@
+import { round1 } from '@shared/utils/number';
 import type { Portion } from '@food/data/sources/searchResult';
 
 /**
@@ -18,12 +19,11 @@ type Macros = { calories: number; protein: number; carbs: number; fat: number };
 /** Nutrition for `grams` of a food whose values are given for `baseGrams`. */
 export function scaleForGrams(per: Macros, baseGrams: number, grams: number): Macros {
   const f = grams / baseGrams;
-  const r1 = (n: number) => Math.round(n * 10) / 10;
   return {
     calories: Math.round(per.calories * f),
-    protein: r1(per.protein * f),
-    carbs: r1(per.carbs * f),
-    fat: r1(per.fat * f),
+    protein: round1(per.protein * f),
+    carbs: round1(per.carbs * f),
+    fat: round1(per.fat * f),
   };
 }
 
@@ -46,7 +46,7 @@ export const formatCount = (n: number) => String(Math.round(n * 100) / 100);
 
 /** What `count` of a portion weighs, to a tenth of a gram. */
 export const portionGrams = (portion: Portion, count: number) =>
-  Math.round(portion.grams * count * 10) / 10;
+  round1(portion.grams * count);
 
 /** The label saved with a logged portion, e.g. "1.5 cup (237 g)". */
 export const portionServingLabel = (portion: Portion, count: number) =>

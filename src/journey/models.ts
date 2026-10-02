@@ -120,3 +120,7 @@ export const waypointRules = [
   { id: 'mood', label: 'Checking in on mood and stress', points: 10 },
 ];
 
+
+/** What a rule pays out; 0 for a source that has no rule. */
+export const pointsFor = (source: WaypointSource): number =>
+  waypointRules.find((r) => r.id === source)?.points ?? 0;

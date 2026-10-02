@@ -1,15 +1,9 @@
-import React, {
-  createContext,
-  useCallback,
-  useContext,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import { useBackend } from '@shared/state/BackendContext';
+import { createRequiredContext } from '@shared/state/createRequiredContext';
+import { useLoader } from '@shared/hooks/useLoader';
+import { usePersist } from '@shared/hooks/usePersist';
 import { newId } from '@shared/utils/id';
-import { useToast } from '@shared/state/ToastContext';
 import { computeTrend, type WeightEntry } from './models';
 
 type WeightContextValue = {
@@ -21,31 +15,21 @@ type WeightContextValue = {
   addWeightEntry: (lb: number) => void;
 };
 
-const WeightContext = createContext<WeightContextValue | null>(null);
+const [WeightContext, useWeight] = createRequiredContext<WeightContextValue>(
+  'useWeight',
+  'WeightProvider',
+);
+export { useWeight };
 
 export function WeightProvider({ children }: { children: React.ReactNode }) {
   const { weight } = useBackend();
-  const toast = useToast();
   const [weightEntries, setWeightEntries] = useState<WeightEntry[]>([]);
-  const [ready, setReady] = useState(false);
-  const mounted = useRef(true);
-
-  const reload = useCallback(async () => {
-    try {
-      const entries = await weight.load();
-      if (mounted.current) setWeightEntries(entries);
-    } catch (e) {
-      console.warn('Could not load weight entries', e);
-    }
-  }, [weight]);
-
-  useEffect(() => {
-    mounted.current = true;
-    reload().finally(() => mounted.current && setReady(true));
-    return () => {
-      mounted.current = false;
-    };
-  }, [reload]);
+  const { ready, reload } = useLoader(
+    useCallback(() => weight.load(), [weight]),
+    setWeightEntries,
+    'Could not load weight entries',
+  );
+  const persist = usePersist(reload);
 
   const addWeightEntry = useCallback(
     (lb: number) => {
@@ -55,13 +39,12 @@ export function WeightProvider({ children }: { children: React.ReactNode }) {
         loggedAt: new Date().toISOString(),
       };
       setWeightEntries((prev) => [entry, ...prev]);
-      weight.add(entry).catch((e) => {
-        console.warn('Could not save weight entry', e);
-        toast.show("Couldn't save that weigh-in — please try again.");
-        reload();
+      persist(weight.add(entry), {
+        log: 'Could not save weight entry',
+        toast: "Couldn't save that weigh-in — please try again.",
       });
     },
-    [weight, reload, toast],
+    [weight, persist],
   );
 
   const weightTrend = useMemo(() => computeTrend(weightEntries), [weightEntries]);
@@ -74,10 +57,4 @@ export function WeightProvider({ children }: { children: React.ReactNode }) {
   return (
     <WeightContext.Provider value={value}>{children}</WeightContext.Provider>
   );
-}
-
-export function useWeight() {
-  const ctx = useContext(WeightContext);
-  if (!ctx) throw new Error('useWeight must be used within WeightProvider');
-  return ctx;
 }

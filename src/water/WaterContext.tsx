@@ -1,23 +1,14 @@
-import React, {
-  createContext,
-  useCallback,
-  useContext,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 
 import { useBackend } from '@shared/state/BackendContext';
-import { useToast } from '@shared/state/ToastContext';
+import { createRequiredContext } from '@shared/state/createRequiredContext';
 import { useDayKey } from '@shared/hooks/useDayKey';
+import { useLoader } from '@shared/hooks/useLoader';
+import { usePersist } from '@shared/hooks/usePersist';
 import { newId } from '@shared/utils/id';
 import { useSettings } from '@settings/SettingsContext';
-import { useWaypoints } from '@journey/WaypointsContext';
-import { waypointRules } from '@journey/models';
+import { useAward } from '@journey/hooks/useAward';
 import { dayTotal, isValidDrink, lastDrink, waterProgress, type WaterEntry } from './models';
-
-const WATER_POINTS = waypointRules.find((r) => r.id === 'water')?.points ?? 10;
 
 type WaterContextValue = {
   /** False until today's drinks have loaded once. */
@@ -38,36 +29,25 @@ type WaterContextValue = {
   lastOz: number | null;
 };
 
-const WaterContext = createContext<WaterContextValue | null>(null);
+const [WaterContext, useWater] = createRequiredContext<WaterContextValue>(
+  'useWater',
+  'WaterProvider',
+);
+export { useWater };
 
 /** Today's water, and the waypoint for reaching the goal. Must sit inside SettingsProvider and WaypointsProvider. */
 export function WaterProvider({ children }: { children: React.ReactNode }) {
   const { water: repo } = useBackend();
   const { settings } = useSettings();
-  const { day: awardDay, addWaypoints, revokeWaypoints } = useWaypoints();
-  const toast = useToast();
   const today = useDayKey();
 
   const [entries, setEntries] = useState<WaterEntry[]>([]);
-  const [ready, setReady] = useState(false);
-  const mounted = useRef(true);
-
-  const reload = useCallback(async () => {
-    try {
-      const drinks = await repo.load(today, today);
-      if (mounted.current) setEntries(drinks);
-    } catch (e) {
-      console.warn('Could not load water', e);
-    }
-  }, [repo, today]);
-
-  useEffect(() => {
-    mounted.current = true;
-    reload().finally(() => mounted.current && setReady(true));
-    return () => {
-      mounted.current = false;
-    };
-  }, [reload]);
+  const { ready, reload } = useLoader(
+    useCallback(() => repo.load(today, today), [repo, today]),
+    setEntries,
+    'Could not load water',
+  );
+  const persist = usePersist(reload);
 
   const enabled = settings.trackWater;
   const goalOz = settings.waterGoalOz;
@@ -76,11 +56,7 @@ export function WaterProvider({ children }: { children: React.ReactNode }) {
 
   // The waypoint follows the log, like "all meals": earned on reaching the goal, quietly
   // taken back if removing a drink drops the total below it. Nothing happens while tracking is off.
-  useEffect(() => {
-    if (!enabled || !ready || awardDay !== today) return;
-    if (reached) addWaypoints(WATER_POINTS, 'water');
-    else revokeWaypoints(WATER_POINTS, 'water');
-  }, [enabled, ready, awardDay, today, reached, addWaypoints, revokeWaypoints]);
+  useAward('water', reached, enabled && ready);
 
   const addWater = useCallback(
     (oz: number) => {
@@ -93,14 +69,13 @@ export function WaterProvider({ children }: { children: React.ReactNode }) {
         loggedAt: new Date().toISOString(),
       };
       setEntries((prev) => [...prev, entry]);
-      repo.add(entry).catch((e) => {
-        console.warn('Could not save water', e);
-        toast.show("Couldn't save that drink — please try again.");
-        reload();
+      persist(repo.add(entry), {
+        log: 'Could not save water',
+        toast: "Couldn't save that drink — please try again.",
       });
       return true;
     },
-    [repo, today, toast, reload],
+    [repo, today, persist],
   );
 
   const last = lastDrink(entries, today);
@@ -108,12 +83,11 @@ export function WaterProvider({ children }: { children: React.ReactNode }) {
   const undoLast = useCallback(() => {
     if (!lastId) return;
     setEntries((prev) => prev.filter((e) => e.id !== lastId));
-    repo.remove(lastId).catch((e) => {
-      console.warn('Could not remove water', e);
-      toast.show("Couldn't undo that — please try again.");
-      reload();
+    persist(repo.remove(lastId), {
+      log: 'Could not remove water',
+      toast: "Couldn't undo that — please try again.",
     });
-  }, [lastId, repo, toast, reload]);
+  }, [lastId, repo, persist]);
 
   const value = useMemo<WaterContextValue>(
     () => ({
@@ -131,10 +105,4 @@ export function WaterProvider({ children }: { children: React.ReactNode }) {
   );
 
   return <WaterContext.Provider value={value}>{children}</WaterContext.Provider>;
-}
-
-export function useWater() {
-  const ctx = useContext(WaterContext);
-  if (!ctx) throw new Error('useWater must be used within WaterProvider');
-  return ctx;
 }

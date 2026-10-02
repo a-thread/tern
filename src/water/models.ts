@@ -1,3 +1,4 @@
+import { TrendRanges, type TrendRange } from '@shared/models/trendRange';
 import { monthName, weekdayLetter } from '@shared/utils/date';
 
 /** One drink. `oz` is US fluid ounces (millilitres are a display choice); `loggedOn` is the local day (YYYY-MM-DD). */
@@ -49,9 +50,6 @@ export function lastDrink(entries: readonly WaterEntry[], day: string): WaterEnt
 }
 
 export type WaterBar = { label: string; value: number; state: 'goal' | 'partial' | 'none' };
-export type WaterRange = 'Week' | 'Month' | '6 months';
-const RANGE_DAYS = { Week: 7, Month: 30, '6 months': 180 } as const;
-const WEEKLY_BARS = 25;
 
 const dayKeys = (today: string, count: number): string[] => {
   const [y, m, d] = today.split('-').map(Number);
@@ -71,17 +69,17 @@ const barState = (oz: number, goalOz: number): WaterBar['state'] =>
 export function bucketWater(
   byDay: Readonly<Record<string, number>>,
   goalOz: number,
-  range: WaterRange,
+  range: TrendRange,
   today: string,
 ): WaterBar[] {
   if (range === 'Week' || range === 'Month') {
-    return dayKeys(today, RANGE_DAYS[range]).map((day) => ({
+    return dayKeys(today, TrendRanges.DAYS[range]).map((day) => ({
       label: range === 'Week' ? weekdayLetter(day) : '',
       value: byDay[day] ?? 0,
       state: barState(byDay[day] ?? 0, goalOz),
     }));
   }
-  const keys = dayKeys(today, 7 * WEEKLY_BARS);
+  const keys = dayKeys(today, 7 * TrendRanges.WEEKLY_BARS);
   let lastMonth = '';
   const bars: WaterBar[] = [];
   for (let i = 0; i < keys.length; i += 7) {

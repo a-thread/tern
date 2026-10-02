@@ -5,7 +5,6 @@ import {
   filterMeals,
   findMealByName,
   itemsToEntries,
-  sameName,
   savedMealTotals,
   snapshotItems,
   sortMeals,
@@ -32,8 +31,6 @@ const meal = (name: string): SavedMeal => ({ id: name, name, items: [], createdA
 describe('names', () => {
   it('cleans spacing and compares ignoring case', () => {
     expect(cleanName('  Usual   breakfast ')).toBe('Usual breakfast');
-    expect(sameName('Usual breakfast', '  usual  BREAKFAST')).toBe(true);
-    expect(sameName('Lunch', 'Dinner')).toBe(false);
   });
 
   it('asks for a name, of sensible length', () => {

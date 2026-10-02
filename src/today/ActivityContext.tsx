@@ -1,21 +1,14 @@
-import React, {
-  createContext,
-  useCallback,
-  useContext,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from 'react';
+import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { AppState } from 'react-native';
 
 import { useBackend } from '@shared/state/BackendContext';
-import { useToast } from '@shared/state/ToastContext';
+import { createRequiredContext } from '@shared/state/createRequiredContext';
 import { useDayKey } from '@shared/hooks/useDayKey';
+import { useLoader } from '@shared/hooks/useLoader';
+import { usePersist } from '@shared/hooks/usePersist';
 import { addDays } from '@shared/utils/date';
 import { useSettings } from '@settings/SettingsContext';
-import { useWaypoints } from '@journey/WaypointsContext';
-import { waypointRules } from '@journey/models';
+import { useAward } from '@journey/hooks/useAward';
 import {
   buildDays,
   computeStreak,
@@ -30,11 +23,10 @@ import { sameDays, sameSteps } from '@today/utils/sameData';
 /** How much history is read: enough for the 6-month views. */
 export const HISTORY_DAYS = 180;
 const REFRESH_MS = 5 * 60 * 1000;
-
-const pointsFor = (id: string) =>
-  waypointRules.find((r) => r.id === id)?.points ?? 0;
-const STEP_GOAL_POINTS = pointsFor('steps');
-const REST_DAY_POINTS = pointsFor('rest');
+const REST_FAILURE = {
+  log: 'Could not save rest day',
+  toast: "Couldn't save that rest day — please try again.",
+};
 
 type ActivityContextValue = {
   /** False until steps and rest days have loaded once. */
@@ -59,7 +51,11 @@ type ActivityContextValue = {
   undoRestDay: () => void;
 };
 
-const ActivityContext = createContext<ActivityContextValue | null>(null);
+const [ActivityContext, useActivity] = createRequiredContext<ActivityContextValue>(
+  'useActivity',
+  'ActivityProvider',
+);
+export { useActivity };
 const LastSyncedContext = createContext<Date | null>(null);
 
 /**
@@ -71,21 +67,17 @@ const LastSyncedContext = createContext<Date | null>(null);
 export function ActivityProvider({ children }: { children: React.ReactNode }) {
   const { steps: stepsRepo, restDays: restRepo } = useBackend();
   const { settings } = useSettings();
-  const { day: awardDay, addWaypoints, revokeWaypoints } = useWaypoints();
-  const toast = useToast();
   const today = useDayKey();
 
   const [status, setStatus] = useState<StepsStatus>('unavailable');
   const [rawStepsByDay, setStepsByDay] = useState<Record<string, number>>({});
   const [restList, setRestList] = useState<string[]>([]);
   const [lastSynced, setLastSynced] = useState<Date | null>(null);
-  const [ready, setReady] = useState(false);
-  const mounted = useRef(true);
 
-  /** Reads steps and rest days. Resolves to the step status, or null if reading failed. */
-  const load = useCallback(async (): Promise<StepsStatus | null> => {
-    const from = addDays(today, -(HISTORY_DAYS - 1));
-    try {
+  /** Reads steps and rest days. */
+  const { ready, reload: load } = useLoader(
+    useCallback(async () => {
+      const from = addDays(today, -(HISTORY_DAYS - 1));
       const nextStatus = await stepsRepo.status();
       const [steps, rest] = await Promise.all([
         nextStatus === 'connected'
@@ -93,25 +85,17 @@ export function ActivityProvider({ children }: { children: React.ReactNode }) {
           : Promise.resolve({} as Record<string, number>),
         restRepo.load(from, today),
       ]);
-      if (!mounted.current) return nextStatus;
+      return { status: nextStatus, steps, rest };
+    }, [stepsRepo, restRepo, today]),
+    ({ status: nextStatus, steps, rest }) => {
       setStatus((prev) => (prev === nextStatus ? prev : nextStatus));
       setStepsByDay((prev) => (sameSteps(prev, steps) ? prev : steps));
       setRestList((prev) => (sameDays(prev, rest) ? prev : rest));
       setLastSynced(new Date());
-      return nextStatus;
-    } catch (e) {
-      console.warn('Could not load activity', e);
-      return null;
-    }
-  }, [stepsRepo, restRepo, today]);
-
-  useEffect(() => {
-    mounted.current = true;
-    load().finally(() => mounted.current && setReady(true));
-    return () => {
-      mounted.current = false;
-    };
-  }, [load]);
+    },
+    'Could not load activity',
+  );
+  const persist = usePersist(load);
 
   // Pick up new steps when the app returns to the foreground, and every few minutes while open.
   useEffect(() => {
@@ -170,58 +154,33 @@ export function ActivityProvider({ children }: { children: React.ReactNode }) {
   // disconnected or "read steps" switched off, what was earned stays put.
   const stepsReadable = status === 'connected' && readSteps;
 
-  useEffect(() => {
-    if (!ready || awardDay !== today || !stepsReadable) return;
-    // Lowering the goal to collect the award and raising it again doesn't
-    // keep it: today is judged against the goal it ends up with.
-    if (goalReachedToday) addWaypoints(STEP_GOAL_POINTS, 'steps');
-    else revokeWaypoints(STEP_GOAL_POINTS, 'steps');
-  }, [
-    ready,
-    awardDay,
-    today,
-    stepsReadable,
-    goalReachedToday,
-    addWaypoints,
-    revokeWaypoints,
-  ]);
+  // Lowering the goal to collect the award and raising it again doesn't
+  // keep it: today is judged against the goal it ends up with.
+  useAward('steps', goalReachedToday, ready && stepsReadable);
 
   // A day is either a goal day or a rest day, never both: a rest day taken
   // early earns its waypoints only if the goal isn't reached after all. So
   // taking one "just in case" is never better than waiting to see.
   const restCounts = todayIsRest && !(stepsReadable && goalReachedToday);
-  useEffect(() => {
-    if (!ready || awardDay !== today) return;
-    if (restCounts) addWaypoints(REST_DAY_POINTS, 'rest');
-    else revokeWaypoints(REST_DAY_POINTS, 'rest');
-  }, [ready, awardDay, today, restCounts, addWaypoints, revokeWaypoints]);
-
-  const saveFailed = useCallback(
-    (e: unknown) => {
-      console.warn('Could not save rest day', e);
-      toast.show("Couldn't save that rest day — please try again.");
-      load();
-    },
-    [toast, load],
-  );
+  useAward('rest', restCounts, ready);
 
   const takeRestDay = useCallback(() => {
     if (todayIsRest || restLeft <= 0) return false;
     setRestList((prev) => [...prev, today]);
-    restRepo.add(today).catch(saveFailed);
+    persist(restRepo.add(today), REST_FAILURE);
     return true;
-  }, [todayIsRest, restLeft, today, restRepo, saveFailed]);
+  }, [todayIsRest, restLeft, today, restRepo, persist]);
 
   const undoRestDay = useCallback(() => {
     setRestList((prev) => prev.filter((d) => d !== today));
-    restRepo.remove(today).catch(saveFailed);
-  }, [today, restRepo, saveFailed]);
+    persist(restRepo.remove(today), REST_FAILURE);
+  }, [today, restRepo, persist]);
 
-  const refresh = useCallback(async () => (await load()) ?? 'failed', [load]);
+  const refresh = useCallback(async () => (await load())?.status ?? 'failed', [load]);
 
   const connect = useCallback(async (): Promise<StepsStatus> => {
     const granted = await stepsRepo.connect();
-    return (await load()) ?? granted;
+    return (await load())?.status ?? granted;
   }, [stepsRepo, load]);
 
   const value = useMemo<ActivityContextValue>(
@@ -270,10 +229,4 @@ export function ActivityProvider({ children }: { children: React.ReactNode }) {
  */
 export function useLastSynced(): Date | null {
   return useContext(LastSyncedContext);
-}
-
-export function useActivity() {
-  const ctx = useContext(ActivityContext);
-  if (!ctx) throw new Error('useActivity must be used within ActivityProvider');
-  return ctx;
 }

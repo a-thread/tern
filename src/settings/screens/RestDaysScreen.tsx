@@ -1,17 +1,11 @@
 import React from 'react';
-import { View, Text, ScrollView, StyleSheet, Pressable } from 'react-native';
+import { View, Text, ScrollView, StyleSheet } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import Svg, { Path } from 'react-native-svg';
 
 import { colors, font, radius, space } from '@shared/theme';
-import {
-  Group,
-  GroupLabel,
-  PushHeader,
-  ToggleRow,
-  IconBadge,
-} from '@shared/components/ui';
+import { Group, GroupLabel, PushHeader, ToggleRow, IconBadge, Stepper } from '@shared/components/ui';
 import { useSettings } from '@settings/SettingsContext';
 import type { SettingsStackParamList } from '@settings/navigation';
 
@@ -60,15 +54,7 @@ export default function RestDaysScreen({ navigation }: Props) {
               <Text style={s.rowTitle}>Rest days per week</Text>
               <Text style={s.rowSub}>Unused ones don't carry over</Text>
             </View>
-            <View style={s.stepper}>
-              <Pressable onPress={() => stepAllowance(-1)} hitSlop={8}>
-                <Text style={s.stepperBtn}>−</Text>
-              </Pressable>
-              <Text style={s.stepperVal}>{settings.restDaysPerWeek}</Text>
-              <Pressable onPress={() => stepAllowance(1)} hitSlop={8}>
-                <Text style={s.stepperBtn}>+</Text>
-              </Pressable>
-            </View>
+            <Stepper value={settings.restDaysPerWeek} onDecrement={() => stepAllowance(-1)} onIncrement={() => stepAllowance(1)} valueMinWidth={26} />
           </View>
           <ToggleRow
             title='Auto-detect'
@@ -173,26 +159,5 @@ const s = StyleSheet.create({
     fontSize: 11.5,
     color: colors.ink2,
     marginTop: 2,
-  },
-  stepper: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#E8E5DD',
-    borderRadius: 10,
-    overflow: 'hidden',
-  },
-  stepperBtn: {
-    fontFamily: font.body,
-    fontSize: 17,
-    color: colors.coral,
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-  },
-  stepperVal: {
-    fontFamily: font.semibold,
-    fontSize: 13.5,
-    color: colors.ink,
-    minWidth: 26,
-    textAlign: 'center',
   },
 });

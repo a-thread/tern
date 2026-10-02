@@ -1,3 +1,4 @@
+import { round1, toFiniteNumber } from '@shared/utils/number';
 import type { Tier } from '@food/models';
 import { getJson } from './http';
 import type { SearchResult } from './searchResult';
@@ -24,11 +25,6 @@ export type OffProduct = {
   nova_group?: number | string;
 };
 
-const num = (v: unknown): number | undefined => {
-  const n = typeof v === 'string' ? parseFloat(v) : (v as number);
-  return typeof n === 'number' && Number.isFinite(n) ? n : undefined;
-};
-const round1 = (n: number) => Math.round(n * 10) / 10;
 
 function firstBrand(brands: OffProduct['brands']): string | undefined {
   const first = Array.isArray(brands) ? brands[0] : brands?.split(',')[0];
@@ -47,18 +43,18 @@ export function productToResult(p: OffProduct): SearchResult | null {
   if (!name) return null;
 
   const n = p.nutriments ?? {};
-  const kj = num(n['energy-kj_100g']) ?? num(n['energy_100g']);
-  const kcal100 = num(n['energy-kcal_100g']) ?? (kj !== undefined ? kj / 4.184 : undefined);
+  const kj = toFiniteNumber(n['energy-kj_100g']) ?? toFiniteNumber(n['energy_100g']);
+  const kcal100 = toFiniteNumber(n['energy-kcal_100g']) ?? (kj !== undefined ? kj / 4.184 : undefined);
   // No energy figure, or an impossible one (pure fat is ~900 kcal per 100 g).
   if (kcal100 === undefined || kcal100 < 0 || kcal100 > 950) return null;
 
-  const grams = num(p.serving_quantity);
+  const grams = toFiniteNumber(p.serving_quantity);
   const portions =
     grams !== undefined && grams > 0 && grams <= 2000
       ? [{ label: (p.serving_size ?? '').trim() || 'serving', grams }]
       : undefined;
 
-  const nova = num(p.nova_group);
+  const nova = toFiniteNumber(p.nova_group);
   const tier = nova !== undefined && [1, 2, 3, 4].includes(nova) ? (nova as Tier) : null;
 
   return {
@@ -67,9 +63,9 @@ export function productToResult(p: OffProduct): SearchResult | null {
     brand: firstBrand(p.brands),
     servingLabel: '100 g',
     calories: Math.round(kcal100),
-    protein: round1(num(n['proteins_100g']) ?? 0),
-    carbs: round1(num(n['carbohydrates_100g']) ?? 0),
-    fat: round1(num(n['fat_100g']) ?? 0),
+    protein: round1(toFiniteNumber(n['proteins_100g']) ?? 0),
+    carbs: round1(toFiniteNumber(n['carbohydrates_100g']) ?? 0),
+    fat: round1(toFiniteNumber(n['fat_100g']) ?? 0),
     tier,
     portions,
     source: 'off',

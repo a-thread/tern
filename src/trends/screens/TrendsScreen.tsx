@@ -6,7 +6,8 @@ import Svg, { Path } from 'react-native-svg';
 import { useFocusEffect } from '@react-navigation/native';
 
 import { colors, font, space } from '@shared/theme';
-import { Card, GroupLabel, Insight, FootNote } from '@shared/components/ui';
+import { TrendRanges, type TrendRange } from '@shared/models/trendRange';
+import { Card, GroupLabel, Insight, FootNote, SegmentedControl } from '@shared/components/ui';
 import {
   StepBars,
   WeightTrend,
@@ -25,27 +26,18 @@ import WaterTrendCard from '@water/components/WaterTrendCard';
 import MoodTrendCard from '@mood/components/MoodTrendCard';
 import { useUnits } from '@settings/hooks/useUnits';
 import {
-  RANGE_DAYS,
   bucketSteps,
   longestProtectedRun,
   summarizeSteps,
   weightTrendFor,
-  type StepRange,
 } from '@trends/models';
 import type { TrendsStackParamList } from '@trends/navigation';
 
 type Props = NativeStackScreenProps<TrendsStackParamList, 'TrendsHome'>;
 
-const RANGES = ['Week', 'Month', '6 months'] as const;
-const RANGE_LABEL = {
-  Week: 'this week',
-  Month: 'this month',
-  '6 months': 'over 6 months',
-} as const;
-
 export default function TrendsScreen({ navigation }: Props) {
   const insets = useSafeAreaInsets();
-  const [range, setRange] = useState<StepRange>('Month');
+  const [range, setRange] = useState<TrendRange>('Month');
   const { foodLog } = useFood();
   const { weightEntries, weightTrend } = useWeight();
   const { settings } = useSettings();
@@ -75,11 +67,11 @@ export default function TrendsScreen({ navigation }: Props) {
     }, [food, todayKey, foodDays, foodLog]),
   );
   const stepsConnected = stepsStatus === 'connected';
-  const rangeSteps = summarizeSteps(days, RANGE_DAYS[range]);
+  const rangeSteps = summarizeSteps(days, TrendRanges.DAYS[range]);
   const bars = bucketSteps(days, range);
-  const inRange = days.slice(-RANGE_DAYS[range]).map((d) => d.state);
+  const inRange = days.slice(-TrendRanges.DAYS[range]).map((d) => d.state);
   const longestRun = longestProtectedRun(inRange);
-  const rangeTrend = weightTrendFor(weightEntries, RANGE_DAYS[range]);
+  const rangeTrend = weightTrendFor(weightEntries, TrendRanges.DAYS[range]);
   const latest = weightTrend[weightTrend.length - 1];
   const delta =
     rangeTrend.length > 1
@@ -102,17 +94,7 @@ export default function TrendsScreen({ navigation }: Props) {
           paddingBottom: 100,
         }}
       >
-        <View style={s.seg}>
-          {RANGES.map((r) => (
-            <Pressable
-              key={r}
-              onPress={() => setRange(r)}
-              style={[s.segItem, range === r && s.segOn]}
-            >
-              <Text style={[s.segText, range === r && s.segTextOn]}>{r}</Text>
-            </Pressable>
-          ))}
-        </View>
+        <SegmentedControl options={TrendRanges.ALL} value={range} onChange={setRange} style={s.seg} />
 
         {/* steps */}
         <Pressable onPress={() => navigation.navigate('StepsDetail')}>
@@ -127,7 +109,7 @@ export default function TrendsScreen({ navigation }: Props) {
                 </Text>
                 <Text
                   style={s.metricSub}
-                >{`daily average ${RANGE_LABEL[range]}`}</Text>
+                >{`daily average ${TrendRanges.LABEL[range]}`}</Text>
               </View>
               {rangeSteps.changePct !== null ? (
                 <View
@@ -266,7 +248,7 @@ export default function TrendsScreen({ navigation }: Props) {
           <Text style={s.metricSub}>
             {range === '6 months'
               ? 'Last 6 months'
-              : `Last ${RANGE_DAYS[range]} days`}
+              : `Last ${TrendRanges.DAYS[range]} days`}
           </Text>
           <ConsistencyGrid days={inRange} />
         </Card>
@@ -325,21 +307,8 @@ const s = StyleSheet.create({
     letterSpacing: -0.3,
   },
   seg: {
-    flexDirection: 'row',
-    backgroundColor: '#E8E5DD',
-    borderRadius: 10,
-    padding: 3,
     marginVertical: space.md,
   },
-  segItem: {
-    flex: 1,
-    alignItems: 'center',
-    paddingVertical: 6,
-    borderRadius: 8,
-  },
-  segOn: { backgroundColor: '#fff' },
-  segText: { fontFamily: font.body, fontSize: 12.5, color: colors.ink2 },
-  segTextOn: { fontFamily: font.semibold, color: colors.ink },
   metricTop: {
     flexDirection: 'row',
     justifyContent: 'space-between',

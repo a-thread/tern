@@ -1,15 +1,9 @@
-import React, {
-  createContext,
-  useCallback,
-  useContext,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useBackend } from '@shared/state/BackendContext';
+import { createRequiredContext } from '@shared/state/createRequiredContext';
 import { useDayKey } from '@shared/hooks/useDayKey';
-import { useToast } from '@shared/state/ToastContext';
+import { useLoader } from '@shared/hooks/useLoader';
+import { usePersist } from '@shared/hooks/usePersist';
 import { newId } from '@shared/utils/id';
 import type { FoodEntry } from './models';
 import type { NewFoodEntry } from '@food/data/food.repository';
@@ -32,7 +26,8 @@ type FoodContextValue = {
   setMealSkipped: (meal: FoodEntry['meal'], skipped: boolean) => void;
 };
 
-const FoodContext = createContext<FoodContextValue | null>(null);
+const [FoodContext, useFood] = createRequiredContext<FoodContextValue>('useFood', 'FoodProvider');
+export { useFood };
 
 /**
  * Edits apply to the screen immediately and are persisted in the
@@ -43,45 +38,29 @@ export function FoodProvider({ children }: { children: React.ReactNode }) {
   const { food } = useBackend();
   const [foodLog, setFoodLog] = useState<FoodEntry[]>([]);
   const [skippedMeals, setSkippedMeals] = useState<FoodEntry['meal'][]>([]);
-  const [ready, setReady] = useState(false);
   const day = useDayKey();
-  const toast = useToast();
   const [loadedDay, setLoadedDay] = useState<string | null>(null);
-  const mounted = useRef(true);
 
-  const reload = useCallback(async () => {
-    try {
-      const [entries, skipped] = await Promise.all([
-        food.load(day),
-        food.loadSkipped(day),
-      ]);
-      if (mounted.current) {
-        setFoodLog(entries);
-        setSkippedMeals(skipped);
-        setLoadedDay(day);
-      }
-    } catch (e) {
-      console.warn('Could not load food log', e);
-    }
-  }, [food, day]);
-
-  useEffect(() => {
-    mounted.current = true;
-    reload().finally(() => mounted.current && setReady(true));
-    return () => {
-      mounted.current = false;
-    };
-  }, [reload]);
-
-  const persist = useCallback(
-    (write: Promise<void>) => {
-      write.catch((e) => {
-        console.warn('Could not save food change', e);
-        toast.show("Couldn't save that change — your log was refreshed.");
-        reload();
-      });
+  const { ready, reload } = useLoader(
+    useCallback(async () => {
+      const [entries, skipped] = await Promise.all([food.load(day), food.loadSkipped(day)]);
+      return { entries, skipped };
+    }, [food, day]),
+    ({ entries, skipped }) => {
+      setFoodLog(entries);
+      setSkippedMeals(skipped);
+      setLoadedDay(day);
     },
-    [reload, toast],
+    'Could not load food log',
+  );
+  const persistWith = usePersist(reload);
+  const persist = useCallback(
+    (write: Promise<unknown>) =>
+      persistWith(write, {
+        log: 'Could not save food change',
+        toast: "Couldn't save that change — your log was refreshed.",
+      }),
+    [persistWith],
   );
 
   const addFoodEntry = useCallback(
@@ -166,10 +145,4 @@ export function FoodProvider({ children }: { children: React.ReactNode }) {
   );
 
   return <FoodContext.Provider value={value}>{children}</FoodContext.Provider>;
-}
-
-export function useFood() {
-  const ctx = useContext(FoodContext);
-  if (!ctx) throw new Error('useFood must be used within FoodProvider');
-  return ctx;
 }
