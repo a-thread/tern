@@ -93,7 +93,7 @@ a project and apply the migrations in [supabase/migrations/](supabase/migrations
 ## Project layout
 
 One folder per domain under [src/](src). Each follows the same layout: pure rules in
-`models.ts` and `utils/`, state in a `*Context.tsx`, all I/O in `data/`, and its UI in
+`models/`, state in a `*Context.tsx`, all I/O in `data/`, and its UI in
 `screens/` and `components/`. The rules are in
 [docs/architecture.md](docs/architecture.md#feature-layout).
 
@@ -129,7 +129,7 @@ Release steps and required secrets are in [docs/RELEASING.md](docs/RELEASING.md)
 Issues and pull requests are welcome.
 
 1. Fork the repo and create a branch from `main`.
-2. Make your change, with tests where the logic is pure (`models.ts` is the usual place).
+2. Make your change, with tests where the logic is pure (`models/` is the usual place).
 3. Run `npm run typecheck && npm run lint && npm test`. CI runs the same three.
 4. Open a pull request describing what changed and why.
 
