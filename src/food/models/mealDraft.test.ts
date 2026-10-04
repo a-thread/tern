@@ -2,6 +2,7 @@ import type { FoodEntry } from './foodEntry';
 import { addItem, draftFromMeal, emptyDraft, isDraftDirty, removeItemAt, scaledTotals, stepItemServings, stepScale, validateDraft, MealScale } from './mealDraft';
 import { itemsToEntries, scaleServings, snapshotItems, type SavedMeal, SavedMealLimits } from './savedMeals';
 import { Meal } from './foodEntry';
+import { amountOf } from './measure';
 
 const item = (name: string, servings = 1, calories = 100) => {
   const entry: FoodEntry = {
@@ -103,5 +104,24 @@ describe('drafts', () => {
   it('stops adding at the item limit', () => {
     const full = Array.from({ length: SavedMealLimits.MAX_ITEMS }, (_, i) => item(`F${i}`));
     expect(addItem(full, item('one more'))).toHaveLength(SavedMealLimits.MAX_ITEMS);
+  });
+});
+
+describe('stepItemServings with a measure', () => {
+  const eggs = amountOf({
+    per100: { calories: 143, protein: 12.6, carbs: 0.7, fat: 9.5 },
+    portions: [{ label: 'large egg', grams: 50 }],
+    unit: 'large egg',
+    quantity: 2,
+  });
+  const items = [{ ...item('Eggs'), ...eggs }];
+
+  it('steps a measured item in its own unit and updates its label and calories', () => {
+    const [up] = stepItemServings(items, 0, 0.25);
+    expect(up).toMatchObject({ servings: 1, servingLabel: '2.25 large eggs (112.5 g)' });
+    expect(up.measure?.quantity).toBe(2.25);
+    expect(up.calories).toBe(161);
+    const [down] = stepItemServings(items, 0, -0.25);
+    expect(down.measure?.quantity).toBe(1.75);
   });
 });

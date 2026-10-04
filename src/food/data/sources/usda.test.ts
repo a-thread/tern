@@ -88,6 +88,12 @@ describe('usdaFoodToResult', () => {
 });
 
 describe('measureToPortion', () => {
+  it('completes a bare size with the food, so an egg is counted in eggs', () => {
+    expect(measureToPortion({ disseminationText: '1 large', gramWeight: 50 }, 'egg')).toEqual({ label: 'large egg', grams: 50 });
+    expect(measureToPortion({ disseminationText: '1 cup', gramWeight: 240 }, 'egg')).toEqual({ label: 'cup', grams: 240 });
+    expect(measureToPortion({ disseminationText: '1 large', gramWeight: 50 })).toEqual({ label: 'large', grams: 50 });
+  });
+
   it('turns "2 slices = 56 g" into one slice of 28 g', () => {
     expect(measureToPortion({ amount: 2, modifier: 'slice', gramWeight: 56 })).toEqual({ label: 'slice', grams: 28 });
   });
@@ -138,10 +144,10 @@ describe('real search-result shape', () => {
     const r = usdaFoodToResult(appleRaw);
     expect(r?.calories).toBe(61);
     expect(r?.portions).toEqual([
-      { label: 'small', grams: 165 },
-      { label: 'medium', grams: 200 },
-      { label: 'large', grams: 242 },
-      { label: 'extra large', grams: 295 },
+      { label: 'small apple', grams: 165 },
+      { label: 'medium apple', grams: 200 },
+      { label: 'large apple', grams: 242 },
+      { label: 'extra large apple', grams: 295 },
       { label: 'slice', grams: 25 },
       { label: 'cup', grams: 125 },
       { label: 'single serving package', grams: 34 },

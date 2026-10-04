@@ -29,17 +29,32 @@ export function recentFoods(
       const k = key(e.name, e.brand);
       if (seen.has(k)) continue;
       seen.add(k);
-      out.push({
-        id: `logged-${k}`,
-        name: e.name,
-        brand: e.brand,
-        servingLabel: e.servingLabel,
-        calories: e.calories,
-        protein: e.protein,
-        carbs: e.carbs,
-        fat: e.fat,
-        tier: e.tier,
-      });
+      // Logged by amount: offer it per 100 g again, with its units and what you had last time.
+      const m = e.measure;
+      out.push(
+        m
+          ? {
+              id: `logged-${k}`,
+              name: e.name,
+              brand: e.brand,
+              servingLabel: '100 g',
+              ...m.per100,
+              tier: e.tier,
+              portions: m.portions.length ? m.portions : undefined,
+              last: { unit: m.unit, quantity: m.quantity },
+            }
+          : {
+              id: `logged-${k}`,
+              name: e.name,
+              brand: e.brand,
+              servingLabel: e.servingLabel,
+              calories: e.calories,
+              protein: e.protein,
+              carbs: e.carbs,
+              fat: e.fat,
+              tier: e.tier,
+            },
+      );
       if (out.length >= limit) return out;
     }
   }
@@ -47,7 +62,10 @@ export function recentFoods(
 }
 
 /** Foods whose name or brand contains every word of `query`; all of them when the query is blank. */
-export function filterFoods(foods: SearchResult[], query: string): SearchResult[] {
+export function filterFoods(
+  foods: SearchResult[],
+  query: string,
+): SearchResult[] {
   const words = query.trim().toLowerCase().split(/\s+/).filter(Boolean);
   if (!words.length) return foods;
   return foods.filter((f) => {

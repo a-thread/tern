@@ -3,6 +3,8 @@
  * still apply once real data replaces the mock log (see mock.ts).
  */
 
+import type { Measure } from './measure';
+
 export type Tier = 1 | 2 | 3 | 4;
 
 export enum Meal {
@@ -25,10 +27,15 @@ export type FoodEntry = {
   fat: number;
   tier: Tier;
   tierOverridden?: boolean;
+  /** How the amount was measured (eggs, cups, grams), when known; older entries have none. */
+  measure?: Measure;
 };
 
 /** Anything with a per-serving nutrition and a serving count: a log entry or a saved-meal item. */
-type Servable = Pick<FoodEntry, 'calories' | 'protein' | 'carbs' | 'fat' | 'servings'>;
+type Servable = Pick<
+  FoodEntry,
+  'calories' | 'protein' | 'carbs' | 'fat' | 'servings'
+>;
 
 export function dayTotals(log: Servable[]) {
   return log.reduce(

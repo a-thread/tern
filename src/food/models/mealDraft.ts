@@ -1,6 +1,15 @@
 import { dayTotals } from './foodEntry';
 import { stepServings } from './servings';
-import { cleanName, findMealByName, scaleServings, validateMealName, type SavedMeal, type SavedMealItem, SavedMealLimits } from './savedMeals';
+import { amountOf, stepMeasure } from './measure';
+import {
+  cleanName,
+  findMealByName,
+  scaleServings,
+  validateMealName,
+  type SavedMeal,
+  type SavedMealItem,
+  SavedMealLimits,
+} from './savedMeals';
 
 /** How a saved or recent meal can be scaled when it is logged. */
 export class MealScale {
@@ -14,13 +23,17 @@ export class MealScale {
 
 /** Moves a whole-meal scale by one step, within limits. */
 export function stepScale(scale: number, direction: 1 | -1): number {
-  const next = Math.round((scale + direction * MealScale.STEP) / MealScale.STEP) * MealScale.STEP;
+  const next =
+    Math.round((scale + direction * MealScale.STEP) / MealScale.STEP) *
+    MealScale.STEP;
   return Math.min(Math.max(next, MealScale.MIN), MealScale.MAX);
 }
 
 /** Totals for a saved meal's items at a scale (1 = as saved). */
 export const scaledTotals = (items: SavedMealItem[], scale: number) =>
-  dayTotals(items.map((i) => ({ ...i, servings: scaleServings(i.servings, scale) })));
+  dayTotals(
+    items.map((i) => ({ ...i, servings: scaleServings(i.servings, scale) })),
+  );
 
 // ------------------------------------------------------------------ drafts
 
@@ -71,18 +84,23 @@ export const addItem = (items: SavedMealItem[], item: SavedMealItem) =>
 export const removeItemAt = (items: SavedMealItem[], index: number) =>
   items.filter((_, i) => i !== index);
 
-/** Changes one item's servings by `delta`, in quarters and never below a quarter. */
+/**
+ * Steps one item up or down. Measured items move by their own unit (a quarter
+ * portion, or ten grams) and keep their label; others change servings in
+ * quarters, never below a quarter.
+ */
 export function stepItemServings(
   items: SavedMealItem[],
   index: number,
   delta: number,
 ): SavedMealItem[] {
-  return items.map((item, i) =>
-    i === index
-      ? {
-          ...item,
-          servings: stepServings(item.servings, delta),
-        }
-      : item,
-  );
+  return items.map((item, i) => {
+    if (i !== index) return item;
+    if (item.measure)
+      return {
+        ...item,
+        ...amountOf(stepMeasure(item.measure, delta > 0 ? 1 : -1)),
+      };
+    return { ...item, servings: stepServings(item.servings, delta) };
+  });
 }

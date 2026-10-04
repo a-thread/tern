@@ -1,4 +1,4 @@
-import { isValidBarcode, productToResult, searchProducts, type OffProduct } from './openFoodFacts';
+import { isValidBarcode, productToResult, searchProducts, servingPortion, type OffProduct } from './openFoodFacts';
 
 // Trimmed copies of real Open Food Facts responses.
 const rolledOats: OffProduct = {
@@ -41,7 +41,15 @@ describe('productToResult', () => {
   it('keeps nutrition per 100 g and offers the declared serving as a portion', () => {
     const r = productToResult({ ...rolledOats, serving_size: '40 g', serving_quantity: '40' });
     expect(r).toMatchObject({ servingLabel: '100 g', calories: 407, protein: 11.8, carbs: 68.5, fat: 9.5 });
-    expect(r?.portions).toEqual([{ label: '40 g', grams: 40 }]);
+    expect(r?.portions).toEqual([{ label: 'serving', grams: 40 }]);
+  });
+
+  it('reads a product serving as its unit: a bar, a cookie of the declared total, or a household measure', () => {
+    expect(servingPortion('1 bar (40 g)', 40)).toEqual({ label: 'bar', grams: 40 });
+    expect(servingPortion('2 cookies (30 g)', 30)).toEqual({ label: 'cookie', grams: 15 });
+    expect(servingPortion('2 tbsp (30 g)', 30)).toEqual({ label: '2 tbsp', grams: 30 });
+    expect(servingPortion('250 ml', 250)).toEqual({ label: 'serving', grams: 250 });
+    expect(servingPortion(undefined, 30)).toEqual({ label: 'serving', grams: 30 });
   });
 
   it('names an unlabelled serving, and has no portion without one', () => {

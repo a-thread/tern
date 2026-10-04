@@ -17,9 +17,21 @@ import type { Tier } from '@food/models/foodEntry';
 import { useFood } from '@food/FoodContext';
 import { useSavedMeals } from '@food/SavedMealsContext';
 import { TierPicker } from '@food/components/TierPicker';
+import { MeasurePicker } from '@food/components/MeasurePicker';
 import { MealPicker } from '@food/components/MealPicker';
 import { useFoodDisplay } from '@food/hooks/useFoodDisplay';
-import { gramsOf, parseGrams, portionGrams, portionServingLabel, scaleForGrams, stepServings, Servings } from '@food/models/servings';
+import {
+  gramsOf,
+  scaleForGrams,
+  stepServings,
+  Servings,
+} from '@food/models/servings';
+import {
+  amountOf,
+  measureGrams,
+  startingMeasure,
+  type Measure,
+} from '@food/models/measure';
 import type { LogFoodStackParamList } from '@food/navigation';
 
 type Props = NativeStackScreenProps<LogFoodStackParamList, 'FoodDetail'>;
@@ -32,68 +44,46 @@ export default function FoodDetailScreen({ navigation, route }: Props) {
   const { showTiers, showTierNumber, showCalories } = useFoodDisplay();
 
   // Foods sized in grams ("100 g", the usual Open Food Facts unit) are logged by
-  // weight: type how much you ate. Anything else ("1 bar") uses servings.
+  // amount: pick a household unit ("large egg", "cup") and how many, or type a
+  // weight. Anything else ("1 bar") uses servings.
   const baseGrams = gramsOf(result.servingLabel);
-  const [grams, setGrams] = useState(baseGrams !== null ? String(baseGrams) : '');
-  // Household portions ("1 medium", "1 cup") when the database has them: pick one
-  // and how many, or switch to typing grams.
-  const portions = baseGrams !== null ? (result.portions ?? []) : [];
-  const [portionIndex, setPortionIndex] = useState<number | null>(
-    portions.length ? 0 : null,
+  const [measure, setMeasure] = useState<Measure | null>(() =>
+    baseGrams !== null ? startingMeasure(result, baseGrams) : null,
   );
-  const [count, setCount] = useState(1);
-  const portion = portionIndex !== null ? portions[portionIndex] : null;
-  const gramsValue = portion ? portionGrams(portion, count) : parseGrams(grams);
+  const gramsValue = measure ? measureGrams(measure) : null;
   const [servings, setServings] = useState(1);
   const [servingLabel, setServingLabel] = useState(result.servingLabel);
   const [meal, setMeal] = useState(initialMeal);
   // A food with no processing data starts with no type chosen: we ask rather than guess.
   const [tier, setTier] = useState<Tier | null>(result.tier);
   const needsTier = showTiers && tier === null;
-  const needsAmount = baseGrams !== null && gramsValue === null;
+  const needsAmount = measure !== null && (gramsValue ?? 0) <= 0;
   const blocked = needsTier || needsAmount;
 
   // What is being logged, scaled to the amount eaten.
-  const shown =
-    baseGrams !== null
-      ? scaleForGrams(result, baseGrams, gramsValue ?? 0)
-      : {
-          calories: result.calories * servings,
-          protein: result.protein * servings,
-          carbs: result.carbs * servings,
-          fat: result.fat * servings,
-        };
+  const shown = measure
+    ? scaleForGrams(measure.per100, 100, gramsValue ?? 0)
+    : {
+        calories: result.calories * servings,
+        protein: result.protein * servings,
+        carbs: result.carbs * servings,
+        fat: result.fat * servings,
+      };
 
-  const step = (delta: number) =>
-    setServings((s) => stepServings(s, delta));
-  const stepCount = (delta: number) =>
-    setCount((c) => stepServings(c, delta));
-  // Switching to grams keeps the weight you had chosen.
-  const chooseGrams = () => {
-    if (gramsValue !== null) setGrams(String(gramsValue));
-    setPortionIndex(null);
-  };
-
+  const step = (delta: number) => setServings((s) => stepServings(s, delta));
   const add = () => {
     if (blocked) return;
-    // By weight: one serving of exactly the amount eaten. Otherwise as entered.
-    const amount =
-      baseGrams !== null && gramsValue !== null
-        ? {
-            servings: 1,
-            servingLabel: portion
-              ? portionServingLabel(portion, count)
-              : `${gramsValue} g`,
-            ...scaleForGrams(result, baseGrams, gramsValue),
-          }
-        : {
-            servings,
-            servingLabel: servingLabel.trim() || result.servingLabel,
-            calories: result.calories,
-            protein: result.protein,
-            carbs: result.carbs,
-            fat: result.fat,
-          };
+    // With a measure: one serving of exactly the amount eaten. Otherwise as entered.
+    const amount = measure
+      ? amountOf(measure)
+      : {
+          servings,
+          servingLabel: servingLabel.trim() || result.servingLabel,
+          calories: result.calories,
+          protein: result.protein,
+          carbs: result.carbs,
+          fat: result.fat,
+        };
     const food = {
       name: result.name,
       brand: result.brand,
@@ -105,7 +95,8 @@ export default function FoodDetailScreen({ navigation, route }: Props) {
     if (pick) {
       // Building a saved meal: the food goes into the meal being edited, not today's log.
       addDraftItem(food);
-      navigation.navigate('MealEditor');
+      // Back to the editor already open underneath, not a second copy of it.
+      navigation.popTo('MealEditor');
       return;
     }
     addFoodEntry({ ...food, meal });
@@ -152,90 +143,40 @@ export default function FoodDetailScreen({ navigation, route }: Props) {
         </View>
 
         <GroupLabel>Portion</GroupLabel>
-        <Group>
-          {baseGrams !== null ? (
-            <>
-              {portions.length ? (
-                <View style={s.chips}>
-                  {portions.map((p, i) => (
-                    <Pressable
-                      key={`${p.label}-${i}`}
-                      onPress={() => {
-                        setPortionIndex(i);
-                        setCount(1);
-                      }}
-                      style={[s.chip, portionIndex === i && s.chipOn]}
-                    >
-                      <Text
-                        style={[s.chipText, portionIndex === i && s.chipTextOn]}
-                      >
-                        {p.label}
-                      </Text>
-                    </Pressable>
-                  ))}
-                  <Pressable
-                    onPress={chooseGrams}
-                    style={[s.chip, portionIndex === null && s.chipOn]}
-                  >
-                    <Text
-                      style={[s.chipText, portionIndex === null && s.chipTextOn]}
-                    >
-                      Grams
-                    </Text>
-                  </Pressable>
-                </View>
-              ) : null}
-              {portion ? (
-                <View style={s.row}>
-                  <View style={{ flex: 1 }}>
-                    <Text style={s.rowTitle}>How many</Text>
-                    <Text style={s.weightNote}>= {gramsValue} g</Text>
-                  </View>
-                  <Stepper value={count} onDecrement={() => stepCount(-Servings.STEP)} onIncrement={() => stepCount(Servings.STEP)} />
-                </View>
-              ) : (
-                <View style={s.row}>
-                  <Text style={[s.rowTitle, { flex: 1 }]}>Amount</Text>
-                  <TextInput
-                    value={grams}
-                    onChangeText={(v) => setGrams(v.replace(/[^0-9.,]/g, ''))}
-                    keyboardType='decimal-pad'
-                    selectTextOnFocus
-                    maxLength={6}
-                    placeholder={String(baseGrams)}
-                    placeholderTextColor={colors.ink3}
-                    accessibilityLabel='Amount in grams'
-                    style={[s.rowInput, { minWidth: 70 }]}
-                  />
-                  <Text style={s.rowTitle}>g</Text>
-                </View>
-              )}
-            </>
-          ) : (
-            <>
-              <View style={s.row}>
-                <Text style={s.rowTitle}>Serving size</Text>
-                <TextInput
-                  value={servingLabel}
-                  onChangeText={setServingLabel}
-                  placeholder={result.servingLabel}
-                  placeholderTextColor={colors.ink3}
-                  style={s.rowInput}
-                />
-              </View>
-              <View style={s.row}>
-                <Text style={[s.rowTitle, { flex: 1 }]}>Servings</Text>
-                <Stepper value={servings} onDecrement={() => step(-Servings.STEP)} onIncrement={() => step(Servings.STEP)} />
-              </View>
-            </>
-          )}
-        </Group>
+        {measure ? (
+          <MeasurePicker measure={measure} onChange={setMeasure} />
+        ) : (
+          <Group>
+            <View style={s.row}>
+              <Text style={s.rowTitle}>Serving size</Text>
+              <TextInput
+                value={servingLabel}
+                onChangeText={setServingLabel}
+                placeholder={result.servingLabel}
+                placeholderTextColor={colors.ink3}
+                style={s.rowInput}
+              />
+            </View>
+            <View style={s.row}>
+              <Text style={[s.rowTitle, { flex: 1 }]}>Servings</Text>
+              <Stepper
+                value={servings}
+                onDecrement={() => step(-Servings.STEP)}
+                onIncrement={() => step(Servings.STEP)}
+              />
+            </View>
+          </Group>
+        )}
 
         {pick ? null : (
           <>
             <GroupLabel>Meal</GroupLabel>
             <View style={s.card}>
-              <MealPicker value={meal} onChange={setMeal} options={Meals.OPTIONS} />
+              <MealPicker
+                value={meal}
+                onChange={setMeal}
+                options={Meals.OPTIONS}
+              />
             </View>
           </>
         )}
@@ -284,29 +225,6 @@ function MacroMini({ value, label }: { value: number; label: string }) {
 }
 
 const s = StyleSheet.create({
-  chips: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 8,
-    paddingHorizontal: 13,
-    paddingTop: 12,
-    paddingBottom: 4,
-  },
-  chip: {
-    paddingHorizontal: 11,
-    paddingVertical: 6,
-    borderRadius: radius.sm,
-    backgroundColor: colors.doveTint,
-  },
-  chipOn: { backgroundColor: colors.ink },
-  chipText: { fontFamily: font.medium, fontSize: 12.5, color: colors.ink2 },
-  chipTextOn: { color: colors.paper },
-  weightNote: {
-    fontFamily: font.body,
-    fontSize: 11.5,
-    color: colors.ink2,
-    marginTop: 1,
-  },
   head: { paddingVertical: space.md },
   name: {
     fontFamily: font.display,

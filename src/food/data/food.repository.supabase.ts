@@ -1,5 +1,6 @@
 import type { TernClient } from '@shared/backend/supabase';
 import type { FoodEntry, Tier } from '@food/models/foodEntry';
+import { parseMeasure } from '@food/models/measure';
 import type { FoodRepository, NewFoodEntry } from './food.repository';
 
 type FoodRow = {
@@ -16,6 +17,7 @@ type FoodRow = {
   fat: number | string;
   tier: number;
   tier_overridden: boolean;
+  measure?: unknown;
 };
 
 export function rowToFood(row: FoodRow): FoodEntry {
@@ -32,6 +34,7 @@ export function rowToFood(row: FoodRow): FoodEntry {
     fat: Number(row.fat),
     tier: row.tier as Tier,
     tierOverridden: row.tier_overridden || undefined,
+    measure: parseMeasure(row.measure),
   };
 }
 
@@ -50,6 +53,7 @@ export function patchToRow(patch: Partial<NewFoodEntry>) {
   if (patch.tier !== undefined) row.tier = patch.tier;
   if (patch.tierOverridden !== undefined)
     row.tier_overridden = patch.tierOverridden;
+  if (patch.measure !== undefined) row.measure = patch.measure;
   return row;
 }
 
@@ -114,7 +118,11 @@ export function createSupabaseFoodRepository(db: TernClient): FoodRepository {
               { day, meal },
               { onConflict: 'user_id,day,meal', ignoreDuplicates: true },
             )
-        : await db.from('skipped_meals').delete().eq('day', day).eq('meal', meal);
+        : await db
+            .from('skipped_meals')
+            .delete()
+            .eq('day', day)
+            .eq('meal', meal);
       if (error) throw error;
     },
   };

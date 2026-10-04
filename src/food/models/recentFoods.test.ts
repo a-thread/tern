@@ -1,6 +1,14 @@
 import type { FoodEntry } from './foodEntry';
 import { filterFoods, recentFoods } from './recentFoods';
 import { Meal } from './foodEntry';
+import { amountOf } from './measure';
+
+const eggsAmount = amountOf({
+  per100: { calories: 143, protein: 12.6, carbs: 0.7, fat: 9.5 },
+  portions: [{ label: 'large egg', grams: 50 }],
+  unit: 'large egg',
+  quantity: 2,
+});
 
 const entry = (name: string, over: Partial<FoodEntry> = {}): FoodEntry => ({
   id: `${name}-${Math.random()}`,
@@ -76,5 +84,23 @@ describe('filterFoods', () => {
     expect(filterFoods(foods, 'oat').map((f) => f.name).sort()).toEqual(['Oat milk', 'Rolled oats']);
     expect(filterFoods(foods, 'oatly milk').map((f) => f.name)).toEqual(['Oat milk']);
     expect(filterFoods(foods, 'pizza')).toEqual([]);
+  });
+});
+
+describe('recentFoods with a measure', () => {
+  it('offers a food logged by amount per 100 g again, in the same unit and count', () => {
+    const [eggs] = recentFoods({ '2026-09-12': [entry('Eggs', { ...eggsAmount })] });
+    expect(eggs).toMatchObject({
+      servingLabel: '100 g',
+      calories: 143,
+      portions: [{ label: 'large egg', grams: 50 }],
+      last: { unit: 'large egg', quantity: 2 },
+    });
+  });
+
+  it('keeps an entry without a measure as it was logged', () => {
+    const [bowl] = recentFoods({ '2026-09-12': [entry('Chili')] });
+    expect(bowl).toMatchObject({ servingLabel: '1 bowl', calories: 200 });
+    expect(bowl.last).toBeUndefined();
   });
 });

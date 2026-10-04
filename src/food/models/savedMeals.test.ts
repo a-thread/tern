@@ -1,6 +1,7 @@
 import type { FoodEntry } from './foodEntry';
 import { cleanName, filterMeals, findMealByName, itemsToEntries, savedMealTotals, snapshotItems, sortMeals, validateMealName, type SavedMeal, SavedMealLimits } from './savedMeals';
 import { Meal } from './foodEntry';
+import { amountOf } from './measure';
 
 const entry = (name: string, over: Partial<FoodEntry> = {}): FoodEntry => ({
   id: `id-${name}`,
@@ -98,5 +99,30 @@ describe('finding and filtering', () => {
     expect(filterMeals(meals, 'breakfast').map((m) => m.name)).toEqual(['Usual breakfast']);
     expect(filterMeals(meals, 'big sal').map((m) => m.name)).toEqual(['Big Salad']);
     expect(filterMeals(meals, 'nope')).toEqual([]);
+  });
+});
+
+describe('measured items', () => {
+  const eggs = amountOf({
+    per100: { calories: 143, protein: 12.6, carbs: 0.7, fat: 9.5 },
+    portions: [{ label: 'large egg', grams: 50 }],
+    unit: 'large egg',
+    quantity: 2,
+  });
+
+  it('keeps how an item was measured when a meal is saved', () => {
+    const [item] = snapshotItems([entry('Eggs', { ...eggs })]);
+    expect(item.measure).toEqual(eggs.measure);
+  });
+
+  it('scales a measured meal by its amount, so half of two eggs is one egg', () => {
+    const [half] = itemsToEntries(snapshotItems([entry('Eggs', { ...eggs })]), Meal.Lunch, 0.5);
+    expect(half).toMatchObject({ servings: 1, servingLabel: '1 large egg (50 g)', calories: 72 });
+    expect(half.measure?.quantity).toBe(1);
+  });
+
+  it('logs a measured item as saved at full scale', () => {
+    const [same] = itemsToEntries(snapshotItems([entry('Eggs', { ...eggs })]), Meal.Lunch);
+    expect(same).toMatchObject({ servings: 1, servingLabel: '2 large eggs (100 g)', calories: 143 });
   });
 });

@@ -1,8 +1,14 @@
 import type { TernClient } from '@shared/backend/supabase';
 import type { SavedMeal, SavedMealItem } from '@food/models/savedMeals';
+import { parseMeasure } from '@food/models/measure';
 import type { SavedMealsRepository } from './savedMeals.repository';
 
-type Row = { id: string; name: string; items: SavedMealItem[]; created_at: string };
+type Row = {
+  id: string;
+  name: string;
+  items: SavedMealItem[];
+  created_at: string;
+};
 
 export function createSupabaseSavedMealsRepository(
   db: TernClient,
@@ -17,7 +23,8 @@ export function createSupabaseSavedMealsRepository(
       return (data as Row[]).map((r) => ({
         id: r.id,
         name: r.name,
-        items: r.items,
+        // Items are stored as json, so a measure is checked on the way back in.
+        items: r.items.map((i) => ({ ...i, measure: parseMeasure(i.measure) })),
         createdAt: r.created_at,
       }));
     },

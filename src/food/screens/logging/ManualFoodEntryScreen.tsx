@@ -53,7 +53,8 @@ export default function ManualFoodEntryScreen({ navigation, route }: Props) {
     if (pick) {
       // Building a saved meal: add to the meal being edited, not today's log.
       addDraftItem(food);
-      navigation.navigate('MealEditor');
+      // Back to the editor already open underneath, not a second copy of it.
+      navigation.popTo('MealEditor');
       return;
     }
     addFoodEntry({ ...food, meal });

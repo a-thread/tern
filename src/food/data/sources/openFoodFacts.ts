@@ -1,7 +1,8 @@
 import { round1, toFiniteNumber } from '@shared/utils/number';
 import type { Tier } from '@food/models/foodEntry';
+import { singular } from '@food/models/measure';
 import { getJson } from './http';
-import type { SearchResult } from './searchResult';
+import type { Portion, SearchResult } from './searchResult';
 
 /**
  * Open Food Facts client: text search and barcode lookup. Data is used under
@@ -25,6 +26,38 @@ export type OffProduct = {
   nova_group?: number | string;
 };
 
+// A serving written only as a weight or volume ("30 g", "250 ml") has no name of its own.
+const BARE_AMOUNT = /^(g|kg|mg|ml|cl|l|dl)$/i;
+// A household measure ("2 tbsp"): the wording is the unit, so it is kept whole.
+const HOUSEHOLD_MEASURE = /^(oz|lb|lbs|fl\.? ?oz|tsp|tbsp|cups?)$/i;
+
+/**
+ * The portion a product's serving size describes. "1 bar (40 g)" is a bar of
+ * 40 g, "2 cookies (30 g)" a cookie of 15 g; a bare weight ("30 g") is just
+ * "serving", and a measure ("2 tbsp (30 g)") keeps its wording.
+ */
+export function servingPortion(
+  servingSize: string | undefined,
+  grams: number,
+): Portion {
+  const text = (servingSize ?? '')
+    .replace(/\(.*?\)/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+  const m = /^(\d+(?:[.,]\d+)?)\s*([a-z][a-z .-]*)$/i.exec(text);
+  if (!m) return { label: 'serving', grams };
+  const count = parseFloat(m[1].replace(',', '.'));
+  const noun = m[2].trim();
+  if (BARE_AMOUNT.test(noun)) return { label: 'serving', grams };
+  if (HOUSEHOLD_MEASURE.test(noun)) return { label: text, grams };
+  if (Number.isInteger(count) && count > 1) {
+    return {
+      label: singular(noun.toLowerCase()),
+      grams: Math.round((grams / count) * 10) / 10,
+    };
+  }
+  return { label: noun.toLowerCase(), grams };
+}
 
 function firstBrand(brands: OffProduct['brands']): string | undefined {
   const first = Array.isArray(brands) ? brands[0] : brands?.split(',')[0];
@@ -43,19 +76,23 @@ export function productToResult(p: OffProduct): SearchResult | null {
   if (!name) return null;
 
   const n = p.nutriments ?? {};
-  const kj = toFiniteNumber(n['energy-kj_100g']) ?? toFiniteNumber(n['energy_100g']);
-  const kcal100 = toFiniteNumber(n['energy-kcal_100g']) ?? (kj !== undefined ? kj / 4.184 : undefined);
+  const kj =
+    toFiniteNumber(n['energy-kj_100g']) ?? toFiniteNumber(n['energy_100g']);
+  const kcal100 =
+    toFiniteNumber(n['energy-kcal_100g']) ??
+    (kj !== undefined ? kj / 4.184 : undefined);
   // No energy figure, or an impossible one (pure fat is ~900 kcal per 100 g).
   if (kcal100 === undefined || kcal100 < 0 || kcal100 > 950) return null;
 
   const grams = toFiniteNumber(p.serving_quantity);
   const portions =
     grams !== undefined && grams > 0 && grams <= 2000
-      ? [{ label: (p.serving_size ?? '').trim() || 'serving', grams }]
+      ? [servingPortion(p.serving_size, grams)]
       : undefined;
 
   const nova = toFiniteNumber(p.nova_group);
-  const tier = nova !== undefined && [1, 2, 3, 4].includes(nova) ? (nova as Tier) : null;
+  const tier =
+    nova !== undefined && [1, 2, 3, 4].includes(nova) ? (nova as Tier) : null;
 
   return {
     id: p.code ?? `${name}-${kcal100}`,
@@ -72,9 +109,14 @@ export function productToResult(p: OffProduct): SearchResult | null {
   };
 }
 
-async function runSearch(q: string, signal?: AbortSignal): Promise<SearchResult[]> {
+async function runSearch(
+  q: string,
+  signal?: AbortSignal,
+): Promise<SearchResult[]> {
   const url = `${SEARCH_URL}?q=${encodeURIComponent(q)}&page_size=${PAGE_SIZE}&langs=en&fields=${FIELDS}`;
-  const json = (await getJson(url, signal, { 'User-Agent': USER_AGENT })) as { hits?: OffProduct[] };
+  const json = (await getJson(url, signal, { 'User-Agent': USER_AGENT })) as {
+    hits?: OffProduct[];
+  };
   // The same product is often listed under several barcodes; show it once.
   const seen = new Set<string>();
   const out: SearchResult[] = [];
@@ -104,7 +146,10 @@ export async function searchProducts(
   signal?: AbortSignal,
 ): Promise<SearchResult[]> {
   // Colons, quotes and brackets are search syntax; typed text mustn't change the filter.
-  const text = query.replace(/[:"()\\]/g, ' ').replace(/\s+/g, ' ').trim();
+  const text = query
+    .replace(/[:"()\\]/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
   if (!text) return [];
   const english = await runSearch(`${text} lang:en`, signal);
   return english.length ? english : runSearch(text, signal);
@@ -125,12 +170,19 @@ export async function getProductByBarcode(
 ): Promise<BarcodeLookup> {
   const clean = code.trim();
   if (!isValidBarcode(clean)) return { status: 'not-found' };
-  const json = (await getJson(`${PRODUCT_URL}/${clean}.json?fields=${FIELDS}`, signal, { 'User-Agent': USER_AGENT })) as {
+  const json = (await getJson(
+    `${PRODUCT_URL}/${clean}.json?fields=${FIELDS}`,
+    signal,
+    { 'User-Agent': USER_AGENT },
+  )) as {
     status?: number;
     product?: OffProduct;
   };
   if (json.status === 0 || !json.product) return { status: 'not-found' };
-  const result = productToResult({ ...json.product, code: json.product.code ?? clean });
+  const result = productToResult({
+    ...json.product,
+    code: json.product.code ?? clean,
+  });
   if (result) return { status: 'found', result };
   const name = (json.product.product_name ?? '').trim();
   return name ? { status: 'no-nutrition', name } : { status: 'not-found' };

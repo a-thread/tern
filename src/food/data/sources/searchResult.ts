@@ -21,5 +21,7 @@ export type SearchResult = {
   fat: number;
   tier: Tier | null;
   portions?: Portion[];
+  /** For a food logged before: the unit and amount used last time, to start from again. `unit` null means grams. */
+  last?: { unit: string | null; quantity: number };
   source?: 'off' | 'usda';
 };

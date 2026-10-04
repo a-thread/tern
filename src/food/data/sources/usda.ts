@@ -1,5 +1,6 @@
 import { round1, toFiniteNumber } from '@shared/utils/number';
 import { getJson } from './http';
+import { nounFor } from '@food/models/measure';
 import type { Portion, SearchResult } from './searchResult';
 
 /**
@@ -14,7 +15,8 @@ const DATA_TYPES = ['Foundation', 'SR Legacy', 'Survey (FNDDS)'];
 const PAGE_SIZE = 15;
 const MAX_PORTIONS = 8;
 
-export const isUsdaEnabled = () => Boolean(process.env.EXPO_PUBLIC_USDA_API_KEY);
+export const isUsdaEnabled = () =>
+  Boolean(process.env.EXPO_PUBLIC_USDA_API_KEY);
 
 /** A portion as USDA sends it: `foodMeasures` in search results, `foodPortions` in a food's details. */
 export type UsdaMeasure = {
@@ -43,7 +45,6 @@ export type UsdaFood = {
   foodPortions?: UsdaMeasure[];
 };
 
-
 // USDA identifies nutrients by id and by the older "nutrient number".
 // Foundation foods often report energy as an Atwater estimate instead of 1008.
 const KCAL = { ids: [1008, 2047, 2048], numbers: ['208', '957', '958'] };
@@ -52,25 +53,36 @@ const FAT = { ids: [1004], numbers: ['204'] };
 const CARBS = { ids: [1005], numbers: ['205'] };
 const KJ = { ids: [1062], numbers: ['268'] };
 
-function nutrient(list: UsdaNutrient[], want: { ids: number[]; numbers: string[] }): number | undefined {
+function nutrient(
+  list: UsdaNutrient[],
+  want: { ids: number[]; numbers: string[] },
+): number | undefined {
   for (const id of want.ids) {
     const hit = list.find((n) => n.nutrientId === id);
     const v = toFiniteNumber(hit?.value);
     if (v !== undefined) return v;
   }
   for (const no of want.numbers) {
-    const hit = list.find((n) => n.nutrientNumber !== undefined && String(n.nutrientNumber) === no);
+    const hit = list.find(
+      (n) => n.nutrientNumber !== undefined && String(n.nutrientNumber) === no,
+    );
     const v = toFiniteNumber(hit?.value);
     if (v !== undefined) return v;
   }
   return undefined;
 }
 
+// A size on its own says nothing: "1 large" is a large egg, not a large anything.
+const SIZE_WORD =
+  /^(small|medium|large|extra large|extra-large|jumbo|x-large)$/i;
+
 const JUNK_LABEL =
   /^(undetermined|quantity not specified|not specified|n\/?a|regular|\d+\s+quantity not specified)$/i;
 
 /** A leading quantity such as "1", "2", "0.5", "1/2" or "1 1/2", and what follows it. */
-function splitLeadingAmount(text: string): { amount: number; rest: string } | null {
+function splitLeadingAmount(
+  text: string,
+): { amount: number; rest: string } | null {
   const m = /^(\d+\s+\d+\/\d+|\d+\/\d+|\d+(?:\.\d+)?)\s+(.+)$/.exec(text);
   if (!m) return null;
   const parts = m[1].split(/\s+/);
@@ -91,8 +103,13 @@ function splitLeadingAmount(text: string): { amount: number; rest: string } | nu
  * `disseminationText` ("1 medium", "1 cup"), and their `modifier` is a numeric
  * code ("62015") that must not be shown. A food's details carry the amount
  * separately and the name in `modifier` ("medium (3" dia)").
+ *
+ * `noun` ("egg") completes a bare size, so "large" reads as "large egg".
  */
-export function measureToPortion(m: UsdaMeasure): Portion | null {
+export function measureToPortion(
+  m: UsdaMeasure,
+  noun?: string | null,
+): Portion | null {
   const grams = toFiniteNumber(m.gramWeight);
   if (grams === undefined || grams <= 0 || grams > 5000) return null;
   const unit = m.measureUnit?.name ?? m.measureUnitName;
@@ -113,7 +130,9 @@ export function measureToPortion(m: UsdaMeasure): Portion | null {
   // quantity in the text, `amount` (if any) says how many the weight covers.
   const lead = splitLeadingAmount(text);
   const amount = lead ? lead.amount : (toFiniteNumber(m.amount) ?? 1);
-  const label = lead ? lead.rest : text;
+  const named = lead ? lead.rest : text;
+  const label =
+    noun && SIZE_WORD.test(named) ? `${named.toLowerCase()} ${noun}` : named;
   const per = amount > 0 ? grams / amount : grams;
   return { label, grams: round1(per) };
 }
@@ -129,15 +148,17 @@ export function usdaFoodToResult(f: UsdaFood): SearchResult | null {
 
   const list = f.foodNutrients ?? [];
   const kj = nutrient(list, KJ);
-  const kcal = nutrient(list, KCAL) ?? (kj !== undefined ? kj / 4.184 : undefined);
+  const kcal =
+    nutrient(list, KCAL) ?? (kj !== undefined ? kj / 4.184 : undefined);
   if (kcal === undefined || kcal < 0 || kcal > 950) return null;
 
+  const noun = nounFor(name);
   const seen = new Set<string>();
   const portions: Portion[] = [];
   for (const m of [...(f.foodMeasures ?? []), ...(f.foodPortions ?? [])].sort(
     (a, b) => (a.rank ?? 999) - (b.rank ?? 999),
   )) {
-    const p = measureToPortion(m);
+    const p = measureToPortion(m, noun);
     const key = p ? `${p.label.toLowerCase()}|${p.grams}` : '';
     if (p && !seen.has(key)) {
       seen.add(key);
@@ -161,7 +182,10 @@ export function usdaFoodToResult(f: UsdaFood): SearchResult | null {
 }
 
 /** Everyday-food search with the configured key. Resolves to nothing when there isn't one. */
-export function searchUsda(query: string, signal?: AbortSignal): Promise<SearchResult[]> {
+export function searchUsda(
+  query: string,
+  signal?: AbortSignal,
+): Promise<SearchResult[]> {
   return searchUsdaWithKey(query, process.env.EXPO_PUBLIC_USDA_API_KEY, signal);
 }
 

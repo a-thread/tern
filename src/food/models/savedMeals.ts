@@ -1,6 +1,7 @@
 import { cleanSpaces, sameName } from '@shared/utils/text';
 import { dayTotals, type FoodEntry } from './foodEntry';
 import type { NewFoodEntry } from '@food/data/food.repository';
+import { amountOf, scaleMeasure } from './measure';
 
 /** One food in a saved meal: a log entry without its id or which meal it was in. */
 export type SavedMealItem = Omit<FoodEntry, 'id' | 'meal'>;
@@ -26,7 +27,8 @@ export const cleanName = cleanSpaces;
 export function validateMealName(name: string): string | null {
   const n = cleanName(name);
   if (!n) return 'Give the meal a name.';
-  if (n.length > SavedMealLimits.MAX_NAME_LENGTH) return `Keep the name under ${SavedMealLimits.MAX_NAME_LENGTH} characters.`;
+  if (n.length > SavedMealLimits.MAX_NAME_LENGTH)
+    return `Keep the name under ${SavedMealLimits.MAX_NAME_LENGTH} characters.`;
   return null;
 }
 
@@ -43,6 +45,7 @@ export function snapshotItems(entries: FoodEntry[]): SavedMealItem[] {
     fat: e.fat,
     tier: e.tier,
     tierOverridden: e.tierOverridden,
+    measure: e.measure,
   }));
 }
 
@@ -62,7 +65,10 @@ export function itemsToEntries(
   return items.map((i) => ({
     ...i,
     meal,
-    servings: scaleServings(i.servings, scale),
+    // Measured items scale their amount (half the eggs); others scale their servings.
+    ...(i.measure && scale !== 1
+      ? amountOf(scaleMeasure(i.measure, scale))
+      : { servings: scaleServings(i.servings, scale) }),
   }));
 }
 
@@ -73,7 +79,9 @@ export const findMealByName = (meals: SavedMeal[], name: string) =>
   meals.find((m) => sameName(m.name, name));
 
 export const sortMeals = (meals: SavedMeal[]) =>
-  [...meals].sort((a, b) => a.name.localeCompare(b.name, undefined, { sensitivity: 'base' }));
+  [...meals].sort((a, b) =>
+    a.name.localeCompare(b.name, undefined, { sensitivity: 'base' }),
+  );
 
 /** Meals whose name contains every word of `query`; all of them when the query is blank. */
 export function filterMeals(meals: SavedMeal[], query: string): SavedMeal[] {

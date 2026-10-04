@@ -19,8 +19,10 @@ import { Meal, type Tier } from '@food/models/foodEntry';
 import { useFood } from '@food/FoodContext';
 import { TierPicker } from '@food/components/TierPicker';
 import { MealPicker } from '@food/components/MealPicker';
+import { MeasurePicker } from '@food/components/MeasurePicker';
 import { useFoodDisplay } from '@food/hooks/useFoodDisplay';
 import { stepServings, Servings } from '@food/models/servings';
+import { amountOf, type Measure } from '@food/models/measure';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'EditFood'>;
 
@@ -31,6 +33,8 @@ export default function EditFoodEntryScreen({ navigation, route }: Props) {
   const entry = foodLog.find((f) => f.id === entryId);
   const { showTiers, showTierNumber, showCalories } = useFoodDisplay();
 
+  // Entries logged by amount keep how they were measured, so they edit in the same unit.
+  const [measure, setMeasure] = useState<Measure | undefined>(entry?.measure);
   const [servings, setServings] = useState(entry?.servings ?? 1);
   const [servingLabel, setServingLabel] = useState(entry?.servingLabel ?? '');
   const [meal, setMeal] = useState<Meal>(entry?.meal ?? Meal.Breakfast);
@@ -56,13 +60,18 @@ export default function EditFoodEntryScreen({ navigation, route }: Props) {
     );
   }
 
-  const step = (delta: number) =>
-    setServings((v) => stepServings(v, delta));
+  const step = (delta: number) => setServings((v) => stepServings(v, delta));
+
+  const amountText = measure ? amountOf(measure) : null;
+  const needsAmount = amountText !== null && amountText.measure.quantity <= 0;
 
   const save = () => {
+    if (needsAmount) return;
     updateFoodEntry(entry.id, {
-      servings,
-      servingLabel: servingLabel.trim() || entry.servingLabel,
+      ...(amountText ?? {
+        servings,
+        servingLabel: servingLabel.trim() || entry.servingLabel,
+      }),
       meal,
       tier,
       tierOverridden: tier !== entry.tier || entry.tierOverridden,
@@ -93,7 +102,7 @@ export default function EditFoodEntryScreen({ navigation, route }: Props) {
         leftLabel='Cancel'
         onLeftPress={() => navigation.goBack()}
         rightLabel='Save'
-        onRightPress={save}
+        onRightPress={needsAmount ? undefined : save}
       />
 
       <ScrollView
@@ -111,31 +120,43 @@ export default function EditFoodEntryScreen({ navigation, route }: Props) {
         {showCalories ? (
           <View style={s.calCard}>
             <Text style={s.calBig}>
-              {Math.round(entry.calories * servings)}
+              {amountText
+                ? Math.round(amountText.calories)
+                : Math.round(entry.calories * servings)}
             </Text>
             <Text style={s.calLabel}>
-              calories at {servings} × {servingLabel || entry.servingLabel}
+              {amountText
+                ? `calories in ${amountText.servingLabel}`
+                : `calories at ${servings} × ${servingLabel || entry.servingLabel}`}
             </Text>
           </View>
         ) : null}
 
         <GroupLabel>Portion</GroupLabel>
-        <Group>
-          <View style={s.row}>
-            <Text style={s.rowTitle}>Serving size</Text>
-            <TextInput
-              value={servingLabel}
-              onChangeText={setServingLabel}
-              placeholder={entry.servingLabel}
-              placeholderTextColor={colors.ink3}
-              style={s.rowInput}
-            />
-          </View>
-          <View style={s.row}>
-            <Text style={[s.rowTitle, { flex: 1 }]}>Servings</Text>
-            <Stepper value={servings} onDecrement={() => step(-Servings.STEP)} onIncrement={() => step(Servings.STEP)} />
-          </View>
-        </Group>
+        {measure ? (
+          <MeasurePicker measure={measure} onChange={setMeasure} />
+        ) : (
+          <Group>
+            <View style={s.row}>
+              <Text style={s.rowTitle}>Serving size</Text>
+              <TextInput
+                value={servingLabel}
+                onChangeText={setServingLabel}
+                placeholder={entry.servingLabel}
+                placeholderTextColor={colors.ink3}
+                style={s.rowInput}
+              />
+            </View>
+            <View style={s.row}>
+              <Text style={[s.rowTitle, { flex: 1 }]}>Servings</Text>
+              <Stepper
+                value={servings}
+                onDecrement={() => step(-Servings.STEP)}
+                onIncrement={() => step(Servings.STEP)}
+              />
+            </View>
+          </Group>
+        )}
 
         <GroupLabel>Meal</GroupLabel>
         <View style={s.card}>
@@ -156,7 +177,11 @@ export default function EditFoodEntryScreen({ navigation, route }: Props) {
           </>
         ) : null}
 
-        <Pressable style={s.bigBtn} onPress={save}>
+        <Pressable
+          style={[s.bigBtn, needsAmount && { opacity: 0.45 }]}
+          onPress={save}
+          disabled={needsAmount}
+        >
           <Text style={s.bigBtnText}>Save changes</Text>
         </Pressable>
         <Pressable style={s.deleteBtn} onPress={confirmDelete}>

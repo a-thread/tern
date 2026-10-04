@@ -21,6 +21,7 @@ import { useSavedMeals } from '@food/SavedMealsContext';
 import { isDraftDirty, scaledTotals } from '@food/models/mealDraft';
 import { SavedMealLimits } from '@food/models/savedMeals';
 import { Servings } from '@food/models/servings';
+import { quantityText } from '@food/models/measure';
 import type { LogFoodStackParamList } from '@food/navigation';
 import { Meal } from '@food/models/foodEntry';
 
@@ -136,7 +137,7 @@ export default function MealEditorScreen({ navigation }: Props) {
                 </Text>
               </View>
               <Stepper
-                value={`${item.servings}×`}
+                value={item.measure ? quantityText(item.measure) : `${item.servings}×`}
                 onDecrement={() => stepDraftItem(i, -Servings.STEP)}
                 onIncrement={() => stepDraftItem(i, Servings.STEP)}
                 decrementLabel={`Less ${item.name}`}
