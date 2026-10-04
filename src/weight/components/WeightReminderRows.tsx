@@ -1,9 +1,16 @@
 import React from 'react';
 
-import { PillToggle, Row, ToggleRow } from '@shared/components/ui';
+import { Divider, PillToggle, Row, ToggleRow } from '@shared/components/ui';
 import { useReminders } from '@settings/hooks/useReminders';
 import TimeStepperRow from '@settings/components/TimeStepperRow';
-import { formatMinutes, Reminders, stepMinutes, stepWeekday, weekdayPlural, ReminderKey } from '@settings/models/reminderPlan';
+import {
+  formatMinutes,
+  Reminders,
+  stepMinutes,
+  stepWeekday,
+  weekdayPlural,
+  ReminderKey,
+} from '@settings/models/reminderPlan';
 import { Frequency } from '@shared/models/frequency';
 
 const FREQUENCIES = [Frequency.Daily, Frequency.Weekly];
@@ -16,7 +23,7 @@ export function WeightReminderRows() {
   return (
     <>
       <Row
-        title='Weigh in'
+        title='How often'
         sub={
           settings.weighInFrequency === Frequency.Daily
             ? 'Today asks for a weight every day'
@@ -31,6 +38,7 @@ export function WeightReminderRows() {
           />
         }
       />
+      <Divider />
       <ToggleRow
         title='Weigh-in reminder'
         sub={text.weighIn}
@@ -40,16 +48,28 @@ export function WeightReminderRows() {
       {weighIn.on ? (
         <>
           {settings.weighInFrequency === Frequency.Weekly ? (
-            <TimeStepperRow
-              label='Day'
-              value={weekdayPlural(weighIn.weekday)}
-              onStep={(d) => patch(ReminderKey.WeighIn, { weekday: stepWeekday(weighIn.weekday, d) })}
-            />
+            <>
+              <Divider />
+              <TimeStepperRow
+                label='Day'
+                value={weekdayPlural(weighIn.weekday)}
+                onStep={(d) =>
+                  patch(ReminderKey.WeighIn, {
+                    weekday: stepWeekday(weighIn.weekday, d),
+                  })
+                }
+              />
+            </>
           ) : null}
+          <Divider />
           <TimeStepperRow
             label='Time'
             value={formatMinutes(weighIn.at)}
-            onStep={(d) => patch(ReminderKey.WeighIn, { at: stepMinutes(weighIn.at, d * Reminders.STEP_MINUTES) })}
+            onStep={(d) =>
+              patch(ReminderKey.WeighIn, {
+                at: stepMinutes(weighIn.at, d * Reminders.STEP_MINUTES),
+              })
+            }
           />
         </>
       ) : null}

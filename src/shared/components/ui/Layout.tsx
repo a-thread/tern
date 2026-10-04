@@ -50,6 +50,11 @@ export function Group({
   );
 }
 
+/** The hairline between rows of a Group, for rows that live inside one feature component. */
+export function Divider() {
+  return <View style={s.divider} />;
+}
+
 export function Card({
   children,
   style,

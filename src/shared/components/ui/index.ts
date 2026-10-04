@@ -3,6 +3,7 @@ export {
   GroupLabel,
   FootNote,
   Group,
+  Divider,
   Card,
   Row,
   IconBadge,

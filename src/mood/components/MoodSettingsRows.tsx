@@ -9,7 +9,7 @@ export function MoodSettingsRows() {
   return (
     <ToggleRow
       title='Track mood and stress'
-      sub='Optional. A quick daily check-in from Today'
+      sub='A quick daily check-in from Today'
       on={settings.trackMood}
       onToggle={(v) => updateSettings({ trackMood: v })}
     />

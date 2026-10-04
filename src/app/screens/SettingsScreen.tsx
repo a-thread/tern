@@ -7,6 +7,7 @@ import { colors, space } from '@shared/theme';
 import { FootNote, Group, GroupLabel, PushHeader } from '@shared/components/ui';
 import type { SettingsStackParamList } from '@shared/navigation/types';
 import { useBackend } from '@app/BackendContext';
+import { useSettings } from '@settings/SettingsContext';
 import { ProfileSection } from '@settings/components/ProfileSection';
 import { UnitsRow } from '@settings/components/UnitsRow';
 import { DataSection } from '@settings/components/DataSection';
@@ -34,6 +35,7 @@ type Props = NativeStackScreenProps<SettingsStackParamList, 'SettingsRoot'>;
 export default function SettingsScreen({ navigation }: Props) {
   const insets = useSafeAreaInsets();
   const { data: dataRepo } = useBackend();
+  const { settings } = useSettings();
 
   return (
     <View style={{ flex: 1, backgroundColor: colors.paper, paddingTop: insets.top }}>
@@ -42,18 +44,23 @@ export default function SettingsScreen({ navigation }: Props) {
       <ScrollView contentContainerStyle={{ paddingHorizontal: space.lg, paddingBottom: 60 }}>
         <ProfileSection />
 
-        <GroupLabel>Goals</GroupLabel>
-        <Group>
-          <StepGoalRow onPress={() => navigation.navigate('StepGoal')} />
-          <CalorieTargetsRow onPress={() => navigation.navigate('Targets')} />
-          <RestDaysRow onPress={() => navigation.navigate('RestDays')} />
-        </Group>
-
-        <GroupLabel>Data & display</GroupLabel>
+        <GroupLabel>Units</GroupLabel>
         <Group>
           <UnitsRow />
-          <FoodDisplayRow onPress={() => navigation.navigate('FoodDisplay')} />
+        </Group>
+
+        <GroupLabel>Activity</GroupLabel>
+        <Group>
+          <StepGoalRow onPress={() => navigation.navigate('StepGoal')} />
+          <RestDaysRow onPress={() => navigation.navigate('RestDays')} />
           <HealthDataRow onPress={() => navigation.navigate('HealthData')} />
+        </Group>
+
+        <GroupLabel>Food</GroupLabel>
+        <Group>
+          <CalorieTargetsRow onPress={() => navigation.navigate('Targets')} />
+          <FoodDisplayRow onPress={() => navigation.navigate('FoodDisplay')} />
+          <MealReminderRows />
         </Group>
 
         <GroupLabel>Medication</GroupLabel>
@@ -64,24 +71,19 @@ export default function SettingsScreen({ navigation }: Props) {
         <GroupLabel>Weight</GroupLabel>
         <Group>
           <WeightSettingsRows />
+          {settings.trackWeight ? <WeightReminderRows /> : null}
         </Group>
 
         <GroupLabel>Water</GroupLabel>
         <Group>
           <WaterSettingsRows />
+          {settings.trackWater ? <WaterReminderRows /> : null}
         </Group>
 
         <GroupLabel>Mood &amp; stress</GroupLabel>
         <Group>
           <MoodSettingsRows />
-        </Group>
-
-        <GroupLabel>Reminders</GroupLabel>
-        <Group>
-          <MealReminderRows />
-          <WeightReminderRows />
-          <WaterReminderRows />
-          <MoodReminderRows />
+          {settings.trackMood ? <MoodReminderRows /> : null}
         </Group>
 
         {dataRepo ? <DataSection repo={dataRepo} /> : null}

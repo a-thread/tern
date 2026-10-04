@@ -2,7 +2,7 @@ import React from 'react';
 import { Pressable, StyleSheet, Text } from 'react-native';
 
 import { colors, font } from '@shared/theme';
-import { Row, Stepper, ToggleRow } from '@shared/components/ui';
+import { Divider, Row, Stepper, ToggleRow } from '@shared/components/ui';
 import { useSettings } from '@settings/SettingsContext';
 import { useUnits } from '@settings/hooks/useUnits';
 import { useWeight } from '@weight/WeightContext';
@@ -29,10 +29,11 @@ export function WeightSettingsRows() {
     <>
       <ToggleRow
         title='Track weight'
-        sub='Off, Today never asks for a weigh-in'
+        sub='Today asks you to weigh in'
         on={settings.trackWeight}
         onToggle={(v) => updateSettings({ trackWeight: v })}
       />
+      {settings.trackWeight ? <Divider /> : null}
       {settings.trackWeight ? (
         <Row
           title='Goal weight'

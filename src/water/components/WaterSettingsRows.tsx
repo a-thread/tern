@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { ToggleRow } from '@shared/components/ui';
+import { Divider, ToggleRow } from '@shared/components/ui';
 import { useSettings } from '@settings/SettingsContext';
 import { useUnits } from '@settings/hooks/useUnits';
 import TimeStepperRow from '@settings/components/TimeStepperRow';
@@ -14,18 +14,21 @@ export function WaterSettingsRows() {
     <>
       <ToggleRow
         title='Track water'
-        sub='Optional. Log drinks from the Food tab'
+        sub='Log drinks from the Food tab'
         on={settings.trackWater}
         onToggle={(v) => updateSettings({ trackWater: v })}
       />
       {settings.trackWater ? (
-        <TimeStepperRow
-          label='Daily goal'
-          value={formatVolume(settings.waterGoalOz)}
-          onStep={(d) =>
-            updateSettings({ waterGoalOz: clampWaterGoal(stepWaterGoal(settings.waterGoalOz, d)) })
-          }
-        />
+        <>
+          <Divider />
+          <TimeStepperRow
+            label='Daily goal'
+            value={formatVolume(settings.waterGoalOz)}
+            onStep={(d) =>
+              updateSettings({ waterGoalOz: clampWaterGoal(stepWaterGoal(settings.waterGoalOz, d)) })
+            }
+          />
+        </>
       ) : null}
     </>
   );
