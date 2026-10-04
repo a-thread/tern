@@ -11,6 +11,7 @@ import { MealPicker } from '@food/components/MealPicker';
 import { useFoodDisplay } from '@food/hooks/useFoodDisplay';
 import { useLoggedFoods } from '@food/hooks/useLoggedFoods';
 import { itemsToEntries, scaleServings } from '@food/models/savedMeals';
+import { loggedAsResult } from '@food/models/recentFoods';
 import { scaledTotals, stepScale } from '@food/models/mealDraft';
 import type { LogFoodStackParamList } from '@food/navigation';
 import ItemRow from '@food/components/ItemRow';
@@ -51,6 +52,12 @@ export default function RecentMealScreen({ navigation, route }: Props) {
     navigation.goBack();
   };
 
+  // Just this food: the Details screen, starting from the amount it had here, so it can be changed first.
+  const addOne = (index: number) => {
+    const [entry] = itemsToEntries([recent.items[index]], target, scale);
+    navigation.navigate('FoodDetail', { meal: target, result: loggedAsResult(entry) });
+  };
+
   return (
     <View style={{ flex: 1, backgroundColor: colors.paper, paddingTop: insets.top }}>
       <SheetNav
@@ -74,12 +81,13 @@ export default function RecentMealScreen({ navigation, route }: Props) {
           </Text>
         </View>
 
-        <GroupLabel>What you had</GroupLabel>
+        <GroupLabel>What you had · tap a food to add just that</GroupLabel>
         <Group>
           {recent.items.map((item, i) => (
             <ItemRow
               key={`${item.name}-${i}`}
               item={{ ...item, servings: scaleServings(item.servings, scale) }}
+              onPress={() => addOne(i)}
             />
           ))}
         </Group>

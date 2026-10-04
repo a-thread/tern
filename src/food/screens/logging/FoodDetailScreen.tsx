@@ -51,7 +51,7 @@ export default function FoodDetailScreen({ navigation, route }: Props) {
     baseGrams !== null ? startingMeasure(result, baseGrams) : null,
   );
   const gramsValue = measure ? measureGrams(measure) : null;
-  const [servings, setServings] = useState(1);
+  const [servings, setServings] = useState(result.servings ?? 1);
   const [servingLabel, setServingLabel] = useState(result.servingLabel);
   const [meal, setMeal] = useState(initialMeal);
   // A food with no processing data starts with no type chosen: we ask rather than guess.

@@ -10,6 +10,7 @@ import ManualFoodEntryScreen from './ManualFoodEntryScreen';
 import SavedMealScreen from './SavedMealScreen';
 import RecentMealScreen from './RecentMealScreen';
 import MealEditorScreen from './MealEditorScreen';
+import MealReviewScreen from './MealReviewScreen';
 import type { LogFoodStackParamList } from '@food/navigation';
 
 const Stack = createNativeStackNavigator<LogFoodStackParamList>();
@@ -31,6 +32,7 @@ export default function LogFoodStack({ route }: Props) {
       <Stack.Screen name='SavedMeal' component={SavedMealScreen} />
       <Stack.Screen name='RecentMeal' component={RecentMealScreen} />
       <Stack.Screen name='MealEditor' component={MealEditorScreen} />
+      <Stack.Screen name='MealReview' component={MealReviewScreen} />
     </Stack.Navigator>
   );
 }

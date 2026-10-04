@@ -19,6 +19,7 @@ import { useSavedMeals } from '@food/SavedMealsContext';
 import { MealPicker } from '@food/components/MealPicker';
 import { useFoodDisplay } from '@food/hooks/useFoodDisplay';
 import { itemsToEntries, scaleServings, SavedMealLimits } from '@food/models/savedMeals';
+import { loggedAsResult } from '@food/models/recentFoods';
 import { scaledTotals, stepScale } from '@food/models/mealDraft';
 import type { LogFoodStackParamList } from '@food/navigation';
 import ItemRow from '@food/components/ItemRow';
@@ -65,6 +66,12 @@ export default function SavedMealScreen({ navigation, route }: Props) {
   const add = () => {
     addFoodEntries(itemsToEntries(saved.items, target, scale));
     navigation.goBack();
+  };
+
+  // Just this food: the Details screen, starting from the amount saved here, so it can be changed first.
+  const addOne = (index: number) => {
+    const [entry] = itemsToEntries([saved.items[index]], target, scale);
+    navigation.navigate('FoodDetail', { meal: target, result: loggedAsResult(entry) });
   };
 
   const editMeal = () => {
@@ -121,12 +128,13 @@ export default function SavedMealScreen({ navigation, route }: Props) {
           </Text>
         </View>
 
-        <GroupLabel>In this meal</GroupLabel>
+        <GroupLabel>In this meal · tap a food to add just that</GroupLabel>
         <Group>
           {saved.items.map((item, i) => (
             <ItemRow
               key={`${item.name}-${i}`}
               item={{ ...item, servings: scaleServings(item.servings, scale) }}
+              onPress={() => addOne(i)}
             />
           ))}
         </Group>

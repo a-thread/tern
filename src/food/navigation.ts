@@ -14,4 +14,5 @@ export type LogFoodStackParamList = {
   /** `recentId` is a RecentMeal id: the day and meal it was logged as. */
   RecentMeal: { meal: FoodEntry['meal']; recentId: string };
   MealEditor: undefined;
+  MealReview: { meal: FoodEntry['meal'] };
 };

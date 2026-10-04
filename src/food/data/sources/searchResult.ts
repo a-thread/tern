@@ -4,11 +4,10 @@ import type { Tier } from '@food/models/foodEntry';
 export type Portion = { label: string; grams: number };
 
 /**
- * A food that can be logged, from a food database or from your own log.
- * Nutrition values are for `servingLabel`: for database foods that is always
- * "100 g", with `portions` saying what a cup or a serving weighs. `tier` is the
- * NOVA-derived suggestion; `null` means there was no processing data, so the
- * picker asks instead of guessing.
+ * A food that can be logged.
+ * Nutrition values are for `servingLabel`; for database foods this is usually
+ * "100 g", while `portions` lists common serving sizes.
+ * `tier` is the NOVA-based suggestion; `null` means there was no processing data.
  */
 export type SearchResult = {
   id: string;
@@ -21,7 +20,9 @@ export type SearchResult = {
   fat: number;
   tier: Tier | null;
   portions?: Portion[];
-  /** For a food logged before: the unit and amount used last time, to start from again. `unit` null means grams. */
+  /** Last-used unit and quantity for a previously logged food. `unit` null means grams. */
+  /** Number of `servingLabel` units last logged when no measure was used. */
+  servings?: number;
   last?: { unit: string | null; quantity: number };
   source?: 'off' | 'usda';
 };

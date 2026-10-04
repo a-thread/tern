@@ -9,6 +9,7 @@ import type { SearchResult } from '@food/data/sources/searchResult';
 import type { RecentMeal } from '@food/models/recentMeals';
 import type { SavedMeal } from '@food/models/savedMeals';
 import { describeAdditions } from '@food/models/sessionAdditions';
+import { useFood } from '@food/FoodContext';
 import { useSavedMeals } from '@food/SavedMealsContext';
 import { useSessionAdditions } from '@food/hooks/useSessionAdditions';
 import { FOOD_FILTERS, useFoodLookup, type FoodFilter } from '@food/hooks/useFoodLookup';
@@ -47,8 +48,13 @@ export default function LogFoodScreen({ navigation, route }: Props) {
     lastGoneIn.current = goneIn;
   }, [goneIn]);
 
+  // Review shows everything in the meal being added to (or the saved meal being built).
+  const { foodLog } = useFood();
+  const inMealCount = pickMode ? (draft?.items.length ?? 0) : foodLog.filter((f) => f.meal === meal).length;
+  const reviewMeal = () => (pickMode ? navigation.goBack() : navigation.navigate('MealReview', { meal }));
+
   const lookup = useFoodLookup({ query, filter, pickMode: Boolean(pickMode), meal });
-  const { trimmed, mine, recent } = lookup;
+  const { trimmed, recent } = lookup;
 
   // Every result carries nutrition (results without it are filtered out), so
   // it always goes to the details screen; only a missing food type is asked for there.
@@ -66,6 +72,8 @@ export default function LogFoodScreen({ navigation, route }: Props) {
         title={pickMode ? 'Add food to meal' : `Add to ${meal}`}
         leftLabel={addedMessage ? 'Done' : 'Cancel'}
         onLeftPress={() => (pickMode ? navigation.goBack() : navigation.getParent()?.goBack())}
+        rightLabel={inMealCount ? `Review (${inMealCount})` : undefined}
+        onRightPress={reviewMeal}
       />
 
       <FoodSearchBar
@@ -93,16 +101,6 @@ export default function LogFoodScreen({ navigation, route }: Props) {
 
         {filter === 'Meals' ? (
           <LogFoodMealsTab lookup={lookup} onNewMeal={newMeal} onOpenMeal={openMeal} onOpenPastMeal={openPastMeal} />
-        ) : null}
-
-        {filter === 'My foods' ? (
-          mine.length ? (
-            <FoodGroup label='My foods' foods={mine} onPick={pickFood} />
-          ) : (
-            <ListNote>
-              {trimmed ? `None of your foods match “${trimmed}”.` : 'Foods you log will show up here.'}
-            </ListNote>
-          )
         ) : null}
 
         {filter === 'Recent' ? (

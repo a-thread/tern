@@ -6,7 +6,13 @@ import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import Svg, { Path } from 'react-native-svg';
 
 import { colors, font, radius, space, tierColors } from '@shared/theme';
-import { Group, GroupLabel, Chevron, FootNote } from '@shared/components/ui';
+import {
+  Group,
+  GroupLabel,
+  Chevron,
+  FootNote,
+  SwipeToRemove,
+} from '@shared/components/ui';
 import type { RootStackParamList } from '@shared/navigation/types';
 import { useDayKey } from '@shared/hooks/useDayKey';
 import { formatLongDate } from '@shared/utils/date';
@@ -24,7 +30,7 @@ export default function FoodScreen() {
   const insets = useSafeAreaInsets();
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
-  const { foodLog, skippedMeals, setMealSkipped } = useFood();
+  const { foodLog, skippedMeals, setMealSkipped, removeFoodEntry } = useFood();
   const { settings } = useSettings();
   const { showCalories } = useFoodDisplay();
   const water = useWater();
@@ -84,7 +90,9 @@ export default function FoodScreen() {
           const name = label.toLowerCase();
           return (
             <View key={key}>
-              <GroupLabel>{showCalories ? `${label} · ${cals}` : label}</GroupLabel>
+              <GroupLabel>
+                {showCalories ? `${label} · ${cals}` : label}
+              </GroupLabel>
               <Group>
                 {[
                   ...(skipped && !items.length
@@ -97,16 +105,20 @@ export default function FoodScreen() {
                       ]
                     : []),
                   ...items.map((item) => (
-                    <FoodRow
+                    <SwipeToRemove
                       key={item.id}
-                      item={item}
-                      showTiers={settings.showTiers}
-                      showTierNumber={settings.showTierNumber}
-                      showCalories={showCalories}
-                      onPress={() =>
-                        navigation.navigate('EditFood', { entryId: item.id })
-                      }
-                    />
+                      onRemove={() => removeFoodEntry(item.id)}
+                    >
+                      <FoodRow
+                        item={item}
+                        showTiers={settings.showTiers}
+                        showTierNumber={settings.showTierNumber}
+                        showCalories={showCalories}
+                        onPress={() =>
+                          navigation.navigate('EditFood', { entryId: item.id })
+                        }
+                      />
+                    </SwipeToRemove>
                   )),
                   <AddRow
                     key='add'

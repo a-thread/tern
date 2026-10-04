@@ -1,5 +1,5 @@
 import type { FoodEntry } from './foodEntry';
-import { filterFoods, recentFoods } from './recentFoods';
+import { filterFoods, loggedAsResult, recentFoods } from './recentFoods';
 import { Meal } from './foodEntry';
 import { amountOf } from './measure';
 
@@ -102,5 +102,16 @@ describe('recentFoods with a measure', () => {
     const [bowl] = recentFoods({ '2026-09-12': [entry('Chili')] });
     expect(bowl).toMatchObject({ servingLabel: '1 bowl', calories: 200 });
     expect(bowl.last).toBeUndefined();
+  });
+});
+
+describe('loggedAsResult', () => {
+  it('keeps how many servings you had of an unmeasured food, and leaves one serving implied', () => {
+    expect(loggedAsResult(entry('Milk', { servings: 1.5, servingLabel: '240 ml' }))).toMatchObject({ servingLabel: '240 ml', servings: 1.5 });
+    expect(loggedAsResult(entry('Chili')).servings).toBeUndefined();
+  });
+
+  it('brings a measured food back per 100 g, ready to start from what you had', () => {
+    expect(loggedAsResult(entry('Eggs', { ...eggsAmount }))).toMatchObject({ servingLabel: '100 g', last: { unit: 'large egg', quantity: 2 } });
   });
 });

@@ -10,7 +10,7 @@ import { useSavedMeals } from '@food/SavedMealsContext';
 import { useLoggedFoods } from './useLoggedFoods';
 import { FoodSearch, offSource, useFoodSearch, usdaSource } from './useFoodSearch';
 
-export const FOOD_FILTERS = ['All', 'Meals', 'My foods', 'Recent'] as const;
+export const FOOD_FILTERS = ['All', 'Meals', 'Recent'] as const;
 export type FoodFilter = (typeof FOOD_FILTERS)[number];
 
 /** Everything the Add food screen can offer for a query: your own meals and foods, and both databases. */
@@ -85,7 +85,6 @@ export function useFoodLookup({
     searching,
     yourMeals,
     pastMeals,
-    mine,
     recent,
     yourMatches,
     everydayResults,
