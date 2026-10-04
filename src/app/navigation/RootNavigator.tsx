@@ -53,7 +53,7 @@ function Tabs() {
       <Tab.Screen
         name='Food'
         component={FoodScreen}
-        options={{ tabBarIcon: ({ color }) => <LeafIcon color={color} /> }}
+        options={{ tabBarIcon: ({ color }) => <FoodIcon color={color} /> }}
       />
       <Tab.Screen
         name='Trends'
@@ -112,12 +112,14 @@ const HomeIcon = ({ color }: { color: string }) => (
   </Svg>
 );
 
-const LeafIcon = ({ color }: { color: string }) => (
+const FoodIcon = ({ color }: { color: string }) => (
   <Svg width={21} height={21} viewBox='0 0 24 24' fill='none'>
     <Path
-      d='M12 3c-4 3-6 6-6 9a6 6 0 0 0 12 0c0-3-2-6-6-9z'
+      d='M6 3v5.5a2.5 2.5 0 0 0 5 0V3M8.5 3v18M17 21V3c-2 1.5-3 4-3 7 0 1.5.8 2.5 3 3'
       stroke={color}
       strokeWidth={2}
+      strokeLinecap='round'
+      strokeLinejoin='round'
     />
   </Svg>
 );
