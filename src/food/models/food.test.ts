@@ -1,12 +1,13 @@
 import { allMealsLogged, mealTotals, Meals } from './meals';
 import { dayTotals, type FoodEntry } from './foodEntry';
 import { averageIntake } from './intake';
+import { Meal } from './foodEntry';
 
 function entry(overrides: Partial<FoodEntry>): FoodEntry {
   return {
     id: 'x',
     name: 'Test food',
-    meal: 'breakfast',
+    meal: Meal.Breakfast,
     servings: 1,
     servingLabel: '1 serving',
     calories: 100,
@@ -25,8 +26,8 @@ describe('allMealsLogged', () => {
 
   it('is false when a core meal is missing', () => {
     const log = [
-      entry({ id: 'a', meal: 'breakfast' }),
-      entry({ id: 'b', meal: 'lunch' }),
+      entry({ id: 'a', meal: Meal.Breakfast }),
+      entry({ id: 'b', meal: Meal.Lunch }),
     ];
     expect(allMealsLogged(log)).toBe(false);
   });
@@ -37,17 +38,17 @@ describe('allMealsLogged', () => {
   });
 
   it('counts a meal marked "nothing today" exactly like a logged one', () => {
-    const log = [entry({ id: 'a', meal: 'breakfast' }), entry({ id: 'b', meal: 'dinner' })];
-    expect(allMealsLogged(log, ['lunch'])).toBe(true);
-    expect(allMealsLogged([], ['breakfast', 'lunch', 'dinner'])).toBe(true);
+    const log = [entry({ id: 'a', meal: Meal.Breakfast }), entry({ id: 'b', meal: Meal.Dinner })];
+    expect(allMealsLogged(log, [Meal.Lunch])).toBe(true);
+    expect(allMealsLogged([], [Meal.Breakfast, Meal.Lunch, Meal.Dinner])).toBe(true);
     expect(allMealsLogged(log, [])).toBe(false);
   });
 
   it('ignores snack entries — they do not count toward coverage', () => {
     const log = [
-      entry({ id: 'a', meal: 'breakfast' }),
-      entry({ id: 'b', meal: 'lunch' }),
-      entry({ id: 'c', meal: 'snack' }),
+      entry({ id: 'a', meal: Meal.Breakfast }),
+      entry({ id: 'b', meal: Meal.Lunch }),
+      entry({ id: 'c', meal: Meal.Snack }),
     ];
     expect(allMealsLogged(log)).toBe(false);
   });
@@ -56,15 +57,15 @@ describe('allMealsLogged', () => {
 describe('mealTotals', () => {
   it('sums calories for a single meal, scaled by servings', () => {
     const log = [
-      entry({ id: 'a', meal: 'lunch', calories: 200, servings: 1 }),
-      entry({ id: 'b', meal: 'lunch', calories: 100, servings: 2 }),
-      entry({ id: 'c', meal: 'dinner', calories: 500, servings: 1 }),
+      entry({ id: 'a', meal: Meal.Lunch, calories: 200, servings: 1 }),
+      entry({ id: 'b', meal: Meal.Lunch, calories: 100, servings: 2 }),
+      entry({ id: 'c', meal: Meal.Dinner, calories: 500, servings: 1 }),
     ];
-    expect(mealTotals(log, 'lunch')).toBe(400);
+    expect(mealTotals(log, Meal.Lunch)).toBe(400);
   });
 
   it('returns 0 for a meal with no entries', () => {
-    expect(mealTotals([], 'breakfast')).toBe(0);
+    expect(mealTotals([], Meal.Breakfast)).toBe(0);
   });
 });
 
@@ -110,7 +111,7 @@ describe('averageIntake', () => {
   const item = (calories: number, protein = 10): FoodEntry => ({
     id: String(calories),
     name: 'x',
-    meal: 'lunch',
+    meal: Meal.Lunch,
     servings: 1,
     servingLabel: '1',
     calories,

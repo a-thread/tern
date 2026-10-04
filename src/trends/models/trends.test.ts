@@ -1,8 +1,9 @@
-import { TrendRanges } from '@shared/models/trendRange';
+import { TrendRanges, TrendRange } from '@shared/models/trendRange';
 import { bucketSteps } from './stepBars';
 import { longestProtectedRun, summarizeSteps } from './stepsSummary';
 import { weightTrendFor } from './weightTrend';
-import type { DayRecord, DayState } from '@today/models/dayRecord';
+import { DayRecord } from '@today/models/dayRecord';
+import { DayState } from '@shared/models/dayState';
 
 describe('longestProtectedRun', () => {
   it('returns 0 for an empty array', () => {
@@ -10,29 +11,29 @@ describe('longestProtectedRun', () => {
   });
 
   it('counts a run of goal days', () => {
-    const days: DayState[] = ['goal', 'goal', 'goal'];
+    const days: DayState[] = [DayState.Goal, DayState.Goal, DayState.Goal];
     expect(longestProtectedRun(days)).toBe(3);
   });
 
   it('treats rest days as protecting the streak, not breaking it', () => {
-    const days: DayState[] = ['goal', 'rest', 'goal', 'goal'];
+    const days: DayState[] = [DayState.Goal, DayState.Rest, DayState.Goal, DayState.Goal];
     expect(longestProtectedRun(days)).toBe(4);
   });
 
   it('breaks the streak on a partial or missed day', () => {
     const days: DayState[] = [
-      'goal',
-      'goal',
-      'partial',
-      'goal',
-      'goal',
-      'goal',
+      DayState.Goal,
+      DayState.Goal,
+      DayState.Partial,
+      DayState.Goal,
+      DayState.Goal,
+      DayState.Goal,
     ];
     expect(longestProtectedRun(days)).toBe(3);
   });
 
   it('resets on none (missed) days', () => {
-    const days: DayState[] = ['goal', 'goal', 'none', 'goal'];
+    const days: DayState[] = [DayState.Goal, DayState.Goal, DayState.None, DayState.Goal];
     expect(longestProtectedRun(days)).toBe(2);
   });
 });
@@ -42,7 +43,7 @@ describe('summarizeSteps', () => {
     day: `d${i}`,
     steps,
     goal: 8000,
-    state: 'partial',
+    state: DayState.Partial,
     chosenRest: false,
     isToday: false,
     future: false,
@@ -79,7 +80,7 @@ const dayRecords = (count: number, steps = (i: number) => 1000 * (i + 1)): DayRe
       day: key,
       steps: steps(i),
       goal: 5000,
-      state: steps(i) >= 5000 ? 'goal' : steps(i) > 0 ? 'partial' : 'none',
+      state: steps(i) >= 5000 ? DayState.Goal : steps(i) > 0 ? DayState.Partial : DayState.None,
       chosenRest: false,
       isToday: i === count - 1,
       future: false,
@@ -90,7 +91,7 @@ describe('bucketSteps', () => {
   const history = dayRecords(180);
 
   it('week: seven daily bars with weekday letters', () => {
-    const bars = bucketSteps(history, 'Week');
+    const bars = bucketSteps(history, TrendRange.Week);
     expect(bars).toHaveLength(7);
     // 2026-09-20 is a Sunday
     expect(bars.map((b) => b.label).join('')).toBe('MTWTFSS');
@@ -98,13 +99,13 @@ describe('bucketSteps', () => {
   });
 
   it('month: thirty daily bars without labels', () => {
-    const bars = bucketSteps(history, 'Month');
+    const bars = bucketSteps(history, TrendRange.Month);
     expect(bars).toHaveLength(30);
     expect(bars.every((b) => b.label === '')).toBe(true);
   });
 
   it('6 months: weekly averages, so the shape differs from the daily views', () => {
-    const bars = bucketSteps(history, '6 months');
+    const bars = bucketSteps(history, TrendRange.SixMonths);
     expect(bars.length).toBeGreaterThan(20);
     expect(bars.length).toBeLessThanOrEqual(25);
     // The last bar averages the last 7 days.
@@ -114,21 +115,21 @@ describe('bucketSteps', () => {
   });
 
   it('6 months: labels a month initial where a new month starts, and nowhere else', () => {
-    const labels = bucketSteps(history, '6 months').map((b) => b.label);
+    const labels = bucketSteps(history, TrendRange.SixMonths).map((b) => b.label);
     expect(labels.filter(Boolean).length).toBeGreaterThanOrEqual(5);
     expect(labels.filter(Boolean).length).toBeLessThanOrEqual(7);
     expect(labels[0]).not.toBe('');
   });
 
   it('6 months: a week with no steps data is empty, not zero-goal', () => {
-    const bars = bucketSteps(dayRecords(14, () => 0), '6 months');
+    const bars = bucketSteps(dayRecords(14, () => 0), TrendRange.SixMonths);
     expect(bars.map((b) => b.state)).toEqual(['none', 'none']);
   });
 
   it('copes with less history than the range', () => {
-    expect(bucketSteps(dayRecords(3), 'Week')).toHaveLength(3);
-    expect(bucketSteps(dayRecords(3), '6 months')).toHaveLength(1);
-    expect(bucketSteps([], '6 months')).toEqual([]);
+    expect(bucketSteps(dayRecords(3), TrendRange.Week)).toHaveLength(3);
+    expect(bucketSteps(dayRecords(3), TrendRange.SixMonths)).toHaveLength(1);
+    expect(bucketSteps([], TrendRange.SixMonths)).toEqual([]);
   });
 
   it('exposes the days in each range', () => {

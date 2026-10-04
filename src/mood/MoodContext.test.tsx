@@ -2,32 +2,30 @@ import React from 'react';
 import { renderHook, act, waitFor } from '@testing-library/react-native';
 
 import {
-  BackendProvider,
   createMemoryBackend,
   type Backend,
-} from '@shared/state/BackendContext';
+} from '@app/BackendContext';
 import { ToastProvider } from '@shared/state/ToastContext';
 import { dayKey } from '@shared/utils/date';
 import { FoodProvider } from '@food/FoodContext';
 import { SettingsProvider, useSettings } from '@settings/SettingsContext';
 import { WaypointsProvider, useWaypoints } from '@journey/WaypointsContext';
 import { MoodProvider, useMood } from './MoodContext';
+import { WaypointSource } from '@journey/models/waypoint';
 
 const today = dayKey();
 
 async function setup(backend: Backend = createMemoryBackend()) {
   const wrapper = ({ children }: { children: React.ReactNode }) => (
-    <BackendProvider backend={backend}>
       <ToastProvider>
-        <SettingsProvider>
-          <FoodProvider>
-            <WaypointsProvider>
-              <MoodProvider>{children}</MoodProvider>
-            </WaypointsProvider>
-          </FoodProvider>
+        <SettingsProvider repo={backend.settings}>
+          <WaypointsProvider repo={backend.waypoints}>
+            <FoodProvider repo={backend.food}>
+              <MoodProvider repo={backend.mood}>{children}</MoodProvider>
+            </FoodProvider>
+          </WaypointsProvider>
         </SettingsProvider>
       </ToastProvider>
-    </BackendProvider>
   );
   const hook = renderHook(
     () => ({ mood: useMood(), settings: useSettings(), points: useWaypoints() }),
@@ -47,7 +45,7 @@ const turnOn = async (result: { current: { settings: ReturnType<typeof useSettin
   });
 
 const hasAward = (result: { current: { points: ReturnType<typeof useWaypoints> } }) =>
-  result.current.points.events.some((e) => e.source === 'mood' && e.day === today);
+  result.current.points.events.some((e) => e.source === WaypointSource.Mood && e.day === today);
 
 describe('MoodProvider', () => {
   it('is off until mood tracking is turned on, with no check-in yet', async () => {

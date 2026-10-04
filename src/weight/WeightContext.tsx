@@ -1,5 +1,5 @@
 import React, { useCallback, useMemo, useState } from 'react';
-import { useBackend } from '@shared/state/BackendContext';
+import type { WeightRepository } from '@weight/data/weight.repository';
 import { createRequiredContext } from '@shared/state/createRequiredContext';
 import { useLoader } from '@shared/hooks/useLoader';
 import { usePersist } from '@shared/hooks/usePersist';
@@ -22,8 +22,13 @@ const [WeightContext, useWeight] = createRequiredContext<WeightContextValue>(
 );
 export { useWeight };
 
-export function WeightProvider({ children }: { children: React.ReactNode }) {
-  const { weight } = useBackend();
+export function WeightProvider({
+  repo: weight,
+  children,
+}: {
+  repo: WeightRepository;
+  children: React.ReactNode;
+}) {
   const [weightEntries, setWeightEntries] = useState<WeightEntry[]>([]);
   const { ready, reload } = useLoader(
     useCallback(() => weight.load(), [weight]),

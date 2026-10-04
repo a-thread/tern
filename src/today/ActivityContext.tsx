@@ -1,7 +1,6 @@
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { AppState } from 'react-native';
 
-import { useBackend } from '@shared/state/BackendContext';
 import { createRequiredContext } from '@shared/state/createRequiredContext';
 import { useDayKey } from '@shared/hooks/useDayKey';
 import { useLoader } from '@shared/hooks/useLoader';
@@ -11,8 +10,10 @@ import { useSettings } from '@settings/SettingsContext';
 import { useAward } from '@journey/hooks/useAward';
 import { buildDays, computeStreak, restDaysLeft, weekOf, type DayRecord } from '@today/models/dayRecord';
 import { goalFor } from '@today/models/stepGoal';
-import type { StepsStatus } from '@today/data/steps.repository';
+import { StepsRepository, StepsStatus } from '@today/data/steps.repository';
+import type { RestDaysRepository } from '@today/data/restDays.repository';
 import { sameDays, sameSteps } from '@today/utils/sameData';
+import { WaypointSource } from '@journey/models/waypoint';
 
 /** How much history is read: enough for the 6-month views. */
 export const HISTORY_DAYS = 180;
@@ -58,12 +59,19 @@ const LastSyncedContext = createContext<Date | null>(null);
  * reaching the step goal, or taking a rest day — and only ever for today.
  * Must sit inside SettingsProvider and WaypointsProvider.
  */
-export function ActivityProvider({ children }: { children: React.ReactNode }) {
-  const { steps: stepsRepo, restDays: restRepo } = useBackend();
+export function ActivityProvider({
+  steps: stepsRepo,
+  restDays: restRepo,
+  children,
+}: {
+  steps: StepsRepository;
+  restDays: RestDaysRepository;
+  children: React.ReactNode;
+}) {
   const { settings } = useSettings();
   const today = useDayKey();
 
-  const [status, setStatus] = useState<StepsStatus>('unavailable');
+  const [status, setStatus] = useState<StepsStatus>(StepsStatus.Unavailable);
   const [rawStepsByDay, setStepsByDay] = useState<Record<string, number>>({});
   const [restList, setRestList] = useState<string[]>([]);
   const [lastSynced, setLastSynced] = useState<Date | null>(null);
@@ -74,7 +82,7 @@ export function ActivityProvider({ children }: { children: React.ReactNode }) {
       const from = addDays(today, -(HISTORY_DAYS - 1));
       const nextStatus = await stepsRepo.status();
       const [steps, rest] = await Promise.all([
-        nextStatus === 'connected'
+        nextStatus === StepsStatus.Connected
           ? stepsRepo.getRange(from, today)
           : Promise.resolve({} as Record<string, number>),
         restRepo.load(from, today),
@@ -146,17 +154,17 @@ export function ActivityProvider({ children }: { children: React.ReactNode }) {
   const goalReachedToday = todaySteps >= settings.stepGoal;
   // Steps are only judged while they can be read: with Health Connect
   // disconnected or "read steps" switched off, what was earned stays put.
-  const stepsReadable = status === 'connected' && readSteps;
+  const stepsReadable = status === StepsStatus.Connected && readSteps;
 
   // Lowering the goal to collect the award and raising it again doesn't
   // keep it: today is judged against the goal it ends up with.
-  useAward('steps', goalReachedToday, ready && stepsReadable);
+  useAward(WaypointSource.Steps, goalReachedToday, ready && stepsReadable);
 
   // A day is either a goal day or a rest day, never both: a rest day taken
   // early earns its waypoints only if the goal isn't reached after all. So
   // taking one "just in case" is never better than waiting to see.
   const restCounts = todayIsRest && !(stepsReadable && goalReachedToday);
-  useAward('rest', restCounts, ready);
+  useAward(WaypointSource.Rest, restCounts, ready);
 
   const takeRestDay = useCallback(() => {
     if (todayIsRest || restLeft <= 0) return false;

@@ -5,13 +5,14 @@ import {
   recentMealTitle,
   recentMeals,
 } from './recentMeals';
+import { Meal } from './foodEntry';
 
 const TODAY = '2026-09-24'; // a Thursday
 
 const entry = (name: string, over: Partial<FoodEntry> = {}): FoodEntry => ({
   id: `${name}-${Math.random()}`,
   name,
-  meal: 'lunch',
+  meal: Meal.Lunch,
   servings: 1,
   servingLabel: '1 bowl',
   calories: 200,
@@ -38,13 +39,13 @@ describe('dayLabel', () => {
 
 describe('recentMealTitle', () => {
   it('uses the possessive for a named day', () => {
-    expect(recentMealTitle(TODAY, 'lunch', TODAY)).toBe('Today’s lunch');
-    expect(recentMealTitle('2026-09-23', 'dinner', TODAY)).toBe('Yesterday’s dinner');
-    expect(recentMealTitle('2026-09-21', 'snack', TODAY)).toBe('Monday’s snacks');
+    expect(recentMealTitle(TODAY, Meal.Lunch, TODAY)).toBe('Today’s lunch');
+    expect(recentMealTitle('2026-09-23', Meal.Dinner, TODAY)).toBe('Yesterday’s dinner');
+    expect(recentMealTitle('2026-09-21', Meal.Snack, TODAY)).toBe('Monday’s snacks');
   });
 
   it('puts the meal first when the day is a date', () => {
-    expect(recentMealTitle('2026-09-12', 'breakfast', TODAY)).toBe('Breakfast · Sep 12');
+    expect(recentMealTitle('2026-09-12', Meal.Breakfast, TODAY)).toBe('Breakfast · Sep 12');
   });
 });
 
@@ -53,14 +54,14 @@ describe('recentMeals', () => {
     const list = recentMeals(
       {
         '2026-09-23': [
-          entry('Oats', { meal: 'breakfast' }),
-          entry('Soup', { meal: 'lunch' }),
-          entry('Rice', { meal: 'dinner' }),
-          entry('Apple', { meal: 'snack' }),
+          entry('Oats', { meal: Meal.Breakfast }),
+          entry('Soup', { meal: Meal.Lunch }),
+          entry('Rice', { meal: Meal.Dinner }),
+          entry('Apple', { meal: Meal.Snack }),
         ],
         [TODAY]: [
-          entry('Toast', { meal: 'breakfast' }),
-          entry('Salad', { meal: 'lunch' }),
+          entry('Toast', { meal: Meal.Breakfast }),
+          entry('Salad', { meal: Meal.Lunch }),
         ],
       },
       { today: TODAY },
@@ -79,9 +80,9 @@ describe('recentMeals', () => {
     const list = recentMeals(
       {
         [TODAY]: [
-          entry('Chili', { meal: 'dinner', servings: 1.5, tier: 3 }),
-          entry('Cornbread', { meal: 'dinner' }),
-          entry('Toast', { meal: 'breakfast' }),
+          entry('Chili', { meal: Meal.Dinner, servings: 1.5, tier: 3 }),
+          entry('Cornbread', { meal: Meal.Dinner }),
+          entry('Toast', { meal: Meal.Breakfast }),
         ],
       },
       { today: TODAY },
@@ -95,9 +96,9 @@ describe('recentMeals', () => {
 
   it('respects fromDay and limit, and leaves out days that have nothing', () => {
     const byDay = {
-      '2026-08-01': [entry('Old', { meal: 'lunch' })],
-      '2026-09-23': [entry('Soup', { meal: 'lunch' })],
-      [TODAY]: [entry('Toast', { meal: 'breakfast' }), entry('Salad', { meal: 'lunch' })],
+      '2026-08-01': [entry('Old', { meal: Meal.Lunch })],
+      '2026-09-23': [entry('Soup', { meal: Meal.Lunch })],
+      [TODAY]: [entry('Toast', { meal: Meal.Breakfast }), entry('Salad', { meal: Meal.Lunch })],
     };
     expect(
       recentMeals(byDay, { today: TODAY, fromDay: '2026-09-11' }).map((m) => m.day),
@@ -110,8 +111,8 @@ describe('recentMeals', () => {
 describe('filterRecentMeals', () => {
   const meals = recentMeals(
     {
-      '2026-09-23': [entry('Chicken soup', { meal: 'lunch' })],
-      [TODAY]: [entry('Rolled oats', { meal: 'breakfast', brand: "Bob's Red Mill" })],
+      '2026-09-23': [entry('Chicken soup', { meal: Meal.Lunch })],
+      [TODAY]: [entry('Rolled oats', { meal: Meal.Breakfast, brand: "Bob's Red Mill" })],
     },
     { today: TODAY },
   );

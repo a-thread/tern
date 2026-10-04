@@ -5,17 +5,13 @@ import React, {
   useRef,
   useState,
 } from 'react';
-import { allMealsLogged } from '@food/models/meals';
-import { useFood } from '@food/FoodContext';
-import { useBackend } from '@shared/state/BackendContext';
+import type { WaypointsRepository } from '@journey/data/waypoints.repository';
 import { createRequiredContext } from '@shared/state/createRequiredContext';
 import { useDayKey } from '@shared/hooks/useDayKey';
 import { useToast } from '@shared/state/ToastContext';
-import { pointsFor, type LedgerEvent, type WaypointSource } from '@journey/models/waypoint';
+import type { LedgerEvent, WaypointSource } from '@journey/models/waypoint';
 
 export type { WaypointSource };
-
-const MEALS_BONUS_POINTS = pointsFor('meals');
 
 /** An award the UI hasn't celebrated yet. */
 export type Celebration = {
@@ -51,14 +47,13 @@ const [WaypointsContext, useWaypoints] = createRequiredContext<WaypointsContextV
 );
 export { useWaypoints };
 
-export function WaypointsProvider({ children }: { children: React.ReactNode }) {
-  const { waypoints: ledger } = useBackend();
-  const {
-    foodLog,
-    skippedMeals,
-    ready: foodReady,
-    loadedDay: foodDay,
-  } = useFood();
+export function WaypointsProvider({
+  repo: ledger,
+  children,
+}: {
+  repo: WaypointsRepository;
+  children: React.ReactNode;
+}) {
   const toast = useToast();
   const [waypoints, setWaypoints] = useState(0);
   const [events, setEvents] = useState<LedgerEvent[]>([]);
@@ -131,20 +126,6 @@ export function WaypointsProvider({ children }: { children: React.ReactNode }) {
     },
     [ledger, day, toast],
   );
-
-  /**
-   * Keeps the "logging all meals" bonus honest: awards it the moment every
-   * core meal has an entry (or is marked "nothing today"), and takes it back if a removal or edit drops
-   * coverage below that again — waypoints reflect the log as it stands now,
-   * not just its high-water mark. Waits for both the food log and the ledger
-   * to load, so an unloaded (empty) log is never mistaken for a dropped one.
-   */
-  useEffect(() => {
-    // Both must be for today: right after midnight each still holds yesterday's data.
-    if (!ready || !foodReady || ledgerDay !== day || foodDay !== day) return;
-    if (allMealsLogged(foodLog, skippedMeals)) award(MEALS_BONUS_POINTS, 'meals');
-    else revoke(MEALS_BONUS_POINTS, 'meals');
-  }, [ready, foodReady, ledgerDay, foodDay, day, foodLog, skippedMeals, award, revoke]);
 
   const completeCelebration = useCallback((id: number) => {
     setCelebrations((prev) => prev.filter((c) => c.id !== id));

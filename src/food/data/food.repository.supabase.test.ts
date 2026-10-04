@@ -1,11 +1,12 @@
 import { patchToRow, rowToFood } from './food.repository.supabase';
+import { Meal } from '@food/models/foodEntry';
 
 describe('food row mapping', () => {
   it('maps a database row (numerics may arrive as strings) to a FoodEntry', () => {
     const entry = rowToFood({
       id: 'abc',
       logged_on: '2026-09-18',
-      meal: 'lunch',
+      meal: Meal.Lunch,
       name: 'Turkey sandwich',
       brand: null,
       servings: '1.50',
@@ -28,7 +29,7 @@ describe('food row mapping', () => {
   });
 
   it('only writes the fields present in a patch', () => {
-    expect(patchToRow({ meal: 'dinner', servings: 2 })).toEqual({
+    expect(patchToRow({ meal: Meal.Dinner, servings: 2 })).toEqual({
       meal: 'dinner',
       servings: 2,
     });

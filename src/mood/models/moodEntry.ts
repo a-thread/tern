@@ -1,7 +1,10 @@
 /** One day's check-in: mood and stress, each 1 to 10. `day` is the local day (YYYY-MM-DD). */
 export type MoodEntry = { day: string; mood: number; stress: number };
 
-export type MoodMetric = 'mood' | 'stress';
+export enum MoodMetric {
+  Mood = 'mood',
+  Stress = 'stress',
+}
 
 /** The 1 to 10 scale mood and stress are scored on, and the word for each score. */
 export class MoodScale {
@@ -26,6 +29,6 @@ export const clampScore = (n: number) =>
 
 /** A word for a score, so a bare number has some meaning. */
 export function scoreWord(metric: MoodMetric, score: number): string {
-  const words = metric === 'mood' ? MoodScale.MOOD_WORDS : MoodScale.STRESS_WORDS;
+  const words = metric === MoodMetric.Mood ? MoodScale.MOOD_WORDS : MoodScale.STRESS_WORDS;
   return words[clampScore(score) - 1];
 }

@@ -14,11 +14,11 @@ import { NativeStackScreenProps } from '@react-navigation/native-stack';
 
 import { colors, font, radius, space } from '@shared/theme';
 import { Group, GroupLabel, SheetNav } from '@shared/components/ui';
-import { WeightTrend } from '@shared/components/charts';
+import { WeightTrend } from '@shared/components/charts/WeightTrend';
 import type { RootStackParamList } from '@shared/navigation/types';
 import { useDayKey } from '@shared/hooks/useDayKey';
 import { addDays } from '@shared/utils/date';
-import { clampScore, scoreWord, type MoodMetric, MoodScale } from '@mood/models/moodEntry';
+import { clampScore, scoreWord, MoodScale, MoodMetric } from '@mood/models/moodEntry';
 import { average, entriesBetween, seriesOf } from '@mood/models/moodStats';
 import { scoreColor, scoreTint, smile } from '@mood/utils/scoreColor';
 import MoodFace from '@mood/components/MoodFace';
@@ -31,8 +31,8 @@ const TICKS_EACH_SIDE = 10;
 const RULER_H = 64;
 
 const METRICS: { id: MoodMetric; label: string; hint: string }[] = [
-  { id: 'mood', label: 'Mood', hint: '1 is very low, 10 is great.' },
-  { id: 'stress', label: 'Stress', hint: '1 is calm, 10 is very high.' },
+  { id: MoodMetric.Mood, label: 'Mood', hint: '1 is very low, 10 is great.' },
+  { id: MoodMetric.Stress, label: 'Stress', hint: '1 is calm, 10 is very high.' },
 ];
 
 const PIPS = Array.from({ length: MoodScale.MAX - MoodScale.MIN + 1 }, (_, i) => MoodScale.MIN + i);
@@ -44,8 +44,8 @@ export default function CheckInScreen({ navigation }: Props) {
 
   const last = entries[entries.length - 1];
   const start = (m: MoodMetric) => todays?.[m] ?? last?.[m] ?? MoodScale.DEFAULT;
-  const [scores, setScores] = useState({ mood: start('mood'), stress: start('stress') });
-  const [active, setActive] = useState<MoodMetric>('mood');
+  const [scores, setScores] = useState({ mood: start(MoodMetric.Mood), stress: start(MoodMetric.Stress) });
+  const [active, setActive] = useState<MoodMetric>(MoodMetric.Mood);
   const scoresRef = useRef(scores);
   const activeRef = useRef(active);
   activeRef.current = active;
@@ -238,14 +238,14 @@ export default function CheckInScreen({ navigation }: Props) {
           </View>
           <View style={s.row}>
             <Text style={s.rowTitle}>Mood</Text>
-            <Text style={[s.rowSub, { color: scoreColor('mood', scores.mood) }]}>
-              {`${scores.mood} · ${scoreWord('mood', scores.mood)}`}
+            <Text style={[s.rowSub, { color: scoreColor(MoodMetric.Mood, scores.mood) }]}>
+              {`${scores.mood} · ${scoreWord(MoodMetric.Mood, scores.mood)}`}
             </Text>
           </View>
           <View style={s.row}>
             <Text style={s.rowTitle}>Stress</Text>
-            <Text style={[s.rowSub, { color: scoreColor('stress', scores.stress) }]}>
-              {`${scores.stress} · ${scoreWord('stress', scores.stress)}`}
+            <Text style={[s.rowSub, { color: scoreColor(MoodMetric.Stress, scores.stress) }]}>
+              {`${scores.stress} · ${scoreWord(MoodMetric.Stress, scores.stress)}`}
             </Text>
           </View>
           {todays ? (

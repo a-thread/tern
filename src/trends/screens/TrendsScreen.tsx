@@ -6,17 +6,14 @@ import Svg, { Path } from 'react-native-svg';
 import { useFocusEffect } from '@react-navigation/native';
 
 import { colors, font, space } from '@shared/theme';
-import { TrendRanges, type TrendRange } from '@shared/models/trendRange';
+import { TrendRanges, TrendRange } from '@shared/models/trendRange';
 import { Card, GroupLabel, Insight, FootNote, SegmentedControl } from '@shared/components/ui';
-import {
-  StepBars,
-  WeightTrend,
-  ConsistencyGrid,
-} from '@shared/components/charts';
+import { StepBars } from '@shared/components/charts/StepBars';
+import { WeightTrend } from '@shared/components/charts/WeightTrend';
+import { ConsistencyGrid } from '@shared/components/charts/ConsistencyGrid';
 import { useActivity } from '@today/ActivityContext';
 import { useDayKey } from '@shared/hooks/useDayKey';
 import { addDays, monthName } from '@shared/utils/date';
-import { useBackend } from '@shared/state/BackendContext';
 import { averageIntake, type IntakeAverage } from '@food/models/intake';
 import { useFood } from '@food/FoodContext';
 import { useWeight } from '@weight/WeightContext';
@@ -29,29 +26,28 @@ import { bucketSteps } from '@trends/models/stepBars';
 import { longestProtectedRun, summarizeSteps } from '@trends/models/stepsSummary';
 import { weightTrendFor } from '@trends/models/weightTrend';
 import type { TrendsStackParamList } from '@trends/navigation';
+import { StepsStatus } from '@today/data/steps.repository';
 
 type Props = NativeStackScreenProps<TrendsStackParamList, 'TrendsHome'>;
 
 export default function TrendsScreen({ navigation }: Props) {
   const insets = useSafeAreaInsets();
-  const [range, setRange] = useState<TrendRange>('Month');
-  const { foodLog } = useFood();
+  const [range, setRange] = useState<TrendRange>(TrendRange.Month);
+  const { foodLog, loadHistory } = useFood();
   const { weightEntries, weightTrend } = useWeight();
   const { settings } = useSettings();
   const { formatWeight, toDisplay, weightLabel } = useUnits();
-  const { food } = useBackend();
   const [intake, setIntake] = useState<IntakeAverage | null>(null);
 
   const { days, status: stepsStatus } = useActivity();
   const todayKey = useDayKey();
   // Food averages cover the last week, or the last 30 days for longer ranges
   // (a longer window would mean loading a lot of rows for little gain).
-  const foodDays = range === 'Week' ? 7 : 30;
+  const foodDays = range === TrendRange.Week ? 7 : 30;
   useFocusEffect(
     useCallback(() => {
       let cancelled = false;
-      food
-        .history(addDays(todayKey, -(foodDays - 1)), todayKey)
+      loadHistory(addDays(todayKey, -(foodDays - 1)), todayKey)
         .then(
           (byDay) => !cancelled && setIntake(averageIntake(byDay, todayKey)),
         )
@@ -61,9 +57,9 @@ export default function TrendsScreen({ navigation }: Props) {
       };
       // foodLog is a trigger, not an input: reload after something is logged.
       // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [food, todayKey, foodDays, foodLog]),
+    }, [loadHistory, todayKey, foodDays, foodLog]),
   );
-  const stepsConnected = stepsStatus === 'connected';
+  const stepsConnected = stepsStatus === StepsStatus.Connected;
   const rangeSteps = summarizeSteps(days, TrendRanges.DAYS[range]);
   const bars = bucketSteps(days, range);
   const inRange = days.slice(-TrendRanges.DAYS[range]).map((d) => d.state);
@@ -127,7 +123,7 @@ export default function TrendsScreen({ navigation }: Props) {
               <StepBars
                 days={bars}
                 goal={settings.stepGoal}
-                showLabels={range !== 'Month'}
+                showLabels={range !== TrendRange.Month}
               />
             ) : (
               <Text style={s.metricSub}>
@@ -243,7 +239,7 @@ export default function TrendsScreen({ navigation }: Props) {
         <GroupLabel>Consistency</GroupLabel>
         <Card>
           <Text style={s.metricSub}>
-            {range === '6 months'
+            {range === TrendRange.SixMonths
               ? 'Last 6 months'
               : `Last ${TrendRanges.DAYS[range]} days`}
           </Text>

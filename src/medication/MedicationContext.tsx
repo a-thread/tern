@@ -1,6 +1,6 @@
 import React, { useCallback, useMemo, useState } from 'react';
 
-import { useBackend } from '@shared/state/BackendContext';
+import type { MedicationRepository } from '@medication/data/medication.repository';
 import { createRequiredContext } from '@shared/state/createRequiredContext';
 import { useDayKey } from '@shared/hooks/useDayKey';
 import { useLoader } from '@shared/hooks/useLoader';
@@ -33,8 +33,13 @@ const [MedicationContext, useMedication] = createRequiredContext<MedicationConte
 export { useMedication };
 
 /** Today's doses, next to the medications in settings. Must sit inside SettingsProvider. */
-export function MedicationProvider({ children }: { children: React.ReactNode }) {
-  const { medication: repo } = useBackend();
+export function MedicationProvider({
+  repo,
+  children,
+}: {
+  repo: MedicationRepository;
+  children: React.ReactNode;
+}) {
   const { settings, updateSettings } = useSettings();
   const today = useDayKey();
   const medications = settings.medications;

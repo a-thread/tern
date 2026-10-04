@@ -15,7 +15,7 @@ import { colors, font, radius, space } from '@shared/theme';
 import { Group, GroupLabel, SheetNav, Stepper } from '@shared/components/ui';
 import type { RootStackParamList } from '@shared/navigation/types';
 import { Meals } from '@food/models/meals';
-import type { Tier } from '@food/models/foodEntry';
+import { Meal, type Tier } from '@food/models/foodEntry';
 import { useFood } from '@food/FoodContext';
 import { TierPicker } from '@food/components/TierPicker';
 import { MealPicker } from '@food/components/MealPicker';
@@ -33,7 +33,7 @@ export default function EditFoodEntryScreen({ navigation, route }: Props) {
 
   const [servings, setServings] = useState(entry?.servings ?? 1);
   const [servingLabel, setServingLabel] = useState(entry?.servingLabel ?? '');
-  const [meal, setMeal] = useState(entry?.meal ?? 'breakfast');
+  const [meal, setMeal] = useState<Meal>(entry?.meal ?? Meal.Breakfast);
   const [tier, setTier] = useState<Tier>(entry?.tier ?? 1);
 
   if (!entry) {

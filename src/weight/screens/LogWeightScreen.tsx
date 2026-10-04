@@ -14,10 +14,11 @@ import { NativeStackScreenProps } from '@react-navigation/native-stack';
 
 import { colors, font, radius, space } from '@shared/theme';
 import { Group, GroupLabel, SheetNav } from '@shared/components/ui';
-import { WeightTrend } from '@shared/components/charts';
+import { WeightTrend } from '@shared/components/charts/WeightTrend';
 import type { RootStackParamList } from '@shared/navigation/types';
 import { useUnits } from '@settings/hooks/useUnits';
 import { useWeight } from '@weight/WeightContext';
+import { Units } from '@shared/utils/units';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'LogWeight'>;
 
@@ -178,7 +179,7 @@ export default function LogWeightScreen({ navigation }: Props) {
           <View style={s.row}>
             <Text style={s.rowTitle}>Units</Text>
             <Text style={s.rowSub}>
-              {units === 'imperial' ? 'Pounds' : 'Kilograms'}
+              {units === Units.Imperial ? 'Pounds' : 'Kilograms'}
             </Text>
           </View>
         </Group>

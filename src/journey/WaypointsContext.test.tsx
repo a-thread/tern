@@ -2,13 +2,14 @@ import React from 'react';
 import { renderHook, act, waitFor } from '@testing-library/react-native';
 import { FoodProvider, useFood } from '@food/FoodContext';
 import {
-  BackendProvider,
   createMemoryBackend,
   type Backend,
-} from '@shared/state/BackendContext';
+} from '@app/BackendContext';
 import { dayKey } from '@shared/utils/date';
 import { WaypointsProvider, useWaypoints } from './WaypointsContext';
 import { INITIAL_WAYPOINTS } from '@journey/data/waypoints.mock';
+import { Meal } from '@food/models/foodEntry';
+import { WaypointSource } from '@journey/models/waypoint';
 
 function useHarness() {
   const food = useFood();
@@ -19,11 +20,9 @@ function useHarness() {
 /** Renders the food + waypoints providers over a fresh in-memory backend, once both have loaded. */
 async function setup(backend: Backend = createMemoryBackend()) {
   const wrapper = ({ children }: { children: React.ReactNode }) => (
-    <BackendProvider backend={backend}>
-      <FoodProvider>
-        <WaypointsProvider>{children}</WaypointsProvider>
-      </FoodProvider>
-    </BackendProvider>
+      <WaypointsProvider repo={backend.waypoints}>
+        <FoodProvider repo={backend.food}>{children}</FoodProvider>
+      </WaypointsProvider>
   );
   const hook = renderHook(() => useHarness(), { wrapper });
   await waitFor(() => expect(hook.result.current.ready).toBe(true));
@@ -39,11 +38,11 @@ describe('waypoints meals bonus (reactive to foodLog)', () => {
   it('earns the bonus for a meal marked "nothing today", and un-marks it once food is added', async () => {
     const { result } = await setup();
     const initial = result.current.waypoints;
-    const lunch = result.current.foodLog.filter((f) => f.meal === 'lunch');
+    const lunch = result.current.foodLog.filter((f) => f.meal === Meal.Lunch);
     await act(async () => lunch.forEach((f) => result.current.removeFoodEntry(f.id)));
     expect(result.current.waypoints).toBe(initial - 15);
 
-    await act(async () => result.current.setMealSkipped('lunch', true));
+    await act(async () => result.current.setMealSkipped(Meal.Lunch, true));
     await waitFor(() => expect(result.current.waypoints).toBe(initial));
 
     await act(async () => result.current.addFoodEntry(lunch[0])); // a fresh id is given on add
@@ -61,7 +60,7 @@ describe('waypoints meals bonus (reactive to foodLog)', () => {
     const initial = result.current.waypoints;
 
     const dinnerEntries = result.current.foodLog.filter(
-      (f) => f.meal === 'dinner',
+      (f) => f.meal === Meal.Dinner,
     );
     expect(dinnerEntries.length).toBeGreaterThan(0);
 
@@ -75,7 +74,7 @@ describe('waypoints meals bonus (reactive to foodLog)', () => {
     await act(async () => {
       result.current.addFoodEntry({
         name: 'Chili, homemade',
-        meal: 'dinner',
+        meal: Meal.Dinner,
         servings: 1,
         servingLabel: '1 bowl',
         calories: 310,
@@ -90,7 +89,7 @@ describe('waypoints meals bonus (reactive to foodLog)', () => {
 });
 
 describe('celebration queue', () => {
-  const newEntry = (meal: 'dinner' | 'breakfast') => ({
+  const newEntry = (meal: Meal) => ({
     name: 'Test',
     meal,
     servings: 1,
@@ -106,7 +105,7 @@ describe('celebration queue', () => {
     const { result } = await setup();
     const initial = result.current.waypoints;
 
-    await act(async () => result.current.addWaypoints(40, 'steps'));
+    await act(async () => result.current.addWaypoints(40, WaypointSource.Steps));
 
     expect(result.current.waypoints).toBe(initial + 40);
     expect(result.current.celebrations).toHaveLength(1);
@@ -116,7 +115,7 @@ describe('celebration queue', () => {
 
   it('clears the pending points once the celebration completes', async () => {
     const { result } = await setup();
-    await act(async () => result.current.addWaypoints(40, 'steps'));
+    await act(async () => result.current.addWaypoints(40, WaypointSource.Steps));
 
     await act(async () => result.current.completeCelebration(result.current.celebrations[0].id));
 
@@ -126,12 +125,12 @@ describe('celebration queue', () => {
 
   it('celebrates the meals bonus when it is earned, and cancels it if it is taken back before playing', async () => {
     const { result } = await setup();
-    const dinners = result.current.foodLog.filter((f) => f.meal === 'dinner');
+    const dinners = result.current.foodLog.filter((f) => f.meal === Meal.Dinner);
 
     await act(async () => dinners.forEach((d) => result.current.removeFoodEntry(d.id)));
     expect(result.current.celebrations).toHaveLength(0); // a take-back is quiet
 
-    await act(async () => result.current.addFoodEntry(newEntry('dinner')));
+    await act(async () => result.current.addFoodEntry(newEntry(Meal.Dinner)));
     expect(result.current.celebrations).toHaveLength(1);
     expect(result.current.celebrations[0].source).toBe('meals');
 
@@ -146,8 +145,8 @@ describe('waypoints ledger', () => {
     const { result } = await setup();
     const initial = result.current.waypoints;
 
-    await act(async () => result.current.addWaypoints(40, 'steps'));
-    await act(async () => result.current.addWaypoints(40, 'steps'));
+    await act(async () => result.current.addWaypoints(40, WaypointSource.Steps));
+    await act(async () => result.current.addWaypoints(40, WaypointSource.Steps));
 
     expect(result.current.waypoints).toBe(initial + 40);
     expect(result.current.celebrations).toHaveLength(1);
@@ -157,10 +156,10 @@ describe('waypoints ledger', () => {
     const { result, backend } = await setup();
     const day = dayKey();
 
-    await act(async () => result.current.addWaypoints(40, 'steps'));
+    await act(async () => result.current.addWaypoints(40, WaypointSource.Steps));
     expect((await backend.waypoints.load(day)).total).toBe(INITIAL_WAYPOINTS + 40);
 
-    const dinners = result.current.foodLog.filter((f) => f.meal === 'dinner');
+    const dinners = result.current.foodLog.filter((f) => f.meal === Meal.Dinner);
     await act(async () => dinners.forEach((d) => result.current.removeFoodEntry(d.id)));
     const after = await backend.waypoints.load(day);
     expect(after.total).toBe(INITIAL_WAYPOINTS + 40 - 15);

@@ -1,12 +1,14 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { useBackend } from '@shared/state/BackendContext';
 import { createRequiredContext } from '@shared/state/createRequiredContext';
 import { useDayKey } from '@shared/hooks/useDayKey';
 import { useLoader } from '@shared/hooks/useLoader';
 import { usePersist } from '@shared/hooks/usePersist';
+import { useAward } from '@journey/hooks/useAward';
+import { allMealsLogged } from '@food/models/meals';
 import { newId } from '@shared/utils/id';
 import type { FoodEntry } from '@food/models/foodEntry';
-import type { NewFoodEntry } from '@food/data/food.repository';
+import type { FoodRepository, NewFoodEntry } from '@food/data/food.repository';
+import { WaypointSource } from '@journey/models/waypoint';
 
 type FoodContextValue = {
   /** Today's entries. */
@@ -15,6 +17,8 @@ type FoodContextValue = {
   loadedDay: string | null;
   /** False until the first load finishes — don't derive "nothing logged" from an unloaded log. */
   ready: boolean;
+  /** Entries grouped by day for `from`..`to` inclusive, for averages and "recent foods". Days with nothing logged are absent. */
+  loadHistory: (from: string, to: string) => Promise<Record<string, FoodEntry[]>>;
   addFoodEntry: (entry: NewFoodEntry) => void;
   /** Adds several entries at once (e.g. a saved meal) as a single update. */
   addFoodEntries: (entries: NewFoodEntry[]) => void;
@@ -34,8 +38,13 @@ export { useFood };
  * background; if a write fails, the log is reloaded from the repository so
  * the screen never keeps showing something that wasn't saved.
  */
-export function FoodProvider({ children }: { children: React.ReactNode }) {
-  const { food } = useBackend();
+export function FoodProvider({
+  repo: food,
+  children,
+}: {
+  repo: FoodRepository;
+  children: React.ReactNode;
+}) {
   const [foodLog, setFoodLog] = useState<FoodEntry[]>([]);
   const [skippedMeals, setSkippedMeals] = useState<FoodEntry['meal'][]>([]);
   const day = useDayKey();
@@ -62,6 +71,8 @@ export function FoodProvider({ children }: { children: React.ReactNode }) {
       }),
     [persistWith],
   );
+
+  const loadHistory = useCallback((from: string, to: string) => food.history(from, to), [food]);
 
   const addFoodEntry = useCallback(
     (entry: NewFoodEntry) => {
@@ -111,6 +122,12 @@ export function FoodProvider({ children }: { children: React.ReactNode }) {
     [food, day, persist],
   );
 
+  // The "logging all meals" bonus follows the log, like the water goal: earned once every core
+  // meal has an entry (or is marked "nothing today"), quietly taken back if a removal or edit
+  // drops coverage again. It waits for today's log, so an unloaded (empty) one is never mistaken
+  // for a dropped one.
+  useAward(WaypointSource.Meals, allMealsLogged(foodLog, skippedMeals), ready && loadedDay === day);
+
   // A meal with food in it isn't skipped any more, however the food got there
   // (added, moved from another meal, or a saved meal).
   useEffect(() => {
@@ -124,6 +141,7 @@ export function FoodProvider({ children }: { children: React.ReactNode }) {
       foodLog,
       loadedDay,
       ready,
+      loadHistory,
       addFoodEntry,
       addFoodEntries,
       updateFoodEntry,
@@ -135,6 +153,7 @@ export function FoodProvider({ children }: { children: React.ReactNode }) {
       foodLog,
       loadedDay,
       ready,
+      loadHistory,
       addFoodEntry,
       addFoodEntries,
       updateFoodEntry,

@@ -2,32 +2,30 @@ import React from 'react';
 import { renderHook, act, waitFor } from '@testing-library/react-native';
 
 import {
-  BackendProvider,
   createMemoryBackend,
   type Backend,
-} from '@shared/state/BackendContext';
+} from '@app/BackendContext';
 import { ToastProvider } from '@shared/state/ToastContext';
 import { dayKey } from '@shared/utils/date';
 import { FoodProvider } from '@food/FoodContext';
 import { SettingsProvider, useSettings } from '@settings/SettingsContext';
 import { WaypointsProvider, useWaypoints } from '@journey/WaypointsContext';
 import { WaterProvider, useWater } from './WaterContext';
+import { WaypointSource } from '@journey/models/waypoint';
 
 const today = dayKey();
 
 async function setup(backend: Backend = createMemoryBackend()) {
   const wrapper = ({ children }: { children: React.ReactNode }) => (
-    <BackendProvider backend={backend}>
       <ToastProvider>
-        <SettingsProvider>
-          <FoodProvider>
-            <WaypointsProvider>
-              <WaterProvider>{children}</WaterProvider>
-            </WaypointsProvider>
-          </FoodProvider>
+        <SettingsProvider repo={backend.settings}>
+          <WaypointsProvider repo={backend.waypoints}>
+            <FoodProvider repo={backend.food}>
+              <WaterProvider repo={backend.water}>{children}</WaterProvider>
+            </FoodProvider>
+          </WaypointsProvider>
         </SettingsProvider>
       </ToastProvider>
-    </BackendProvider>
   );
   const hook = renderHook(
     () => ({ water: useWater(), settings: useSettings(), points: useWaypoints() }),
@@ -50,7 +48,7 @@ const turnOn = async (
   });
 
 const hasWaterAward = (result: { current: { points: ReturnType<typeof useWaypoints> } }) =>
-  result.current.points.events.some((e) => e.source === 'water' && e.day === today);
+  result.current.points.events.some((e) => e.source === WaypointSource.Water && e.day === today);
 
 describe('WaterProvider', () => {
   it('is off until water tracking is turned on, and starts at zero', async () => {

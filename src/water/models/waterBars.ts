@@ -1,8 +1,9 @@
-import { TrendRanges, type TrendRange } from '@shared/models/trendRange';
+import { TrendRanges, TrendRange } from '@shared/models/trendRange';
 import { monthName, weekdayLetter } from '@shared/utils/date';
 import { round2 } from './waterEntry';
+import { DayState } from '@shared/models/dayState';
 
-export type WaterBar = { label: string; value: number; state: 'goal' | 'partial' | 'none' };
+export type WaterBar = { label: string; value: number; state: DayState };
 
 const dayKeys = (today: string, count: number): string[] => {
   const [y, m, d] = today.split('-').map(Number);
@@ -13,7 +14,7 @@ const dayKeys = (today: string, count: number): string[] => {
 };
 
 const barState = (oz: number, goalOz: number): WaterBar['state'] =>
-  oz <= 0 ? 'none' : oz >= goalOz ? 'goal' : 'partial';
+  oz <= 0 ? DayState.None : oz >= goalOz ? DayState.Goal : DayState.Partial;
 
 /**
  * Bars for a range, like the steps chart: daily for a week or a month, weekly
@@ -25,9 +26,9 @@ export function bucketWater(
   range: TrendRange,
   today: string,
 ): WaterBar[] {
-  if (range === 'Week' || range === 'Month') {
+  if (range === TrendRange.Week || range === TrendRange.Month) {
     return dayKeys(today, TrendRanges.DAYS[range]).map((day) => ({
-      label: range === 'Week' ? weekdayLetter(day) : '',
+      label: range === TrendRange.Week ? weekdayLetter(day) : '',
       value: byDay[day] ?? 0,
       state: barState(byDay[day] ?? 0, goalOz),
     }));

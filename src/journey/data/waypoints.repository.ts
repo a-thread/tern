@@ -1,6 +1,6 @@
 import { addDays } from '@shared/utils/date';
 import { INITIAL_WAYPOINTS } from './waypoints.mock';
-import { pointsFor, type LedgerEvent, type WaypointSource } from '@journey/models/waypoint';
+import { pointsFor, type LedgerEvent, WaypointSource } from '@journey/models/waypoint';
 
 export type WaypointsSnapshot = {
   /** Lifetime total: the sum of every award in the ledger. */
@@ -28,7 +28,7 @@ function syntheticHistory(total: number, today: string): LedgerEvent[] {
   const n = Math.max(Math.ceil(total / 55), 1);
   const per = Math.floor(total / n);
   return Array.from({ length: n }, (_, i) => ({
-    source: 'steps' as const,
+    source: WaypointSource.Steps as const,
     day: addDays(today, -(n - i) * 2),
     points: i === n - 1 ? total - per * (n - 1) : per,
   }));
@@ -40,8 +40,8 @@ function syntheticHistory(total: number, today: string): LedgerEvent[] {
  * already covers every meal, so the meals bonus starts out earned).
  */
 export function createMemoryWaypointsRepository(
-  history: number = INITIAL_WAYPOINTS - pointsFor('meals'),
-  today: WaypointSource[] = ['meals'],
+  history: number = INITIAL_WAYPOINTS - pointsFor(WaypointSource.Meals),
+  today: WaypointSource[] = [WaypointSource.Meals],
 ): WaypointsRepository {
   let events: LedgerEvent[] = [];
   let seeded = false;

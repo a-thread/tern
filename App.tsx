@@ -18,9 +18,9 @@ import {
 } from '@expo-google-fonts/manrope';
 
 import { colors } from '@shared/theme';
-import { AppProviders } from '@shared/state/AppProviders';
-import RootNavigator from '@shared/navigation/RootNavigator';
-import AuthGate from '@shared/auth/AuthGate';
+import { AppProviders } from '@app/AppProviders';
+import RootNavigator from '@app/navigation/RootNavigator';
+import AuthGate from '@app/AuthGate';
 import { ToastProvider } from '@shared/state/ToastContext';
 
 enableFreeze(true);

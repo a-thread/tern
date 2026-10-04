@@ -5,11 +5,18 @@
 
 export type Tier = 1 | 2 | 3 | 4;
 
+export enum Meal {
+  Breakfast = 'breakfast',
+  Lunch = 'lunch',
+  Dinner = 'dinner',
+  Snack = 'snack',
+}
+
 export type FoodEntry = {
   id: string;
   name: string;
   brand?: string;
-  meal: 'breakfast' | 'lunch' | 'dinner' | 'snack';
+  meal: Meal;
   servings: number;
   servingLabel: string;
   calories: number;

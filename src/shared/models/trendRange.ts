@@ -1,9 +1,13 @@
 /** The ranges the Trends screens offer. */
-export type TrendRange = 'Week' | 'Month' | '6 months';
+export enum TrendRange {
+  Week = 'Week',
+  Month = 'Month',
+  SixMonths = '6 months',
+}
 
 /** What each Trends range means, in one place: its length, how it reads in a sentence, how it is drawn. */
 export class TrendRanges {
-  static readonly ALL: readonly TrendRange[] = ['Week', 'Month', '6 months'];
+  static readonly ALL: readonly TrendRange[] = [TrendRange.Week, TrendRange.Month, TrendRange.SixMonths];
 
   /** How many days each range covers. */
   static readonly DAYS: Readonly<Record<TrendRange, number>> = {

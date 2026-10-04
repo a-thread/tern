@@ -22,6 +22,7 @@ import { isDraftDirty, scaledTotals } from '@food/models/mealDraft';
 import { SavedMealLimits } from '@food/models/savedMeals';
 import { Servings } from '@food/models/servings';
 import type { LogFoodStackParamList } from '@food/navigation';
+import { Meal } from '@food/models/foodEntry';
 
 type Props = NativeStackScreenProps<LogFoodStackParamList, 'MealEditor'>;
 
@@ -78,7 +79,7 @@ export default function MealEditorScreen({ navigation }: Props) {
 
   const addFood = () => {
     // Uses the same search as logging, but chosen foods go into this meal.
-    navigation.push('Search', { meal: 'breakfast', pick: true });
+    navigation.push('Search', { meal: Meal.Breakfast, pick: true });
   };
 
   return (

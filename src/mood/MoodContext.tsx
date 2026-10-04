@@ -1,6 +1,6 @@
 import React, { useCallback, useMemo, useState } from 'react';
 
-import { useBackend } from '@shared/state/BackendContext';
+import type { MoodRepository } from '@mood/data/mood.repository';
 import { createRequiredContext } from '@shared/state/createRequiredContext';
 import { useDayKey } from '@shared/hooks/useDayKey';
 import { useLoader } from '@shared/hooks/useLoader';
@@ -10,6 +10,7 @@ import { useSettings } from '@settings/SettingsContext';
 import { useAward } from '@journey/hooks/useAward';
 import { entryFor } from '@mood/models/moodStats';
 import { isValidScore, type MoodEntry } from '@mood/models/moodEntry';
+import { WaypointSource } from '@journey/models/waypoint';
 
 /** How far back the context keeps check-ins: enough for the longest Trends range. */
 export const HISTORY_DAYS = 180;
@@ -33,8 +34,13 @@ const [MoodContext, useMood] = createRequiredContext<MoodContextValue>('useMood'
 export { useMood };
 
 /** Mood and stress check-ins, and the waypoint for checking in. Must sit inside SettingsProvider and WaypointsProvider. */
-export function MoodProvider({ children }: { children: React.ReactNode }) {
-  const { mood: repo } = useBackend();
+export function MoodProvider({
+  repo,
+  children,
+}: {
+  repo: MoodRepository;
+  children: React.ReactNode;
+}) {
   const { settings } = useSettings();
   const today = useDayKey();
 
@@ -52,7 +58,7 @@ export function MoodProvider({ children }: { children: React.ReactNode }) {
 
   // The waypoint follows the check-in, like the water goal: earned on checking in,
   // quietly taken back if today's check-in is removed. Nothing happens while tracking is off.
-  useAward('mood', checkedIn, enabled && ready);
+  useAward(WaypointSource.Mood, checkedIn, enabled && ready);
 
   const checkIn = useCallback(
     (mood: number, stress: number) => {

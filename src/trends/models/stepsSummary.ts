@@ -1,11 +1,12 @@
-import type { DayRecord, DayState } from '@today/models/dayRecord';
+import { DayState } from '@shared/models/dayState';
+import { type DayRecord } from '@today/models/dayRecord';
 
 /** Longest consecutive run of goal or rest days; partial and none reset it. */
 export function longestProtectedRun(days: DayState[]): number {
   let longest = 0;
   let current = 0;
   for (const day of days) {
-    if (day === 'goal' || day === 'rest') {
+    if (day === DayState.Goal || day === DayState.Rest) {
       current += 1;
       longest = Math.max(longest, current);
     } else {

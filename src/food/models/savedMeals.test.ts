@@ -1,10 +1,11 @@
 import type { FoodEntry } from './foodEntry';
 import { cleanName, filterMeals, findMealByName, itemsToEntries, savedMealTotals, snapshotItems, sortMeals, validateMealName, type SavedMeal, SavedMealLimits } from './savedMeals';
+import { Meal } from './foodEntry';
 
 const entry = (name: string, over: Partial<FoodEntry> = {}): FoodEntry => ({
   id: `id-${name}`,
   name,
-  meal: 'breakfast',
+  meal: Meal.Breakfast,
   servings: 1,
   servingLabel: '1 serving',
   calories: 100,
@@ -60,7 +61,7 @@ describe('snapshotItems / itemsToEntries', () => {
   });
 
   it('turns saved items back into entries for whichever meal you choose', () => {
-    const entries = itemsToEntries(snapshotItems([entry('Oats'), entry('Banana')]), 'dinner');
+    const entries = itemsToEntries(snapshotItems([entry('Oats'), entry('Banana')]), Meal.Dinner);
     expect(entries.map((e) => [e.name, e.meal])).toEqual([
       ['Oats', 'dinner'],
       ['Banana', 'dinner'],

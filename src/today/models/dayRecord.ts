@@ -1,6 +1,5 @@
 import { addDays, weekStartKey } from '@shared/utils/date';
-
-export type DayState = 'goal' | 'partial' | 'rest' | 'none';
+import { DayState } from '@shared/models/dayState';
 
 export type DayRecord = {
   day: string;
@@ -74,9 +73,9 @@ export function buildDays(input: BuildDaysInput): DayRecord[] {
     const w = weekStartKey(k);
     let state: DayState;
     if (steps >= goal) {
-      state = 'goal';
+      state = DayState.Goal;
     } else if (chosenRest) {
-      state = 'rest';
+      state = DayState.Rest;
     } else if (
       autoDetect &&
       k < today &&
@@ -85,9 +84,9 @@ export function buildDays(input: BuildDaysInput): DayRecord[] {
       (chosenPerWeek.get(w) ?? 0) + (detectedPerWeek.get(w) ?? 0) < restPerWeek
     ) {
       detectedPerWeek.set(w, (detectedPerWeek.get(w) ?? 0) + 1);
-      state = 'rest';
+      state = DayState.Rest;
     } else {
-      state = steps > 0 ? 'partial' : 'none';
+      state = steps > 0 ? DayState.Partial : DayState.None;
     }
     return {
       day: k,
@@ -110,8 +109,8 @@ export function computeStreak(days: DayRecord[]): number {
   let streak = 0;
   for (let i = days.length - 1; i >= 0; i--) {
     const d = days[i];
-    if (d.state === 'goal') streak += 1;
-    else if (d.state === 'rest') continue;
+    if (d.state === DayState.Goal) streak += 1;
+    else if (d.state === DayState.Rest) continue;
     else if (d.isToday)
       continue; // still in progress
     else break;
@@ -133,7 +132,7 @@ export function weekOf(days: DayRecord[], today: string): DayRecord[] {
         day: k,
         steps: 0,
         goal: 0,
-        state: 'none' as DayState,
+        state: DayState.None as DayState,
         chosenRest: false,
         isToday: false,
         future: k > today,
@@ -148,6 +147,6 @@ export function restDaysLeft(
   today: string,
   restPerWeek: number,
 ): number {
-  const used = weekOf(days, today).filter((d) => d.state === 'rest').length;
+  const used = weekOf(days, today).filter((d) => d.state === DayState.Rest).length;
   return Math.max(restPerWeek - used, 0);
 }

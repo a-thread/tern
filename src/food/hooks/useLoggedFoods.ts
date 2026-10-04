@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
 
-import { useBackend } from '@shared/state/BackendContext';
 import { useDayKey } from '@shared/hooks/useDayKey';
 import { addDays } from '@shared/utils/date';
 import { useFood } from '@food/FoodContext';
@@ -17,8 +16,7 @@ const MINE_DAYS = 90;
  * first, ready to log again.
  */
 export function useLoggedFoods() {
-  const { food } = useBackend();
-  const { foodLog } = useFood();
+  const { foodLog, loadHistory } = useFood();
   const today = useDayKey();
   const [byDay, setByDay] = useState<Record<string, FoodEntry[]>>({});
   const [loaded, setLoaded] = useState(false);
@@ -26,15 +24,14 @@ export function useLoggedFoods() {
   // foodLog is a trigger: reload after something is logged or removed.
   useEffect(() => {
     let cancelled = false;
-    food
-      .history(addDays(today, -(MINE_DAYS - 1)), today)
+    loadHistory(addDays(today, -(MINE_DAYS - 1)), today)
       .then((h) => !cancelled && setByDay(h))
       .catch((e) => console.warn('Could not load logged foods', e))
       .finally(() => !cancelled && setLoaded(true));
     return () => {
       cancelled = true;
     };
-  }, [food, today, foodLog]);
+  }, [loadHistory, today, foodLog]);
 
   return useMemo(
     () => ({

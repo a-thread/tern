@@ -8,6 +8,7 @@ module.exports = function (api) {
         {
           root: ['./src'],
           alias: {
+            '@app': './src/app',
             '@shared': './src/shared',
             '@food': './src/food',
             '@weight': './src/weight',

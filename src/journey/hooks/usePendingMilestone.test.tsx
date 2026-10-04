@@ -2,10 +2,9 @@ import React from 'react';
 import { renderHook, act, waitFor } from '@testing-library/react-native';
 
 import {
-  BackendProvider,
   createMemoryBackend,
   type Backend,
-} from '@shared/state/BackendContext';
+} from '@app/BackendContext';
 import { SettingsProvider, useSettings } from '@settings/SettingsContext';
 import { FoodProvider } from '@food/FoodContext';
 import { createMemoryFoodRepository } from '@food/data/food.repository';
@@ -13,6 +12,7 @@ import { createMemoryWaypointsRepository } from '@journey/data/waypoints.reposit
 import { WaypointsProvider, useWaypoints } from '@journey/WaypointsContext';
 import { Milestones } from '@journey/models/milestone';
 import { usePendingMilestone } from './usePendingMilestone';
+import { WaypointSource } from '@journey/models/waypoint';
 
 const FIRST_STOP = Milestones.STOPS[0];
 const SECOND_STOP = Milestones.STOPS[1];
@@ -31,13 +31,11 @@ async function setup(total: number) {
     food: createMemoryFoodRepository([]),
   };
   const wrapper = ({ children }: { children: React.ReactNode }) => (
-    <BackendProvider backend={backend}>
-      <SettingsProvider>
-        <FoodProvider>
-          <WaypointsProvider>{children}</WaypointsProvider>
-        </FoodProvider>
+      <SettingsProvider repo={backend.settings}>
+        <WaypointsProvider repo={backend.waypoints}>
+          <FoodProvider repo={backend.food}>{children}</FoodProvider>
+        </WaypointsProvider>
       </SettingsProvider>
-    </BackendProvider>
   );
   const hook = renderHook(
     () => ({
@@ -80,7 +78,7 @@ describe('usePendingMilestone', () => {
     );
 
     // An ordinary award tips the total over the first stop.
-    await act(async () => result.current.points.addWaypoints(40, 'steps'));
+    await act(async () => result.current.points.addWaypoints(40, WaypointSource.Steps));
     await waitFor(() =>
       expect(result.current.milestone.pending).toMatchObject({
         name: FIRST_STOP.name,
@@ -106,7 +104,7 @@ describe('usePendingMilestone', () => {
     await act(async () =>
       result.current.points.addWaypoints(
         SECOND_STOP.waypoints - FIRST_STOP.waypoints,
-        'steps',
+        WaypointSource.Steps,
       ),
     );
     await waitFor(() =>

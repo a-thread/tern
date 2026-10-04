@@ -1,7 +1,8 @@
 import { latestMilestone, migrationProgress, milestonesFor, Milestones } from './milestone';
 import { daysWithWaypoints, type LedgerEvent } from './waypoint';
+import { WaypointSource } from './waypoint';
 
-const ev = (day: string, points: number, source: LedgerEvent['source'] = 'steps'): LedgerEvent => ({
+const ev = (day: string, points: number, source: LedgerEvent['source'] = WaypointSource.Steps): LedgerEvent => ({
   day,
   points,
   source,
@@ -32,7 +33,7 @@ describe('milestonesFor', () => {
 describe('daysWithWaypoints', () => {
   it('counts distinct days, not events', () => {
     expect(
-      daysWithWaypoints([ev('2026-03-01', 40), ev('2026-03-01', 15, 'meals'), ev('2026-03-02', 40)]),
+      daysWithWaypoints([ev('2026-03-01', 40), ev('2026-03-01', 15, WaypointSource.Meals), ev('2026-03-02', 40)]),
     ).toBe(2);
   });
 });

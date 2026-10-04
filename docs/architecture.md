@@ -51,7 +51,7 @@ The rules:
    `Meals.CORE` — in the model file they belong to, not as loose `UPPER_CASE` exports.
    One class per group, no instances, no methods; the rules about them stay functions.
    A lone constant that nothing else relates to can stay a plain `const`.
-5. **Props are for shared components.** Components inside a feature read the context
+5. **Props are for shared components.** (The one other use: `AppProviders` hands each provider its repository.) Components inside a feature read the context
    directly rather than drilling props. `shared/components` take props.
 6. **Provider scope.** Mount a context at the root (`AppProviders`) only if it is
    genuinely app-wide. State owned by one flow is provided at that flow's navigator.
@@ -65,7 +65,7 @@ The rules:
 10. **Promotion.** Code used by two or more features moves to `shared/` (`shared/models`,
    `shared/utils`, `shared/hooks`, `shared/components`). A feature never
    imports another feature's `data/` — go through its context or `models/`. Only the
-   composition root (`shared/state/BackendContext`) and tests may.
+   composition root (`app/BackendContext`) and tests may.
 11. **Only create a folder when it has a file.** A feature does not get an empty
     `components/` for symmetry. But once a file of that kind exists, it goes in the folder.
 12. **Sub-features.** A flow big enough to have its own context and repository may become
@@ -73,6 +73,54 @@ The rules:
 
 `shared/` is organised by kind (`auth`, `components`, `hooks`, `models`, `navigation`, `state`,
 `theme`, `utils`) and follows the import rule above.
+
+## Dependencies
+
+Code only depends downward. From the bottom up:
+
+| Layer        | Lives in                                                    | May import                                  |
+| ------------ | ----------------------------------------------------------- | ------------------------------------------- |
+| shared       | `src/shared`                                                | nothing                                     |
+| settings     | `src/settings`                                              | shared                                      |
+| journey      | `src/journey` (the waypoints ledger)                        | shared, settings                            |
+| leaf domains | `weight`, `water`, `mood`, `medication`                     | shared, settings, journey                   |
+| food         | `src/food`                                                  | everything above (it shows a water card)    |
+| today        | `src/today`                                                 | everything above                            |
+| trends       | `src/trends`                                                | everything above                            |
+| app          | `src/app`                                                   | everything                                  |
+
+Two exceptions keep this workable. A feature's `models/` are vocabulary any feature may import
+(settings stores a `Medication`, today reads a `FoodEntry`), because they are pure and import
+nothing back. And tests may import from anywhere. Everything else flows down: if a lower layer
+needs something from a higher one, the higher one hands it over, or the thing moves down.
+
+Two examples of that, both done:
+
+- The "all meals logged" award used to live in the waypoints ledger, which read the food log.
+  Now food awards it through `useAward`, like water and mood, so the ledger knows nothing of food.
+- Settings used to own screens for steps, food display and medication. Those screens now
+  live with their features, each feature supplies its own rows (`StepGoalRow`,
+  `WaterSettingsRows`, `MealReminderRows`…), and the settings menu in `app/screens/SettingsScreen`
+  only arranges them.
+
+### The app layer
+
+`src/app` is the composition root, the one place that knows every feature:
+
+- `BackendContext` builds the repositories (in-memory or Supabase) and `AppProviders` hands each to
+  its provider as a `repo` prop. Features never reach for a backend themselves, so nothing below
+  `app/` knows which one it got. A screen that wants history asks its context (`loadHistory`,
+  `loadRange`), never a repository.
+- `AppProviders` lists every provider with the ones it needs; the order is checked at start-up
+  (`assertProviderOrder`), so a provider placed too high fails loudly, naming both.
+- The root navigator, the settings stack and the settings menu, and `AuthGate`, live here.
+
+### Closed sets are enums
+
+A value from a fixed set that is compared or switched on is an enum, not a string union:
+`DayState`, `Meal`, `WaypointSource`, `MoodMetric`, `Frequency`, `Units`, `StepsStatus`,
+`TrendRange`. Values are the same strings that are stored, so saved data does not change.
+Compare with the member (`day.state === DayState.Rest`), never a literal.
 
 ### Shared building blocks for contexts
 
@@ -95,19 +143,20 @@ App.tsx                    fonts, providers, navigation
 src/
   shared/
     theme/index.ts         all design tokens, the palette rule, gradient sets
-    components/ui/         Group, Row, Chip, Toggle, SheetNav, FootNote…
-    components/charts.tsx  FlightPath, StepBars, WeightTrend, ConsistencyGrid, DayRing
+    components/ui/         Group, Row, Chip, Toggle, Stepper, SegmentedControl, PillToggle, LegendDot…
+    components/charts/     FlightPath, StepBars, WeightTrend, ConsistencyGrid, JourneyRoute, DayRing
     components/TernMark.tsx  the logo as a tintable SVG path
-    navigation/            root navigator and every param list
-    state/                 BackendContext (memory or Supabase), providers, toasts
-    auth/                  sign in, create account, password reset, AuthGate
-    hooks/, models/, utils/  day keys, trend ranges, dates, units, ids, loading and saving helpers
-  today/                   TodayScreen, steps, rest days, "left to do"
-  food/                    the Food tab, the Add food stack, saved meals, search
+    navigation/types.ts    the route registry: every cross-feature param list
+    state/                 toasts and createRequiredContext
+    auth/                  sign in, create account, password reset
+    hooks/, models/, utils/  day keys, loading and saving helpers, trend ranges, dates, units, ids
+  app/                     the composition root: backend, providers, navigators, AuthGate, settings menu
+  today/                   TodayScreen, steps, rest days, step-goal and health-data screens
+  food/                    the Food tab, the Add food stack, saved meals, search, food settings
   journey/                 waypoints ledger, the map, milestones, reward cards
   trends/                  steps, weight, water and mood over time
   weight/, water/, mood/, medication/
-  settings/                every settings screen, the settings document, reminders
+  settings/                the settings document, units, reminders, profile and account sections
 supabase/migrations/       the schema, in order
 ```
 
@@ -115,8 +164,9 @@ supabase/migrations/       the schema, in order
 
 Supabase, reached through one repository per domain. Each has an in-memory
 implementation — used in the preview, when there are no keys, and in every test — and a
-Supabase one; [`src/shared/state/BackendContext.tsx`](../src/shared/state/BackendContext.tsx)
-chooses between them, and nothing above that line knows which it got.
+Supabase one; [`src/app/BackendContext.tsx`](../src/app/BackendContext.tsx)
+chooses between them and `AppProviders` passes each repository to its provider, so nothing
+else knows which it got.
 
 Setting a project up, and what each table holds, is in
 [supabase/README.md](../supabase/README.md). `supabase/migrations/` is the schema of

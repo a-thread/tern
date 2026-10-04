@@ -1,12 +1,13 @@
 import type { FoodEntry } from './foodEntry';
+import { Meal } from './foodEntry';
 
 /** The meals of a day: which count toward the logging rule, and how they are listed. */
 export class Meals {
   /** The meals that count toward the "logging all meals" waypoint rule. */
-  static readonly CORE: FoodEntry['meal'][] = ['breakfast', 'lunch', 'dinner'];
+  static readonly CORE: FoodEntry['meal'][] = [Meal.Breakfast, Meal.Lunch, Meal.Dinner];
 
   /** Every meal in the order a day runs, snacks last. */
-  static readonly ALL: FoodEntry['meal'][] = ['breakfast', 'lunch', 'dinner', 'snack'];
+  static readonly ALL: FoodEntry['meal'][] = [Meal.Breakfast, Meal.Lunch, Meal.Dinner, Meal.Snack];
 
   /**
   * Meals selectable when logging or reassigning a food entry, in the order the
@@ -14,10 +15,10 @@ export class Meals {
   * against) the "logging all meals" rule.
   */
   static readonly OPTIONS: { key: FoodEntry['meal']; label: string }[] = [
-    { key: 'breakfast', label: 'Breakfast' },
-    { key: 'lunch', label: 'Lunch' },
-    { key: 'dinner', label: 'Dinner' },
-    { key: 'snack', label: 'Snacks' },
+    { key: Meal.Breakfast, label: 'Breakfast' },
+    { key: Meal.Lunch, label: 'Lunch' },
+    { key: Meal.Dinner, label: 'Dinner' },
+    { key: Meal.Snack, label: 'Snacks' },
   ];
 }
 

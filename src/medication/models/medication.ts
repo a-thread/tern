@@ -1,4 +1,5 @@
 import { cleanSpaces, sameName } from '@shared/utils/text';
+import { Frequency } from '@shared/models/frequency';
 
 /** A medication the user chose to track. Stored in settings; doses are stored separately. */
 export type Medication = {
@@ -7,14 +8,13 @@ export type Medication = {
   /** Minutes since local midnight when it is due. */
   at: number;
   /** Every day, or once a week on `weekday`. */
-  frequency: MedicationFrequency;
+  frequency: Frequency;
   /** 1 = Sunday … 7 = Saturday. Only used when weekly. */
   weekday: number;
   /** A reminder at `at` (on `weekday` when weekly). */
   remind: boolean;
 };
 
-export type MedicationFrequency = 'daily' | 'weekly';
 
 /** How many medications can be tracked, and what a new one starts with. */
 export class MedicationLimits {
@@ -48,7 +48,7 @@ export function newMedication(name: string, id: string): Medication {
     id,
     name: cleanMedName(name),
     at: MedicationLimits.DEFAULT_TIME,
-    frequency: 'daily',
+    frequency: Frequency.Daily,
     weekday: 1,
     remind: false,
   };
@@ -74,7 +74,7 @@ export function mergeMedications(saved: unknown): Medication[] {
           typeof m.at === 'number' && Number.isFinite(m.at) && m.at >= 0 && m.at < 1440
             ? Math.floor(m.at)
             : MedicationLimits.DEFAULT_TIME,
-        frequency: m.frequency === 'weekly' ? 'weekly' : 'daily',
+        frequency: m.frequency === Frequency.Weekly ? Frequency.Weekly : Frequency.Daily,
         weekday:
           Number.isInteger(m.weekday) && m.weekday >= 1 && m.weekday <= 7 ? m.weekday : 1,
         remind: m.remind === true,

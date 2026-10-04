@@ -3,7 +3,8 @@ import type { GoalChange } from '@today/models/stepGoal';
 import type { Medication } from '@medication/models/medication';
 import { WaterLimits } from '@water/models/waterEntry';
 import { settingsSeed } from '@settings/data/settings.mock';
-import { type ReminderConfig, type WeighInFrequency, Reminders } from './reminderPlan';
+import { Frequency } from '@shared/models/frequency';
+import { type ReminderConfig, Reminders } from './reminderPlan';
 
 export type ReminderSettings = ReminderConfig;
 
@@ -34,7 +35,7 @@ export type AppSettings = {
   autoDetectRestDays: boolean;
   reminders: ReminderSettings;
   /** How often to weigh in: sets the reminder, and how often Today asks. */
-  weighInFrequency: WeighInFrequency;
+  weighInFrequency: Frequency;
   /** Medications the person tracks. Empty = the feature stays out of the way. */
   medications: Medication[];
   /** Optional water tracking; off by default so it stays out of the way. */

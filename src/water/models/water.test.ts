@@ -1,5 +1,6 @@
 import { clampWaterGoal, dayTotal, isValidDrink, lastDrink, totalsByDay, waterProgress, type WaterEntry, WaterLimits } from './waterEntry';
 import { averageDaily, bucketWater } from './waterBars';
+import { TrendRange } from '@shared/models/trendRange';
 
 const drink = (id: string, oz: number, loggedOn: string, at = '08:00'): WaterEntry => ({
   id,
@@ -66,7 +67,7 @@ describe('bucketWater / averageDaily', () => {
   const byDay = { '2026-09-20': 70, '2026-09-19': 26, '2026-09-14': 64 };
 
   it('week: seven daily bars with weekday letters, goal-coloured', () => {
-    const bars = bucketWater(byDay, 64, 'Week', today);
+    const bars = bucketWater(byDay, 64, TrendRange.Week, today);
     expect(bars.map((b) => b.label).join('')).toBe('MTWTFSS');
     expect(bars[6]).toMatchObject({ value: 70, state: 'goal' });
     expect(bars[5]).toMatchObject({ value: 26, state: 'partial' });
@@ -75,13 +76,13 @@ describe('bucketWater / averageDaily', () => {
   });
 
   it('month: thirty unlabelled bars', () => {
-    const bars = bucketWater(byDay, 64, 'Month', today);
+    const bars = bucketWater(byDay, 64, TrendRange.Month, today);
     expect(bars).toHaveLength(30);
     expect(bars.every((b) => b.label === '')).toBe(true);
   });
 
   it('6 months: weekly averages, a month initial where a month starts', () => {
-    const bars = bucketWater(byDay, 64, '6 months', today);
+    const bars = bucketWater(byDay, 64, TrendRange.SixMonths, today);
     expect(bars).toHaveLength(25);
     expect(bars.filter((b) => b.label).length).toBeGreaterThanOrEqual(5);
   });

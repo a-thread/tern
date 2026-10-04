@@ -1,10 +1,11 @@
 import type { FoodEntry } from './foodEntry';
 import { filterFoods, recentFoods } from './recentFoods';
+import { Meal } from './foodEntry';
 
 const entry = (name: string, over: Partial<FoodEntry> = {}): FoodEntry => ({
   id: `${name}-${Math.random()}`,
   name,
-  meal: 'lunch',
+  meal: Meal.Lunch,
   servings: 1,
   servingLabel: '1 bowl',
   calories: 200,

@@ -1,6 +1,6 @@
 import React, { useCallback, useMemo, useRef, useState } from 'react';
 
-import { useBackend } from '@shared/state/BackendContext';
+import type { SavedMealsRepository } from '@food/data/savedMeals.repository';
 import { createRequiredContext } from '@shared/state/createRequiredContext';
 import { useLoader } from '@shared/hooks/useLoader';
 import { usePersist } from '@shared/hooks/usePersist';
@@ -69,8 +69,13 @@ export { useSavedMeals };
  * Edits apply to the screen immediately and are saved in the background; if a
  * write fails, the list is reloaded so it never shows something that wasn't saved.
  */
-export function SavedMealsProvider({ children }: { children: React.ReactNode }) {
-  const { savedMeals: repo } = useBackend();
+export function SavedMealsProvider({
+  repo,
+  children,
+}: {
+  repo: SavedMealsRepository;
+  children: React.ReactNode;
+}) {
   const [meals, setMeals] = useState<SavedMeal[]>([]);
   const [draft, setDraft] = useState<MealDraft | null>(null);
   const draftRef = useRef<MealDraft | null>(null);

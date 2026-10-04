@@ -1,6 +1,15 @@
 import type { NavigatorScreenParams } from '@react-navigation/native';
 import type { FoodEntry } from '@food/models/foodEntry';
-import type { SettingsStackParamList } from '@settings/navigation';
+
+export type SettingsStackParamList = {
+  SettingsRoot: undefined;
+  StepGoal: undefined;
+  FoodDisplay: undefined;
+  HealthData: undefined;
+  Targets: undefined;
+  RestDays: undefined;
+  Medication: undefined;
+};
 
 export type RewardParams = {
   kind: 'goal' | 'milestone' | 'loafing';

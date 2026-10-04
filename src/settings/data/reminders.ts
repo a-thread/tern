@@ -19,7 +19,10 @@ Notifications.setNotificationHandler({
   }),
 });
 
-export type SyncResult = 'ok' | 'denied';
+export enum SyncResult {
+  Ok = 'ok',
+  Denied = 'denied',
+}
 
 /** Syncs scheduled reminders with the enabled settings. */
 export async function syncReminders(
@@ -31,11 +34,11 @@ export async function syncReminders(
   // Everything scheduled here is one of Tern's reminders (meals, weigh-in and a
   // variable number of medications), so start clean each time.
   await Notifications.cancelAllScheduledNotificationsAsync().catch(() => {});
-  if (plan.length === 0) return 'ok';
+  if (plan.length === 0) return SyncResult.Ok;
 
   let { granted } = await Notifications.getPermissionsAsync();
   if (!granted) ({ granted } = await Notifications.requestPermissionsAsync());
-  if (!granted) return 'denied';
+  if (!granted) return SyncResult.Denied;
 
   if (Platform.OS === 'android') {
     await Notifications.setNotificationChannelAsync(CHANNEL_ID, {
@@ -64,5 +67,5 @@ export async function syncReminders(
           },
     });
   }
-  return 'ok';
+  return SyncResult.Ok;
 }

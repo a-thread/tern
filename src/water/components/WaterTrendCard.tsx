@@ -4,32 +4,29 @@ import { useFocusEffect } from '@react-navigation/native';
 
 import { colors, font, space } from '@shared/theme';
 import { Card } from '@shared/components/ui';
-import { StepBars } from '@shared/components/charts';
-import { useBackend } from '@shared/state/BackendContext';
+import { StepBars } from '@shared/components/charts/StepBars';
 import { useDayKey } from '@shared/hooks/useDayKey';
 import { addDays } from '@shared/utils/date';
 import { useSettings } from '@settings/SettingsContext';
 import { useUnits } from '@settings/hooks/useUnits';
 import { averageDaily, bucketWater } from '@water/models/waterBars';
 import { totalsByDay } from '@water/models/waterEntry';
-import { TrendRanges, type TrendRange } from '@shared/models/trendRange';
+import { TrendRanges, TrendRange } from '@shared/models/trendRange';
 import { useWater } from '@water/WaterContext';
 
 
 /** Average water per day, and a bar per day (or week), for the Trends range. */
 export default function WaterTrendCard({ range }: { range: TrendRange }) {
-  const { water } = useBackend();
   const { settings } = useSettings();
   const { formatVolume } = useUnits();
-  const { totalOz } = useWater(); // a trigger: reload after logging a drink
+  const { totalOz, loadRange } = useWater(); // totalOz is a trigger: reload after logging a drink
   const today = useDayKey();
   const [byDay, setByDay] = useState<Record<string, number>>({});
 
   useFocusEffect(
     useCallback(() => {
       let cancelled = false;
-      water
-        .load(addDays(today, -(TrendRanges.DAYS[range] - 1)), today)
+      loadRange(addDays(today, -(TrendRanges.DAYS[range] - 1)), today)
         .then((entries) => !cancelled && setByDay(totalsByDay(entries)))
         .catch((e) => console.warn('Could not load water history', e));
       return () => {
@@ -37,7 +34,7 @@ export default function WaterTrendCard({ range }: { range: TrendRange }) {
       };
       // totalOz is a trigger, not an input.
       // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [water, today, range, totalOz]),
+    }, [loadRange, today, range, totalOz]),
   );
 
   const average = averageDaily(byDay, today, TrendRanges.DAYS[range]);
@@ -58,7 +55,7 @@ export default function WaterTrendCard({ range }: { range: TrendRange }) {
         days={bars}
         goal={settings.waterGoalOz}
         showLegend={false}
-        showLabels={range !== 'Month'}
+        showLabels={range !== TrendRange.Month}
       />
     </Card>
   );

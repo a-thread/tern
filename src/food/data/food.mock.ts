@@ -1,11 +1,12 @@
 /** Seed data only — swapping in real Supabase queries means replacing just this file. */
 import type { FoodEntry } from '@food/models/foodEntry';
+import { Meal } from '@food/models/foodEntry';
 
 export const foodLog: FoodEntry[] = [
   {
     id: 'f1',
     name: 'Greek yogurt with berries',
-    meal: 'breakfast',
+    meal: Meal.Breakfast,
     servings: 1,
     servingLabel: '1 bowl',
     calories: 210,
@@ -17,7 +18,7 @@ export const foodLog: FoodEntry[] = [
   {
     id: 'f2',
     name: 'Turkey sandwich',
-    meal: 'lunch',
+    meal: Meal.Lunch,
     servings: 1,
     servingLabel: '1 sandwich',
     calories: 460,
@@ -29,7 +30,7 @@ export const foodLog: FoodEntry[] = [
   {
     id: 'f3',
     name: 'Graham crackers',
-    meal: 'dinner',
+    meal: Meal.Dinner,
     servings: 1,
     servingLabel: '2 sheets',
     calories: 130,
@@ -42,7 +43,7 @@ export const foodLog: FoodEntry[] = [
     id: 'f4',
     name: 'Oat milk, original',
     brand: 'Oatly',
-    meal: 'dinner',
+    meal: Meal.Dinner,
     servings: 1.5,
     servingLabel: '240 ml',
     calories: 180,
@@ -54,7 +55,7 @@ export const foodLog: FoodEntry[] = [
   {
     id: 'f5',
     name: 'Chili, homemade',
-    meal: 'dinner',
+    meal: Meal.Dinner,
     servings: 1,
     servingLabel: '1 bowl',
     calories: 310,

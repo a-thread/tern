@@ -5,19 +5,19 @@ import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
 import { colors, font, space } from '@shared/theme';
 import { Card } from '@shared/components/ui';
-import { WeightTrend } from '@shared/components/charts';
+import { WeightTrend } from '@shared/components/charts/WeightTrend';
 import type { RootStackParamList } from '@shared/navigation/types';
 import { useDayKey } from '@shared/hooks/useDayKey';
 import { addDays } from '@shared/utils/date';
 import { TrendRanges, type TrendRange } from '@shared/models/trendRange';
 import { average, entriesBetween, seriesOf } from '@mood/models/moodStats';
-import type { MoodMetric } from '@mood/models/moodEntry';
+import { MoodMetric } from '@mood/models/moodEntry';
 import { useMood } from '@mood/MoodContext';
 
 
 const METRICS: { id: MoodMetric; label: string }[] = [
-  { id: 'mood', label: 'Mood' },
-  { id: 'stress', label: 'Stress' },
+  { id: MoodMetric.Mood, label: 'Mood' },
+  { id: MoodMetric.Stress, label: 'Stress' },
 ];
 
 /** Average mood and stress for the Trends range, each with its line. Tapping opens today's check-in. */

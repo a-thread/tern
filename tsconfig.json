@@ -4,6 +4,7 @@
     "strict": true,
     "baseUrl": ".",
     "paths": {
+      "@app/*": ["src/app/*"],
       "@shared/*": ["src/shared/*"],
       "@food/*": ["src/food/*"],
       "@weight/*": ["src/weight/*"],

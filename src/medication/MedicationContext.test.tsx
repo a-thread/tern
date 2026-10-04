@@ -2,14 +2,14 @@ import React from 'react';
 import { renderHook, act, waitFor } from '@testing-library/react-native';
 
 import {
-  BackendProvider,
   createMemoryBackend,
   type Backend,
-} from '@shared/state/BackendContext';
+} from '@app/BackendContext';
 import { ToastProvider } from '@shared/state/ToastContext';
 import { dayKey, parseDayKey } from '@shared/utils/date';
 import { SettingsProvider, useSettings } from '@settings/SettingsContext';
 import { MedicationProvider, useMedication } from './MedicationContext';
+import { Frequency } from '@shared/models/frequency';
 import { newMedication } from '@medication/models/medication';
 
 const today = dayKey();
@@ -18,13 +18,11 @@ const iron = newMedication('Iron', 'med-iron');
 
 async function setup(backend: Backend = createMemoryBackend()) {
   const wrapper = ({ children }: { children: React.ReactNode }) => (
-    <BackendProvider backend={backend}>
       <ToastProvider>
-        <SettingsProvider>
-          <MedicationProvider>{children}</MedicationProvider>
+        <SettingsProvider repo={backend.settings}>
+          <MedicationProvider repo={backend.medication}>{children}</MedicationProvider>
         </SettingsProvider>
       </ToastProvider>
-    </BackendProvider>
   );
   const hook = renderHook(() => ({ meds: useMedication(), settings: useSettings() }), { wrapper });
   await waitFor(() => {
@@ -48,8 +46,8 @@ const otherWeekday = (weekdayToday % 7) + 1;
 describe('MedicationProvider', () => {
   it('a weekly medication is due only on its weekday', async () => {
     const { result } = await setup();
-    const onToday = { ...newMedication('Weekly today', 'w1'), frequency: 'weekly' as const, weekday: weekdayToday };
-    const another = { ...newMedication('Weekly other', 'w2'), frequency: 'weekly' as const, weekday: otherWeekday };
+    const onToday = { ...newMedication('Weekly today', 'w1'), frequency: Frequency.Weekly, weekday: weekdayToday };
+    const another = { ...newMedication('Weekly other', 'w2'), frequency: Frequency.Weekly, weekday: otherWeekday };
     await track(result, onToday, another, vitaminD);
     expect(result.current.meds.due.map((m) => m.id).sort()).toEqual(['med-d', 'w1']);
     expect(result.current.meds.medications).toHaveLength(3);

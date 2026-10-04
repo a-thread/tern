@@ -5,6 +5,9 @@ import { goalFor, recordGoalChange, suggestGoal } from './stepGoal';
 import { greetingFor } from './greeting';
 import { leftToDo, mealForTime, weighInDue } from './leftToDo';
 import { todaySummary } from './todaySummary';
+import { Meal } from '@food/models/foodEntry';
+import { DayState } from '@shared/models/dayState';
+import { Frequency } from '@shared/models/frequency';
 
 const food = (meal: FoodEntry['meal']): FoodEntry => ({
   id: meal,
@@ -50,7 +53,7 @@ describe('leftToDo', () => {
   });
 
   it('names the next missing meal once some are logged', () => {
-    const [meal] = leftToDo([food('breakfast'), food('lunch')], weighedToday, now);
+    const [meal] = leftToDo([food(Meal.Breakfast), food(Meal.Lunch)], weighedToday, now);
     expect(meal).toMatchObject({
       meal: 'dinner',
       title: 'Log dinner',
@@ -59,20 +62,20 @@ describe('leftToDo', () => {
   });
 
   it('drops the meal row when every meal is logged', () => {
-    const log = [food('breakfast'), food('lunch'), food('dinner')];
+    const log = [food(Meal.Breakfast), food(Meal.Lunch), food(Meal.Dinner)];
     expect(leftToDo(log, undefined, now)).toEqual([{ kind: 'weight' }]);
   });
 
   it('counts a skipped meal as done, and moves on to the next one', () => {
-    const [meal] = leftToDo([food('breakfast')], weighedToday, now, { skippedMeals: ['lunch'] });
+    const [meal] = leftToDo([food(Meal.Breakfast)], weighedToday, now, { skippedMeals: [Meal.Lunch] });
     expect(meal).toMatchObject({ meal: 'dinner', sub: '2 of 3 meals logged' });
     expect(
-      leftToDo([food('breakfast'), food('dinner')], weighedToday, now, { skippedMeals: ['lunch'] }),
+      leftToDo([food(Meal.Breakfast), food(Meal.Dinner)], weighedToday, now, { skippedMeals: [Meal.Lunch] }),
     ).toEqual([]);
   });
 
   it('never asks for a weigh-in when weight is not tracked', () => {
-    const log = [food('breakfast'), food('lunch'), food('dinner')];
+    const log = [food(Meal.Breakfast), food(Meal.Lunch), food(Meal.Dinner)];
     expect(leftToDo(log, undefined, now, { weighIn: null })).toEqual([]);
   });
 
@@ -85,7 +88,7 @@ describe('leftToDo', () => {
   });
 
   it('is empty when everything is done', () => {
-    const log = [food('breakfast'), food('lunch'), food('dinner')];
+    const log = [food(Meal.Breakfast), food(Meal.Lunch), food(Meal.Dinner)];
     expect(leftToDo(log, weighedToday, now)).toEqual([]);
   });
 });
@@ -134,10 +137,10 @@ describe('buildDays', () => {
       '2026-09-16': 300,
     };
     const off = days({ stepsByDay });
-    expect(off.filter((d) => d.state === 'rest')).toHaveLength(0);
+    expect(off.filter((d) => d.state === DayState.Rest)).toHaveLength(0);
 
     const on = days({ stepsByDay, autoDetect: true });
-    const rest = on.filter((d) => d.state === 'rest').map((d) => d.day);
+    const rest = on.filter((d) => d.state === DayState.Rest).map((d) => d.day);
     expect(rest).toEqual(['2026-09-14', '2026-09-15']); // allowance of 2
     expect(on.find((d) => d.day === '2026-09-16')!.state).toBe('partial');
   });
@@ -298,7 +301,7 @@ describe('suggestGoal', () => {
       day: `2026-08-${String(i + 1).padStart(2, '0')}`,
       steps: s,
       goal,
-      state: s >= goal ? 'goal' : 'partial',
+      state: s >= goal ? DayState.Goal : DayState.Partial,
       chosenRest: false,
       isToday: false,
       future: false,
@@ -324,8 +327,8 @@ describe('suggestGoal', () => {
 
 describe('weighInDue', () => {
   // `now` is Friday 2026-09-18, which is weekday 6 (1 = Sunday).
-  const daily = { frequency: 'daily', weekday: 1 } as const;
-  const weekly = (weekday: number) => ({ frequency: 'weekly', weekday }) as const;
+  const daily = { frequency: Frequency.Daily, weekday: 1 } as const;
+  const weekly = (weekday: number) => ({ frequency: Frequency.Weekly, weekday }) as const;
   const daysAgo = (n: number): WeightEntry => ({
     ...weighedToday,
     loggedAt: new Date(2026, 8, 18 - n, 7, 0).toISOString(),
@@ -362,14 +365,14 @@ describe('weighInDue', () => {
 });
 
 describe('leftToDo with weigh-in frequency and medication', () => {
-  const log = [food('breakfast'), food('lunch'), food('dinner')];
+  const log = [food(Meal.Breakfast), food(Meal.Lunch), food(Meal.Dinner)];
   const meds = [
     { id: 'a', name: 'Vitamin D', at: 480 },
     { id: 'b', name: 'Iron', at: 1200 },
   ];
 
   it('weekly weigh-ins leave Today quiet on an ordinary day', () => {
-    const items = leftToDo(log, weighedYesterday, now, { weighIn: { frequency: 'weekly', weekday: 2 } });
+    const items = leftToDo(log, weighedYesterday, now, { weighIn: { frequency: Frequency.Weekly, weekday: 2 } });
     expect(items).toEqual([]);
   });
 
@@ -409,8 +412,8 @@ describe('leftToDo with weigh-in frequency and medication', () => {
 describe('todaySummary', () => {
   it('lists the meals in day order with their calories', () => {
     const log = [
-      { ...food('dinner'), calories: 600, servings: 1 },
-      { ...food('breakfast'), calories: 200, servings: 1.5 },
+      { ...food(Meal.Dinner), calories: 600, servings: 1 },
+      { ...food(Meal.Breakfast), calories: 200, servings: 1.5 },
     ];
     const summary = todaySummary(log, weighedToday, [], false, now);
     expect(summary.meals).toEqual({ names: ['breakfast', 'dinner'], calories: 900 });

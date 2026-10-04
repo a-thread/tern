@@ -1,6 +1,6 @@
 import React, { useCallback, useMemo, useState } from 'react';
 
-import { useBackend } from '@shared/state/BackendContext';
+import type { WaterRepository } from '@water/data/water.repository';
 import { createRequiredContext } from '@shared/state/createRequiredContext';
 import { useDayKey } from '@shared/hooks/useDayKey';
 import { useLoader } from '@shared/hooks/useLoader';
@@ -9,6 +9,7 @@ import { newId } from '@shared/utils/id';
 import { useSettings } from '@settings/SettingsContext';
 import { useAward } from '@journey/hooks/useAward';
 import { dayTotal, isValidDrink, lastDrink, waterProgress, type WaterEntry } from '@water/models/waterEntry';
+import { WaypointSource } from '@journey/models/waypoint';
 
 type WaterContextValue = {
   /** False until today's drinks have loaded once. */
@@ -27,6 +28,8 @@ type WaterContextValue = {
   undoLast: () => void;
   /** Millilitres in the most recent drink today, for the Undo label. */
   lastOz: number | null;
+  /** The drinks logged from `from` to `to` inclusive (YYYY-MM-DD), for the Trends history. */
+  loadRange: (from: string, to: string) => Promise<WaterEntry[]>;
 };
 
 const [WaterContext, useWater] = createRequiredContext<WaterContextValue>(
@@ -36,8 +39,13 @@ const [WaterContext, useWater] = createRequiredContext<WaterContextValue>(
 export { useWater };
 
 /** Today's water, and the waypoint for reaching the goal. Must sit inside SettingsProvider and WaypointsProvider. */
-export function WaterProvider({ children }: { children: React.ReactNode }) {
-  const { water: repo } = useBackend();
+export function WaterProvider({
+  repo,
+  children,
+}: {
+  repo: WaterRepository;
+  children: React.ReactNode;
+}) {
   const { settings } = useSettings();
   const today = useDayKey();
 
@@ -56,7 +64,7 @@ export function WaterProvider({ children }: { children: React.ReactNode }) {
 
   // The waypoint follows the log, like "all meals": earned on reaching the goal, quietly
   // taken back if removing a drink drops the total below it. Nothing happens while tracking is off.
-  useAward('water', reached, enabled && ready);
+  useAward(WaypointSource.Water, reached, enabled && ready);
 
   const addWater = useCallback(
     (oz: number) => {
@@ -89,6 +97,8 @@ export function WaterProvider({ children }: { children: React.ReactNode }) {
     });
   }, [lastId, repo, persist]);
 
+  const loadRange = useCallback((from: string, to: string) => repo.load(from, to), [repo]);
+
   const value = useMemo<WaterContextValue>(
     () => ({
       ready,
@@ -100,8 +110,9 @@ export function WaterProvider({ children }: { children: React.ReactNode }) {
       addWater,
       undoLast,
       lastOz: last?.oz ?? null,
+      loadRange,
     }),
-    [ready, enabled, totalOz, goalOz, reached, addWater, undoLast, last?.oz],
+    [ready, enabled, totalOz, goalOz, reached, addWater, undoLast, last?.oz, loadRange],
   );
 
   return <WaterContext.Provider value={value}>{children}</WaterContext.Provider>;

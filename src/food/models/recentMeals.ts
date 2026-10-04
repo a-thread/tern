@@ -2,6 +2,7 @@ import { addDays, formatShortDate, weekdayName } from '@shared/utils/date';
 import { Meals } from './meals';
 import type { FoodEntry } from './foodEntry';
 import { snapshotItems, type SavedMealItem } from './savedMeals';
+import { Meal } from './foodEntry';
 
 /** A meal you've already logged on some day, ready to log again. */
 export type RecentMeal = {
@@ -18,7 +19,7 @@ export type RecentMeal = {
  * Within a day, the latest meal first, so the meal you're most likely to
  * repeat is nearest the top. Snacks sit after the meals of that day.
  */
-const WITHIN_DAY: FoodEntry['meal'][] = ['dinner', 'lunch', 'breakfast', 'snack'];
+const WITHIN_DAY: FoodEntry['meal'][] = [Meal.Dinner, Meal.Lunch, Meal.Breakfast, Meal.Snack];
 
 const mealLabel = (meal: FoodEntry['meal']) =>
   Meals.OPTIONS.find((m) => m.key === meal)?.label ?? meal;

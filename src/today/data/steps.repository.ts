@@ -5,7 +5,11 @@ import { addDays, dayKey } from '@shared/utils/date';
  * - `needs-permission`: a source exists, but the user hasn't allowed reading it yet.
  * - `unavailable`: no step source on this device or build (e.g. Expo Go).
  */
-export type StepsStatus = 'connected' | 'needs-permission' | 'unavailable';
+export enum StepsStatus {
+  Connected = 'connected',
+  NeedsPermission = 'needs-permission',
+  Unavailable = 'unavailable',
+}
 
 /** Where step counts come from (Health Connect on Android; mock data in local mode). */
 export interface StepsRepository {
@@ -19,8 +23,8 @@ export interface StepsRepository {
 /** No step source. Steps stay at zero, so nothing is awarded and nothing is invented. */
 export function createUnavailableStepsRepository(): StepsRepository {
   return {
-    status: async () => 'unavailable',
-    connect: async () => 'unavailable',
+    status: async () => StepsStatus.Unavailable,
+    connect: async () => StepsStatus.Unavailable,
     getRange: async () => ({}),
   };
 }
@@ -48,8 +52,8 @@ export function createMemoryStepsRepository(
   now: () => Date = () => new Date(),
 ): StepsRepository {
   return {
-    status: async () => 'connected',
-    connect: async () => 'connected',
+    status: async () => StepsStatus.Connected,
+    connect: async () => StepsStatus.Connected,
     getRange: async (from, to) => {
       const today = dayKey(now());
       const out: Record<string, number> = {};

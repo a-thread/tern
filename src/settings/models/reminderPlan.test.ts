@@ -1,4 +1,6 @@
 import { describeReminders, formatMinutes, mergeReminders, medicationReminderId, planReminders, waterReminderId, waterTimes, stepMinutes, stepWeekday, type ReminderConfig, Reminders } from './reminderPlan';
+import { Frequency } from '@shared/models/frequency';
+import { ReminderKey } from './reminderPlan';
 
 const config = (
   over: Partial<{ meals: boolean; weighIn: boolean }> = {},
@@ -45,7 +47,7 @@ describe('planReminders', () => {
   });
 
   it('never mentions weight loss, calories or streaks', () => {
-    const text = planReminders(config({ meals: true, weighIn: true }), { weighInFrequency: 'daily' })
+    const text = planReminders(config({ meals: true, weighIn: true }), { weighInFrequency: Frequency.Daily })
       .map((r) => `${r.title} ${r.body}`)
       .join(' ')
       .toLowerCase();
@@ -62,19 +64,19 @@ describe('weigh-in frequency', () => {
   it('daily has no weekday, so it repeats every day at the same time', () => {
     const c = config({ weighIn: true });
     c.weighIn.at = 7 * 60 + 30;
-    const [r] = planReminders(c, { weighInFrequency: 'daily' });
+    const [r] = planReminders(c, { weighInFrequency: Frequency.Daily });
     expect(r).toMatchObject({ title: 'Daily weigh-in', hour: 7, minute: 30 });
     expect(r.weekday).toBeUndefined();
   });
 
   it('reads as "Every day" in Settings when daily', () => {
-    expect(describeReminders(Reminders.DEFAULTS, 'daily').weighIn).toBe('Every day, 8:00 am');
-    expect(describeReminders(Reminders.DEFAULTS, 'weekly').weighIn).toBe('Sundays, 8:00 am');
+    expect(describeReminders(Reminders.DEFAULTS, Frequency.Daily).weighIn).toBe('Every day, 8:00 am');
+    expect(describeReminders(Reminders.DEFAULTS, Frequency.Weekly).weighIn).toBe('Sundays, 8:00 am');
   });
 });
 
 describe('medication reminders', () => {
-  const base = { frequency: 'daily', weekday: 1 } as const;
+  const base = { frequency: Frequency.Daily, weekday: 1 } as const;
   const meds = [
     { ...base, id: 'a', name: 'Vitamin D', at: 9 * 60, remind: true },
     { ...base, id: 'b', name: 'Iron', at: 20 * 60, remind: false },
@@ -91,7 +93,7 @@ describe('medication reminders', () => {
   });
 
   it('a weekly medication is reminded on its weekday only', () => {
-    const weekly = { ...base, id: 'w', name: 'Injection', at: 10 * 60, remind: true, frequency: 'weekly', weekday: 4 } as const;
+    const weekly = { ...base, id: 'w', name: 'Injection', at: 10 * 60, remind: true, frequency: Frequency.Weekly, weekday: 4 } as const;
     const [r] = planReminders(config(), { medications: [weekly] });
     expect(r).toMatchObject({ id: medicationReminderId('w'), weekday: 4, hour: 10, minute: 0 });
   });
@@ -184,7 +186,7 @@ describe('water reminders', () => {
     expect(planReminders(water({ on: false }), { trackWater: true })).toEqual([]);
     const plan = planReminders(water(), { trackWater: true });
     expect(plan.map((r) => r.id)).toEqual([0, 1, 2, 3, 4, 5].map(waterReminderId));
-    expect(plan.every((r) => r.weekday === undefined && r.key === 'water')).toBe(true);
+    expect(plan.every((r) => r.weekday === undefined && r.key === ReminderKey.Water)).toBe(true);
   });
 
   it('never plans more reminders than a day can sensibly hold', () => {

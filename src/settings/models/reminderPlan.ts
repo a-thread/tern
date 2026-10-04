@@ -1,4 +1,5 @@
 import type { Medication } from '@medication/models/medication';
+import { Frequency } from '@shared/models/frequency';
 
 /**
  * What gets scheduled for each reminder. Kept separate from the notification
@@ -17,11 +18,10 @@ export type ReminderConfig = {
 };
 
 /** How often the person weighs in: it sets the reminder and how often Today asks. */
-export type WeighInFrequency = 'daily' | 'weekly';
 
 /** Defaults and limits for reminders. */
 export class Reminders {
-  static readonly DEFAULT_WEIGH_IN_FREQUENCY: WeighInFrequency = 'weekly';
+  static readonly DEFAULT_WEIGH_IN_FREQUENCY: Frequency = Frequency.Weekly;
 
   static readonly DEFAULTS: ReminderConfig = {
     mealLog: { on: true, midday: 12 * 60 + 30, evening: 19 * 60 },
@@ -43,7 +43,12 @@ export class Reminders {
   static readonly STEP_MINUTES = 15;
 }
 
-export type ReminderKey = 'meals' | 'weighIn' | 'water' | 'mood';
+export enum ReminderKey {
+  Meals = 'meals',
+  WeighIn = 'weighIn',
+  Water = 'water',
+  Mood = 'mood',
+}
 
 export type PlannedReminder = {
   /** Stable, so re-syncing replaces rather than duplicates. */
@@ -68,7 +73,7 @@ const at = (minutes: number) => ({
 });
 
 export type PlanExtras = {
-  weighInFrequency?: WeighInFrequency;
+  weighInFrequency?: Frequency;
   medications?: readonly Medication[];
   /** Water reminders only make sense while water tracking is on. */
   trackWater?: boolean;
@@ -105,14 +110,14 @@ export function planReminders(
     plan.push(
       {
         id: 'tern-meals-midday',
-        key: 'meals',
+        key: ReminderKey.Meals,
         title: 'Meals',
         body: MEALS_BODY,
         ...at(c.mealLog.midday),
       },
       {
         id: 'tern-meals-evening',
-        key: 'meals',
+        key: ReminderKey.Meals,
         title: 'Meals',
         body: MEALS_BODY,
         ...at(c.mealLog.evening),
@@ -120,10 +125,10 @@ export function planReminders(
     );
   }
   if (trackWeight && c.weighIn.on) {
-    const daily = weighInFrequency === 'daily';
+    const daily = weighInFrequency === Frequency.Daily;
     plan.push({
       id: 'tern-weigh-in',
-      key: 'weighIn',
+      key: ReminderKey.WeighIn,
       title: daily ? 'Daily weigh-in' : 'Weekly weigh-in',
       body: daily
         ? 'Your daily check-in is here, whenever you’d like.'
@@ -136,7 +141,7 @@ export function planReminders(
     waterTimes(c.water).forEach((t, i) => {
       plan.push({
         id: waterReminderId(i),
-        key: 'water',
+        key: ReminderKey.Water,
         title: 'Water',
         body: 'A glass of water, if you feel like one.',
         ...at(t),
@@ -146,7 +151,7 @@ export function planReminders(
   if (trackMood && c.mood.on) {
     plan.push({
       id: 'tern-mood',
-      key: 'mood',
+      key: ReminderKey.Mood,
       title: 'Check-in',
       body: 'How are you feeling today? A quick check-in, if you like.',
       ...at(c.mood.at),
@@ -159,7 +164,7 @@ export function planReminders(
       key: 'medication',
       title: 'Medication',
       body: `Time for ${m.name}, whenever you’re ready.`,
-      ...(m.frequency === 'weekly' ? { weekday: m.weekday } : {}),
+      ...(m.frequency === Frequency.Weekly ? { weekday: m.weekday } : {}),
       ...at(m.at),
     });
   }
@@ -197,12 +202,12 @@ export const weekdayPlural = (weekday: number) => WEEKDAYS_PLURAL[weekday - 1];
 /** How each reminder's schedule reads in Settings. */
 export function describeReminders(
   c: ReminderConfig,
-  weighInFrequency: WeighInFrequency = Reminders.DEFAULT_WEIGH_IN_FREQUENCY,
+  weighInFrequency: Frequency = Reminders.DEFAULT_WEIGH_IN_FREQUENCY,
 ): Record<ReminderKey, string> {
   return {
     meals: `${formatMinutes(c.mealLog.midday)} and ${formatMinutes(c.mealLog.evening)}`,
     weighIn:
-      weighInFrequency === 'daily'
+      weighInFrequency === Frequency.Daily
         ? `Every day, ${formatMinutes(c.weighIn.at)}`
         : `${weekdayPlural(c.weighIn.weekday)}, ${formatMinutes(c.weighIn.at)}`,
     mood: `Every day, ${formatMinutes(c.mood.at)}`,

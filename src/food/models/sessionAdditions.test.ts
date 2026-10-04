@@ -1,7 +1,8 @@
 import type { FoodEntry } from './foodEntry';
 import { additionsSince, describeAdditions } from './sessionAdditions';
+import { Meal } from './foodEntry';
 
-const entry = (name: string, meal: FoodEntry['meal'] = 'lunch'): FoodEntry => ({
+const entry = (name: string, meal: FoodEntry['meal'] = Meal.Lunch): FoodEntry => ({
   id: `id-${name}`,
   name,
   meal,
@@ -16,7 +17,7 @@ const entry = (name: string, meal: FoodEntry['meal'] = 'lunch'): FoodEntry => ({
 
 describe('additionsSince', () => {
   it('returns only entries that were not in the baseline', () => {
-    const before = [entry('Oats', 'breakfast')];
+    const before = [entry('Oats', Meal.Breakfast)];
     const baseline = new Set(before.map((f) => f.id));
     const now = [...before, entry('Banana'), entry('Coffee')];
     expect(additionsSince(baseline, now).map((f) => f.name)).toEqual(['Banana', 'Coffee']);
@@ -46,7 +47,7 @@ describe('describeAdditions', () => {
   });
 
   it('falls back to a count when foods went to different meals', () => {
-    expect(describeAdditions([entry('Oats', 'breakfast'), entry('Soup', 'lunch')])).toBe(
+    expect(describeAdditions([entry('Oats', Meal.Breakfast), entry('Soup', Meal.Lunch)])).toBe(
       'Added 2 foods: Oats, Soup',
     );
   });

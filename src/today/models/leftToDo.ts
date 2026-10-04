@@ -1,6 +1,8 @@
 import { Meals } from '@food/models/meals';
 import type { FoodEntry } from '@food/models/foodEntry';
+import { Frequency } from '@shared/models/frequency';
 import { isLoggedToday, type WeightEntry } from '@weight/models/weightEntry';
+import { Meal } from '@food/models/foodEntry';
 
 export type LeftToDoItem =
   | { kind: 'meal'; meal: FoodEntry['meal']; title: string; sub: string }
@@ -10,7 +12,7 @@ export type LeftToDoItem =
   | { kind: 'medication'; medicationId: string; name: string; at: number };
 
 /** How often the person weighs in. */
-type WeighInPlan = { frequency: 'daily' | 'weekly'; weekday: number };
+type WeighInPlan = { frequency: Frequency; weekday: number };
 
 /** A medication still to be taken today. */
 type DueMedication = { id: string; name: string; at: number };
@@ -30,7 +32,7 @@ export function weighInDue(
   { frequency, weekday }: WeighInPlan,
 ): boolean {
   if (lastWeight && isLoggedToday(lastWeight.loggedAt, now)) return false;
-  if (frequency === 'daily') return true;
+  if (frequency === Frequency.Daily) return true;
   if (now.getDay() + 1 === weekday) return true;
   if (!lastWeight) return false;
   const daysSince = Math.round(
@@ -42,9 +44,9 @@ export function weighInDue(
 /** The meal it's most likely time for: breakfast before 11, lunch before 4, then dinner. */
 export function mealForTime(now: Date): FoodEntry['meal'] {
   const h = now.getHours();
-  if (h < 11) return 'breakfast';
-  if (h < 16) return 'lunch';
-  return 'dinner';
+  if (h < 11) return Meal.Breakfast;
+  if (h < 16) return Meal.Lunch;
+  return Meal.Dinner;
 }
 
 /**
@@ -93,7 +95,7 @@ export function leftToDo(
   }
 
   const weighIn =
-    options.weighIn === undefined ? { frequency: 'daily' as const, weekday: 1 } : options.weighIn;
+    options.weighIn === undefined ? { frequency: Frequency.Daily, weekday: 1 } : options.weighIn;
   if (weighIn && weighInDue(lastWeight, now, weighIn)) {
     items.push({ kind: 'weight' });
   }

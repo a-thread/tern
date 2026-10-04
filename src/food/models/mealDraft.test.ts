@@ -1,12 +1,13 @@
 import type { FoodEntry } from './foodEntry';
 import { addItem, draftFromMeal, emptyDraft, isDraftDirty, removeItemAt, scaledTotals, stepItemServings, stepScale, validateDraft, MealScale } from './mealDraft';
 import { itemsToEntries, scaleServings, snapshotItems, type SavedMeal, SavedMealLimits } from './savedMeals';
+import { Meal } from './foodEntry';
 
 const item = (name: string, servings = 1, calories = 100) => {
   const entry: FoodEntry = {
     id: name,
     name,
-    meal: 'breakfast',
+    meal: Meal.Breakfast,
     servings,
     servingLabel: '1 serving',
     calories,
@@ -27,10 +28,10 @@ describe('scaling a whole meal', () => {
 
   it('logs scaled entries and leaves the saved items alone', () => {
     const items = [item('Oats', 1, 150), item('Banana', 2, 100)];
-    const entries = itemsToEntries(items, 'lunch', 0.5);
+    const entries = itemsToEntries(items, Meal.Lunch, 0.5);
     expect(entries.map((e) => e.servings)).toEqual([0.5, 1]);
     expect(items.map((i) => i.servings)).toEqual([1, 2]);
-    expect(itemsToEntries(items, 'lunch').map((e) => e.servings)).toEqual([1, 2]);
+    expect(itemsToEntries(items, Meal.Lunch).map((e) => e.servings)).toEqual([1, 2]);
   });
 
   it('steps the scale by a quarter, within limits', () => {

@@ -2,9 +2,8 @@ import React from 'react';
 import { renderHook, act, waitFor } from '@testing-library/react-native';
 
 import {
-  BackendProvider,
   createMemoryBackend,
-} from '@shared/state/BackendContext';
+} from '@app/BackendContext';
 import { SettingsProvider, useSettings } from './SettingsContext';
 import { changesAnything } from '@settings/models/appSettings';
 
@@ -12,9 +11,7 @@ async function setup() {
   const backend = createMemoryBackend();
   const save = jest.spyOn(backend.settings, 'save');
   const wrapper = ({ children }: { children: React.ReactNode }) => (
-    <BackendProvider backend={backend}>
-      <SettingsProvider>{children}</SettingsProvider>
-    </BackendProvider>
+      <SettingsProvider repo={backend.settings}>{children}</SettingsProvider>
   );
   const hook = renderHook(() => useSettings(), { wrapper });
   await waitFor(() => expect(hook.result.current.ready).toBe(true));
@@ -97,9 +94,7 @@ describe('defaults and older saves', () => {
     const backend = createMemoryBackend();
     await backend.settings.save({ stepGoal: 9000, weightGoalLb: 163, weighInFrequency: 'daily' } as never);
     const wrapper = ({ children }: { children: React.ReactNode }) => (
-      <BackendProvider backend={backend}>
-        <SettingsProvider>{children}</SettingsProvider>
-      </BackendProvider>
+        <SettingsProvider repo={backend.settings}>{children}</SettingsProvider>
     );
     const { result } = renderHook(() => useSettings(), { wrapper });
     await waitFor(() => expect(result.current.ready).toBe(true));
@@ -115,9 +110,7 @@ describe('defaults and older saves', () => {
       medications: [{ id: 'm1', name: ' Iron ', at: 600, remind: true }, { name: 'broken' }],
     } as never);
     const wrapper = ({ children }: { children: React.ReactNode }) => (
-      <BackendProvider backend={backend}>
-        <SettingsProvider>{children}</SettingsProvider>
-      </BackendProvider>
+        <SettingsProvider repo={backend.settings}>{children}</SettingsProvider>
     );
     const { result } = renderHook(() => useSettings(), { wrapper });
     await waitFor(() => expect(result.current.ready).toBe(true));
@@ -138,9 +131,7 @@ describe('mood settings', () => {
     const backend = createMemoryBackend();
     await backend.settings.save({ trackMood: true } as never);
     const wrapper = ({ children }: { children: React.ReactNode }) => (
-      <BackendProvider backend={backend}>
-        <SettingsProvider>{children}</SettingsProvider>
-      </BackendProvider>
+        <SettingsProvider repo={backend.settings}>{children}</SettingsProvider>
     );
     const { result } = renderHook(() => useSettings(), { wrapper });
     await waitFor(() => expect(result.current.ready).toBe(true));
@@ -159,9 +150,7 @@ describe('water settings', () => {
     const backend = createMemoryBackend();
     await backend.settings.save({ trackWater: true, waterGoalOz: 9999 } as never);
     const wrapper = ({ children }: { children: React.ReactNode }) => (
-      <BackendProvider backend={backend}>
-        <SettingsProvider>{children}</SettingsProvider>
-      </BackendProvider>
+        <SettingsProvider repo={backend.settings}>{children}</SettingsProvider>
     );
     const { result } = renderHook(() => useSettings(), { wrapper });
     await waitFor(() => expect(result.current.ready).toBe(true));

@@ -1,15 +1,14 @@
 import React from 'react';
 import { renderHook, act, waitFor } from '@testing-library/react-native';
 
-import { BackendProvider, createMemoryBackend } from '@shared/state/BackendContext';
+import { createMemoryBackend } from '@app/BackendContext';
 import { SettingsProvider, useSettings } from '@settings/SettingsContext';
 import { useFoodDisplay } from './useFoodDisplay';
 
 async function setup() {
+  const backend = createMemoryBackend();
   const wrapper = ({ children }: { children: React.ReactNode }) => (
-    <BackendProvider backend={createMemoryBackend()}>
-      <SettingsProvider>{children}</SettingsProvider>
-    </BackendProvider>
+    <SettingsProvider repo={backend.settings}>{children}</SettingsProvider>
   );
   const hook = renderHook(() => ({ display: useFoodDisplay(), settings: useSettings() }), { wrapper });
   await waitFor(() => expect(hook.result.current.settings.ready).toBe(true));

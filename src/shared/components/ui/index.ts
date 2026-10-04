@@ -16,3 +16,4 @@ export { Toggle, ToggleRow } from './Toggle';
 export { Stepper } from './Stepper';
 export { SegmentedControl } from './SegmentedControl';
 export { LegendDot } from './LegendDot';
+export { PillToggle } from './PillToggle';

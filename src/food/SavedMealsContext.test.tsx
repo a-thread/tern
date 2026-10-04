@@ -2,21 +2,22 @@ import React from 'react';
 import { renderHook, act, waitFor } from '@testing-library/react-native';
 
 import {
-  BackendProvider,
   createMemoryBackend,
   type Backend,
-} from '@shared/state/BackendContext';
+} from '@app/BackendContext';
 import { dayKey } from '@shared/utils/date';
 import { WaypointsProvider, useWaypoints } from '@journey/WaypointsContext';
 import { FoodProvider, useFood } from './FoodContext';
 import { SavedMealsProvider, useSavedMeals } from './SavedMealsContext';
 import { itemsToEntries, snapshotItems } from '@food/models/savedMeals';
 import type { FoodEntry } from '@food/models/foodEntry';
+import { Meal } from '@food/models/foodEntry';
+import { WaypointSource } from '@journey/models/waypoint';
 
 const entry = (name: string, over: Partial<FoodEntry> = {}): FoodEntry => ({
   id: `id-${name}`,
   name,
-  meal: 'breakfast',
+  meal: Meal.Breakfast,
   servings: 1,
   servingLabel: '1 serving',
   calories: 100,
@@ -29,13 +30,11 @@ const entry = (name: string, over: Partial<FoodEntry> = {}): FoodEntry => ({
 
 async function setup(backend: Backend = createMemoryBackend()) {
   const wrapper = ({ children }: { children: React.ReactNode }) => (
-    <BackendProvider backend={backend}>
-      <FoodProvider>
-        <SavedMealsProvider>
-          <WaypointsProvider>{children}</WaypointsProvider>
-        </SavedMealsProvider>
-      </FoodProvider>
-    </BackendProvider>
+      <WaypointsProvider repo={backend.waypoints}>
+        <FoodProvider repo={backend.food}>
+          <SavedMealsProvider repo={backend.savedMeals}>{children}</SavedMealsProvider>
+        </FoodProvider>
+      </WaypointsProvider>
   );
   const hook = renderHook(
     () => ({ saved: useSavedMeals(), food: useFood(), points: useWaypoints() }),
@@ -157,15 +156,15 @@ describe('adding a saved meal to the log', () => {
     const meal = result.current.saved.meals[0];
 
     await act(async () => {
-      result.current.food.addFoodEntries(itemsToEntries(meal.items, 'lunch'));
+      result.current.food.addFoodEntries(itemsToEntries(meal.items, Meal.Lunch));
     });
-    const lunch = result.current.food.foodLog.filter((f) => f.meal === 'lunch');
+    const lunch = result.current.food.foodLog.filter((f) => f.meal === Meal.Lunch);
     expect(lunch.map((f) => [f.name, f.servingLabel, f.calories])).toEqual([
       ['Oats', '40 g', 150],
       ['Banana', '1 medium (118 g)', 105],
     ]);
     expect(new Set(lunch.map((f) => f.id)).size).toBe(2); // fresh ids
-    expect((await backend.food.load(dayKey())).filter((f) => f.meal === 'lunch')).toHaveLength(2);
+    expect((await backend.food.load(dayKey())).filter((f) => f.meal === Meal.Lunch)).toHaveLength(2);
   });
 
   it('earns the meals bonus once when a saved meal completes the day', async () => {
@@ -181,12 +180,12 @@ describe('adding a saved meal to the log', () => {
     });
     const meal = result.current.saved.meals[0];
     await act(async () => {
-      (['breakfast', 'lunch', 'dinner'] as const).forEach((m) =>
+      [Meal.Breakfast, Meal.Lunch, Meal.Dinner].forEach((m) =>
         result.current.food.addFoodEntries(itemsToEntries(meal.items, m)),
       );
     });
     expect(result.current.points.waypoints).toBe(before + 15);
-    expect(result.current.points.celebrations.filter((c) => c.source === 'meals')).toHaveLength(1);
+    expect(result.current.points.celebrations.filter((c) => c.source === WaypointSource.Meals)).toHaveLength(1);
   });
 });
 
@@ -334,9 +333,9 @@ describe('logging a saved meal at a different size', () => {
     });
     const meal = result.current.saved.meals[0];
     await act(async () => {
-      result.current.food.addFoodEntries(itemsToEntries(meal.items, 'lunch', 0.5));
+      result.current.food.addFoodEntries(itemsToEntries(meal.items, Meal.Lunch, 0.5));
     });
-    const lunch = result.current.food.foodLog.filter((f) => f.meal === 'lunch');
+    const lunch = result.current.food.foodLog.filter((f) => f.meal === Meal.Lunch);
     expect(lunch.map((f) => [f.name, f.servings])).toEqual([
       ['Oats', 0.5],
       ['Banana', 1],

@@ -1,5 +1,11 @@
 /** Which waypoint rule an award came from (matches `waypointRules` ids). */
-export type WaypointSource = 'steps' | 'meals' | 'rest' | 'water' | 'mood';
+export enum WaypointSource {
+  Steps = 'steps',
+  Meals = 'meals',
+  Rest = 'rest',
+  Water = 'water',
+  Mood = 'mood',
+}
 
 /** One award in the ledger. */
 export type LedgerEvent = { source: WaypointSource; day: string; points: number };
@@ -12,12 +18,12 @@ export function daysWithWaypoints(events: LedgerEvent[]): number {
 /** What earns waypoints. */
 export class WaypointRules {
   /** Waypoints are earned for behavior only — never for weight or calorie totals. */
-  static readonly ALL = [
-    { id: 'steps', label: 'Reaching your step goal', points: 40 },
-    { id: 'meals', label: 'Logging all meals', points: 15 },
-    { id: 'rest', label: 'Taking a rest day', points: 10 },
-    { id: 'water', label: 'Reaching your water goal', points: 10 },
-    { id: 'mood', label: 'Checking in on mood and stress', points: 10 },
+  static readonly ALL: { id: WaypointSource; label: string; points: number }[] = [
+    { id: WaypointSource.Steps, label: 'Reaching your step goal', points: 40 },
+    { id: WaypointSource.Meals, label: 'Logging all meals', points: 15 },
+    { id: WaypointSource.Rest, label: 'Taking a rest day', points: 10 },
+    { id: WaypointSource.Water, label: 'Reaching your water goal', points: 10 },
+    { id: WaypointSource.Mood, label: 'Checking in on mood and stress', points: 10 },
   ];
 }
 

@@ -1,5 +1,5 @@
 import { colors } from '@shared/theme';
-import { clampScore, type MoodMetric, MoodScale } from '@mood/models/moodEntry';
+import { clampScore, MoodScale, MoodMetric } from '@mood/models/moodEntry';
 
 const channels = (hex: string) =>
   [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16)) as [number, number, number];
@@ -42,5 +42,5 @@ export const scoreTint = (metric: MoodMetric, score: number) =>
  */
 export function smile(metric: MoodMetric, score: number): number {
   const t = (clampScore(score) - 5.5) / 4.5;
-  return metric === 'mood' ? t : -t;
+  return metric === MoodMetric.Mood ? t : -t;
 }

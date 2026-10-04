@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { useBackend } from '@shared/state/BackendContext';
+import type { SettingsRepository } from '@settings/data/settings.repository';
 import { createRequiredContext } from '@shared/state/createRequiredContext';
 import { useAuth } from '@shared/auth/AuthContext';
 import { useToast } from '@shared/state/ToastContext';
@@ -10,6 +10,7 @@ import { clampWaterGoal, WaterLimits } from '@water/models/waterEntry';
 import { mergeReminders, Reminders } from '@settings/models/reminderPlan';
 import { initialSettings, changesAnything } from '@settings/models/appSettings';
 import type { AppSettings } from '@settings/models/appSettings';
+import { Frequency } from '@shared/models/frequency';
 
 type SettingsContextValue = {
   settings: AppSettings;
@@ -23,8 +24,13 @@ const [SettingsContext, useSettings] = createRequiredContext<SettingsContextValu
 );
 export { useSettings };
 
-export function SettingsProvider({ children }: { children: React.ReactNode }) {
-  const { settings: repo } = useBackend();
+export function SettingsProvider({
+  repo,
+  children,
+}: {
+  repo: SettingsRepository;
+  children: React.ReactNode;
+}) {
   const toast = useToast();
   const [settings, setSettings] = useState<AppSettings>(initialSettings);
   const [ready, setReady] = useState(false);
@@ -50,8 +56,8 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
           // Older saves stored reminder times as text; fall back per field.
           reminders: mergeReminders(saved?.reminders),
           weighInFrequency:
-            saved?.weighInFrequency === 'daily'
-              ? 'daily'
+            saved?.weighInFrequency === Frequency.Daily
+              ? Frequency.Daily
               : Reminders.DEFAULT_WEIGH_IN_FREQUENCY,
           medications: mergeMedications(saved?.medications),
           trackWater: saved?.trackWater === true,

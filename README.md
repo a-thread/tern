@@ -100,7 +100,8 @@ One folder per domain under [src/](src). Each follows the same layout: pure rule
 ```text
 App.tsx          fonts, providers, navigation
 src/
-  shared/        theme tokens, UI components, charts, navigation, auth, backend context
+  app/           the composition root: backend, providers, navigators, settings menu
+  shared/        theme tokens, UI components, charts, route types, auth, helpers
   today/         the Today tab, steps, rest days
   food/          the Food tab, add-food flow, saved meals, search
   journey/       the waypoints ledger, map, milestones

@@ -1,5 +1,6 @@
 import { clampScore, isValidScore, scoreWord, type MoodEntry, MoodScale } from './moodEntry';
 import { average, entriesBetween, entryFor, seriesOf } from './moodStats';
+import { MoodMetric } from './moodEntry';
 
 const e = (day: string, mood: number, stress: number): MoodEntry => ({ day, mood, stress });
 
@@ -19,11 +20,11 @@ describe('scores', () => {
 
   it('has a word for every score of each metric', () => {
     for (let n = MoodScale.MIN; n <= MoodScale.MAX; n++) {
-      expect(scoreWord('mood', n)).toBeTruthy();
-      expect(scoreWord('stress', n)).toBeTruthy();
+      expect(scoreWord(MoodMetric.Mood, n)).toBeTruthy();
+      expect(scoreWord(MoodMetric.Stress, n)).toBeTruthy();
     }
-    expect(scoreWord('mood', 10)).toBe('Great');
-    expect(scoreWord('stress', 1)).toBe('Calm');
+    expect(scoreWord(MoodMetric.Mood, 10)).toBe('Great');
+    expect(scoreWord(MoodMetric.Stress, 1)).toBe('Calm');
   });
 });
 
@@ -44,13 +45,13 @@ describe('entries', () => {
 
   it('charts one metric in day order', () => {
     const sorted = entriesBetween(list, '2026-09-01', '2026-09-30');
-    expect(seriesOf(sorted, 'mood')).toEqual([5, 6, 7]);
-    expect(seriesOf(sorted, 'stress')).toEqual([6, 4, 3]);
+    expect(seriesOf(sorted, MoodMetric.Mood)).toEqual([5, 6, 7]);
+    expect(seriesOf(sorted, MoodMetric.Stress)).toEqual([6, 4, 3]);
   });
 
   it('averages to one decimal, or null with nothing', () => {
-    expect(average(list, 'mood')).toBe(6);
-    expect(average([e('a', 7, 3), e('b', 8, 4), e('c', 8, 4)], 'mood')).toBe(7.7);
-    expect(average([], 'stress')).toBeNull();
+    expect(average(list, MoodMetric.Mood)).toBe(6);
+    expect(average([e('a', 7, 3), e('b', 8, 4), e('c', 8, 4)], MoodMetric.Mood)).toBe(7.7);
+    expect(average([], MoodMetric.Stress)).toBeNull();
   });
 });

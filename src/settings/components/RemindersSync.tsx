@@ -2,7 +2,7 @@ import { useEffect, useRef } from 'react';
 
 import { useToast } from '@shared/state/ToastContext';
 import { useSettings } from '@settings/SettingsContext';
-import { syncReminders } from '@settings/data/reminders';
+import { syncReminders, SyncResult } from '@settings/data/reminders';
 
 /** Keeps the device's scheduled reminders in step with the Settings toggles. Renders nothing. */
 export function RemindersSync() {
@@ -47,7 +47,7 @@ export function RemindersSync() {
       trackWeight,
     })
       .then((result) => {
-        if (result === 'denied' && anyOn && !firstRun) {
+        if (result === SyncResult.Denied && anyOn && !firstRun) {
           toast.show(
             'Notifications are off for Tern — turn them on in system settings.',
           );

@@ -4,31 +4,34 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 
 import { colors, font, radius, space } from '@shared/theme';
-import { TrendRanges, type TrendRange } from '@shared/models/trendRange';
+import { TrendRanges, TrendRange } from '@shared/models/trendRange';
 import { Card, GroupLabel, PushHeader, Row, FootNote, LegendDot, SegmentedControl } from '@shared/components/ui';
-import { StepBars, ConsistencyGrid } from '@shared/components/charts';
+import { StepBars } from '@shared/components/charts/StepBars';
+import { ConsistencyGrid } from '@shared/components/charts/ConsistencyGrid';
 import { useActivity } from '@today/ActivityContext';
 import { weekdayName } from '@shared/utils/date';
 import { useSettings } from '@settings/SettingsContext';
 import { bucketSteps } from '@trends/models/stepBars';
 import { longestProtectedRun, summarizeSteps } from '@trends/models/stepsSummary';
 import type { TrendsStackParamList } from '@trends/navigation';
+import { StepsStatus } from '@today/data/steps.repository';
+import { DayState } from '@shared/models/dayState';
 
 type Props = NativeStackScreenProps<TrendsStackParamList, 'StepsDetail'>;
 
 
 export default function StepsDetailScreen({ navigation }: Props) {
   const insets = useSafeAreaInsets();
-  const [range, setRange] = useState<TrendRange>('Month');
+  const [range, setRange] = useState<TrendRange>(TrendRange.Month);
   const { settings } = useSettings();
 
   const { days, status } = useActivity();
-  const connected = status === 'connected';
+  const connected = status === StepsStatus.Connected;
 
   const inRange = days.slice(-TrendRanges.DAYS[range]);
   const { average } = summarizeSteps(days, TrendRanges.DAYS[range]);
-  const goalDays = inRange.filter((d) => d.state === 'goal').length;
-  const restDays = inRange.filter((d) => d.state === 'rest').length;
+  const goalDays = inRange.filter((d) => d.state === DayState.Goal).length;
+  const restDays = inRange.filter((d) => d.state === DayState.Rest).length;
   const longestRun = longestProtectedRun(inRange.map((d) => d.state));
 
   const last7 = days.slice(-7);
@@ -43,7 +46,7 @@ export default function StepsDetailScreen({ navigation }: Props) {
     null,
   );
   const rangeLabel =
-    range === 'Week' ? 'this week' : range === 'Month' ? 'this month' : 'over 6 months';
+    range === TrendRange.Week ? 'this week' : range === TrendRange.Month ? 'this month' : 'over 6 months';
 
   return (
     <View
@@ -69,7 +72,7 @@ export default function StepsDetailScreen({ navigation }: Props) {
           </Text>
           <Text style={s.metricSub}>daily average {rangeLabel}</Text>
           {connected ? (
-            <StepBars days={bars} goal={settings.stepGoal} height={88} showLabels={range !== 'Month'} />
+            <StepBars days={bars} goal={settings.stepGoal} height={88} showLabels={range !== TrendRange.Month} />
           ) : (
             <Text style={s.metricSub}>
               Connect step data in Settings → Health data to see this.
@@ -86,7 +89,7 @@ export default function StepsDetailScreen({ navigation }: Props) {
         <GroupLabel>Consistency</GroupLabel>
         <Card>
           <Text style={s.metricSub}>
-            {range === '6 months' ? 'Last 6 months' : `Last ${TrendRanges.DAYS[range]} days`}
+            {range === TrendRange.SixMonths ? 'Last 6 months' : `Last ${TrendRanges.DAYS[range]} days`}
           </Text>
           <ConsistencyGrid days={inRange.map((d) => d.state)} />
           <View style={s.legend}>

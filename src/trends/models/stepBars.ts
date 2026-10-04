@@ -1,6 +1,7 @@
-import type { DayRecord, DayState } from '@today/models/dayRecord';
+import { DayRecord } from '@today/models/dayRecord';
+import { DayState } from '@shared/models/dayState';
 import { monthName, weekdayLetter } from '@shared/utils/date';
-import { TrendRanges, type TrendRange } from '@shared/models/trendRange';
+import { TrendRanges, TrendRange } from '@shared/models/trendRange';
 
 export type StepBar = { label: string; value: number; state: DayState };
 
@@ -9,9 +10,9 @@ export type StepBar = { label: string; value: number; state: DayState };
  * for six months. Weekly bars are labelled when a new month begins.
  */
 export function bucketSteps(days: DayRecord[], range: TrendRange): StepBar[] {
-  if (range === 'Week' || range === 'Month') {
+  if (range === TrendRange.Week || range === TrendRange.Month) {
     return days.slice(-TrendRanges.DAYS[range]).map((d) => ({
-      label: range === 'Week' ? weekdayLetter(d.day) : '',
+      label: range === TrendRange.Week ? weekdayLetter(d.day) : '',
       value: d.steps,
       state: d.state,
     }));
@@ -38,7 +39,7 @@ export function bucketSteps(days: DayRecord[], range: TrendRange): StepBar[] {
       label,
       value,
       state:
-        withData.length === 0 ? 'none' : value >= goal ? 'goal' : 'partial',
+        withData.length === 0 ? DayState.None : value >= goal ? DayState.Goal : DayState.Partial,
     };
   });
 }

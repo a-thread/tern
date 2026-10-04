@@ -1,5 +1,6 @@
 import { cleanMedName, mergeMedications, newMedication, validateMedName, type Medication, MedicationLimits } from './medication';
 import { dueMeds, isScheduledOn, takenMeds } from './schedule';
+import { Frequency } from '@shared/models/frequency';
 
 const med = (
   id: string,
@@ -11,7 +12,7 @@ const med = (
   id,
   name,
   at,
-  frequency: 'daily',
+  frequency: Frequency.Daily,
   weekday: 1,
   remind,
   ...schedule,
@@ -69,7 +70,7 @@ describe('dueMeds / takenMeds', () => {
   });
 
   it('a weekly medication is only due on its weekday', () => {
-    const weekly = med('w', 'Injection', 600, false, { frequency: 'weekly', weekday: 4 });
+    const weekly = med('w', 'Injection', 600, false, { frequency: Frequency.Weekly, weekday: 4 });
     const all = [med('d', 'Daily pill'), weekly];
     expect(dueMeds(all, new Set(), 4).map((m) => m.id)).toEqual(['d', 'w']);
     expect(dueMeds(all, new Set(), 5).map((m) => m.id)).toEqual(['d']);
@@ -80,7 +81,7 @@ describe('dueMeds / takenMeds', () => {
 describe('isScheduledOn', () => {
   it('daily is every day, weekly only on its weekday', () => {
     expect(isScheduledOn(med('a', 'A'), 6)).toBe(true);
-    const weekly = med('b', 'B', 480, false, { frequency: 'weekly', weekday: 2 });
+    const weekly = med('b', 'B', 480, false, { frequency: Frequency.Weekly, weekday: 2 });
     expect(isScheduledOn(weekly, 2)).toBe(true);
     expect(isScheduledOn(weekly, 3)).toBe(false);
   });

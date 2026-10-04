@@ -1,5 +1,5 @@
 import { addDays, dayKey, parseDayKey } from '@shared/utils/date';
-import type { StepsRepository, StepsStatus } from './steps.repository';
+import { StepsRepository, StepsStatus } from './steps.repository';
 
 /**
  * Steps from Android Health Connect.
@@ -29,18 +29,18 @@ export function createHealthConnectStepsRepository(): StepsRepository | null {
   const status = async (): Promise<StepsStatus> => {
     try {
       const sdk = await hc.getSdkStatus();
-      if (sdk !== hc.SdkAvailabilityStatus.SDK_AVAILABLE) return 'unavailable';
+      if (sdk !== hc.SdkAvailabilityStatus.SDK_AVAILABLE) return StepsStatus.Unavailable;
       await hc.initialize();
       const granted: { accessType: string; recordType: string }[] =
         await hc.getGrantedPermissions();
       return granted.some(
         (p) => p.recordType === 'Steps' && p.accessType === 'read',
       )
-        ? 'connected'
-        : 'needs-permission';
+        ? StepsStatus.Connected
+        : StepsStatus.NeedsPermission;
     } catch (e) {
       console.warn('Health Connect status check failed', e);
-      return 'unavailable';
+      return StepsStatus.Unavailable;
     }
   };
 
@@ -56,7 +56,7 @@ export function createHealthConnectStepsRepository(): StepsRepository | null {
       return status();
     },
     getRange: async (from, to) => {
-      if ((await status()) !== 'connected') return {};
+      if ((await status()) !== StepsStatus.Connected) return {};
       // Aggregation (unlike raw records) de-duplicates overlapping sources.
       const rows: {
         startTime: string;

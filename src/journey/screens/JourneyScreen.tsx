@@ -13,11 +13,11 @@ import {
   ProgressBar,
   FootNote,
 } from '@shared/components/ui';
-import { JourneyRoute } from '@shared/components/charts';
+import { JourneyRoute } from '@shared/components/charts/JourneyRoute';
 import { useReplayOnFocus } from '@shared/hooks/useReplayOnFocus';
 import { AnimatedNumber } from '@shared/components/AnimatedNumber';
 import { formatShortDate, monthName } from '@shared/utils/date';
-import { daysWithWaypoints, WaypointRules } from '@journey/models/waypoint';
+import { daysWithWaypoints, WaypointRules, WaypointSource } from '@journey/models/waypoint';
 import { migrationProgress, milestonesFor } from '@journey/models/milestone';
 import { useSettings } from '@settings/SettingsContext';
 import { useWaypoints } from '@journey/WaypointsContext';
@@ -162,8 +162,8 @@ export default function JourneyScreen() {
           {WaypointRules.ALL
             .filter(
               (rule) =>
-                (rule.id !== 'water' || settings.trackWater) &&
-                (rule.id !== 'mood' || settings.trackMood),
+                (rule.id !== WaypointSource.Water || settings.trackWater) &&
+                (rule.id !== WaypointSource.Mood || settings.trackMood),
             )
             .map((rule) => (
             <Row
@@ -172,13 +172,13 @@ export default function JourneyScreen() {
               icon={
                 <IconBadge
                   bg={
-                    rule.id === 'steps'
+                    rule.id === WaypointSource.Steps
                       ? colors.glacierTint
-                      : rule.id === 'meals'
+                      : rule.id === WaypointSource.Meals
                         ? colors.kelpTint
-                        : rule.id === 'water'
+                        : rule.id === WaypointSource.Water
                           ? colors.waterTint
-                          : rule.id === 'mood'
+                          : rule.id === WaypointSource.Mood
                             ? colors.violetTint
                             : colors.driftwoodTint
                   }
@@ -188,13 +188,13 @@ export default function JourneyScreen() {
                       s.rulePoints,
                       {
                         color:
-                          rule.id === 'steps'
+                          rule.id === WaypointSource.Steps
                             ? colors.glacierDeep
-                            : rule.id === 'meals'
+                            : rule.id === WaypointSource.Meals
                               ? colors.kelp
-                              : rule.id === 'water'
+                              : rule.id === WaypointSource.Water
                                 ? colors.water
-                                : rule.id === 'mood'
+                                : rule.id === WaypointSource.Mood
                                   ? colors.violet
                                   : colors.driftwood,
                       },

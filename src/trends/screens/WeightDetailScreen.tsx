@@ -6,7 +6,7 @@ import Svg, { Path } from 'react-native-svg';
 
 import { colors, font, space } from '@shared/theme';
 import { Card, GroupLabel, PushHeader, Row, Insight, FootNote, LegendDot, SegmentedControl } from '@shared/components/ui';
-import { WeightTrend } from '@shared/components/charts';
+import { WeightTrend } from '@shared/components/charts/WeightTrend';
 import { useWeight } from '@weight/WeightContext';
 import { useSettings } from '@settings/SettingsContext';
 import { useUnits } from '@settings/hooks/useUnits';
