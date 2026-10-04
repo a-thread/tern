@@ -40,14 +40,15 @@ describe('waypoints meals bonus (reactive to foodLog)', () => {
     const initial = result.current.waypoints;
     const lunch = result.current.foodLog.filter((f) => f.meal === Meal.Lunch);
     await act(async () => lunch.forEach((f) => result.current.removeFoodEntry(f.id)));
-    expect(result.current.waypoints).toBe(initial - 15);
+    expect(result.current.waypoints).toBe(initial - 15 - 5); // the bonus, and lunch's own award
 
+    // "Nothing today" completes the day again, but lunch's own award is for food logged.
     await act(async () => result.current.setMealSkipped(Meal.Lunch, true));
-    await waitFor(() => expect(result.current.waypoints).toBe(initial));
+    await waitFor(() => expect(result.current.waypoints).toBe(initial - 5));
 
     await act(async () => result.current.addFoodEntry(lunch[0])); // a fresh id is given on add
     await waitFor(() => expect(result.current.skippedMeals).toEqual([]));
-    expect(result.current.waypoints).toBe(initial); // still covered, by food now
+    expect(result.current.waypoints).toBe(initial); // covered by food now, and lunch pays again
   });
 
   it('starts with the seed log already covering all meals, so no double-award on mount', async () => {
@@ -69,7 +70,7 @@ describe('waypoints meals bonus (reactive to foodLog)', () => {
         result.current.removeFoodEntry(entry.id),
       );
     });
-    expect(result.current.waypoints).toBe(initial - 15);
+    expect(result.current.waypoints).toBe(initial - 15 - 5);
 
     await act(async () => {
       result.current.addFoodEntry({
@@ -123,7 +124,7 @@ describe('celebration queue', () => {
     expect(result.current.pendingPoints).toBe(0);
   });
 
-  it('celebrates the meals bonus when it is earned, and cancels it if it is taken back before playing', async () => {
+  it('celebrates the meals bonus and the meal when earned, and cancels them if taken back before playing', async () => {
     const { result } = await setup();
     const dinners = result.current.foodLog.filter((f) => f.meal === Meal.Dinner);
 
@@ -131,8 +132,7 @@ describe('celebration queue', () => {
     expect(result.current.celebrations).toHaveLength(0); // a take-back is quiet
 
     await act(async () => result.current.addFoodEntry(newEntry(Meal.Dinner)));
-    expect(result.current.celebrations).toHaveLength(1);
-    expect(result.current.celebrations[0].source).toBe('meals');
+    expect(result.current.celebrations.map((c) => c.source).sort()).toEqual(['dinner', 'meals']);
 
     const added = result.current.foodLog.find((f) => f.name === 'Test')!;
     await act(async () => result.current.removeFoodEntry(added.id));
@@ -162,7 +162,7 @@ describe('waypoints ledger', () => {
     const dinners = result.current.foodLog.filter((f) => f.meal === Meal.Dinner);
     await act(async () => dinners.forEach((d) => result.current.removeFoodEntry(d.id)));
     const after = await backend.waypoints.load(day);
-    expect(after.total).toBe(INITIAL_WAYPOINTS + 40 - 15);
-    expect(after.todaySources).toEqual(['steps']);
+    expect(after.total).toBe(INITIAL_WAYPOINTS + 40 - 15 - 5);
+    expect([...after.todaySources].sort()).toEqual(['breakfast', 'lunch', 'steps', 'weight']);
   });
 });

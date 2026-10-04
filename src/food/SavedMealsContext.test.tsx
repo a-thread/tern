@@ -184,7 +184,8 @@ describe('adding a saved meal to the log', () => {
         result.current.food.addFoodEntries(itemsToEntries(meal.items, m)),
       );
     });
-    expect(result.current.points.waypoints).toBe(before + 15);
+    // The all-meals bonus, once, plus 5 for each meal that has food in it.
+    expect(result.current.points.waypoints).toBe(before + 15 + 3 * 5);
     expect(result.current.points.celebrations.filter((c) => c.source === WaypointSource.Meals)).toHaveLength(1);
   });
 });

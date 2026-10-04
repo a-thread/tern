@@ -23,6 +23,8 @@ export function ConsistencyGrid({ days }: { days: DayBar['state'][] }) {
                     borderWidth: 1,
                     borderColor: colors.driftwood,
                   }
+                : state === DayState.Frozen
+                ? { backgroundColor: colors.glacierTint, borderWidth: 1, borderColor: colors.glacierDeep }
                 : { backgroundColor: colors.doveTint };
         return <View key={i} style={[cs.dot, style]} />;
       })}

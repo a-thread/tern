@@ -46,12 +46,12 @@ const PROVIDERS: readonly Entry[] = [
   },
   {
     name: 'weight',
-    needs: [],
+    needs: ['settings', 'waypoints'],
     wrap: (c, b) => <WeightProvider repo={b.weight}>{c}</WeightProvider>,
   },
   {
     name: 'medication',
-    needs: ['settings'],
+    needs: ['settings', 'waypoints'],
     wrap: (c, b) => <MedicationProvider repo={b.medication}>{c}</MedicationProvider>,
   },
   {

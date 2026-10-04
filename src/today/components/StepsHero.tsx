@@ -23,7 +23,7 @@ export function StepsHero({
 }) {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const { settings } = useSettings();
-  const { todaySteps, streak, status } = useActivity();
+  const { todaySteps, streak, freezes, status } = useActivity();
   const greeting = greetingFor();
   const progress = todaySteps / settings.stepGoal;
   const remaining = Math.max(settings.stepGoal - todaySteps, 0);
@@ -36,13 +36,24 @@ export function StepsHero({
           <Text style={s.greeting}>
             {settings.firstName ? `${greeting}, ${settings.firstName}` : greeting}
           </Text>
-          {streak > 0 ? (
-            <View style={s.streakChip}>
-              <Text style={s.streakText}>
-                ☀ {streak} {streak === 1 ? 'day' : 'days'}
-              </Text>
-            </View>
-          ) : null}
+          <View style={s.chips}>
+            {streak > 0 ? (
+              <View style={s.streakChip}>
+                <Text style={s.streakText}>
+                  ☀ {streak} {streak === 1 ? 'day' : 'days'}
+                </Text>
+              </View>
+            ) : null}
+            {freezes > 0 ? (
+              <View
+                style={s.streakChip}
+                accessible
+                accessibilityLabel={`${freezes} streak ${freezes === 1 ? 'freeze' : 'freezes'}`}
+              >
+                <Text style={s.streakText}>❄ {freezes}</Text>
+              </View>
+            ) : null}
+          </View>
         </View>
 
         <FlightPath progress={progress} replayKey={replayKey} />
@@ -77,6 +88,7 @@ const s = StyleSheet.create({
     marginBottom: 6,
   },
   greeting: { fontFamily: font.body, fontSize: 11.5, color: '#E4DCE4' },
+  chips: { flexDirection: 'row', gap: 6 },
   streakChip: {
     backgroundColor: 'rgba(0,0,0,0.22)',
     borderRadius: 13,

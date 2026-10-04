@@ -8,6 +8,7 @@ import {
 import { ToastProvider } from '@shared/state/ToastContext';
 import { dayKey, parseDayKey } from '@shared/utils/date';
 import { SettingsProvider, useSettings } from '@settings/SettingsContext';
+import { WaypointsProvider, useWaypoints } from '@journey/WaypointsContext';
 import { MedicationProvider, useMedication } from './MedicationContext';
 import { Frequency } from '@shared/models/frequency';
 import { newMedication } from '@medication/models/medication';
@@ -20,14 +21,20 @@ async function setup(backend: Backend = createMemoryBackend()) {
   const wrapper = ({ children }: { children: React.ReactNode }) => (
       <ToastProvider>
         <SettingsProvider repo={backend.settings}>
-          <MedicationProvider repo={backend.medication}>{children}</MedicationProvider>
+          <WaypointsProvider repo={backend.waypoints}>
+            <MedicationProvider repo={backend.medication}>{children}</MedicationProvider>
+          </WaypointsProvider>
         </SettingsProvider>
       </ToastProvider>
   );
-  const hook = renderHook(() => ({ meds: useMedication(), settings: useSettings() }), { wrapper });
+  const hook = renderHook(
+    () => ({ meds: useMedication(), settings: useSettings(), points: useWaypoints() }),
+    { wrapper },
+  );
   await waitFor(() => {
     expect(hook.result.current.meds.ready).toBe(true);
     expect(hook.result.current.settings.ready).toBe(true);
+    expect(hook.result.current.points.ready).toBe(true);
   });
   return { ...hook, backend };
 }
@@ -44,6 +51,27 @@ const weekdayToday = parseDayKey(today).getDay() + 1; // 1 = Sunday … 7 = Satu
 const otherWeekday = (weekdayToday % 7) + 1;
 
 describe('MedicationProvider', () => {
+  it('earns a waypoint once everything due is taken, and takes it back if one is unmarked', async () => {
+    const { result } = await setup();
+    await track(result, vitaminD, iron);
+    const before = result.current.points.waypoints;
+
+    await act(async () => result.current.meds.setTaken('med-d', true));
+    expect(result.current.points.waypoints).toBe(before); // one still to take
+
+    await act(async () => result.current.meds.setTaken('med-iron', true));
+    await waitFor(() => expect(result.current.points.waypoints).toBe(before + 10));
+
+    await act(async () => result.current.meds.setTaken('med-iron', false));
+    await waitFor(() => expect(result.current.points.waypoints).toBe(before));
+  });
+
+  it('earns nothing with no medication tracked', async () => {
+    const { result } = await setup();
+    expect(result.current.meds.medications).toEqual([]);
+    expect(result.current.points.events.some((e) => e.source === 'medication')).toBe(false);
+  });
+
   it('a weekly medication is due only on its weekday', async () => {
     const { result } = await setup();
     const onToday = { ...newMedication('Weekly today', 'w1'), frequency: Frequency.Weekly, weekday: weekdayToday };

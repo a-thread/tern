@@ -28,7 +28,8 @@ These are deliberate and worth preserving as the app grows:
 2. **No compensatory mechanics.** Exercise never "earns back" food. There is no
    equivalent of banking steps for a treat.
 3. **Rest days are first-class.** They hold the streak (don't increment it), earn
-   waypoints, and render in driftwood — visually distinct from a missed day.
+   waypoints, and render in driftwood — visually distinct from a missed day. A streak
+   freeze does the same job for a day a rest day couldn't cover, and renders in blue.
 4. **Weight is shown as a trend with a visible fluctuation band.** Day-to-day deltas are
    deliberately de-emphasized because they're mostly water.
 5. **Food color is information, not judgment.** It maps to NOVA processing level, always
@@ -42,3 +43,33 @@ returns that rest day to the week's allowance. Skipping a meal with "nothing tod
 counts exactly as logging it, so a complete log never means eating more than you wanted.
 Nothing about these rules rewards under-reporting, and there is no leaderboard — the only
 person a padded ledger fools is the person keeping it.
+
+### What earns waypoints
+
+Every rule is for something done, never for a number. The amounts live in
+[`WaypointRules`](../src/journey/models/waypoint.ts), and the database check in the newest
+`waypoint_events_points_check` migration has to agree with them (a test compares the two).
+
+| Source | Waypoints | For |
+| --- | --- | --- |
+| Steps | 40 | reaching the step goal |
+| All meals | 15 | every core meal logged or marked "nothing today" |
+| Each meal | 5 each | food logged in breakfast, lunch and dinner. A skipped meal doesn't pay this one |
+| Rest day | 10 | taking one (a goal day is never also a rest day) |
+| Water, mood | 10 each | reaching the water goal, checking in |
+| Medication | 10 | every dose due today taken |
+| Weigh-in | 5 | logging one, whatever it says |
+| Streak milestone | 25 – 500 | once, on the day a streak reaches 7, 14, 30, 60, 100, 200 and 365 days |
+
+### Streak freezes
+
+A streak freeze covers one day that would otherwise break a streak. Rest days still come
+first: a day under the goal that a rest day holds never uses one. A freeze is earned each
+time a streak reaches a multiple of 7 days, up to two held, and is used automatically for
+the next day that would break it. A frozen day holds the streak without adding to it, and
+shows in blue.
+
+Freezes aren't stored. They're worked out by replaying the day record
+([`withFreezes`](../src/today/models/dayRecord.ts)), so the same history always gives the same
+answer and changing a goal or a rest day stays consistent. Earning one costs nothing, and
+nothing buys one, so there's no way to spend points to protect a streak.

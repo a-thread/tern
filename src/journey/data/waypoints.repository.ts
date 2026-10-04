@@ -37,11 +37,19 @@ function syntheticHistory(total: number, today: string): LedgerEvent[] {
 /**
  * Local-mode ledger. `history` is the total from before today; `today` lists
  * awards already made on whichever day is loaded first (the seed food log
- * already covers every meal, so the meals bonus starts out earned).
+ * already covers every meal and has a weigh-in today, so those awards start out earned).
  */
+const SEEDED_TODAY = [
+  WaypointSource.Meals,
+  WaypointSource.Breakfast,
+  WaypointSource.Lunch,
+  WaypointSource.Dinner,
+  WaypointSource.Weight,
+];
+
 export function createMemoryWaypointsRepository(
-  history: number = INITIAL_WAYPOINTS - pointsFor(WaypointSource.Meals),
-  today: WaypointSource[] = [WaypointSource.Meals],
+  history: number = INITIAL_WAYPOINTS - SEEDED_TODAY.reduce((sum, s) => sum + pointsFor(s), 0),
+  today: WaypointSource[] = SEEDED_TODAY,
 ): WaypointsRepository {
   let events: LedgerEvent[] = [];
   let seeded = false;

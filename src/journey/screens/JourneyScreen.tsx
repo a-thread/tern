@@ -17,12 +17,27 @@ import { JourneyRoute } from '@shared/components/charts/JourneyRoute';
 import { useReplayOnFocus } from '@shared/hooks/useReplayOnFocus';
 import { AnimatedNumber } from '@shared/components/AnimatedNumber';
 import { formatShortDate, monthName } from '@shared/utils/date';
-import { daysWithWaypoints, WaypointRules, WaypointSource } from '@journey/models/waypoint';
+import { daysWithWaypoints, listedRules, WaypointSource } from '@journey/models/waypoint';
 import { migrationProgress, milestonesFor } from '@journey/models/milestone';
 import { useSettings } from '@settings/SettingsContext';
 import { useWaypoints } from '@journey/WaypointsContext';
 
 const MILESTONE_COLORS = [colors.glacier, colors.violet, colors.aurora];
+
+/** The badge colors for each way of earning, matching the feature it comes from. */
+const RULE_STYLE: Record<WaypointSource, { bg: string; fg: string }> = {
+  [WaypointSource.Steps]: { bg: colors.glacierTint, fg: colors.glacierDeep },
+  [WaypointSource.Meals]: { bg: colors.kelpTint, fg: colors.kelp },
+  [WaypointSource.Breakfast]: { bg: colors.kelpTint, fg: colors.kelp },
+  [WaypointSource.Lunch]: { bg: colors.kelpTint, fg: colors.kelp },
+  [WaypointSource.Dinner]: { bg: colors.kelpTint, fg: colors.kelp },
+  [WaypointSource.Water]: { bg: colors.waterTint, fg: colors.water },
+  [WaypointSource.Weight]: { bg: colors.waterTint, fg: colors.water },
+  [WaypointSource.Mood]: { bg: colors.violetTint, fg: colors.violet },
+  [WaypointSource.Medication]: { bg: colors.coralTint, fg: colors.coral },
+  [WaypointSource.Rest]: { bg: colors.driftwoodTint, fg: colors.driftwood },
+  [WaypointSource.Streak]: { bg: colors.sunTint, fg: colors.sunDeep },
+};
 
 export default function JourneyScreen() {
   const insets = useSafeAreaInsets();
@@ -159,53 +174,28 @@ export default function JourneyScreen() {
 
         <GroupLabel>How waypoints are earned</GroupLabel>
         <Group>
-          {WaypointRules.ALL
+          {listedRules()
             .filter(
               (rule) =>
                 (rule.id !== WaypointSource.Water || settings.trackWater) &&
-                (rule.id !== WaypointSource.Mood || settings.trackMood),
+                (rule.id !== WaypointSource.Mood || settings.trackMood) &&
+                (rule.id !== WaypointSource.Weight || settings.trackWeight) &&
+                (rule.id !== WaypointSource.Medication || settings.medications.length > 0),
             )
             .map((rule) => (
-            <Row
-              key={rule.id}
-              title={rule.label}
-              icon={
-                <IconBadge
-                  bg={
-                    rule.id === WaypointSource.Steps
-                      ? colors.glacierTint
-                      : rule.id === WaypointSource.Meals
-                        ? colors.kelpTint
-                        : rule.id === WaypointSource.Water
-                          ? colors.waterTint
-                          : rule.id === WaypointSource.Mood
-                            ? colors.violetTint
-                            : colors.driftwoodTint
-                  }
-                >
-                  <Text
-                    style={[
-                      s.rulePoints,
-                      {
-                        color:
-                          rule.id === WaypointSource.Steps
-                            ? colors.glacierDeep
-                            : rule.id === WaypointSource.Meals
-                              ? colors.kelp
-                              : rule.id === WaypointSource.Water
-                                ? colors.water
-                                : rule.id === WaypointSource.Mood
-                                  ? colors.violet
-                                  : colors.driftwood,
-                      },
-                    ]}
-                  >
-                    {rule.points}
-                  </Text>
-                </IconBadge>
-              }
-            />
-          ))}
+              <Row
+                key={rule.id}
+                title={rule.label}
+                icon={
+                  <IconBadge bg={RULE_STYLE[rule.id].bg}>
+                    <Text style={[s.rulePoints, { color: RULE_STYLE[rule.id].fg }]}>
+                      {rule.points}
+                      {rule.id === WaypointSource.Streak ? '+' : ''}
+                    </Text>
+                  </IconBadge>
+                }
+              />
+            ))}
         </Group>
 
         <FootNote>

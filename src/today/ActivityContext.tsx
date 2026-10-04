@@ -8,12 +8,13 @@ import { usePersist } from '@shared/hooks/usePersist';
 import { addDays } from '@shared/utils/date';
 import { useSettings } from '@settings/SettingsContext';
 import { useAward } from '@journey/hooks/useAward';
-import { buildDays, computeStreak, restDaysLeft, weekOf, type DayRecord } from '@today/models/dayRecord';
+import { buildDays, restDaysLeft, weekOf, withFreezes, type DayRecord } from '@today/models/dayRecord';
 import { goalFor } from '@today/models/stepGoal';
 import { StepsRepository, StepsStatus } from '@today/data/steps.repository';
 import type { RestDaysRepository } from '@today/data/restDays.repository';
 import { sameDays, sameSteps } from '@today/utils/sameData';
-import { WaypointSource } from '@journey/models/waypoint';
+import { streakBonus, WaypointSource } from '@journey/models/waypoint';
+import { DayState } from '@shared/models/dayState';
 
 /** How much history is read: enough for the 6-month views. */
 export const HISTORY_DAYS = 180;
@@ -33,6 +34,8 @@ type ActivityContextValue = {
   /** Monday to Sunday of this week. */
   week: DayRecord[];
   streak: number;
+  /** Streak freezes held: each covers a day that would otherwise break the streak. */
+  freezes: number;
   /** Rest days left in this week's allowance. */
   restLeft: number;
   /** Whether the user chose today as a rest day. */
@@ -119,7 +122,7 @@ export function ActivityProvider({
     [readSteps, rawStepsByDay],
   );
 
-  const days = useMemo(
+  const recorded = useMemo(
     () =>
       buildDays({
         stepsByDay,
@@ -142,8 +145,10 @@ export function ActivityProvider({
     ],
   );
 
+  // Freezes are played forward through the record: a day that would have broken the streak
+  // is marked frozen when one was there to spend.
+  const { days, streak, freezes } = useMemo(() => withFreezes(recorded), [recorded]);
   const week = useMemo(() => weekOf(days, today), [days, today]);
-  const streak = useMemo(() => computeStreak(days), [days]);
   const restLeft = restDaysLeft(days, today, settings.restDaysPerWeek);
   const todaySteps = stepsByDay[today] ?? 0;
   const todayIsRest = restSet.has(today);
@@ -165,6 +170,19 @@ export function ActivityProvider({
   // taking one "just in case" is never better than waiting to see.
   const restCounts = todayIsRest && !(stepsReadable && goalReachedToday);
   useAward(WaypointSource.Rest, restCounts, ready);
+
+  // A streak milestone pays a one-time bonus on the day the streak gets there, so it needs
+  // today's goal reached (a streak of 7 that ended yesterday was paid yesterday). If today's
+  // goal moves out of reach the streak drops a day, and the bonus is taken back at the amount
+  // it was given: the milestone the streak would have reached with today.
+  const reachedToday = days[days.length - 1]?.state === DayState.Goal;
+  const bonus = streakBonus(streak);
+  useAward(
+    WaypointSource.Streak,
+    reachedToday && bonus > 0,
+    ready && stepsReadable,
+    bonus > 0 ? bonus : streakBonus(streak + 1),
+  );
 
   const takeRestDay = useCallback(() => {
     if (todayIsRest || restLeft <= 0) return false;
@@ -193,6 +211,7 @@ export function ActivityProvider({
       days,
       week,
       streak,
+      freezes,
       restLeft,
       todayIsRest,
       refresh,
@@ -207,6 +226,7 @@ export function ActivityProvider({
       days,
       week,
       streak,
+      freezes,
       restLeft,
       todayIsRest,
       refresh,

@@ -102,20 +102,73 @@ export function buildDays(input: BuildDaysInput): DayRecord[] {
 
 /**
  * The current streak: days that reached the goal, counted back from today.
- * Rest days hold the streak without adding to it, and today doesn't break it
- * while it's still in progress.
+ * Rest days and frozen days hold the streak without adding to it, and today
+ * doesn't break it while it's still in progress.
  */
 export function computeStreak(days: DayRecord[]): number {
   let streak = 0;
   for (let i = days.length - 1; i >= 0; i--) {
     const d = days[i];
     if (d.state === DayState.Goal) streak += 1;
-    else if (d.state === DayState.Rest) continue;
+    else if (d.state === DayState.Rest || d.state === DayState.Frozen) continue;
     else if (d.isToday)
       continue; // still in progress
     else break;
   }
   return streak;
+}
+
+/** How streak freezes are earned and held. */
+export class StreakFreezes {
+  /** One is earned each time a streak reaches a multiple of this many days. */
+  static readonly EVERY = 7;
+
+  /** Freezes that can be held at once; earning more while full gives nothing extra. */
+  static readonly MAX = 2;
+}
+
+export type StreakSummary = {
+  /** The days, with any that a freeze covered marked `Frozen`. */
+  days: DayRecord[];
+  /** The streak, counting back from today (see `computeStreak`). */
+  streak: number;
+  /** Freezes held now. */
+  freezes: number;
+};
+
+/**
+ * Plays the streak forward through `days` (oldest to newest, as `buildDays`
+ * returns them) and spends freezes on the way. A day that would break a streak
+ * (some steps or none, with no rest day to hold it) uses a freeze if there is
+ * one, and is marked `Frozen`: it holds the streak without adding to it. With
+ * none to spend, or no streak to protect, the streak ends as usual. Today is
+ * never judged while it is in progress. A freeze is earned every
+ * `StreakFreezes.EVERY` goal days in a row, up to `StreakFreezes.MAX`.
+ *
+ * Freezes are worked out, not stored: the same days always give the same answer,
+ * and changing a goal or a rest day re-plays history consistently. Pass days
+ * from `buildDays`, not ones this has already marked.
+ */
+export function withFreezes(days: DayRecord[]): StreakSummary {
+  let streak = 0;
+  let freezes = 0;
+  const out = days.map((d) => {
+    if (d.state === DayState.Goal) {
+      streak += 1;
+      if (streak % StreakFreezes.EVERY === 0) {
+        freezes = Math.min(freezes + 1, StreakFreezes.MAX);
+      }
+      return d;
+    }
+    if (d.state === DayState.Rest || d.isToday || d.future) return d;
+    if (streak > 0 && freezes > 0) {
+      freezes -= 1;
+      return { ...d, state: DayState.Frozen };
+    }
+    streak = 0;
+    return d;
+  });
+  return { days: out, streak, freezes };
 }
 
 /**

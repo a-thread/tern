@@ -14,6 +14,7 @@ function DayRingBase({
   label,
   today,
   rest,
+  frozen,
   size = 23,
   replayKey = 0,
   delay = 0,
@@ -22,6 +23,8 @@ function DayRingBase({
   label: string;
   today?: boolean;
   rest?: boolean;
+  /** A streak freeze covered this day. */
+  frozen?: boolean;
   size?: number;
   /** Bump to refill the ring from empty. */
   replayKey?: number;
@@ -47,8 +50,8 @@ function DayRingBase({
     inputRange: [0, 1],
     outputRange: [circ, circ * (1 - Math.min(progress, 1))],
   });
-  const stroke = rest ? colors.driftwood : today ? colors.sun : colors.glacier;
-  const track = rest ? '#E4DECE' : colors.border;
+  const stroke = rest ? colors.driftwood : frozen ? colors.glacierDeep : today ? colors.sun : colors.glacier;
+  const track = rest ? '#E4DECE' : frozen ? '#D5E6EA' : colors.border;
   return (
     <View style={{ alignItems: 'center', gap: 4 }}>
       <Svg

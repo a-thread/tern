@@ -5,7 +5,11 @@ import { useLoader } from '@shared/hooks/useLoader';
 import { usePersist } from '@shared/hooks/usePersist';
 import { newId } from '@shared/utils/id';
 import { computeTrend } from '@weight/models/weightTrend';
-import type { WeightEntry } from '@weight/models/weightEntry';
+import { isLoggedToday, type WeightEntry } from '@weight/models/weightEntry';
+import { useSettings } from '@settings/SettingsContext';
+import { useAward } from '@journey/hooks/useAward';
+import { WaypointSource } from '@journey/models/waypoint';
+import { useDayKey } from '@shared/hooks/useDayKey';
 
 type WeightContextValue = {
   /** Newest first. */
@@ -36,6 +40,16 @@ export function WeightProvider({
     'Could not load weight entries',
   );
   const persist = usePersist(reload);
+
+  // A weigh-in earns its waypoint for being logged, whatever it says. Taken back if today's is
+  // removed; nothing happens while weight tracking is off.
+  const { settings } = useSettings();
+  const today = useDayKey();
+  const weighedToday = useMemo(
+    () => weightEntries.some((e) => isLoggedToday(e.loggedAt, new Date(`${today}T12:00:00`))),
+    [weightEntries, today],
+  );
+  useAward(WaypointSource.Weight, weighedToday, settings.trackWeight && ready);
 
   const addWeightEntry = useCallback(
     (lb: number) => {

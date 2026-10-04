@@ -6,7 +6,7 @@ import { usePersist } from '@shared/hooks/usePersist';
 import { useAward } from '@journey/hooks/useAward';
 import { allMealsLogged } from '@food/models/meals';
 import { newId } from '@shared/utils/id';
-import type { FoodEntry } from '@food/models/foodEntry';
+import { Meal, type FoodEntry } from '@food/models/foodEntry';
 import type { FoodRepository, NewFoodEntry } from '@food/data/food.repository';
 import { WaypointSource } from '@journey/models/waypoint';
 
@@ -127,6 +127,13 @@ export function FoodProvider({
   // drops coverage again. It waits for today's log, so an unloaded (empty) one is never mistaken
   // for a dropped one.
   useAward(WaypointSource.Meals, allMealsLogged(foodLog, skippedMeals), ready && loadedDay === day);
+
+  // Each meal logged also earns a little on its own, so a partial day still counts for something.
+  // Only food logged: marking a meal "nothing today" completes the day above but isn't paid here.
+  const loaded = ready && loadedDay === day;
+  useAward(WaypointSource.Breakfast, foodLog.some((f) => f.meal === Meal.Breakfast), loaded);
+  useAward(WaypointSource.Lunch, foodLog.some((f) => f.meal === Meal.Lunch), loaded);
+  useAward(WaypointSource.Dinner, foodLog.some((f) => f.meal === Meal.Dinner), loaded);
 
   // A meal with food in it isn't skipped any more, however the food got there
   // (added, moved from another meal, or a saved meal).

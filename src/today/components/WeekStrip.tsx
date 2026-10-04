@@ -1,5 +1,5 @@
 import React from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Alert, Pressable, StyleSheet, Text, View } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
@@ -33,14 +33,26 @@ export function WeekStrip({ replayKey }: { replayKey: number }) {
       waypoints: REST_DAY_POINTS,
     });
 
+  const explainFreeze = (d: DayRecord) =>
+    Alert.alert(
+      'Streak freeze',
+      `A freeze covered ${weekdayName(d.day)}, so your streak carried on. It holds the streak without adding a day.`,
+    );
+
   return (
     <>
       <View style={s.weekRow}>
         {week.map((d, i) => (
           <Pressable
             key={d.day}
-            onPress={d.state === DayState.Rest ? () => openRestDay(d) : undefined}
-            disabled={d.state !== DayState.Rest}
+            onPress={
+              d.state === DayState.Rest
+                ? () => openRestDay(d)
+                : d.state === DayState.Frozen
+                  ? () => explainFreeze(d)
+                  : undefined
+            }
+            disabled={d.state !== DayState.Rest && d.state !== DayState.Frozen}
           >
             <DayRing
               progress={d.goal > 0 ? Math.min(d.steps / d.goal, 1) : 0}
@@ -48,6 +60,7 @@ export function WeekStrip({ replayKey }: { replayKey: number }) {
               delay={i * 80}
               label={weekdayLetter(d.day)}
               rest={d.state === DayState.Rest}
+              frozen={d.state === DayState.Frozen}
               today={d.isToday}
             />
           </Pressable>

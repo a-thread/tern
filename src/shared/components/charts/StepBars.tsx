@@ -53,7 +53,9 @@ export function StepBars({
                       borderWidth: 1,
                       borderColor: colors.driftwood,
                     }
-                  : { backgroundColor: colors.doveTint };
+                  : d.state === DayState.Frozen
+                ? { backgroundColor: colors.glacierTint, borderWidth: 1, borderColor: colors.glacierDeep }
+                : { backgroundColor: colors.doveTint };
           return (
             <View key={i} style={cs.barCol}>
               <View style={[cs.bar, style, { height: `${h}%` }]} />

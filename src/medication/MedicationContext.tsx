@@ -7,6 +7,8 @@ import { useLoader } from '@shared/hooks/useLoader';
 import { usePersist } from '@shared/hooks/usePersist';
 import { parseDayKey } from '@shared/utils/date';
 import { useSettings } from '@settings/SettingsContext';
+import { useAward } from '@journey/hooks/useAward';
+import { WaypointSource } from '@journey/models/waypoint';
 import { dueMeds, takenMeds } from '@medication/models/schedule';
 import type { Medication } from '@medication/models/medication';
 
@@ -95,6 +97,10 @@ export function MedicationProvider({
     [medications, takenToday, weekday],
   );
   const taken = useMemo(() => takenMeds(medications, takenToday), [medications, takenToday]);
+
+  // Everything scheduled today taken earns a waypoint; un-marking one takes it back. Nothing
+  // is due (or paid) on a day with no medication scheduled.
+  useAward(WaypointSource.Medication, taken.length > 0 && due.length === 0, ready && medications.length > 0);
 
   const value = useMemo<MedicationContextValue>(
     () => ({ ready, medications, takenToday, due, taken, setTaken, removeMedication }),
