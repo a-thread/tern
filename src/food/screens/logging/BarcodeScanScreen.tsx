@@ -1,6 +1,5 @@
 import React, { useCallback, useRef, useState } from 'react';
 import {
-  ActivityIndicator,
   Linking,
   Pressable,
   StyleSheet,
@@ -14,6 +13,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 
 import { colors, font, space } from '@shared/theme';
+import LoadingBird from '@shared/components/LoadingBird';
 import { FoodApiError } from '@food/data/sources/http';
 import { useSessionAdditions } from '@food/hooks/useSessionAdditions';
 import { describeAdditions } from '@food/models/sessionAdditions';
@@ -118,7 +118,7 @@ export default function BarcodeScanScreen({ navigation, route }: Props) {
           <View style={[s.corner, s.br]} />
           {phase.kind === 'looking' ? (
             <View style={s.overlay}>
-              <ActivityIndicator color='#F2F6F7' />
+              <LoadingBird size={48} color='#F2F6F7' label='Looking up the barcode' />
             </View>
           ) : null}
         </View>
@@ -126,7 +126,7 @@ export default function BarcodeScanScreen({ navigation, route }: Props) {
         {addedMessage ? <AddedBanner message={addedMessage} dark /> : null}
 
         {!permission ? (
-          <ActivityIndicator color='#C9D4D9' style={{ marginTop: 22 }} />
+          <LoadingBird size={44} color='#C9D4D9' style={{ alignSelf: 'center', marginTop: 22 }} />
         ) : !granted ? (
           <View style={s.card}>
             <Text style={s.cardTitle}>Camera access needed</Text>

@@ -1,7 +1,8 @@
 import React from 'react';
-import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { colors, font, radius, space } from '@shared/theme';
+import LoadingBird from '@shared/components/LoadingBird';
 
 /** The search is still running, or one of the food databases could not be reached. */
 export function SearchStatus({
@@ -19,7 +20,7 @@ export function SearchStatus({
     <>
       {loading ? (
         <View style={s.status}>
-          <ActivityIndicator color={colors.ink3} />
+          <LoadingBird size={34} color={colors.ink3} label='Searching foods' />
           <Text style={s.statusText}>Searching…</Text>
         </View>
       ) : null}

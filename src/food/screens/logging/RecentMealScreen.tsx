@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
-import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 
 import { colors, font, radius, space } from '@shared/theme';
+import LoadingBird from '@shared/components/LoadingBird';
 import { Group, GroupLabel, SheetNav, Stepper } from '@shared/components/ui';
 import { Meals } from '@food/models/meals';
 import { useFood } from '@food/FoodContext';
@@ -38,7 +39,7 @@ export default function RecentMealScreen({ navigation, route }: Props) {
         {loaded ? (
           <Text style={s.gone}>This meal isn’t in your log any more.</Text>
         ) : (
-          <ActivityIndicator style={{ marginTop: space.xl }} color={colors.ink3} />
+          <LoadingBird size={48} color={colors.ink3} style={{ alignSelf: 'center', marginTop: space.xl }} />
         )}
       </View>
     );

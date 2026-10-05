@@ -1,6 +1,5 @@
 import React from 'react';
-import { ActivityIndicator, View } from 'react-native';
-import { colors } from '@shared/theme';
+import LoadingScreen from '@shared/components/LoadingScreen';
 import { DayKeyProvider } from '@shared/hooks/useDayKey';
 import { SettingsProvider, useSettings } from '@settings/SettingsContext';
 import { RemindersSync } from '@settings/components/RemindersSync';
@@ -105,16 +104,7 @@ function LoadGate({ children }: { children: React.ReactNode }) {
 
   if (!ready) {
     return (
-      <View
-        style={{
-          flex: 1,
-          backgroundColor: colors.paper,
-          alignItems: 'center',
-          justifyContent: 'center',
-        }}
-      >
-        <ActivityIndicator color={colors.coral} />
-      </View>
+      <LoadingScreen />
     );
   }
   return <>{children}</>;

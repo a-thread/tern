@@ -1,9 +1,9 @@
 import React from 'react';
-import { View, ActivityIndicator } from 'react-native';
 import { NavigationContainer, DefaultTheme } from '@react-navigation/native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { enableFreeze } from 'react-native-screens';
 import { StatusBar } from 'expo-status-bar';
+import LoadingScreen from '@shared/components/LoadingScreen';
 
 import {
   useFonts,
@@ -47,16 +47,7 @@ export default function App() {
 
   if (!loaded) {
     return (
-      <View
-        style={{
-          flex: 1,
-          backgroundColor: colors.paper,
-          alignItems: 'center',
-          justifyContent: 'center',
-        }}
-      >
-        <ActivityIndicator color={colors.coral} />
-      </View>
+      <LoadingScreen />
     );
   }
 

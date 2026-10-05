@@ -1,7 +1,6 @@
 import React, { useMemo, useState } from 'react';
-import { ActivityIndicator, View } from 'react-native';
+import LoadingScreen from '@shared/components/LoadingScreen';
 
-import { colors } from '@shared/theme';
 import { isBackendConfigured } from '@shared/backend/supabase';
 import {
   BackendProvider,
@@ -61,15 +60,6 @@ function RequireSession({ children }: { children: React.ReactNode }) {
 
 function Spinner() {
   return (
-    <View
-      style={{
-        flex: 1,
-        backgroundColor: colors.paper,
-        alignItems: 'center',
-        justifyContent: 'center',
-      }}
-    >
-      <ActivityIndicator color={colors.coral} />
-    </View>
+    <LoadingScreen />
   );
 }
