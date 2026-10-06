@@ -17,6 +17,7 @@ import { RestDaysRow } from '@today/components/RestDaysRow';
 import { HealthDataRow } from '@today/components/HealthDataRow';
 import { CalorieTargetsRow } from '@food/components/CalorieTargetsRow';
 import { FoodDisplayRow } from '@food/components/FoodDisplayRow';
+import { StreakReminderRows } from '@today/components/StreakReminderRows';
 import { MealReminderRows } from '@food/components/MealReminderRows';
 import { MedicationRow } from '@medication/components/MedicationRow';
 import { WeightSettingsRows } from '@weight/components/WeightSettingsRows';
@@ -53,6 +54,7 @@ export default function SettingsScreen({ navigation }: Props) {
         <Group>
           <StepGoalRow onPress={() => navigation.navigate('StepGoal')} />
           <RestDaysRow onPress={() => navigation.navigate('RestDays')} />
+          <StreakReminderRows />
           <HealthDataRow onPress={() => navigation.navigate('HealthData')} />
         </Group>
 

@@ -1,5 +1,10 @@
 import type { Medication } from '@medication/models/medication';
 import { Frequency } from '@shared/models/frequency';
+import {
+  DINNER_MESSAGES,
+  LUNCH_MESSAGES,
+  type ReminderText,
+} from '@settings/models/mealMessages';
 
 /**
  * What gets scheduled for each reminder. Kept separate from the notification
@@ -15,6 +20,8 @@ export type ReminderConfig = {
   water: { on: boolean; start: number; end: number; everyHours: number };
   /** A daily nudge to check in on mood and stress. */
   mood: { on: boolean; at: number };
+  /** Heads-up notifications when a streak is at risk, and how it turned out. */
+  streak: { on: boolean };
 };
 
 /** How often the person weighs in: it sets the reminder and how often Today asks. */
@@ -28,6 +35,7 @@ export class Reminders {
     weighIn: { on: true, weekday: 1, at: 8 * 60 },
     water: { on: false, start: 9 * 60, end: 19 * 60, everyHours: 2 },
     mood: { on: false, at: 20 * 60 },
+    streak: { on: true },
   };
 
   static readonly WATER_EVERY_HOURS = { min: 1, max: 4 };
@@ -48,6 +56,7 @@ export enum ReminderKey {
   WeighIn = 'weighIn',
   Water = 'water',
   Mood = 'mood',
+  Streak = 'streak',
 }
 
 export type PlannedReminder = {
@@ -60,12 +69,12 @@ export type PlannedReminder = {
   minute: number;
   /** Omitted for a daily reminder. */
   weekday?: number;
+  /** Alternate wording; scheduling rotates through these day by day. */
+  variants?: readonly ReminderText[];
 };
 
 export const medicationReminderId = (medicationId: string) =>
   `tern-med-${medicationId}`;
-
-const MEALS_BODY = 'A quick log, if you have a minute.';
 
 const at = (minutes: number) => ({
   hour: Math.floor(minutes / 60),
@@ -111,15 +120,17 @@ export function planReminders(
       {
         id: 'tern-meals-midday',
         key: ReminderKey.Meals,
-        title: 'Meals',
-        body: MEALS_BODY,
+        title: LUNCH_MESSAGES[0].title,
+        body: LUNCH_MESSAGES[0].body,
+        variants: LUNCH_MESSAGES,
         ...at(c.mealLog.midday),
       },
       {
         id: 'tern-meals-evening',
         key: ReminderKey.Meals,
-        title: 'Meals',
-        body: MEALS_BODY,
+        title: DINNER_MESSAGES[0].title,
+        body: DINNER_MESSAGES[0].body,
+        variants: DINNER_MESSAGES,
         ...at(c.mealLog.evening),
       },
     );
@@ -211,6 +222,7 @@ export function describeReminders(
         ? `Every day, ${formatMinutes(c.weighIn.at)}`
         : `${weekdayPlural(c.weighIn.weekday)}, ${formatMinutes(c.weighIn.at)}`,
     mood: `Every day, ${formatMinutes(c.mood.at)}`,
+    streak: 'An evening heads-up when a streak is waiting on today’s steps',
     water: `Every ${c.water.everyHours === 1 ? 'hour' : `${c.water.everyHours} hours`}, ${formatMinutes(c.water.start)} to ${formatMinutes(c.water.end)}`,
   };
 }
@@ -223,6 +235,7 @@ export function mergeReminders(saved: unknown): ReminderConfig {
     weeklyWeighIn?: Partial<ReminderConfig['weighIn']>;
     water?: Partial<ReminderConfig['water']>;
     mood?: Partial<ReminderConfig['mood']>;
+    streak?: Partial<ReminderConfig['streak']>;
   };
   const weigh = s.weighIn ?? s.weeklyWeighIn;
   const num = (v: unknown, fallback: number) =>
@@ -257,5 +270,6 @@ export function mergeReminders(saved: unknown): ReminderConfig {
       on: bool(s.mood?.on, d.mood.on),
       at: num(s.mood?.at, d.mood.at),
     },
+    streak: { on: bool(s.streak?.on, d.streak.on) },
   };
 }

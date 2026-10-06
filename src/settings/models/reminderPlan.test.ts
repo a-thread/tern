@@ -12,6 +12,7 @@ const config = (
   },
   water: { ...Reminders.DEFAULTS.water, on: false },
   mood: { ...Reminders.DEFAULTS.mood, on: false },
+  streak: { on: false },
 });
 
 describe('planReminders', () => {
@@ -129,6 +130,7 @@ describe('time helpers', () => {
       meals: '12:30 pm and 7:00 pm',
       weighIn: 'Sundays, 8:00 am',
       water: 'Every 2 hours, 9:00 am to 7:00 pm',
+      streak: 'An evening heads-up when a streak is waiting on today’s steps',
       mood: 'Every day, 8:00 pm',
     });
   });
