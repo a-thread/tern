@@ -18,6 +18,7 @@ import { WeightTrend } from '@shared/components/charts/WeightTrend';
 import type { RootStackParamList } from '@shared/navigation/types';
 import { useUnits } from '@settings/hooks/useUnits';
 import { useWeight } from '@weight/WeightContext';
+import { isLoggedToday } from '@weight/models/weightEntry';
 import { Units } from '@shared/utils/units';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'LogWeight'>;
@@ -29,7 +30,10 @@ const MAX_LB = 1100;
 
 export default function LogWeightScreen({ navigation }: Props) {
   const insets = useSafeAreaInsets();
-  const { weightEntries, weightTrend, addWeightEntry } = useWeight();
+  const { weightEntries, weightTrend, addWeightEntry, updateWeightEntry } =
+    useWeight();
+  // Opening this after weighing in today edits that weigh-in rather than stacking a second one.
+  const todaysEntry = weightEntries.find((e) => isLoggedToday(e.loggedAt));
   const { units, weightLabel, toDisplay, fromDisplay, formatWeight } =
     useUnits();
   // The ruler works in the user's unit; storage stays lb.
@@ -83,7 +87,8 @@ export default function LogWeightScreen({ navigation }: Props) {
     : null;
 
   const save = () => {
-    addWeightEntry(fromDisplay(weight));
+    if (todaysEntry) updateWeightEntry(todaysEntry.id, fromDisplay(weight));
+    else addWeightEntry(fromDisplay(weight));
     navigation.goBack();
   };
 
@@ -92,7 +97,7 @@ export default function LogWeightScreen({ navigation }: Props) {
       style={{ flex: 1, backgroundColor: colors.paper, paddingTop: insets.top }}
     >
       <SheetNav
-        title='Log weight'
+        title={todaysEntry ? 'Edit weight' : 'Log weight'}
         leftLabel='Cancel'
         onLeftPress={() => navigation.goBack()}
         rightLabel='Save'

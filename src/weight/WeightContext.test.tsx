@@ -54,3 +54,19 @@ describe('the weigh-in waypoint', () => {
     expect(result.current.points.waypoints).toBe(before);
   });
 });
+
+describe('editing a weigh-in', () => {
+  it('changes the number in place without adding an entry or another waypoint', async () => {
+    const { result } = await setup();
+    await act(async () => result.current.weight.addWeightEntry(163.4));
+    await waitFor(() => expect(result.current.weight.weightEntries).toHaveLength(1));
+    const [entry] = result.current.weight.weightEntries;
+    const points = result.current.points.waypoints;
+
+    await act(async () => result.current.weight.updateWeightEntry(entry.id, 161.8));
+
+    expect(result.current.weight.weightEntries).toHaveLength(1);
+    expect(result.current.weight.weightEntries[0]).toMatchObject({ id: entry.id, lb: 161.8, loggedAt: entry.loggedAt });
+    expect(result.current.points.waypoints).toBe(points);
+  });
+});

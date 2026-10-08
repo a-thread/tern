@@ -27,7 +27,7 @@ export type RestDayParams = {
 };
 
 export type RootStackParamList = {
-  Tabs: undefined;
+  Tabs: NavigatorScreenParams<TabParamList> | undefined;
   LogFood: { meal: FoodEntry['meal'] };
   LogWeight: undefined;
   CheckIn: undefined;

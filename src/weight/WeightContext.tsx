@@ -18,6 +18,8 @@ type WeightContextValue = {
   weightTrend: number[];
   ready: boolean;
   addWeightEntry: (lb: number) => void;
+  /** Corrects an existing weigh-in in place, keeping when it was logged. */
+  updateWeightEntry: (id: string, lb: number) => void;
 };
 
 const [WeightContext, useWeight] = createRequiredContext<WeightContextValue>(
@@ -67,11 +69,22 @@ export function WeightProvider({
     [weight, persist],
   );
 
+  const updateWeightEntry = useCallback(
+    (id: string, lb: number) => {
+      setWeightEntries((prev) => prev.map((e) => (e.id === id ? { ...e, lb } : e)));
+      persist(weight.update(id, lb), {
+        log: 'Could not update weight entry',
+        toast: "Couldn't save that change — please try again.",
+      });
+    },
+    [weight, persist],
+  );
+
   const weightTrend = useMemo(() => computeTrend(weightEntries), [weightEntries]);
 
   const value = useMemo<WeightContextValue>(
-    () => ({ weightEntries, weightTrend, ready, addWeightEntry }),
-    [weightEntries, weightTrend, ready, addWeightEntry],
+    () => ({ weightEntries, weightTrend, ready, addWeightEntry, updateWeightEntry }),
+    [weightEntries, weightTrend, ready, addWeightEntry, updateWeightEntry],
   );
 
   return (
