@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { ScrollView, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -16,11 +16,18 @@ import { WeekStrip } from '@today/components/WeekStrip';
 import { LeftToDoList } from '@today/components/LeftToDoList';
 import { DoneList } from '@today/components/DoneList';
 import { NutritionCard } from '@today/components/NutritionCard';
+import { DayLog } from '@today/components/DayLog';
 
 /** The Today tab: steps, the week, what is left to do and what is done, and the waypoint celebrations. */
 export default function TodayScreen() {
   const insets = useSafeAreaInsets();
-  const { todaySteps } = useActivity();
+  const { todaySteps, week } = useActivity();
+  // Today unless a past day this week was tapped; a stale pick (new week) falls back to today.
+  const [picked, setPicked] = useState<string | null>(null);
+  const selected =
+    week.find((d) => d.day === picked && !d.future) ??
+    week.find((d) => d.isToday) ??
+    week[week.length - 1];
   const { completeCelebration } = useWaypoints();
   const replayKey = useReplayOnFocus(todaySteps);
   const { rootRef, heroRef, chipRef, playing, finish } = useCelebrationPlayback();
@@ -36,10 +43,20 @@ export default function TodayScreen() {
 
       <ScrollView contentContainerStyle={{ paddingHorizontal: space.lg, paddingBottom: 100 }}>
         <StepsHero heroRef={heroRef} replayKey={replayKey} />
-        <WeekStrip replayKey={replayKey} />
-        <LeftToDoList />
-        <DoneList />
-        <NutritionCard />
+        <WeekStrip
+          replayKey={replayKey}
+          selectedDay={selected.day}
+          onSelect={setPicked}
+        />
+        {selected.isToday ? (
+          <>
+            <LeftToDoList />
+            <DoneList />
+            <NutritionCard />
+          </>
+        ) : (
+          <DayLog record={selected} />
+        )}
       </ScrollView>
 
       {playing ? (

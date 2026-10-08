@@ -1,43 +1,33 @@
 import React from 'react';
-import { Alert, Pressable, StyleSheet, Text, View } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
-import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { colors, font, space } from '@shared/theme';
 import { DayRing } from '@shared/components/charts/DayRing';
 import { useDayKey } from '@shared/hooks/useDayKey';
-import { weekdayLetter, weekdayName } from '@shared/utils/date';
-import type { RootStackParamList } from '@shared/navigation/types';
+import { weekdayLetter } from '@shared/utils/date';
 import { useSettings } from '@settings/SettingsContext';
-import { pointsFor, WaypointSource } from '@journey/models/waypoint';
 import { useActivity } from '@today/ActivityContext';
-import type { DayRecord } from '@today/models/dayRecord';
 import { factForDay } from '@today/utils/ternFacts';
 import { DayState } from '@shared/models/dayState';
 import { StepsStatus } from '@today/data/steps.repository';
 
-const REST_DAY_POINTS = pointsFor(WaypointSource.Rest);
-
-/** This week's seven rings, a fact for the day, and the rest-day link. */
-export function WeekStrip({ replayKey }: { replayKey: number }) {
-  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+/**
+ * This week's seven rings, a fact for the day, and the rest-day link. Tapping a
+ * day that has happened selects it (`onSelect`); the screen shows its log below.
+ */
+export function WeekStrip({
+  replayKey,
+  selectedDay,
+  onSelect,
+}: {
+  replayKey: number;
+  selectedDay: string;
+  onSelect: (day: string) => void;
+}) {
   const todayKey = useDayKey();
   const { settings } = useSettings();
   const { week, todaySteps, status, restLeft, todayIsRest, takeRestDay, undoRestDay } = useActivity();
   const reached = todaySteps / settings.stepGoal >= 1;
-
-  const openRestDay = (d: DayRecord) =>
-    navigation.navigate('RestDay', {
-      dayName: weekdayName(d.day),
-      steps: d.steps,
-      waypoints: REST_DAY_POINTS,
-    });
-
-  const explainFreeze = (d: DayRecord) =>
-    Alert.alert(
-      'Streak freeze',
-      `A freeze covered ${weekdayName(d.day)}, so your streak carried on. It holds the streak without adding a day.`,
-    );
 
   return (
     <>
@@ -45,14 +35,10 @@ export function WeekStrip({ replayKey }: { replayKey: number }) {
         {week.map((d, i) => (
           <Pressable
             key={d.day}
-            onPress={
-              d.state === DayState.Rest
-                ? () => openRestDay(d)
-                : d.state === DayState.Frozen
-                  ? () => explainFreeze(d)
-                  : undefined
-            }
-            disabled={d.state !== DayState.Rest && d.state !== DayState.Frozen}
+            onPress={() => onSelect(d.day)}
+            disabled={d.future}
+            accessibilityRole='button'
+            accessibilityState={{ selected: d.day === selectedDay }}
           >
             <DayRing
               progress={d.goal > 0 ? Math.min(d.steps / d.goal, 1) : 0}
@@ -62,6 +48,7 @@ export function WeekStrip({ replayKey }: { replayKey: number }) {
               rest={d.state === DayState.Rest}
               frozen={d.state === DayState.Frozen}
               today={d.isToday}
+              selected={d.day === selectedDay}
             />
           </Pressable>
         ))}
