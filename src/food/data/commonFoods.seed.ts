@@ -6,7 +6,10 @@ import type { CommonFood } from '@food/models/commonFoods';
  * scripts/buildCommonFoods.ts and synced from the backend.
  */
 export const commonFoodsSeed: CommonFood[] = [
-  { id: 'egg', name: 'Egg', detail: 'whole, large', kcal: 143, protein: 12.6, carbs: 0.7, fat: 9.5, portions: [{ label: 'large egg', grams: 50 }], rank: 1, tier: 1 },
+  { id: 'egg', name: 'Egg', detail: 'raw', aliases: ['eggs'], kcal: 143, protein: 12.6, carbs: 0.7, fat: 9.5, portions: [{ label: 'large egg', grams: 50 }, { label: 'extra large egg', grams: 56 }, { label: 'jumbo egg', grams: 63 }, { label: 'medium egg', grams: 44 }, { label: 'small egg', grams: 38 }], rank: 1, tier: 1 },
+  { id: 'egg-boiled', name: 'Egg', detail: 'hard-boiled', kcal: 155, protein: 12.6, carbs: 1.1, fat: 10.6, portions: [{ label: 'large egg', grams: 50 }, { label: 'extra large egg', grams: 56 }, { label: 'jumbo egg', grams: 63 }, { label: 'medium egg', grams: 44 }, { label: 'small egg', grams: 38 }], rank: 2, tier: 1 },
+  { id: 'egg-fried', name: 'Egg', detail: 'fried', kcal: 196, protein: 13.6, carbs: 0.8, fat: 14.8, portions: [{ label: 'large egg', grams: 46 }, { label: 'extra large egg', grams: 51.5 }, { label: 'jumbo egg', grams: 58 }, { label: 'medium egg', grams: 40.5 }, { label: 'small egg', grams: 35 }], rank: 3, tier: null },
+  { id: 'egg-scrambled', name: 'Egg', detail: 'scrambled', kcal: 149, protein: 10, carbs: 1.6, fat: 11, portions: [{ label: 'large egg', grams: 61 }, { label: 'extra large egg', grams: 68.3 }, { label: 'jumbo egg', grams: 76.9 }, { label: 'medium egg', grams: 53.7 }, { label: 'small egg', grams: 46.4 }], rank: 4, tier: null },
   { id: 'banana', name: 'Banana', detail: 'raw', kcal: 89, protein: 1.1, carbs: 22.8, fat: 0.3, portions: [{ label: 'medium banana', grams: 118 }], rank: 2, tier: 1 },
   { id: 'apple', name: 'Apple', detail: 'raw, with skin', kcal: 52, protein: 0.3, carbs: 13.8, fat: 0.2, portions: [{ label: 'medium apple', grams: 182 }], rank: 3, tier: 1 },
   { id: 'chicken-breast', name: 'Chicken breast', detail: 'meat only, roasted', kcal: 165, protein: 31, carbs: 0, fat: 3.6, portions: [{ label: 'half breast', grams: 86 }, { label: 'oz', grams: 28.35 }], rank: 4, tier: 1 },
