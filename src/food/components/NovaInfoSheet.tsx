@@ -1,7 +1,7 @@
 import React from 'react';
-import { Modal, Pressable, StyleSheet, Text, View } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 
+import { BottomSheet } from '@shared/components/ui';
 import { colors, font, space, tierColors } from '@shared/theme';
 
 const LEVELS = [
@@ -18,11 +18,9 @@ export function NovaInfoSheet({
   visible: boolean;
   onClose: () => void;
 }) {
-  const insets = useSafeAreaInsets();
   return (
-    <Modal visible={visible} transparent animationType='slide' onRequestClose={onClose}>
-      <Pressable style={s.scrim} onPress={onClose} accessibilityLabel='Close' />
-      <View style={[s.sheet, { paddingBottom: insets.bottom + space.lg }]}>
+    <BottomSheet visible={visible} onClose={onClose}>
+      <View>
         <View style={s.top}>
           <Text style={s.title}>About processing levels</Text>
           <Pressable onPress={onClose} hitSlop={10} accessibilityLabel='Close'>
@@ -48,12 +46,11 @@ export function NovaInfoSheet({
           any food.
         </Text>
       </View>
-    </Modal>
+    </BottomSheet>
   );
 }
 
 const s = StyleSheet.create({
-  scrim: { flex: 1, backgroundColor: 'rgba(43,38,34,0.35)' },
   sheet: {
     backgroundColor: colors.card,
     borderTopLeftRadius: 20,

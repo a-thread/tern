@@ -5,7 +5,6 @@ import {
   ScrollView,
   StyleSheet,
   Pressable,
-  Modal,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
@@ -20,6 +19,7 @@ import {
   SegmentedControl,
   Stepper,
   Row,
+  BottomSheet,
 } from '@shared/components/ui';
 import { useSettings } from '@settings/SettingsContext';
 import { useSliderValue } from '@shared/hooks/useSliderValue';
@@ -284,14 +284,8 @@ export default function TargetsScreen() {
         )}
       </ScrollView>
 
-      <Modal
-        visible={editing}
-        transparent
-        animationType='slide'
-        onRequestClose={() => setEditing(false)}
-      >
-        <Pressable style={s.scrim} onPress={() => setEditing(false)} />
-        <View style={[s.sheet, { paddingBottom: insets.bottom + space.lg }]}>
+      <BottomSheet visible={editing} onClose={() => setEditing(false)}>
+        <View>
           <View style={s.sheetTop}>
             <Text style={s.sheetTitle}>Custom split</Text>
             <Pressable
@@ -353,7 +347,7 @@ export default function TargetsScreen() {
             <Text style={s.updateText}>Update</Text>
           </Pressable>
         </View>
-      </Modal>
+      </BottomSheet>
     </View>
   );
 }
@@ -469,13 +463,6 @@ const s = StyleSheet.create({
     fontSize: 11.5,
     color: colors.ink2,
     marginTop: 2,
-  },
-  scrim: { flex: 1, backgroundColor: 'rgba(43,38,34,0.35)' },
-  sheet: {
-    backgroundColor: colors.card,
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
-    padding: space.lg,
   },
   sheetTop: {
     flexDirection: 'row',

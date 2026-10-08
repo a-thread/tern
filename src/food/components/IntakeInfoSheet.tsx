@@ -1,7 +1,7 @@
 import React from 'react';
-import { Modal, Pressable, StyleSheet, Text, View } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 
+import { BottomSheet } from '@shared/components/ui';
 import { colors, font, space } from '@shared/theme';
 
 export type IntakeInfoKind = 'calories' | 'macros';
@@ -42,17 +42,10 @@ export function IntakeInfoSheet({
   /** Runs the sheet's action link, when its copy has one. */
   onAction?: () => void;
 }) {
-  const insets = useSafeAreaInsets();
   const copy = COPY[kind];
   return (
-    <Modal
-      visible={visible}
-      transparent
-      animationType='slide'
-      onRequestClose={onClose}
-    >
-      <Pressable style={s.scrim} onPress={onClose} accessibilityLabel='Close' />
-      <View style={[s.sheet, { paddingBottom: insets.bottom + space.lg }]}>
+    <BottomSheet visible={visible} onClose={onClose}>
+      <View>
         <View style={s.top}>
           <Text style={s.title}>{copy.title}</Text>
           <Pressable onPress={onClose} hitSlop={10} accessibilityLabel='Close'>
@@ -71,12 +64,11 @@ export function IntakeInfoSheet({
           </Pressable>
         ) : null}
       </View>
-    </Modal>
+    </BottomSheet>
   );
 }
 
 const s = StyleSheet.create({
-  scrim: { flex: 1, backgroundColor: 'rgba(43,38,34,0.35)' },
   sheet: {
     backgroundColor: colors.card,
     borderTopLeftRadius: 20,

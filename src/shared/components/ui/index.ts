@@ -15,6 +15,7 @@ export { ProgressBar, MacroBar } from './Bars';
 export { SheetNav, PushHeader } from './SheetChrome';
 export { Toggle, ToggleRow } from './Toggle';
 export { Stepper } from './Stepper';
+export { BottomSheet } from './BottomSheet';
 export { SwipeToRemove } from './SwipeToRemove';
 export { SegmentedControl } from './SegmentedControl';
 export { LegendDot } from './LegendDot';
