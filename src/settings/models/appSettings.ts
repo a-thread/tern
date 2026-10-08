@@ -21,6 +21,12 @@ export type AppSettings = {
   calorieTarget: number;
   macroTargets: { protein: number; carbs: number; fat: number };
   trackCalories: boolean;
+  /** Optional intake bars on the Food page; off by default so it stays out of the way. */
+  showIntakeBars: boolean;
+  /** Calorie "target zone" for the intake bar; null derives one from calorieTarget. */
+  calorieZone: { min: number; max: number } | null;
+  /** Show protein as a minimum to reach rather than a limit to fill toward. */
+  proteinAsMinimum: boolean;
   /** Display only; weight is stored in pounds either way. */
   units: Units;
   /** Optional; null (the default) means no goal weight, and no goal line anywhere. */
@@ -61,6 +67,9 @@ export const initialSettings: AppSettings = {
   calorieTarget: settingsSeed.calorieTarget,
   macroTargets: { ...settingsSeed.macroTargets },
   trackCalories: true,
+  showIntakeBars: false,
+  calorieZone: null,
+  proteinAsMinimum: true,
   units: settingsSeed.units,
   weightGoalLb: null,
   trackWeight: true,

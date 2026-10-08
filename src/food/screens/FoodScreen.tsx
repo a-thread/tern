@@ -24,6 +24,7 @@ import { useFoodDisplay } from '@food/hooks/useFoodDisplay';
 import WaterCard from '@water/components/WaterCard';
 import { useWater } from '@water/WaterContext';
 import { TierDot } from '@food/components/TierDot';
+import { IntakeBarometer } from '@food/components/IntakeBarometer';
 
 export default function FoodScreen() {
   const todayKey = useDayKey();
@@ -55,6 +56,9 @@ export default function FoodScreen() {
           paddingBottom: 100,
         }}
       >
+        {settings.showIntakeBars && settings.trackCalories ? (
+          <IntakeBarometer totals={totals} />
+        ) : (
         <View style={s.statRow}>
           {/* With calorie tracking (or calorie numbers) off there is no calorie chip at all. */}
           {!showCalories ? null : settings.showRemainingVsTarget ? (
@@ -79,6 +83,7 @@ export default function FoodScreen() {
             color={colors.sunDeep}
           />
         </View>
+        )}
 
         {water.enabled ? <WaterCard /> : null}
 
