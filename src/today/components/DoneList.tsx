@@ -1,5 +1,5 @@
-import React from 'react';
-import { Pressable, StyleSheet, Text } from 'react-native';
+import React, { useState } from 'react';
+import { StyleSheet, Text } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
@@ -10,6 +10,7 @@ import { useUnits } from '@settings/hooks/useUnits';
 import { useFoodDisplay } from '@food/hooks/useFoodDisplay';
 import { useMedication } from '@medication/MedicationContext';
 import { useWater } from '@water/WaterContext';
+import WaterSheet from '@water/components/WaterSheet';
 import { scoreWord, MoodMetric } from '@mood/models/moodEntry';
 import { formatLoggedAt } from '@weight/models/weightEntry';
 import { useActivity } from '@today/ActivityContext';
@@ -25,6 +26,7 @@ export function DoneList() {
   const water = useWater();
   const { setTaken } = useMedication();
   const { todaySteps } = useActivity();
+  const [waterOpen, setWaterOpen] = useState(false);
 
   if (!anythingDone) return null;
   return (
@@ -40,6 +42,8 @@ export function DoneList() {
               (showCalories && summary.meals ? ` · ${summary.meals.calories.toLocaleString()} cal` : '')
             }
             icon={<DoneBadge />}
+            chevron
+            onPress={() => navigation.navigate('Tabs', { screen: 'Food' })}
           />
         ) : null}
         {summary.weighedIn ? (
@@ -48,6 +52,8 @@ export function DoneList() {
             title='Weighed in'
             sub={`${formatWeight(summary.weighedIn.lb)}, ${formatLoggedAt(summary.weighedIn.loggedAt)}`}
             icon={<DoneBadge />}
+            chevron
+            onPress={() => navigation.navigate('LogWeight')}
           />
         ) : null}
         {summary.checkIn ? (
@@ -56,11 +62,8 @@ export function DoneList() {
             title='Checked in'
             sub={`Mood ${summary.checkIn.mood} · ${scoreWord(MoodMetric.Mood, summary.checkIn.mood)} · Stress ${summary.checkIn.stress} · ${scoreWord(MoodMetric.Stress, summary.checkIn.stress)}`}
             icon={<DoneBadge />}
-            right={
-              <Pressable onPress={() => navigation.navigate('CheckIn')} hitSlop={8}>
-                <Text style={s.markText}>Edit</Text>
-              </Pressable>
-            }
+            chevron
+            onPress={() => navigation.navigate('CheckIn')}
           />
         ) : null}
         {takenMedications.map((m) => (
@@ -68,11 +71,9 @@ export function DoneList() {
             key={`done-med-${m.id}`}
             title={`Took ${m.name}`}
             icon={<DoneBadge />}
-            right={
-              <Pressable onPress={() => setTaken(m.id, false)} hitSlop={8}>
-                <Text style={s.markText}>Undo</Text>
-              </Pressable>
-            }
+            // Mirrors "Mark taken" in Left to do: the row is the action.
+            right={<Text style={s.markText}>Undo</Text>}
+            onPress={() => setTaken(m.id, false)}
           />
         ))}
         {waterDone && summary.waterOz !== null ? (
@@ -81,6 +82,8 @@ export function DoneList() {
             title='Water'
             sub={`${formatVolume(summary.waterOz)} of ${formatVolume(water.goalOz)}`}
             icon={<DoneBadge />}
+            chevron
+            onPress={() => setWaterOpen(true)}
           />
         ) : null}
         {summary.stepGoalReached ? (
@@ -89,9 +92,12 @@ export function DoneList() {
             title='Step goal reached'
             sub={`${todaySteps.toLocaleString()} steps`}
             icon={<DoneBadge />}
+            chevron
+            onPress={() => navigation.navigate('Tabs', { screen: 'Trends' })}
           />
         ) : null}
       </Group>
+      <WaterSheet visible={waterOpen} onClose={() => setWaterOpen(false)} />
     </>
   );
 }

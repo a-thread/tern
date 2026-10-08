@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Pressable, StyleSheet, Text } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -11,6 +11,7 @@ import { useUnits } from '@settings/hooks/useUnits';
 import { formatMinutes } from '@settings/models/reminderPlan';
 import { useMedication } from '@medication/MedicationContext';
 import { useWater } from '@water/WaterContext';
+import WaterSheet from '@water/components/WaterSheet';
 import { formatLoggedAt } from '@weight/models/weightEntry';
 import { useTodayItems } from '@today/hooks/useTodayItems';
 
@@ -21,6 +22,7 @@ export function LeftToDoList() {
   const { formatWeight, formatVolume, quickWaterOz } = useUnits();
   const water = useWater();
   const { setTaken } = useMedication();
+  const [waterOpen, setWaterOpen] = useState(false);
 
   if (!openItems.length) return null;
   return (
@@ -33,6 +35,7 @@ export function LeftToDoList() {
               key='water'
               title='Water'
               sub={`${formatVolume(item.totalOz)} of ${formatVolume(item.goalOz)}`}
+              onPress={() => setWaterOpen(true)}
               icon={
                 <IconBadge bg={colors.waterTint}>
                   <Svg width={14} height={14} viewBox='0 0 24 24' fill='none'>
@@ -41,7 +44,7 @@ export function LeftToDoList() {
                 </IconBadge>
               }
               right={
-                // Only the button logs a drink, so a stray tap on the row can't.
+                // Only the button logs a drink; tapping the row opens the water sheet, so a stray tap can't log one.
                 <Pressable
                   onPress={() => water.addWater(quickWaterOz[0])}
                   hitSlop={8}
@@ -133,6 +136,7 @@ export function LeftToDoList() {
           ),
         )}
       </Group>
+      <WaterSheet visible={waterOpen} onClose={() => setWaterOpen(false)} />
     </>
   );
 }
