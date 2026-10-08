@@ -80,6 +80,7 @@ export default function LogFoodScreen({ navigation, route }: Props) {
         value={query}
         onChange={setQuery}
         onScan={() => navigation.navigate('BarcodeScan', { meal, pick: pickMode })}
+        busy={filter === 'All' && lookup.pending}
       />
 
       <SegmentedControl options={filters} value={filter} onChange={setFilter} style={s.seg} />
@@ -120,7 +121,7 @@ export default function LogFoodScreen({ navigation, route }: Props) {
           <Text style={s.ghostText}>+ Create a food manually</Text>
         </Pressable>
 
-        <FootNote>Nutrition data from Open Food Facts (ODbL) and USDA FoodData Central.</FootNote>
+        <FootNote>Nutrition data from USDA FoodData Central (public domain) and Open Food Facts (ODbL).</FootNote>
       </ScrollView>
     </View>
   );

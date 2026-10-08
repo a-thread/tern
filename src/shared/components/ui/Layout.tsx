@@ -41,7 +41,8 @@ export function Group({
   return (
     <View style={[s.group, style]}>
       {items.map((child, i) => (
-        <View key={i}>
+        // The child's own key (toArray keeps it), so a row that moves keeps its view.
+        <View key={React.isValidElement(child) && child.key !== null ? child.key : i}>
           {i > 0 ? <View style={s.divider} /> : null}
           {child}
         </View>

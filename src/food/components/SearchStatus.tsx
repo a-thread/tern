@@ -1,66 +1,48 @@
 import React from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
-import { colors, font, radius, space } from '@shared/theme';
-import LoadingBird from '@shared/components/LoadingBird';
+import { colors, font, space } from '@shared/theme';
 
-/** The search is still running, or one of the food databases could not be reached. */
+/**
+ * One quiet line when a source couldn't be reached. What else was found stays
+ * on screen above it; loading itself is shown by the search bar, so nothing
+ * here appears or disappears while a search runs.
+ */
 export function SearchStatus({
-  loading,
   failedLabels,
   failedAll,
+  anyResults,
   onRetry,
 }: {
-  loading: boolean;
   failedLabels: string[];
   failedAll: boolean;
+  anyResults: boolean;
   onRetry: () => void;
 }) {
+  if (!failedLabels.length) return null;
+  const text =
+    failedAll && !anyResults
+      ? "Couldn't reach the food databases. Check your connection, or create the food below."
+      : `Couldn't load ${failedLabels.join(' or ')}.`;
   return (
-    <>
-      {loading ? (
-        <View style={s.status}>
-          <LoadingBird size={34} color={colors.ink3} label='Searching foods' />
-          <Text style={s.statusText}>Searching…</Text>
-        </View>
-      ) : null}
-      {failedLabels.length ? (
-        <View style={s.errorCard}>
-          <Text style={s.errorTitle}>
-            {failedAll
-              ? "Couldn't search the food databases"
-              : `Couldn't reach ${failedLabels.join(' or ')}`}
-          </Text>
-          <Text style={s.statusText}>
-            {failedAll
-              ? 'Check your connection, or add the food yourself below.'
-              : 'Showing what the other database found.'}
-          </Text>
-          <Pressable onPress={onRetry} hitSlop={8}>
-            <Text style={s.retry}>Try again</Text>
-          </Pressable>
-        </View>
-      ) : null}
-    </>
+    <View style={s.note}>
+      <Text style={s.text}>{text}</Text>
+      <Pressable onPress={onRetry} hitSlop={8} accessibilityRole='button'>
+        <Text style={s.retry}>Try again</Text>
+      </Pressable>
+    </View>
   );
 }
 
 const s = StyleSheet.create({
-  status: {
+  note: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
-    gap: 10,
-    paddingVertical: space.lg,
+    justifyContent: 'space-between',
+    gap: space.sm,
+    paddingHorizontal: space.sm,
+    paddingTop: space.md,
   },
-  statusText: { fontFamily: font.body, fontSize: 12.5, color: colors.ink2 },
-  errorCard: {
-    backgroundColor: colors.card,
-    borderRadius: radius.lg,
-    padding: space.md,
-    marginTop: space.md,
-    gap: 4,
-  },
-  errorTitle: { fontFamily: font.semibold, fontSize: 14, color: colors.ink },
-  retry: { fontFamily: font.semibold, fontSize: 13, color: colors.ink, marginTop: 6 },
+  text: { flex: 1, fontFamily: font.body, fontSize: 12, lineHeight: 17, color: colors.ink2 },
+  retry: { fontFamily: font.semibold, fontSize: 12.5, color: colors.coral },
 });
