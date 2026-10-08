@@ -1,9 +1,12 @@
 import { usdaFoodToResult, type UsdaMeasure } from '@food/data/sources/usda';
 import type { CommonFood } from '@food/models/commonFoods';
-import { cleanPortionLabel, plainness, portionOrder, splitUsdaName } from '@food/models/commonFoodName';
+import { cleanPortionLabel, plainness, splitUsdaName } from '@food/models/commonFoodName';
+import { portionKind, typicalPortions } from '@food/models/commonFoodPortions';
+import { nounFor } from '@food/models/measure';
 import { suggestTier } from '@food/models/commonFoodTier';
 import { normalizeText, wordsOf } from '@food/models/foodQuery';
 import type { Tier } from '@food/models/foodEntry';
+import type { Portion } from '@food/data/sources/searchResult';
 
 /**
  * Turns USDA FoodData Central bulk downloads into the common-foods list.
@@ -24,17 +27,28 @@ export type BulkFood = {
   foodPortions?: (UsdaMeasure & { sequenceNumber?: number })[];
 };
 
-/** A hand correction for one food, matched by its cleaned name. */
+/**
+ * A hand correction for one food, matched by its cleaned name, and by its
+ * detail too when `matchDetail` is given (to pick one of several "Egg" rows).
+ */
 export type Override = {
   name: string;
+  matchDetail?: string;
   rename?: string;
   detail?: string;
+  /** Replaces the portions, e.g. every egg size, in the order to offer them (the first is the default). */
+  portions?: Portion[];
   aliases?: string[];
   /** Lower is more common; overridden foods come before the rest. */
   rank?: number;
   tier?: Tier | null;
   /** Leave this food out of the list. */
   exclude?: boolean;
+  /**
+   * Keep only the foods of this name that some override picked: "Egg" becomes
+   * just the preparations listed, not every egg row USDA has (dried, frozen…).
+   */
+  onlyListed?: boolean;
 };
 
 export type Candidate = { kind: BulkKind; category: string; food: CommonFood };
@@ -42,7 +56,6 @@ export type Candidate = { kind: BulkKind; category: string; food: CommonFood };
 const EXCLUDE = /\b(baby ?foods?|infant|toddler|formula|restaurant|fast foods?)\b/i;
 // SR Legacy names brands in capitals ("KELLOGG'S"); packaged products come from Open Food Facts instead.
 const BRANDED = /\b[A-Z]{3,}(?:'S)?\b/;
-const MAX_PORTIONS = 4;
 
 export function bulkToCandidate(f: BulkFood | null, kind: BulkKind): Candidate | null {
   // The downloads have the odd null entry.
@@ -66,9 +79,11 @@ export function bulkToCandidate(f: BulkFood | null, kind: BulkKind): Candidate |
   if (!r) return null;
 
   const { name, detail } = splitUsdaName(description);
-  // Household portions first ("medium banana" before "oz"), without dataset noise.
-  const cleaned = (r.portions ?? []).map((p) => ({ ...p, label: cleanPortionLabel(p.label) })).filter((p) => p.label);
-  const portions = portionOrder(cleaned.map((p) => p.label)).map((i) => cleaned[i]).slice(0, MAX_PORTIONS);
+  // Every portion for now; selectCommonFoods picks the typical ones once it can see
+  // the same food's other USDA rows (their sizes too).
+  const portions = (r.portions ?? [])
+    .map((p) => ({ ...p, label: cleanPortionLabel(p.label) }))
+    .filter((p) => p.label);
   return {
     kind,
     category,
@@ -111,6 +126,21 @@ export function selectCommonFoods(
       commonness(a) - commonness(b) ||
       (a.food.detail ?? '').length - (b.food.detail ?? '').length,
   );
+  // Sizes and single items shared between the raw rows of the same food: the survey row
+  // for "Apple, raw" has no sizes, but SR Legacy's apples do. Only raw foods share, since
+  // "Bread" or "Potato" rows are different breads and dishes, not one food.
+  const raw = (detail?: string) => /\braw\b/i.test(detail ?? '');
+  const poolKey = (f: CommonFood) => sameText(f.name);
+  const pool = new Map<string, Portion[]>();
+  for (const c of sorted) {
+    if (!raw(c.food.detail)) continue;
+    const items = (c.food.portions ?? []).filter((p) => {
+      const k = portionKind(p.label);
+      return k === 'size' || k === 'count';
+    });
+    pool.set(poolKey(c.food), [...(pool.get(poolKey(c.food)) ?? []), ...items]);
+  }
+
   const seen = new Set<string>();
   let foods = sorted
     .filter((c) => {
@@ -119,14 +149,27 @@ export function selectCommonFoods(
       seen.add(key);
       return true;
     })
-    .map((c) => ({ ...c.food }));
+    .map((c) => {
+      const portions = typicalPortions(
+        [...(c.food.portions ?? []), ...(raw(c.food.detail) ? (pool.get(poolKey(c.food)) ?? []) : [])],
+        c.food.name,
+        nounFor(c.food.name),
+      );
+      return { ...c.food, portions: portions.length ? portions : undefined };
+    });
 
   const unmatched: string[] = [];
   const ranked = new Map<string, number>();
+  const picked = new Set<string>();
+  const onlyListed = new Set(overrides.filter((o) => o.onlyListed).map((o) => sameText(o.name)));
   for (const o of overrides) {
-    const i = foods.findIndex((f) => sameText(f.name) === sameText(o.name));
+    const i = foods.findIndex(
+      (f) =>
+        sameText(f.name) === sameText(o.name) &&
+        (o.matchDetail === undefined || sameText(f.detail ?? '') === sameText(o.matchDetail)),
+    );
     if (i < 0) {
-      unmatched.push(o.name);
+      unmatched.push(o.matchDetail !== undefined ? `${o.name} (${o.matchDetail})` : o.name);
       continue;
     }
     if (o.exclude) {
@@ -137,12 +180,16 @@ export function selectCommonFoods(
     foods[i] = {
       ...f,
       ...(o.rename ? { name: o.rename } : {}),
-      ...(o.detail !== undefined ? { detail: o.detail } : {}),
+      // An empty detail removes it ("Scrambled egg" needs none).
+      ...(o.detail !== undefined ? { detail: o.detail || undefined } : {}),
       ...(o.aliases ? { aliases: o.aliases } : {}),
+      ...(o.portions ? { portions: o.portions } : {}),
       ...(o.tier !== undefined ? { tier: o.tier } : {}),
     };
+    picked.add(f.id);
     if (o.rank !== undefined) ranked.set(f.id, o.rank);
   }
+  foods = foods.filter((f) => picked.has(f.id) || !onlyListed.has(sameText(f.name)));
 
   foods = [
     ...foods.filter((f) => ranked.has(f.id)).sort((a, b) => ranked.get(a.id)! - ranked.get(b.id)!),

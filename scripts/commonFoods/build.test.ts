@@ -73,6 +73,46 @@ describe('selectCommonFoods', () => {
     expect(unmatched).toEqual(['Unicorn steak']);
   });
 
+  it('picks one variant by its detail, gives it every size, and drops the repeats', () => {
+    const sizes = [
+      { label: 'large egg', grams: 50 },
+      { label: 'jumbo egg', grams: 63 },
+    ];
+    const { foods } = selectCommonFoods(
+      [
+        cand(1, 'Egg', 'fndds', 'whole, raw'),
+        cand(2, 'Egg', 'fndds', 'whole, cooked'),
+        cand(3, 'Egg', 'fndds', 'whole, cooked, scrambled'),
+      ],
+      [
+        { name: 'Egg', matchDetail: 'whole, raw', detail: 'whole', rank: 1, portions: sizes },
+        { name: 'Egg', matchDetail: 'whole, cooked', exclude: true },
+        { name: 'Egg', matchDetail: 'whole, cooked, scrambled', rename: 'Scrambled egg', detail: '' },
+      ],
+    );
+    expect(foods.map((f) => [f.name, f.detail])).toEqual([
+      ['Egg', 'whole'],
+      ['Scrambled egg', undefined],
+    ]);
+    expect(foods[0].portions).toEqual(sizes);
+  });
+
+  it('keeps only the listed preparations of a food when asked', () => {
+    const { foods } = selectCommonFoods(
+      [
+        cand(1, 'Egg', 'sr', 'whole, raw'),
+        cand(2, 'Egg', 'sr', 'whole, cooked, fried'),
+        cand(3, 'Egg', 'sr', 'whole, dried'),
+        cand(4, 'Egg', 'sr', 'whole, raw, frozen, pasteurized'),
+      ],
+      [
+        { name: 'Egg', matchDetail: 'whole, raw', detail: 'raw', rank: 1, onlyListed: true },
+        { name: 'Egg', matchDetail: 'whole, cooked, fried', detail: 'fried', rank: 1.1 },
+      ],
+    );
+    expect(foods.map((f) => f.detail)).toEqual(['raw', 'fried']);
+  });
+
   it('caps the list', () => {
     const many = Array.from({ length: 10 }, (_, i) => cand(i, `Food ${i}`, 'fndds'));
     expect(selectCommonFoods(many, [], 4).foods).toHaveLength(4);
