@@ -47,7 +47,8 @@ describe('useFoodSearch', () => {
   it('waits for a pause in typing, then searches once', async () => {
     search.mockResolvedValue([food('Rolled oats')]);
     const { result, rerender } = renderHook(({ q }: { q: string }) => useFoodSearch(q), { initialProps: { q: 'ro' } });
-    expect(result.current.state.status).toBe('loading');
+    // Nothing is "loading" until the pause is over and a request really runs.
+    expect(result.current.state.status).toBe('idle');
 
     await type(FoodSearch.DEBOUNCE_MS - 100);
     rerender({ q: 'rol' });
@@ -71,12 +72,32 @@ describe('useFoodSearch', () => {
     search.mockRejectedValueOnce(new FoodApiError('network', 'down'));
     const { result } = renderHook(() => useFoodSearch('oats'));
     await type();
-    await waitFor(() => expect(result.current.state).toEqual({ status: 'error', kind: 'network' }));
+    await waitFor(() =>
+      expect(result.current.state).toEqual({ status: 'error', kind: 'network', results: [], query: null }),
+    );
 
     search.mockResolvedValueOnce([food('Oats')]);
     act(() => result.current.retry());
     await type();
     await waitFor(() => expect(result.current.state.status).toBe('done'));
+  });
+
+  it('keeps the last results on screen while the next search runs', async () => {
+    let resolve: (r: SearchResult[]) => void = () => {};
+    search.mockResolvedValueOnce([food('Oats')]);
+    const { result, rerender } = renderHook(({ q }: { q: string }) => useFoodSearch(q), { initialProps: { q: 'oats' } });
+    await type();
+    await waitFor(() => expect(result.current.state.status).toBe('done'));
+
+    search.mockImplementationOnce(() => new Promise((r) => (resolve = r)));
+    rerender({ q: 'oat milk' });
+    // While typing, and while the request runs, the old results stay.
+    expect(result.current.state).toMatchObject({ status: 'done', query: 'oats' });
+    await type();
+    expect(result.current.state).toMatchObject({ status: 'loading', query: 'oats', results: [food('Oats')] });
+
+    await act(async () => resolve([food('Oat milk')]));
+    expect(result.current.state).toMatchObject({ status: 'done', query: 'oat milk', results: [food('Oat milk')] });
   });
 
   it('reuses a remembered search instead of asking again', async () => {

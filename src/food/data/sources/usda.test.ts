@@ -58,6 +58,20 @@ describe('usdaFoodToResult', () => {
     ]);
   });
 
+  it('treats a slightly negative "by difference" carb figure as zero', () => {
+    const lamb = usdaFoodToResult({
+      fdcId: 2727570,
+      description: 'Lamb, ground, raw',
+      foodNutrients: [
+        { nutrientId: 1008, value: 237 },
+        { nutrientId: 1003, value: 17.5 },
+        { nutrientId: 1005, value: -0.3 },
+        { nutrientId: 1004, value: 18.6 },
+      ],
+    });
+    expect(lamb).toMatchObject({ protein: 17.5, carbs: 0, fat: 18.6 });
+  });
+
   it('falls back to Atwater energy, the older nutrient numbers, and kilojoules', () => {
     expect(usdaFoodToResult({ fdcId: 2, description: 'Oats', foodNutrients: [{ nutrientId: 2047, value: 371 }] })?.calories).toBe(371);
     expect(usdaFoodToResult({ fdcId: 3, description: 'Oats', foodNutrients: [{ nutrientNumber: '208', value: 380 }] })?.calories).toBe(380);
