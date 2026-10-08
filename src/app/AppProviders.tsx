@@ -5,6 +5,7 @@ import { SettingsProvider, useSettings } from '@settings/SettingsContext';
 import { RemindersSync } from '@settings/components/RemindersSync';
 import { FoodProvider, useFood } from '@food/FoodContext';
 import { SavedMealsProvider } from '@food/SavedMealsContext';
+import { CommonFoodsProvider } from '@food/CommonFoodsContext';
 import { WeightProvider, useWeight } from '@weight/WeightContext';
 import { WaypointsProvider, useWaypoints } from '@journey/WaypointsContext';
 import { ActivityProvider, useActivity } from '@today/ActivityContext';
@@ -42,6 +43,12 @@ const PROVIDERS: readonly Entry[] = [
     name: 'savedMeals',
     needs: [],
     wrap: (c, b) => <SavedMealsProvider repo={b.savedMeals}>{c}</SavedMealsProvider>,
+  },
+  {
+    // Not in LoadGate: search works without it until the list arrives.
+    name: 'commonFoods',
+    needs: [],
+    wrap: (c, b) => <CommonFoodsProvider repo={b.commonFoods}>{c}</CommonFoodsProvider>,
   },
   {
     name: 'weight',

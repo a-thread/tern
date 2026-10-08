@@ -2,6 +2,7 @@ import React from 'react';
 import { View, Text, StyleSheet, Pressable } from 'react-native';
 import { colors, font, radius, tierColors } from '@shared/theme';
 import type { Tier } from '@food/models/foodEntry';
+import type { SearchResult } from '@food/data/sources/searchResult';
 import { TierDot } from './TierDot';
 
 const tierPickerOptions: { tier: Tier; label: string }[] = [
@@ -18,11 +19,14 @@ export function TierPicker({
   value,
   onChange,
   suggested,
+  suggestedBy,
   showNumber = true,
 }: {
   value: Tier | null;
   onChange: (tier: Tier) => void;
   suggested?: Tier | null;
+  /** Where the suggestion came from, for the note under the picker. Unset for a food you logged before. */
+  suggestedBy?: SearchResult['source'];
   showNumber?: boolean;
 }) {
   return (
@@ -51,8 +55,12 @@ export function TierPicker({
       </View>
       {suggested ? (
         <Text style={s.suggestNote}>
-          Suggested from Open Food Facts processing data (NOVA {suggested}). You
-          can change it — your choice is remembered for this food.
+          {suggestedBy === 'off'
+            ? `Suggested from Open Food Facts processing data (NOVA ${suggested}).`
+            : suggestedBy === 'common'
+              ? `Suggested for this kind of food (NOVA ${suggested}).`
+              : 'The type you chose last time.'}{' '}
+          You can change it — your choice is remembered for this food.
         </Text>
       ) : (
         <Text style={[s.suggestNote, { backgroundColor: colors.doveTint }]}>

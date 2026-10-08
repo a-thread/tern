@@ -172,9 +172,10 @@ export function usdaFoodToResult(f: UsdaFood): SearchResult | null {
     name,
     servingLabel: '100 g',
     calories: Math.round(kcal),
-    protein: round1(nutrient(list, PROTEIN) ?? 0),
-    carbs: round1(nutrient(list, CARBS) ?? 0),
-    fat: round1(nutrient(list, FAT) ?? 0),
+    // USDA works carbs out "by difference", which can dip just below zero (-0.3 g for lamb).
+    protein: round1(Math.max(nutrient(list, PROTEIN) ?? 0, 0)),
+    carbs: round1(Math.max(nutrient(list, CARBS) ?? 0, 0)),
+    fat: round1(Math.max(nutrient(list, FAT) ?? 0, 0)),
     tier: null,
     portions: portions.length ? portions : undefined,
     source: 'usda',

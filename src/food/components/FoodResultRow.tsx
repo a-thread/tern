@@ -1,38 +1,72 @@
 import React from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import Svg, { Path } from 'react-native-svg';
 
-import { colors, font, tierColors } from '@shared/theme';
+import { colors, tierColors } from '@shared/theme';
 import { Row } from '@shared/components/ui';
 import type { SearchResult } from '@food/data/sources/searchResult';
+import type { FoodSource } from '@food/models/foodRanking';
 import { useFoodDisplay } from '@food/hooks/useFoodDisplay';
 import { TierDot } from './TierDot';
 
+const SOURCE_TAG: Record<FoodSource, string> = {
+  mine: 'Your food',
+  common: 'Common',
+  usda: 'USDA',
+  off: 'Packaged',
+};
+
+/**
+ * The line under a food's name: where it's from, its detail or brand, and the
+ * calories for its first portion ("1 large egg · 72 cal") when it has one,
+ * otherwise per its serving ("143 cal / 100 g").
+ */
+export function resultSubline(
+  r: SearchResult,
+  from: FoodSource | undefined,
+  showCalories: boolean,
+): string {
+  const portion = r.servingLabel === '100 g' ? r.portions?.[0] : undefined;
+  const amount = portion
+    ? showCalories
+      ? `1 ${portion.label} · ${Math.round((r.calories * portion.grams) / 100)} cal`
+      : `1 ${portion.label}`
+    : showCalories
+      ? `${r.calories} cal / ${r.servingLabel}`
+      : r.servingLabel;
+  return [from ? SOURCE_TAG[from] : undefined, r.brand ?? r.detail, amount]
+    .filter(Boolean)
+    .join(' · ');
+}
+
 /** One food from a search or your history: its type dot, name, serving, and a plus to add it. */
-export function FoodResultRow({ result, onPress }: { result: SearchResult; onPress: () => void }) {
-  const unknown = result.tier === null; // food type not known; nutrition always is
+export function FoodResultRow({
+  result,
+  from,
+  onPress,
+}: {
+  result: SearchResult;
+  /** Shown as a small tag in the search list; left out where the source is obvious. */
+  from?: FoodSource;
+  onPress: () => void;
+}) {
   const { showTiers, showTierNumber, showCalories } = useFoodDisplay();
-  const brandPrefix = result.brand ? result.brand + ' · ' : '';
-  const detail = showCalories
-    ? `${brandPrefix}${result.calories} cal / ${result.servingLabel}`
-    : `${brandPrefix}${result.servingLabel}`;
   return (
     <Row
       icon={
-        !showTiers ? undefined : unknown ? (
-          <View style={s.tierUnknown}>
-            <Text style={s.tierUnknownText}>?</Text>
-          </View>
+        !showTiers ? undefined : result.tier === null ? (
+          // No suggestion yet: an empty slot keeps names lined up; the type is chosen when logging.
+          <View style={s.tierSlot} />
         ) : (
           <TierDot
-            tier={result.tier as number}
-            color={tierColors[result.tier as 1 | 2 | 3 | 4]}
+            tier={result.tier}
+            color={tierColors[result.tier]}
             showNumber={showTierNumber}
           />
         )
       }
       title={result.name}
-      sub={detail}
+      sub={resultSubline(result, from, showCalories)}
       onPress={onPress}
       right={
         <View style={s.plusBtn}>
@@ -54,13 +88,5 @@ const s = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  tierUnknown: {
-    width: 19,
-    height: 19,
-    borderRadius: 10,
-    backgroundColor: colors.dove,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  tierUnknownText: { fontFamily: font.bold, fontSize: 9.5, color: '#4A4A4A' },
+  tierSlot: { width: 19, height: 19, borderRadius: 10, borderWidth: 1, borderColor: colors.border },
 });

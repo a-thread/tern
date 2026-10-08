@@ -22,9 +22,11 @@ export async function getJson(
   headers: Record<string, string> = {},
   /** A JSON POST instead of a GET. */
   post?: unknown,
+  /** How long to wait before giving up; search uses less than a barcode lookup. */
+  timeoutMs = TIMEOUT_MS,
 ): Promise<unknown> {
   const ctrl = new AbortController();
-  const timer = setTimeout(() => ctrl.abort(), TIMEOUT_MS);
+  const timer = setTimeout(() => ctrl.abort(), timeoutMs);
   const onAbort = () => ctrl.abort();
   signal?.addEventListener('abort', onAbort);
   try {

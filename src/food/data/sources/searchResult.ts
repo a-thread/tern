@@ -24,5 +24,10 @@ export type SearchResult = {
   /** Number of `servingLabel` units last logged when no measure was used. */
   servings?: number;
   last?: { unit: string | null; quantity: number };
-  source?: 'off' | 'usda';
+  /** Where it came from: the common-foods list, Open Food Facts or USDA. Unset for your own foods. */
+  source?: 'common' | 'off' | 'usda';
+  /** The rest of a common food's description, shown under the name: "meat only, cooked, roasted". */
+  detail?: string;
+  /** How common a food is (1 is the most), used to rank common foods. */
+  rank?: number;
 };

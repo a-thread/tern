@@ -4,6 +4,7 @@ import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import { colors, font, radius } from '@shared/theme';
 import { Group, Stepper } from '@shared/components/ui';
 import { formatCount } from '@food/models/servings';
+import { useFoodDisplay } from '@food/hooks/useFoodDisplay';
 import {
   GramSteps,
   measureGrams,
@@ -30,6 +31,12 @@ export function MeasurePicker({
   const [typed, setTyped] = useState(String(formatCount(measure.quantity)));
   const portion = portionOf(measure);
   const grams = measureGrams(measure);
+  const { showCalories } = useFoodDisplay();
+  // Each size says what one of it is worth: "Large egg · 72", "Jumbo egg · 90".
+  const chipLabel = (p: { label: string; grams: number }) =>
+    showCalories
+      ? `${sentence(p.label)} · ${Math.round((measure.per100.calories * p.grams) / 100)} cal`
+      : sentence(p.label);
 
   const chooseUnit = (unit: string | null) => {
     const next = switchUnit(measure, unit);
@@ -44,7 +51,7 @@ export function MeasurePicker({
           {measure.portions.map((p, i) => (
             <Chip
               key={`${p.label}-${i}`}
-              label={sentence(p.label)}
+              label={chipLabel(p)}
               on={measure.unit === p.label}
               onPress={() => chooseUnit(p.label)}
             />

@@ -132,6 +132,13 @@ describe('searchProducts', () => {
     expect(queryOf(1)).toBe('baguette');
   });
 
+  it('skips the every-language search when asked to', async () => {
+    fetchMock.mockResolvedValueOnce(respond([]));
+    const r = await searchProducts('baguette', undefined, { fallback: false });
+    expect(r).toEqual([]);
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
+
   it('keeps typed search syntax from changing the filter', async () => {
     fetchMock.mockResolvedValueOnce(respond([hit('X')]));
     await searchProducts('lang:fr "pomme" (x)');

@@ -15,6 +15,8 @@ const FIELDS =
   'code,product_name,brands,quantity,serving_size,serving_quantity,nutriments,nova_group';
 const USER_AGENT = 'Tern/0.1 (aiden.threadgoode@gmail.com)';
 const PAGE_SIZE = 25;
+// Search is a typing aid: past this, the rest of the list is more useful than waiting.
+const SEARCH_TIMEOUT_MS = 6000;
 
 export type OffProduct = {
   code?: string;
@@ -114,7 +116,13 @@ async function runSearch(
   signal?: AbortSignal,
 ): Promise<SearchResult[]> {
   const url = `${SEARCH_URL}?q=${encodeURIComponent(q)}&page_size=${PAGE_SIZE}&langs=en&fields=${FIELDS}`;
-  const json = (await getJson(url, signal, { 'User-Agent': USER_AGENT })) as {
+  const json = (await getJson(
+    url,
+    signal,
+    { 'User-Agent': USER_AGENT },
+    undefined,
+    SEARCH_TIMEOUT_MS,
+  )) as {
     hits?: OffProduct[];
   };
   // The same product is often listed under several barcodes; show it once.
@@ -139,11 +147,14 @@ async function runSearch(
  * Open Food Facts matches the query against translated names too, and most of
  * its products are French, so "apple" would otherwise return page after page of
  * "Pommes…". Products whose own language is English come first (`lang:en`); only
- * if there are none do we search everything, e.g. for a foreign dish name.
+ * if there are none, and `fallback` allows it, do we search everything, e.g. for
+ * a foreign dish name. The caller turns the fallback off when other sources
+ * already answered the query, which saves a second, slow request.
  */
 export async function searchProducts(
   query: string,
   signal?: AbortSignal,
+  { fallback = true }: { fallback?: boolean } = {},
 ): Promise<SearchResult[]> {
   // Colons, quotes and brackets are search syntax; typed text mustn't change the filter.
   const text = query
@@ -152,7 +163,7 @@ export async function searchProducts(
     .trim();
   if (!text) return [];
   const english = await runSearch(`${text} lang:en`, signal);
-  return english.length ? english : runSearch(text, signal);
+  return english.length || !fallback ? english : runSearch(text, signal);
 }
 
 export type BarcodeLookup =

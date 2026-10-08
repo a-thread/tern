@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useLayoutEffect, useRef } from 'react';
+import { LayoutAnimation } from 'react-native';
 
 import type { SearchResult } from '@food/data/sources/searchResult';
 import type { RecentMeal } from '@food/models/recentMeals';
@@ -10,7 +11,7 @@ import { RecentMealGroup } from './RecentMealGroup';
 import { SavedMealGroup } from './SavedMealGroup';
 import { SearchStatus } from './SearchStatus';
 
-/** The All tab: your meals and recent foods before a search, matches from everywhere once there is one. */
+/** The All tab: your meals and recent foods before a search, one ranked list of foods once there is one. */
 export function LogFoodAllTab({
   lookup,
   onPickFood,
@@ -23,6 +24,17 @@ export function LogFoodAllTab({
   onOpenPastMeal: (meal: RecentMeal) => void;
 }) {
   const l = lookup;
+
+  // When results arrive for the query already on screen, rows ease into place rather than snap.
+  // A layout effect runs before the native views update, so the animation applies to this change.
+  const ids = l.foods.map((f) => f.id).join('|');
+  const lastQuery = useRef(l.trimmed);
+  useLayoutEffect(() => {
+    if (lastQuery.current === l.trimmed) {
+      LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+    }
+    lastQuery.current = l.trimmed;
+  }, [ids, l.trimmed]);
 
   if (!l.searching) {
     return (
@@ -46,15 +58,11 @@ export function LogFoodAllTab({
       {l.yourMeals.length ? (
         <SavedMealGroup label='Your meals' meals={l.yourMeals.slice(0, 5)} onPick={onOpenMeal} />
       ) : null}
-      {l.yourMatches.length ? <FoodGroup label='Your foods' foods={l.yourMatches} onPick={onPickFood} /> : null}
-      {l.everydayResults.length ? (
-        <FoodGroup label='Everyday foods' foods={l.everydayResults} onPick={onPickFood} />
-      ) : null}
-      {l.packagedResults.length ? <FoodGroup label='Packaged' foods={l.packagedResults} onPick={onPickFood} /> : null}
+      {l.foods.length ? <FoodGroup label='Foods' foods={l.foods} onPick={onPickFood} /> : null}
       <SearchStatus
-        loading={l.loading}
         failedLabels={l.failedLabels}
         failedAll={l.failedAll}
+        anyResults={l.foods.length > 0}
         onRetry={l.retryFailed}
       />
       {l.nothingFound ? (

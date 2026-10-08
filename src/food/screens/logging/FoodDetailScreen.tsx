@@ -125,7 +125,9 @@ export default function FoodDetailScreen({ navigation, route }: Props) {
       >
         <View style={s.head}>
           <Text style={s.name}>{result.name}</Text>
-          {result.brand ? <Text style={s.brand}>{result.brand}</Text> : null}
+          {result.brand || result.detail ? (
+            <Text style={s.brand}>{result.brand ?? result.detail}</Text>
+          ) : null}
         </View>
 
         <View style={s.calCard}>
@@ -189,6 +191,7 @@ export default function FoodDetailScreen({ navigation, route }: Props) {
                 value={tier}
                 onChange={setTier}
                 suggested={result.tier}
+                suggestedBy={result.source}
                 showNumber={showTierNumber}
               />
             </View>
