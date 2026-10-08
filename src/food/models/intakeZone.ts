@@ -81,3 +81,24 @@ export function macroFill(current: number, target: number): number {
   if (target <= 0) return 0;
   return Math.min(Math.max(current / target, 0), 1);
 }
+
+export type ZoneStatus =
+  | { kind: 'below'; amount: number }
+  | { kind: 'in' }
+  | { kind: 'above'; amount: number };
+
+/** Where intake sits against the zone, with how far outside it. Information only. */
+export function zoneStatus(intake: number, zone: CalorieZone): ZoneStatus {
+  if (intake < zone.min) return { kind: 'below', amount: Math.round(zone.min - intake) };
+  if (intake > zone.max) return { kind: 'above', amount: Math.round(intake - zone.max) };
+  return { kind: 'in' };
+}
+
+/** Where a minimum's target mark sits on its bar, leaving room to go past it. */
+export const MINIMUM_MARK = 0.8;
+
+/** Fill for a bar whose target is a minimum: the target sits at MINIMUM_MARK and going past it keeps filling. */
+export function minimumFill(current: number, target: number): number {
+  if (target <= 0) return 0;
+  return Math.min(Math.max((current / target) * MINIMUM_MARK, 0), 1);
+}

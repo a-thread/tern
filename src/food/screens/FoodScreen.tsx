@@ -57,7 +57,7 @@ export default function FoodScreen() {
         }}
       >
         {settings.showIntakeBars && settings.trackCalories ? (
-          <IntakeBarometer totals={totals} />
+          <IntakeBarometer totals={totals} entries={foodLog} />
         ) : (
         <View style={s.statRow}>
           {/* With calorie tracking (or calorie numbers) off there is no calorie chip at all. */}
