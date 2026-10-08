@@ -52,6 +52,11 @@ import {
   type MoodRepository,
 } from '@mood/data/mood.repository';
 import { createSupabaseMoodRepository } from '@mood/data/mood.repository.supabase';
+import {
+  createMemoryCommonFoodsRepository,
+  type CommonFoodsRepository,
+} from '@food/data/commonFoods.repository';
+import { createSupabaseCommonFoodsRepository } from '@food/data/commonFoods.repository.supabase';
 import type { DataRepository } from '@settings/data/dataRepository';
 import { createSupabaseDataRepository } from '@settings/data/dataRepository.supabase';
 
@@ -67,6 +72,8 @@ export type Backend = {
   medication: MedicationRepository;
   water: WaterRepository;
   mood: MoodRepository;
+  /** The shared common-foods list that search uses on the phone. */
+  commonFoods: CommonFoodsRepository;
   /** Export and erase, for signed-in accounts. Absent in local mode, where nothing is stored. */
   data?: DataRepository;
 };
@@ -84,6 +91,7 @@ export function createMemoryBackend(): Backend {
     medication: createMemoryMedicationRepository(),
     water: createMemoryWaterRepository(),
     mood: createMemoryMoodRepository(),
+    commonFoods: createMemoryCommonFoodsRepository(),
   };
 }
 
@@ -105,6 +113,7 @@ export function createRemoteBackend(): Backend {
     medication: createSupabaseMedicationRepository(supabase),
     water: createSupabaseWaterRepository(supabase),
     mood: createSupabaseMoodRepository(supabase),
+    commonFoods: createSupabaseCommonFoodsRepository(supabase),
     data: createSupabaseDataRepository(supabase),
   };
 }
