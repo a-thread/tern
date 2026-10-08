@@ -103,5 +103,6 @@ const s = StyleSheet.create({
     textAlign: 'center',
     marginTop: 4,
   },
-  stepSub: { fontFamily: font.body, fontSize: 11.5, color: '#DCD4DE', textAlign: 'center' },
+  // Sits over the lightest end of every sky gradient (pale blue, peach, gold), so it's dark ink, not white.
+  stepSub: { fontFamily: font.medium, fontSize: 12, color: '#1F2D38', textAlign: 'center' },
 });
