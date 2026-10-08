@@ -14,7 +14,7 @@ export function WaterSettingsRows() {
     <>
       <ToggleRow
         title='Track water'
-        sub='Log drinks from the Food tab'
+        sub='Log drinks from Today or the Food tab'
         on={settings.trackWater}
         onToggle={(v) => updateSettings({ trackWater: v })}
       />

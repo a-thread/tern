@@ -1,21 +1,51 @@
 import React, { useState } from 'react';
+import { useNavigation } from '@react-navigation/native';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import {
   View,
   Text,
   ScrollView,
+  Pressable,
   StyleSheet,
   type LayoutChangeEvent,
   type NativeScrollEvent,
   type NativeSyntheticEvent,
 } from 'react-native';
 
-import { colors, font, radius, space } from '@shared/theme';
+import { colors, font, radius, space, tierColors } from '@shared/theme';
 import { ProgressBar } from '@shared/components/ui';
+import type { RootStackParamList } from '@shared/navigation/types';
 import { useSettings } from '@settings/SettingsContext';
 import { useFoodDisplay } from '@food/hooks/useFoodDisplay';
-import { macroFill, resolveZone, zoneScale } from '@food/models/intakeZone';
+import {
+  macroFill,
+  MINIMUM_MARK,
+  minimumFill,
+  resolveZone,
+  zoneScale,
+  zoneStatus,
+} from '@food/models/intakeZone';
+import { percentsFromMacros } from '@food/models/macroSplit';
+import type { FoodEntry } from '@food/models/foodEntry';
+import { tierShares } from '@food/models/tierShares';
+import { NovaInfoSheet } from '@food/components/NovaInfoSheet';
+import { IntakeInfoSheet } from '@food/components/IntakeInfoSheet';
 
 type Totals = { calories: number; protein: number; carbs: number; fat: number };
+
+function InfoDot({ label, onPress }: { label: string; onPress: () => void }) {
+  return (
+    <Pressable
+      onPress={onPress}
+      hitSlop={10}
+      style={s.info}
+      accessibilityRole='button'
+      accessibilityLabel={label}
+    >
+      <Text style={s.infoText}>i</Text>
+    </Pressable>
+  );
+}
 
 const MACROS = [
   { key: 'protein', label: 'Protein', color: colors.kelp },
@@ -28,19 +58,36 @@ const MACROS = [
  * target zone, macros against their targets. Off by default; turned on and off in Food display settings.
  * Neutral by design: nothing turns red and going past a target is never flagged.
  */
-export function IntakeBarometer({ totals }: { totals: Totals }) {
+export function IntakeBarometer({
+  totals,
+  entries,
+}: {
+  totals: Totals;
+  /** Today's log, for the processing-level split. */
+  entries: readonly FoodEntry[];
+}) {
   const { settings } = useSettings();
-  const { showCalories } = useFoodDisplay();
+  const { showCalories, showTiers } = useFoodDisplay();
   const [width, setWidth] = useState(0);
   const [page, setPage] = useState(0);
+  const [info, setInfo] = useState<'nova' | 'calories' | 'macros' | null>(null);
+  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   // Each page's own height, so the card is only as tall as the page showing.
   const [heights, setHeights] = useState<Record<string, number>>({});
 
   if (!settings.showIntakeBars || !settings.trackCalories) return null;
 
-  const pages = showCalories ? (['macros', 'calories'] as const) : (['macros'] as const);
+  // Macros first; the processing split only when processing levels are shown; calories last.
+  const pages: ('macros' | 'processing' | 'calories')[] = [
+    'macros',
+    ...(showTiers ? (['processing'] as const) : []),
+    ...(showCalories ? (['calories'] as const) : []),
+  ];
+  const shares = tierShares(entries);
   const zone = resolveZone(settings.calorieZone, settings.calorieTarget);
   const scale = zoneScale(totals.calories, zone);
+  const status = zoneStatus(totals.calories, zone);
+  const splitPct = percentsFromMacros(settings.macroTargets);
 
   const onLayout = (e: LayoutChangeEvent) =>
     setWidth(e.nativeEvent.layout.width);
@@ -71,7 +118,10 @@ export function IntakeBarometer({ totals }: { totals: Totals }) {
           >
             {p === 'calories' ? (
               <View>
-                <Text style={s.title}>Calories</Text>
+                <View style={s.titleRow}>
+                  <Text style={s.title}>Calories</Text>
+                  <InfoDot label='About your target zone' onPress={() => setInfo('calories')} />
+                </View>
                 <View style={s.track}>
                   <View
                     style={[
@@ -102,10 +152,44 @@ export function IntakeBarometer({ totals }: { totals: Totals }) {
                     {zone.min.toLocaleString()} – {zone.max.toLocaleString()}
                   </Text>
                 </View>
+                <Text style={s.status}>
+                  {status.kind === 'in'
+                    ? 'Within your zone'
+                    : status.kind === 'below'
+                      ? `${status.amount.toLocaleString()} cal to reach your zone`
+                      : `${status.amount.toLocaleString()} cal past your zone`}
+                </Text>
+              </View>
+            ) : p === 'processing' ? (
+              <View>
+                <View style={s.titleRow}>
+                  <Text style={s.title}>Processing levels</Text>
+                  <InfoDot label='About NOVA processing levels' onPress={() => setInfo('nova')} />
+                </View>
+                {shares.map((g) => (
+                  <View key={g.key} style={{ marginTop: space.sm }}>
+                    <View style={s.macroTop}>
+                      <Text style={s.macroLabel}>{g.label}</Text>
+                      <Text style={s.macroSub}>
+                        {showCalories
+                          ? `${Math.round(g.calories).toLocaleString()} cal · ${Math.round(g.share * 100)}%`
+                          : `${Math.round(g.share * 100)}%`}
+                      </Text>
+                    </View>
+                    <ProgressBar
+                      value={g.share}
+                      color={tierColors[g.tiers[0]]}
+                      height={5}
+                    />
+                  </View>
+                ))}
               </View>
             ) : (
               <View>
-                <Text style={s.title}>Macros</Text>
+                <View style={s.titleRow}>
+                  <Text style={s.title}>Macros</Text>
+                  <InfoDot label='About your macro targets' onPress={() => setInfo('macros')} />
+                </View>
                 {MACROS.map(({ key, label, color }) => {
                   const target = settings.macroTargets[key];
                   const minimum = key === 'protein' && settings.proteinAsMinimum;
@@ -115,16 +199,20 @@ export function IntakeBarometer({ totals }: { totals: Totals }) {
                         <Text style={s.macroLabel}>
                           {label}
                           {minimum ? ' (min)' : ''}
+                          <Text style={s.pct}>{`  ${splitPct[key]}%`}</Text>
                         </Text>
                         <Text style={s.macroSub}>
                           {Math.round(totals[key])} / {target} g
                         </Text>
                       </View>
-                      <ProgressBar
-                        value={macroFill(totals[key], target)}
-                        color={color}
-                        height={5}
-                      />
+                      <View>
+                        <ProgressBar
+                          value={minimum ? minimumFill(totals[key], target) : macroFill(totals[key], target)}
+                          color={color}
+                          height={5}
+                        />
+                        {minimum ? <View style={[s.mark, { left: `${MINIMUM_MARK * 100}%` }]} /> : null}
+                      </View>
                     </View>
                   );
                 })}
@@ -141,6 +229,17 @@ export function IntakeBarometer({ totals }: { totals: Totals }) {
           ))}
         </View>
       ) : null}
+
+      <NovaInfoSheet visible={info === 'nova'} onClose={() => setInfo(null)} />
+      <IntakeInfoSheet
+        kind={info === 'macros' ? 'macros' : 'calories'}
+        visible={info === 'calories' || info === 'macros'}
+        onClose={() => setInfo(null)}
+        onAction={() => {
+          setInfo(null);
+          navigation.navigate('Settings', { screen: 'Targets' });
+        }}
+      />
     </View>
   );
 }
@@ -153,6 +252,20 @@ const s = StyleSheet.create({
     marginTop: space.xs,
   },
   title: { fontFamily: font.semibold, fontSize: 13.5, color: colors.ink },
+  status: { fontFamily: font.body, fontSize: 11.5, color: colors.ink2, marginTop: 6 },
+  pct: { fontFamily: font.body, fontSize: 11.5, color: colors.ink3 },
+  mark: { position: 'absolute', top: -3, width: 2, height: 11, borderRadius: 1, backgroundColor: colors.ink2 },
+  titleRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+  info: {
+    width: 16,
+    height: 16,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: colors.ink3,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  infoText: { fontFamily: font.semibold, fontSize: 10, color: colors.ink3, lineHeight: 12 },
   track: {
     height: 8,
     borderRadius: 4,

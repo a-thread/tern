@@ -1,5 +1,8 @@
 import {
   defaultZone,
+  MINIMUM_MARK,
+  minimumFill,
+  zoneStatus,
   macroFill,
   nudgeZone,
   resolveZone,
@@ -51,5 +54,22 @@ describe('intakeZone', () => {
     expect(macroFill(150, 100)).toBe(1);
     expect(macroFill(50, 100)).toBe(0.5);
     expect(macroFill(10, 0)).toBe(0);
+  });
+});
+
+describe('zoneStatus and minimumFill', () => {
+  const zone = { min: 1700, max: 2300 };
+
+  it('reports below, in and above the zone with the distance', () => {
+    expect(zoneStatus(1013, zone)).toEqual({ kind: 'below', amount: 687 });
+    expect(zoneStatus(2000, zone)).toEqual({ kind: 'in' });
+    expect(zoneStatus(2450, zone)).toEqual({ kind: 'above', amount: 150 });
+  });
+
+  it('puts a minimum target at the mark and keeps filling past it', () => {
+    expect(minimumFill(100, 100)).toBeCloseTo(MINIMUM_MARK);
+    expect(minimumFill(125, 100)).toBe(1);
+    expect(minimumFill(50, 100)).toBeCloseTo(MINIMUM_MARK / 2);
+    expect(minimumFill(10, 0)).toBe(0);
   });
 });
