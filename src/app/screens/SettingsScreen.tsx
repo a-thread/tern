@@ -53,9 +53,9 @@ export default function SettingsScreen({ navigation }: Props) {
         <GroupLabel>Activity</GroupLabel>
         <Group>
           <StepGoalRow onPress={() => navigation.navigate('StepGoal')} />
+          <HealthDataRow onPress={() => navigation.navigate('HealthData')} />
           <RestDaysRow onPress={() => navigation.navigate('RestDays')} />
           <StreakReminderRows />
-          <HealthDataRow onPress={() => navigation.navigate('HealthData')} />
         </Group>
 
         <GroupLabel>Food</GroupLabel>
