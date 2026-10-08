@@ -15,6 +15,7 @@ function DayRingBase({
   today,
   rest,
   frozen,
+  selected,
   size = 23,
   replayKey = 0,
   delay = 0,
@@ -25,6 +26,8 @@ function DayRingBase({
   rest?: boolean;
   /** A streak freeze covered this day. */
   frozen?: boolean;
+  /** The day being looked at: drawn with a thin outline. */
+  selected?: boolean;
   size?: number;
   /** Bump to refill the ring from empty. */
   replayKey?: number;
@@ -54,36 +57,43 @@ function DayRingBase({
   const track = rest ? '#E4DECE' : frozen ? '#D5E6EA' : colors.border;
   return (
     <View style={{ alignItems: 'center', gap: 4 }}>
-      <Svg
-        width={today ? size + 3 : size}
-        height={today ? size + 3 : size}
-        viewBox='0 0 30 30'
+      <View
+        style={[
+          cs.outline,
+          selected && { borderColor: colors.glacierDeep },
+        ]}
       >
-        <Circle
-          cx={15}
-          cy={15}
-          r={r}
-          fill='none'
-          stroke={track}
-          strokeWidth={4}
-        />
-        <AnimatedCircle
-          cx={15}
-          cy={15}
-          r={r}
-          fill='none'
-          stroke={stroke}
-          strokeWidth={4}
-          strokeLinecap='round'
-          strokeDasharray={circ}
-          strokeDashoffset={ringOffset as unknown as number}
-          transform='rotate(-90 15 15)'
-        />
-      </Svg>
+        <Svg
+          width={today ? size + 3 : size}
+          height={today ? size + 3 : size}
+          viewBox='0 0 30 30'
+        >
+          <Circle
+            cx={15}
+            cy={15}
+            r={r}
+            fill='none'
+            stroke={track}
+            strokeWidth={4}
+          />
+          <AnimatedCircle
+            cx={15}
+            cy={15}
+            r={r}
+            fill='none'
+            stroke={stroke}
+            strokeWidth={4}
+            strokeLinecap='round'
+            strokeDasharray={circ}
+            strokeDashoffset={ringOffset as unknown as number}
+            transform='rotate(-90 15 15)'
+          />
+        </Svg>
+      </View>
       <Text
         style={[
           cs.dayLabel,
-          today && { fontFamily: font.bold, color: colors.ink },
+          (today || selected) && { fontFamily: font.bold, color: colors.ink },
         ]}
       >
         {label}
@@ -96,5 +106,11 @@ function DayRingBase({
 export const DayRing = React.memo(DayRingBase);
 
 const cs = StyleSheet.create({
+  outline: {
+    padding: 3,
+    borderRadius: 999,
+    borderWidth: 1.5,
+    borderColor: 'transparent',
+  },
   dayLabel: { fontFamily: font.body, fontSize: 9.5, color: colors.ink2 },
 });

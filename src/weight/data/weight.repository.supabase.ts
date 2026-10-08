@@ -27,5 +27,9 @@ export function createSupabaseWeightRepository(
         .insert({ id: entry.id, lb: entry.lb, logged_at: entry.loggedAt });
       if (error) throw error;
     },
+    async update(id, lb) {
+      const { error } = await db.from('weight_entries').update({ lb }).eq('id', id);
+      if (error) throw error;
+    },
   };
 }

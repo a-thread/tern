@@ -11,6 +11,7 @@ import { mergeReminders, Reminders } from '@settings/models/reminderPlan';
 import { initialSettings, changesAnything } from '@settings/models/appSettings';
 import type { AppSettings } from '@settings/models/appSettings';
 import { Frequency } from '@shared/models/frequency';
+import { sanitizeCalorieZone } from '@food/models/intakeZone';
 
 type SettingsContextValue = {
   settings: AppSettings;
@@ -63,6 +64,9 @@ export function SettingsProvider({
           trackWater: saved?.trackWater === true,
           trackMood: saved?.trackMood === true,
           trackWeight: saved?.trackWeight !== false,
+          showIntakeBars: saved?.showIntakeBars === true,
+          proteinAsMinimum: saved?.proteinAsMinimum !== false,
+          calorieZone: sanitizeCalorieZone(saved?.calorieZone),
           celebratedMilestone:
             typeof saved?.celebratedMilestone === 'number' &&
             Number.isFinite(saved.celebratedMilestone)
