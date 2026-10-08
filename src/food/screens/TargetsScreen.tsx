@@ -19,9 +19,11 @@ import {
   FootNote,
   SegmentedControl,
   Stepper,
+  Row,
 } from '@shared/components/ui';
 import { useSettings } from '@settings/SettingsContext';
 import { useSliderValue } from '@shared/hooks/useSliderValue';
+import { nudgeZone, resolveZone, type CalorieZone } from '@food/models/intakeZone';
 import {
   gramRange,
   isValidSplit,
@@ -87,6 +89,7 @@ export default function TargetsScreen() {
     onCommit: setCalories,
   });
 
+  const zone = resolveZone(settings.calorieZone, settings.calorieTarget);
   const split = percentsFromMacros(settings.macroTargets);
   const selected = matchPreset(split);
 
@@ -190,6 +193,26 @@ export default function TargetsScreen() {
                 <FootNote>
                   Your macro percentages stay the same when you change calories.
                 </FootNote>
+
+                {settings.showIntakeBars ? (
+                  <>
+                    <GroupLabel>Target zone</GroupLabel>
+                    <Group>
+                      <Row
+                        title='Low'
+                        right={<ZoneStepper end='min' zone={zone} />}
+                      />
+                      <Row
+                        title='High'
+                        right={<ZoneStepper end='max' zone={zone} />}
+                      />
+                    </Group>
+                    <FootNote>
+                      The range shown on your intake bars. It starts around your
+                      calorie target, and you can set your own.
+                    </FootNote>
+                  </>
+                ) : null}
               </>
             ) : (
               <>
@@ -230,6 +253,20 @@ export default function TargetsScreen() {
                     </View>
                   </Pressable>
                 </Group>
+
+                {settings.showIntakeBars ? (
+                  <>
+                    <GroupLabel>Intake bars</GroupLabel>
+                    <Group>
+                      <ToggleRow
+                        title='Protein as a minimum'
+                        sub='Something to reach, not a limit'
+                        on={settings.proteinAsMinimum}
+                        onToggle={(v) => updateSettings({ proteinAsMinimum: v })}
+                      />
+                    </Group>
+                  </>
+                ) : null}
               </>
             )}
 
@@ -318,6 +355,22 @@ export default function TargetsScreen() {
         </View>
       </Modal>
     </View>
+  );
+}
+
+/** One end of the calorie zone, stepped in tens; the zone keeps its minimum gap. */
+function ZoneStepper({ end, zone }: { end: 'min' | 'max'; zone: CalorieZone }) {
+  const { updateSettings } = useSettings();
+  const label = end === 'min' ? 'minimum' : 'maximum';
+  return (
+    <Stepper
+      value={zone[end].toLocaleString()}
+      valueMinWidth={56}
+      decrementLabel={`Lower the zone ${label}`}
+      incrementLabel={`Raise the zone ${label}`}
+      onDecrement={() => updateSettings({ calorieZone: nudgeZone(zone, end, -1) })}
+      onIncrement={() => updateSettings({ calorieZone: nudgeZone(zone, end, 1) })}
+    />
   );
 }
 
