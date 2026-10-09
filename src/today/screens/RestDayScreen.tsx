@@ -1,7 +1,7 @@
 import React from 'react';
+import { Icon } from '@shared/components/ui';
 import { View, Text, StyleSheet, Pressable } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
-import Svg, { Path } from 'react-native-svg';
 
 import { colors, font, radius, space } from '@shared/theme';
 import type { RootStackParamList } from '@shared/navigation/types';
@@ -29,16 +29,7 @@ export default function RestDayScreen({ navigation, route }: Props) {
 
         <View style={s.head}>
           <View style={s.iconBadge}>
-            <Svg
-              width={17}
-              height={17}
-              viewBox='0 0 24 24'
-              fill='none'
-              stroke={colors.driftwood}
-              strokeWidth={2}
-            >
-              <Path d='M4 18h16M6 18v-3a6 6 0 0 1 12 0v3' />
-            </Svg>
+            <Icon name='weather-sunset' size={19} color={colors.driftwood} />
           </View>
           <View>
             <Text style={s.title}>Rest day</Text>

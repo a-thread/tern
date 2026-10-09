@@ -3,7 +3,6 @@ import { ActivityIndicator, View, Text, ScrollView, StyleSheet, Pressable } from
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import Svg, { Path } from 'react-native-svg';
 
 import { colors, font, radius, space, tierColors } from '@shared/theme';
 import {
@@ -12,6 +11,7 @@ import {
   Chevron,
   FootNote,
   SwipeToRemove,
+  Icon,
 } from '@shared/components/ui';
 import type { RootStackParamList } from '@shared/navigation/types';
 import { useViewedDay } from '@shared/state/ViewedDayContext';
@@ -265,14 +265,7 @@ function AddRow({ onPress }: { onPress: () => void }) {
       android_ripple={{ color: colors.coralTint }}
       onPress={onPress}
     >
-      <Svg width={13} height={13} viewBox='0 0 24 24' fill='none'>
-        <Path
-          d='M12 5v14M5 12h14'
-          stroke={colors.coral}
-          strokeWidth={3}
-          strokeLinecap='round'
-        />
-      </Svg>
+      <Icon name='plus' size={15} color={colors.coral} />
       <Text style={[s.foodName, { color: colors.coral }]}>Add food</Text>
     </Pressable>
   );
@@ -286,14 +279,7 @@ function SaveMealRow({ onPress }: { onPress: () => void }) {
       android_ripple={{ color: colors.doveTint }}
       onPress={onPress}
     >
-      <Svg width={13} height={13} viewBox='0 0 24 24' fill='none'>
-        <Path
-          d='M6 3h12v18l-6-4-6 4V3z'
-          stroke={colors.ink2}
-          strokeWidth={2.2}
-          strokeLinejoin='round'
-        />
-      </Svg>
+      <Icon name='bookmark-outline' size={15} color={colors.ink2} />
       <Text style={[s.foodName, { color: colors.ink2 }]}>Save as meal</Text>
     </Pressable>
   );
@@ -311,14 +297,7 @@ function SkipMealRow({ text, onPress }: { text: string; onPress: () => void }) {
       onPress={onPress}
       accessibilityRole='button'
     >
-      <Svg width={13} height={13} viewBox='0 0 24 24' fill='none'>
-        <Path
-          d='M5 12h14'
-          stroke={colors.ink2}
-          strokeWidth={2.4}
-          strokeLinecap='round'
-        />
-      </Svg>
+      <Icon name='minus' size={15} color={colors.ink2} />
       <Text style={[s.foodName, { color: colors.ink2 }]}>{text}</Text>
     </Pressable>
   );

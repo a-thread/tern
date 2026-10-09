@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { View, Text, ScrollView, StyleSheet, Pressable } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
-import Svg, { Path } from 'react-native-svg';
 
 import { colors, font, radius, space } from '@shared/theme';
 import { useToast } from '@shared/state/ToastContext';
@@ -14,6 +13,7 @@ import {
   IconBadge,
   Chip,
   FootNote,
+  Icon,
 } from '@shared/components/ui';
 import { formatLoggedAt } from '@weight/models/weightEntry';
 import { useActivity, useLastSynced } from '@today/ActivityContext';
@@ -91,16 +91,7 @@ export default function HealthDataScreen() {
       >
         <View style={s.summaryCard}>
           <IconBadge bg='#E4EFE6'>
-            <Svg
-              width={17}
-              height={17}
-              viewBox='0 0 24 24'
-              fill='none'
-              stroke='#3B6B4A'
-              strokeWidth={2}
-            >
-              <Path d='M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1-1.1a5.5 5.5 0 1 0-7.8 7.8l8.8 8.8 8.8-8.8a5.5 5.5 0 0 0 0-7.8z' />
-            </Svg>
+            <Icon name='heart-pulse' size={19} color='#3B6B4A' />
           </IconBadge>
           <View style={{ flex: 1 }}>
             <Text style={s.rowTitle}>Health Connect</Text>

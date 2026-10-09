@@ -1,6 +1,6 @@
 import React from 'react';
+import { Icon } from '@shared/components/ui';
 import { Pressable, StyleSheet, Text } from 'react-native';
-import Svg, { Path } from 'react-native-svg';
 
 import { colors, font, radius, space } from '@shared/theme';
 import type { RecentMeal } from '@food/models/recentMeals';
@@ -26,9 +26,7 @@ export function LogFoodMealsTab({
   return (
     <>
       <Pressable style={s.newMeal} onPress={onNewMeal}>
-        <Svg width={13} height={13} viewBox='0 0 24 24' fill='none'>
-          <Path d='M12 5v14M5 12h14' stroke={colors.coral} strokeWidth={3} strokeLinecap='round' />
-        </Svg>
+        <Icon name='plus' size={15} color={colors.coral} />
         <Text style={s.newMealText}>New meal</Text>
       </Pressable>
       {yourMeals.length ? <SavedMealGroup label='Your meals' meals={yourMeals} onPick={onOpenMeal} /> : null}

@@ -1,9 +1,8 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, Pressable, StyleSheet } from 'react-native';
-import Svg, { Path } from 'react-native-svg';
 
 import { colors, font, radius, space } from '@shared/theme';
-import { Card, ProgressBar } from '@shared/components/ui';
+import { Card, ProgressBar, Icon } from '@shared/components/ui';
 import { useToast } from '@shared/state/ToastContext';
 import { useUnits } from '@settings/hooks/useUnits';
 import { WaterLimits } from '@water/models/waterEntry';
@@ -50,13 +49,7 @@ export default function WaterCard({ bare = false }: { bare?: boolean }) {
         <>
           <View style={s.top}>
             <View style={s.title}>
-              <Svg width={15} height={15} viewBox='0 0 24 24' fill='none'>
-                <Path
-                  d='M12 3c-4 3-6 6-6 9a6 6 0 0 0 12 0c0-3-2-6-6-9z'
-                  stroke={colors.water}
-                  strokeWidth={2}
-                />
-              </Svg>
+              <Icon name='water-outline' size={17} color={colors.water} />
               <Text style={s.name}>Water</Text>
             </View>
             <Text style={s.amount}>

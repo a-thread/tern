@@ -2,10 +2,9 @@ import React, { useState } from 'react';
 import { Pressable, StyleSheet, Text } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import Svg, { Path } from 'react-native-svg';
 
 import { colors, font, radius } from '@shared/theme';
-import { Group, GroupLabel, IconBadge, Row } from '@shared/components/ui';
+import { Group, GroupLabel, IconBadge, Row, Icon } from '@shared/components/ui';
 import type { RootStackParamList } from '@shared/navigation/types';
 import { useUnits } from '@settings/hooks/useUnits';
 import { formatMinutes } from '@settings/models/reminderPlan';
@@ -41,9 +40,7 @@ export function LeftToDoList() {
               onPress={() => setWaterOpen(true)}
               icon={
                 <IconBadge bg={colors.waterTint}>
-                  <Svg width={14} height={14} viewBox='0 0 24 24' fill='none'>
-                    <Path d='M12 3c-4 3-6 6-6 9a6 6 0 0 0 12 0c0-3-2-6-6-9z' stroke={colors.water} strokeWidth={2} />
-                  </Svg>
+                  <Icon name='water-outline' size={16} color={colors.water} />
                 </IconBadge>
               }
               right={
@@ -67,13 +64,7 @@ export function LeftToDoList() {
               onPress={() => navigation.navigate('CheckIn')}
               icon={
                 <IconBadge bg={colors.violetTint}>
-                  <Svg width={14} height={14} viewBox='0 0 24 24' fill='none'>
-                    <Path
-                      d='M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM8.5 14.5s1 1.5 3.5 1.5 3.5-1.5 3.5-1.5M9 9.5h.01M15 9.5h.01'
-                      stroke={colors.violet}
-                      strokeWidth={2}
-                    />
-                  </Svg>
+                  <Icon name='emoticon-happy-outline' size={16} color={colors.violet} />
                 </IconBadge>
               }
               chevron
@@ -86,13 +77,7 @@ export function LeftToDoList() {
               onPress={() => setTaken(item.medicationId, true)}
               icon={
                 <IconBadge bg={colors.violetTint}>
-                  <Svg width={14} height={14} viewBox='0 0 24 24' fill='none'>
-                    <Path
-                      d='M10.5 20.5 3.5 13.5a4.95 4.95 0 0 1 7-7l7 7a4.95 4.95 0 0 1-7 7zM8.5 8.5l7 7'
-                      stroke={colors.violet}
-                      strokeWidth={2}
-                    />
-                  </Svg>
+                  <Icon name='pill' size={16} color={colors.violet} />
                 </IconBadge>
               }
               right={<Text style={s.markText}>Mark taken</Text>}
@@ -105,10 +90,7 @@ export function LeftToDoList() {
               onPress={() => navigation.navigate('LogFood', { meal: item.meal })}
               icon={
                 <IconBadge bg={colors.kelpTint}>
-                  <Svg width={14} height={14} viewBox='0 0 24 24' fill='none'>
-                    <Path d='M2,12 C6,6 14,6 18,12 C14,18 6,18 2,12 Z' stroke={colors.kelp} strokeWidth={2} />
-                    <Path d='M18,12 L22,8.5 L22,15.5 Z' stroke={colors.kelp} strokeWidth={2} />
-                  </Svg>
+                  <Icon name='silverware-fork-knife' size={16} color={colors.kelp} />
                 </IconBadge>
               }
               chevron
@@ -125,13 +107,7 @@ export function LeftToDoList() {
               onPress={() => navigation.navigate('LogWeight')}
               icon={
                 <IconBadge bg={colors.waterTint}>
-                  <Svg width={14} height={14} viewBox='0 0 24 24' fill='none'>
-                    <Path
-                      d='M6 5h12M9 5v2a3 3 0 1 0 6 0V5M7 19h10M9 19c0-4 1-6 3-7 2 1 3 3 3 7'
-                      stroke={colors.water}
-                      strokeWidth={2}
-                    />
-                  </Svg>
+                  <Icon name='scale-bathroom' size={16} color={colors.water} />
                 </IconBadge>
               }
               chevron

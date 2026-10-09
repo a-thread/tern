@@ -3,6 +3,8 @@ import type { LedgerEvent } from './waypoint';
 export type Milestone = {
   id: string;
   name: string;
+  /** A line about the place, for the card that celebrates reaching it. */
+  note: string;
   /** The running total that reaches this stop. */
   waypoints: number;
   /** Which migration this stop is on: 1 for the first trip, 2 for the second… */
@@ -21,18 +23,73 @@ export class Milestones {
   * after the last stop the next migration begins, so the journey never runs
   * out. Nothing here depends on weight or calories.
   */
-  static readonly STOPS: { id: string; name: string; waypoints: number }[] = [
-    { id: 'iceland', name: 'Iceland', waypoints: 250 },
-    { id: 'north-atlantic', name: 'The North Atlantic stopover', waypoints: 600 },
-    { id: 'azores', name: 'The Azores', waypoints: 1000 },
-    { id: 'cape-verde', name: 'Cape Verde', waypoints: 1500 },
-    { id: 'namibia', name: 'The Namibian coast', waypoints: 2200 },
-    { id: 'cape-town', name: 'Cape Town', waypoints: 3000 },
-    { id: 'weddell', name: 'The Weddell Sea', waypoints: 4000 },
-    { id: 'south-georgia', name: 'South Georgia', waypoints: 4700 },
-    { id: 'mid-atlantic', name: 'The mid-Atlantic', waypoints: 5600 },
-    { id: 'newfoundland', name: 'Newfoundland', waypoints: 6600 },
-    { id: 'greenland', name: 'Home to Greenland', waypoints: 7600 },
+  static readonly STOPS: { id: string; name: string; note: string; waypoints: number }[] = [
+    {
+      id: 'iceland',
+      name: 'Iceland',
+      note: 'Iceland is home to one of the largest Arctic tern colonies anywhere.',
+      waypoints: 250,
+    },
+    {
+      id: 'north-atlantic',
+      name: 'The North Atlantic stopover',
+      note: 'Tracked terns pause out here for weeks, feeding up before the long run south.',
+      waypoints: 600,
+    },
+    {
+      id: 'azores',
+      name: 'The Azores',
+      note: 'Islands in the middle of the ocean, a rare patch of land on the way south.',
+      waypoints: 1000,
+    },
+    {
+      id: 'cape-verde',
+      name: 'Cape Verde',
+      note: 'Off West Africa the route splits: some terns cross toward Brazil, others keep to the African coast.',
+      waypoints: 1500,
+    },
+    {
+      id: 'namibia',
+      name: 'The Namibian coast',
+      note: 'A cold current along this coast brings up plenty of food for passing seabirds.',
+      waypoints: 2200,
+    },
+    {
+      id: 'cape-town',
+      name: 'Cape Town',
+      note: 'At the tip of Africa, the route turns toward the Southern Ocean.',
+      waypoints: 3000,
+    },
+    {
+      id: 'weddell',
+      name: 'The Weddell Sea',
+      note: 'Terns spend the southern summer here by the pack ice, in almost constant daylight.',
+      waypoints: 4000,
+    },
+    {
+      id: 'south-georgia',
+      name: 'South Georgia',
+      note: 'A wild island famous for its seabirds, passed on the way back north.',
+      waypoints: 4700,
+    },
+    {
+      id: 'mid-atlantic',
+      name: 'The mid-Atlantic',
+      note: 'Heading home, terns fly up the middle of the ocean in a wide S, riding the winds.',
+      waypoints: 5600,
+    },
+    {
+      id: 'newfoundland',
+      name: 'Newfoundland',
+      note: 'The last long stretch, past Newfoundland and on toward the Arctic.',
+      waypoints: 6600,
+    },
+    {
+      id: 'greenland',
+      name: 'Home to Greenland',
+      note: 'Back at the colony, where terns return to nest year after year, often to the same spot.',
+      waypoints: 7600,
+    },
   ];
 
   /** Waypoints in one full migration. */

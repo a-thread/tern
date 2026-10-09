@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
+import { Icon } from '@shared/components/ui';
 import { Animated, Easing, Pressable, StyleSheet, TextInput, View } from 'react-native';
-import Svg, { Path } from 'react-native-svg';
 
 import { colors, font, radius, space } from '@shared/theme';
 
@@ -22,9 +22,7 @@ export function FoodSearchBar({
 }) {
   return (
     <View style={s.bar}>
-      <Svg width={15} height={15} viewBox='0 0 24 24' fill='none' stroke={colors.ink3} strokeWidth={2.5}>
-        <Path d='M11 4a7 7 0 1 0 0 14 7 7 0 0 0 0-14zM20 20l-4-4' />
-      </Svg>
+      <Icon name='magnify' size={17} color={colors.ink3} />
       <TextInput
         value={value}
         onChangeText={onChange}
@@ -34,9 +32,7 @@ export function FoodSearchBar({
         autoFocus
       />
       <Pressable style={s.scan} onPress={onScan} accessibilityLabel='Scan a barcode'>
-        <Svg width={15} height={15} viewBox='0 0 24 24' fill='none' stroke='#fff' strokeWidth={2}>
-          <Path d='M3 7V5a2 2 0 0 1 2-2h2M17 3h2a2 2 0 0 1 2 2v2M21 17v2a2 2 0 0 1-2 2h-2M7 21H5a2 2 0 0 1-2-2v-2M6 12h12' />
-        </Svg>
+        <Icon name='barcode-scan' size={17} color='#fff' />
       </Pressable>
       {busy ? <ProgressLine /> : null}
     </View>

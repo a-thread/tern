@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet, Pressable } from 'react-native';
-import Svg, { Path } from 'react-native-svg';
+import { Icon } from './Icon';
 import { colors, font, space } from '@shared/theme';
 
 /** Nav bar for logging sheets: Cancel/Back on the left, an optional bold action on the right. */
@@ -51,16 +51,7 @@ export function PushHeader({
   return (
     <View style={s.pushHeader}>
       <Pressable onPress={onBack} hitSlop={8} style={s.pushBack}>
-        <Svg
-          width={15}
-          height={15}
-          viewBox='0 0 24 24'
-          fill='none'
-          stroke={colors.coral}
-          strokeWidth={3}
-        >
-          <Path d='M15 6l-6 6 6 6' />
-        </Svg>
+        <Icon name='chevron-left' size={17} color={colors.coral} />
         <Text style={s.pushBackText} numberOfLines={1}>
           {backLabel}
         </Text>

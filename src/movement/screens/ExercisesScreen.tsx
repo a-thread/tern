@@ -2,10 +2,9 @@ import React, { useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
-import Svg, { Path } from 'react-native-svg';
 
 import { colors, font, radius, space } from '@shared/theme';
-import { FootNote, Group, GroupLabel, Row, SheetNav } from '@shared/components/ui';
+import { FootNote, Group, GroupLabel, Row, SheetNav, Icon } from '@shared/components/ui';
 import { useDayKey } from '@shared/hooks/useDayKey';
 import { addDays } from '@shared/utils/date';
 import { useUnits } from '@settings/hooks/useUnits';
@@ -78,9 +77,7 @@ export default function ExercisesScreen({ navigation, route }: Props) {
         {canLog ? (
           <>
             <View style={s.search}>
-              <Svg width={15} height={15} viewBox='0 0 24 24' fill='none' stroke={colors.ink3} strokeWidth={2.5}>
-                <Path d='M11 4a7 7 0 1 0 0 14 7 7 0 0 0 0-14zM20 20l-4-4' />
-              </Svg>
+              <Icon name='magnify' size={17} color={colors.ink3} />
               <TextInput
                 value={query}
                 onChangeText={setQuery}

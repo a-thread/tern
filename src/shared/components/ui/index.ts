@@ -11,6 +11,7 @@ export {
   Insight,
 } from './Layout';
 export { Chevron } from './Chevron';
+export { Icon, type IconName } from './Icon';
 export { ProgressBar, MacroBar } from './Bars';
 export { SheetNav, PushHeader } from './SheetChrome';
 export { Toggle, ToggleRow } from './Toggle';

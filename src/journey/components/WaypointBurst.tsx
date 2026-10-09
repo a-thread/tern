@@ -40,7 +40,8 @@ function Sparkle() {
  * (the waypoints chip). Coordinates are relative to this component's
  * container, which should fill the screen. `onArrive` fires as the first
  * wave lands — that's when the caller should let the displayed total tick
- * up — and `onDone` once everything has faded out.
+ * up — and `onDone` once everything has faded out. Without `points` there is no
+ * "+10" label: just the feathers (a milestone's card uses them this way).
  */
 export default function WaypointBurst({
   id,
@@ -52,8 +53,8 @@ export default function WaypointBurst({
   onDone,
 }: {
   id: number;
-  points: number;
-  label: string;
+  points?: number;
+  label?: string;
   origin: Point;
   target: Point;
   onArrive: () => void;
@@ -151,30 +152,32 @@ export default function WaypointBurst({
         );
       })}
 
-      <Animated.View
-        style={[
-          s.label,
-          {
-            left: origin.x - 90,
-            top: origin.y - 34,
-            opacity: t.interpolate({
-              inputRange: [0, 0.06, 0.6, 0.85],
-              outputRange: [0, 1, 1, 0],
-            }),
-            transform: [
-              {
-                translateY: t.interpolate({
-                  inputRange: [0, 1],
-                  outputRange: [0, -34],
-                }),
-              },
-            ],
-          },
-        ]}
-      >
-        <Text style={s.points}>+{points}</Text>
-        <Text style={s.reason}>{label}</Text>
-      </Animated.View>
+      {points ? (
+        <Animated.View
+          style={[
+            s.label,
+            {
+              left: origin.x - 90,
+              top: origin.y - 34,
+              opacity: t.interpolate({
+                inputRange: [0, 0.06, 0.6, 0.85],
+                outputRange: [0, 1, 1, 0],
+              }),
+              transform: [
+                {
+                  translateY: t.interpolate({
+                    inputRange: [0, 1],
+                    outputRange: [0, -34],
+                  }),
+                },
+              ],
+            },
+          ]}
+        >
+          <Text style={s.points}>+{points}</Text>
+          {label ? <Text style={s.reason}>{label}</Text> : null}
+        </Animated.View>
+      ) : null}
     </View>
   );
 }

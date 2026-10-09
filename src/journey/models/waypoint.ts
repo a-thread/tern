@@ -34,7 +34,7 @@ export class WaypointRules {
    * is the first milestone's bonus; later ones pay more.
    */
   static readonly ALL: { id: WaypointSource; label: string; points: number }[] = [
-    { id: WaypointSource.Steps, label: 'A goal day: steps or movement', points: 40 },
+    { id: WaypointSource.Steps, label: 'Reaching your step goal', points: 40 },
     { id: WaypointSource.Meals, label: 'Logging all meals', points: 15 },
     { id: WaypointSource.Breakfast, label: 'Logging breakfast', points: 5 },
     { id: WaypointSource.Lunch, label: 'Logging lunch', points: 5 },

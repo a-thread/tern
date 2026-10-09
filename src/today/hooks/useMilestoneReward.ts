@@ -20,14 +20,6 @@ export function useMilestoneReward(animating: boolean) {
   useEffect(() => {
     if (!isFocused || animating || celebrations.length || !pendingMilestone) return;
     markCelebrated(pendingMilestone);
-    navigation.navigate('Reward', {
-      kind: 'milestone',
-      title: pendingMilestone.name,
-      subtitle:
-        pendingMilestone.lap > 1
-          ? `Milestone reached · Migration ${pendingMilestone.lap}`
-          : 'Milestone reached',
-      footer: 'Earned for showing up — never for weight or calories.',
-    });
+    navigation.navigate('Milestone', { waypoints: pendingMilestone.waypoints });
   }, [isFocused, animating, celebrations.length, pendingMilestone, markCelebrated, navigation]);
 }

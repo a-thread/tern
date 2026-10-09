@@ -2,10 +2,9 @@ import React from 'react';
 import { Animated, Pressable, StyleSheet, Text, View } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import Svg, { Path } from 'react-native-svg';
 
 import { colors, font, space } from '@shared/theme';
-import { Chip } from '@shared/components/ui';
+import { Chip, Icon } from '@shared/components/ui';
 import TernMark from '@shared/components/TernMark';
 import { AnimatedNumber } from '@shared/components/AnimatedNumber';
 import { useDayKey } from '@shared/hooks/useDayKey';
@@ -36,12 +35,7 @@ export function TodayHeader({ chipRef }: { chipRef: React.RefObject<View | null>
       <View style={s.actions}>
         <Pressable
           onPress={() =>
-            navigation.navigate('Reward', {
-              kind: 'goal',
-              title: 'Waypoints so far',
-              subtitle: streak > 0 ? `${streak}-day streak` : 'Every step counts',
-              footer: 'Earned for showing up — never for weight or calories.',
-            })
+            navigation.navigate('Waypoints', { streak })
           }
         >
           <Animated.View ref={chipRef} collapsable={false} style={{ transform: [{ scale: pulse }] }}>
@@ -52,10 +46,7 @@ export function TodayHeader({ chipRef }: { chipRef: React.RefObject<View | null>
           </Animated.View>
         </Pressable>
         <Pressable onPress={() => navigation.navigate('Settings')} hitSlop={8} style={s.gear}>
-          <Svg width={19} height={19} viewBox='0 0 24 24' fill='none' stroke={colors.ink2} strokeWidth={2}>
-            <Path d='M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z' />
-            <Path d='M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09a1.65 1.65 0 0 0-1.08-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09a1.65 1.65 0 0 0 1.51-1.08 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z' />
-          </Svg>
+          <Icon name='cog-outline' size={21} color={colors.ink2} />
         </Pressable>
       </View>
     </View>

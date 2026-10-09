@@ -1,8 +1,8 @@
 import React from 'react';
+import { Icon } from '@shared/components/ui';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import Svg, { Path } from 'react-native-svg';
 
 import { colors, font } from '@shared/theme';
 import TernMark from '@shared/components/TernMark';
@@ -17,7 +17,8 @@ import CheckInScreen from '@mood/screens/CheckInScreen';
 import MovementStack from '@movement/screens/MovementStack';
 import TrendsStack from '@trends/screens/TrendsStack';
 import JourneyScreen from '@journey/screens/JourneyScreen';
-import RewardScreen from '@journey/screens/RewardScreen';
+import WaypointsScreen from '@journey/screens/WaypointsScreen';
+import MilestoneScreen from '@journey/screens/MilestoneScreen';
 import SettingsStack from './SettingsStack';
 import type { RootStackParamList, TabParamList } from '@shared/navigation/types';
 
@@ -96,7 +97,8 @@ export default function RootNavigator() {
           freezeOnBlur: false,
         }}
       >
-        <RootStack.Screen name='Reward' component={RewardScreen} />
+        <RootStack.Screen name='Waypoints' component={WaypointsScreen} />
+        <RootStack.Screen name='Milestone' component={MilestoneScreen} />
         <RootStack.Screen name='RestDay' component={RestDayScreen} />
       </RootStack.Group>
     </RootStack.Navigator>
@@ -104,35 +106,13 @@ export default function RootNavigator() {
 }
 
 const HomeIcon = ({ color }: { color: string }) => (
-  <Svg width={21} height={21} viewBox='0 0 24 24' fill='none'>
-    <Path
-      d='M4 11.5 12 4l8 7.5M6 10v9h12v-9'
-      stroke={color}
-      strokeWidth={2}
-      strokeLinecap='round'
-    />
-  </Svg>
+  <Icon name='home-outline' size={23} color={color} />
 );
 
 const FoodIcon = ({ color }: { color: string }) => (
-  <Svg width={21} height={21} viewBox='0 0 24 24' fill='none'>
-    <Path
-      d='M6 3v5.5a2.5 2.5 0 0 0 5 0V3M8.5 3v18M17 21V3c-2 1.5-3 4-3 7 0 1.5.8 2.5 3 3'
-      stroke={color}
-      strokeWidth={2}
-      strokeLinecap='round'
-      strokeLinejoin='round'
-    />
-  </Svg>
+  <Icon name='silverware-fork-knife' size={23} color={color} />
 );
 
 const ChartIcon = ({ color }: { color: string }) => (
-  <Svg width={21} height={21} viewBox='0 0 24 24' fill='none'>
-    <Path
-      d='M4 19V9m6 10V4m6 15v-6'
-      stroke={color}
-      strokeWidth={2}
-      strokeLinecap='round'
-    />
-  </Svg>
+  <Icon name='chart-bar' size={23} color={color} />
 );

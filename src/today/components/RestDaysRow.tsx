@@ -1,8 +1,7 @@
 import React from 'react';
-import Svg, { Path } from 'react-native-svg';
 
 import { colors } from '@shared/theme';
-import { IconBadge, Row } from '@shared/components/ui';
+import { IconBadge, Row, Icon } from '@shared/components/ui';
 import { useSettings } from '@settings/SettingsContext';
 
 /** A Settings row showing the weekly rest-day allowance; tapping it opens the rest-days screen. */
@@ -12,9 +11,7 @@ export function RestDaysRow({ onPress }: { onPress: () => void }) {
     <Row
       icon={
         <IconBadge bg={colors.driftwoodTint}>
-          <Svg width={15} height={15} viewBox='0 0 24 24' fill='none' stroke={colors.driftwood} strokeWidth={2}>
-            <Path d='M4 18h16M6 18v-3a6 6 0 0 1 12 0v3' />
-          </Svg>
+          <Icon name='weather-sunset' size={17} color={colors.driftwood} />
         </IconBadge>
       }
       title='Rest days'

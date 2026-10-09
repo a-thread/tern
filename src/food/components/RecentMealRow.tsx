@@ -1,9 +1,8 @@
 import React from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
-import Svg, { Path } from 'react-native-svg';
 
 import { colors, font } from '@shared/theme';
-import { Chevron } from '@shared/components/ui';
+import { Chevron, Icon } from '@shared/components/ui';
 import { savedMealTotals } from '@food/models/savedMeals';
 import type { RecentMeal } from '@food/models/recentMeals';
 import { useFoodDisplay } from '@food/hooks/useFoodDisplay';
@@ -17,15 +16,7 @@ export function RecentMealRow({ meal, onPress }: { meal: RecentMeal; onPress: ()
   return (
     <Pressable style={s.row} android_ripple={{ color: colors.doveTint }} onPress={onPress}>
       <View style={s.icon}>
-        <Svg width={13} height={13} viewBox='0 0 24 24' fill='none'>
-          <Path
-            d='M12 3a9 9 0 1 0 9 9M12 7v5l3 2'
-            stroke={colors.ink2}
-            strokeWidth={2.2}
-            strokeLinecap='round'
-            strokeLinejoin='round'
-          />
-        </Svg>
+        <Icon name='history' size={15} color={colors.ink2} />
       </View>
       <View style={{ flex: 1 }}>
         <Text style={s.title}>{meal.title}</Text>

@@ -2,10 +2,9 @@ import React from 'react';
 import { View, Text, ScrollView, StyleSheet } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
-import Svg, { Path } from 'react-native-svg';
 
 import { colors, font, radius, space } from '@shared/theme';
-import { Group, GroupLabel, PushHeader, ToggleRow, IconBadge, Stepper } from '@shared/components/ui';
+import { Group, GroupLabel, PushHeader, ToggleRow, IconBadge, Stepper, Icon } from '@shared/components/ui';
 import { useSettings } from '@settings/SettingsContext';
 import { useActivity } from '@today/ActivityContext';
 import { StreakFreezes } from '@today/models/dayRecord';
@@ -77,16 +76,7 @@ export default function RestDaysScreen() {
           />
           <View style={s.row}>
             <IconBadge bg={colors.driftwoodTint}>
-              <Svg
-                width={14}
-                height={14}
-                viewBox='0 0 24 24'
-                fill='none'
-                stroke={colors.driftwood}
-                strokeWidth={2.5}
-              >
-                <Path d='M5 12h14' />
-              </Svg>
+              <Icon name='minus' size={16} color={colors.driftwood} />
             </IconBadge>
             <View style={{ flex: 1 }}>
               <Text style={s.rowTitle}>Shows in driftwood</Text>
@@ -131,16 +121,7 @@ function InfoRow({ text, sub }: { text: string; sub: string }) {
   return (
     <View style={s.row}>
       <IconBadge bg='#E4EFE6'>
-        <Svg
-          width={14}
-          height={14}
-          viewBox='0 0 24 24'
-          fill='none'
-          stroke='#3B6B4A'
-          strokeWidth={2.5}
-        >
-          <Path d='M20 6 9 17l-5-5' />
-        </Svg>
+        <Icon name='check' size={16} color='#3B6B4A' />
       </IconBadge>
       <View style={{ flex: 1 }}>
         <Text style={s.rowTitle}>{text}</Text>

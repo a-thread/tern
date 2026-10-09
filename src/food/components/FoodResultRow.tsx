@@ -1,9 +1,8 @@
 import React from 'react';
 import { StyleSheet, View } from 'react-native';
-import Svg, { Path } from 'react-native-svg';
 
 import { colors, tierColors } from '@shared/theme';
-import { Row } from '@shared/components/ui';
+import { Row, Icon } from '@shared/components/ui';
 import type { SearchResult } from '@food/data/sources/searchResult';
 import type { FoodSource } from '@food/models/foodRanking';
 import { useFoodDisplay } from '@food/hooks/useFoodDisplay';
@@ -70,9 +69,7 @@ export function FoodResultRow({
       onPress={onPress}
       right={
         <View style={s.plusBtn}>
-          <Svg width={12} height={12} viewBox='0 0 24 24' fill='none' stroke={colors.coral} strokeWidth={3}>
-            <Path d='M12 5v14M5 12h14' />
-          </Svg>
+          <Icon name='plus' size={14} color={colors.coral} />
         </View>
       }
     />

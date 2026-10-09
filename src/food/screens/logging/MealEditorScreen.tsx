@@ -10,10 +10,9 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
-import Svg, { Path } from 'react-native-svg';
 
 import { colors, font, radius, space, tierColors } from '@shared/theme';
-import { Group, GroupLabel, SheetNav, Stepper } from '@shared/components/ui';
+import { Group, GroupLabel, SheetNav, Stepper, Icon } from '@shared/components/ui';
 import { useToast } from '@shared/state/ToastContext';
 import { TierDot } from '@food/components/TierDot';
 import { useFoodDisplay } from '@food/hooks/useFoodDisplay';
@@ -156,9 +155,7 @@ export default function MealEditorScreen({ navigation }: Props) {
             onPress={addFood}
             disabled={atLimit}
           >
-            <Svg width={13} height={13} viewBox='0 0 24 24' fill='none'>
-              <Path d='M12 5v14M5 12h14' stroke={colors.coral} strokeWidth={3} strokeLinecap='round' />
-            </Svg>
+            <Icon name='plus' size={15} color={colors.coral} />
             <Text style={[s.name, { color: colors.coral }]}>
               {atLimit ? `Up to ${SavedMealLimits.MAX_ITEMS} foods` : 'Add food'}
             </Text>

@@ -19,15 +19,6 @@ export type SettingsStackParamList = {
   Medication: undefined;
 };
 
-export type RewardParams = {
-  kind: 'goal' | 'milestone' | 'loafing';
-  title: string;
-  subtitle: string;
-  /** Omit for a plain status view (e.g. "waypoints so far") with no specific event just earned. */
-  points?: number;
-  footer?: string;
-};
-
 export type RestDayParams = {
   dayName: string;
   steps: number;
@@ -44,7 +35,10 @@ export type RootStackParamList = {
   EditFood: { entryId: string };
   SaveMeal: { meal: FoodEntry['meal'] };
   Settings: NavigatorScreenParams<SettingsStackParamList> | undefined;
-  Reward: RewardParams;
+  /** The waypoints card, from the chip on Today. */
+  Waypoints: { streak: number };
+  /** Passing a stop: `waypoints` is the stop's running total. */
+  Milestone: { waypoints: number };
   RestDay: RestDayParams;
 };
 

@@ -114,7 +114,7 @@ export function DoneList() {
         {summary.stepGoalReached ? (
           <Row
             key='done-steps'
-            title={movedToGoal ? 'Goal day' : 'Step goal reached'}
+            title='Step goal reached'
             sub={
               movedToGoal
                 ? `by movement · ${steps.toLocaleString()} steps`

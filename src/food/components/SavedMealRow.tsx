@@ -1,9 +1,8 @@
 import React from 'react';
 import { StyleSheet, View } from 'react-native';
-import Svg, { Path } from 'react-native-svg';
 
 import { colors } from '@shared/theme';
-import { Row } from '@shared/components/ui';
+import { Row, Icon } from '@shared/components/ui';
 import { savedMealTotals, type SavedMeal } from '@food/models/savedMeals';
 import { useFoodDisplay } from '@food/hooks/useFoodDisplay';
 
@@ -16,9 +15,7 @@ export function SavedMealRow({ meal, onPress }: { meal: SavedMeal; onPress: () =
     <Row
       icon={
         <View style={s.icon}>
-          <Svg width={13} height={13} viewBox='0 0 24 24' fill='none'>
-            <Path d='M6 3h12v18l-6-4-6 4V3z' stroke={colors.ink2} strokeWidth={2.2} strokeLinejoin='round' />
-          </Svg>
+          <Icon name='bookmark-outline' size={15} color={colors.ink2} />
         </View>
       }
       title={meal.name}

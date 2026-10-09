@@ -2,10 +2,9 @@ import React, { useState } from 'react';
 import { View, Text, ScrollView, StyleSheet } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
-import Svg, { Path } from 'react-native-svg';
 
 import { colors, font, space } from '@shared/theme';
-import { Card, GroupLabel, PushHeader, Row, Insight, FootNote, LegendDot, SegmentedControl } from '@shared/components/ui';
+import { Card, GroupLabel, PushHeader, Row, Insight, FootNote, LegendDot, SegmentedControl, Icon } from '@shared/components/ui';
 import { WeightTrend } from '@shared/components/charts/WeightTrend';
 import { useWeight } from '@weight/WeightContext';
 import { useSettings } from '@settings/SettingsContext';
@@ -85,16 +84,7 @@ export default function WeightDetailScreen({ navigation }: Props) {
             </>
           ) : (
             <View style={s.emptyWeight}>
-              <Svg
-                width={36}
-                height={36}
-                viewBox='0 0 24 24'
-                fill='none'
-                stroke={colors.dove}
-                strokeWidth={1.5}
-              >
-                <Path d='M4 19V9m6 10V4m6 15v-6' />
-              </Svg>
+              <Icon name='chart-bar' size={36} color={colors.dove} />
               <Text style={s.emptyTitle}>Not enough weigh-ins here yet</Text>
               <Text style={s.emptyBody}>
                 {`A trend needs at least two weigh-ins in this range, and you have ${weightTrend.length}.`}
@@ -109,14 +99,7 @@ export default function WeightDetailScreen({ navigation }: Props) {
         {hasTrend ? (
           <Insight
             icon={
-              <Svg width={13} height={13} viewBox='0 0 24 24' fill='none'>
-                <Path
-                  d='M3 17l6-6 4 4 8-8'
-                  stroke={colors.water}
-                  strokeWidth={2}
-                  strokeLinecap='round'
-                />
-              </Svg>
+              <Icon name='trending-up' size={15} color={colors.water} />
             }
           >
             {`The shaded band is your day-to-day spread — usually about ${formatWeight(spread * 2)} wide. That's normal fluctuation, not change.`}
