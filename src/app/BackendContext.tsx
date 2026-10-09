@@ -57,6 +57,12 @@ import {
   type CommonFoodsRepository,
 } from '@food/data/commonFoods.repository';
 import { createSupabaseCommonFoodsRepository } from '@food/data/commonFoods.repository.supabase';
+import {
+  createMemoryMovementRepository,
+  type MovementRepository,
+} from '@movement/data/movement.repository';
+import { createSupabaseMovementRepository } from '@movement/data/movement.repository.supabase';
+import { createHealthConnectWorkouts, type WorkoutsSource } from '@movement/data/movement.healthconnect';
 import type { DataRepository } from '@settings/data/dataRepository';
 import { createSupabaseDataRepository } from '@settings/data/dataRepository.supabase';
 
@@ -72,6 +78,9 @@ export type Backend = {
   medication: MedicationRepository;
   water: WaterRepository;
   mood: MoodRepository;
+  movement: MovementRepository;
+  /** Workouts read from Health Connect; null where it isn't available. */
+  workouts: WorkoutsSource | null;
   /** The shared common-foods list that search uses on the phone. */
   commonFoods: CommonFoodsRepository;
   /** Export and erase, for signed-in accounts. Absent in local mode, where nothing is stored. */
@@ -92,6 +101,8 @@ export function createMemoryBackend(): Backend {
     water: createMemoryWaterRepository(),
     mood: createMemoryMoodRepository(),
     commonFoods: createMemoryCommonFoodsRepository(),
+    movement: createMemoryMovementRepository(),
+    workouts: null,
   };
 }
 
@@ -114,6 +125,8 @@ export function createRemoteBackend(): Backend {
     water: createSupabaseWaterRepository(supabase),
     mood: createSupabaseMoodRepository(supabase),
     commonFoods: createSupabaseCommonFoodsRepository(supabase),
+    movement: createSupabaseMovementRepository(supabase),
+    workouts: createHealthConnectWorkouts(),
     data: createSupabaseDataRepository(supabase),
   };
 }

@@ -12,6 +12,7 @@ import { ActivityProvider, useActivity } from '@today/ActivityContext';
 import { MedicationProvider, useMedication } from '@medication/MedicationContext';
 import { WaterProvider, useWater } from '@water/WaterContext';
 import { MoodProvider, useMood } from '@mood/MoodContext';
+import { MovementProvider, useMovement } from '@movement/MovementContext';
 import { useBackend, type Backend } from './BackendContext';
 import { assertProviderOrder, type ProviderSpec } from './providerOrder';
 
@@ -71,8 +72,17 @@ const PROVIDERS: readonly Entry[] = [
     wrap: (c, b) => <MoodProvider repo={b.mood}>{c}</MoodProvider>,
   },
   {
-    name: 'activity',
+    name: 'movement',
     needs: ['settings', 'waypoints'],
+    wrap: (c, b) => (
+      <MovementProvider repo={b.movement} workouts={b.workouts}>
+        {c}
+      </MovementProvider>
+    ),
+  },
+  {
+    name: 'activity',
+    needs: ['settings', 'waypoints', 'movement'],
     wrap: (c, b) => (
       <ActivityProvider steps={b.steps} restDays={b.restDays}>
         {c}
@@ -105,6 +115,7 @@ function LoadGate({ children }: { children: React.ReactNode }) {
     useMedication().ready,
     useWater().ready,
     useMood().ready,
+    useMovement().ready,
     useWaypoints().ready,
     useActivity().ready,
   ].every(Boolean);

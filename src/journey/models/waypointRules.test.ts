@@ -74,7 +74,13 @@ describe('the ledger check in the database', () => {
       expect(ids.map(pointsFor)).toEqual(ids.map(() => points));
     fixed(40, [WaypointSource.Steps]);
     fixed(15, [WaypointSource.Meals]);
-    fixed(10, [WaypointSource.Rest, WaypointSource.Water, WaypointSource.Mood, WaypointSource.Medication]);
+    fixed(10, [
+      WaypointSource.Rest,
+      WaypointSource.Water,
+      WaypointSource.Mood,
+      WaypointSource.Medication,
+      WaypointSource.Movement,
+    ]);
     fixed(5, [WaypointSource.Weight, WaypointSource.Breakfast, WaypointSource.Lunch, WaypointSource.Dinner]);
   });
 });

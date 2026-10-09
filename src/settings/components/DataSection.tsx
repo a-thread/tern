@@ -31,7 +31,7 @@ export function DataSection({ repo }: { repo: DataRepository }) {
     if (busy) return;
     Alert.alert(
       'Delete all your data?',
-      "This erases your food log, saved meals, weigh-ins, water, medication and mood history, waypoints, rest days and settings from Tern. It can't be undone. You'll be signed out, and your login stays so you can start fresh.",
+      "This erases your food log, saved meals, weigh-ins, water, movement, medication and mood history, waypoints, rest days and settings from Tern. It can't be undone. You'll be signed out, and your login stays so you can start fresh.",
       [
         { text: 'Cancel', style: 'cancel' },
         {
@@ -57,7 +57,7 @@ export function DataSection({ repo }: { repo: DataRepository }) {
     if (busy) return;
     Alert.alert(
       'Delete your account?',
-      "This permanently deletes your account and everything in it: your food log, saved meals, weigh-ins, water, medication and mood history, waypoints, rest days and settings. It can't be undone.",
+      "This permanently deletes your account and everything in it: your food log, saved meals, weigh-ins, water, movement, medication and mood history, waypoints, rest days and settings. It can't be undone.",
       [
         { text: 'Cancel', style: 'cancel' },
         {
