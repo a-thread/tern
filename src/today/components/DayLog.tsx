@@ -20,7 +20,6 @@ import { useWeight } from '@weight/WeightContext';
 import type { DayRecord } from '@today/models/dayRecord';
 import { useDayKey } from '@shared/hooks/useDayKey';
 import { useMovement } from '@movement/MovementContext';
-import { MovementSheet } from '@movement/components/MovementSheet';
 import {
   ACTIVITY_LABEL,
   EFFORT_LABEL,
@@ -42,7 +41,6 @@ export function DayLog({ record }: { record: DayRecord }) {
   const [entries, setEntries] = useState<FoodEntry[] | null>(null);
   const movement = useMovement();
   const today = useDayKey();
-  const [movementOpen, setMovementOpen] = useState(false);
   const moved = entriesOn(movement.entries, record.day);
   const loggable = isLoggableDay(record.day, today);
   const movedMinutes = moved.reduce((s, e) => s + e.minutes, 0);
@@ -98,7 +96,7 @@ export function DayLog({ record }: { record: DayRecord }) {
                   <View style={{ flex: 1 }}>
                     <Text style={s.foodName}>{ACTIVITY_LABEL[e.activity]}</Text>
                     <Text style={s.foodSub}>
-                      {[`${e.minutes} min`, e.effort ? EFFORT_LABEL[e.effort].toLowerCase() : null, e.source === 'healthConnect' ? 'Health Connect' : null]
+                      {[`${e.minutes} min`, e.effort ? `${EFFORT_LABEL[e.effort].toLowerCase()} intensity` : null, e.source === 'healthConnect' ? 'Health Connect' : null]
                         .filter(Boolean)
                         .join(' · ')}
                     </Text>
@@ -107,7 +105,7 @@ export function DayLog({ record }: { record: DayRecord }) {
               )),
               ...(loggable
                 ? [
-                    <Pressable key='log' style={s.foodRow} onPress={() => setMovementOpen(true)} accessibilityRole='button'>
+                    <Pressable key='log' style={s.foodRow} onPress={() => navigation.navigate('LogMovement', { day: record.day })} accessibilityRole='button'>
                       <Text style={[s.foodName, { color: colors.coral }]}>
                         {moved.length ? 'Edit movement' : 'Log movement'}
                       </Text>
@@ -117,7 +115,6 @@ export function DayLog({ record }: { record: DayRecord }) {
             ]}
           </Group>
           {record.movedToGoal ? <Text style={s.note}>A goal day by movement.</Text> : null}
-          <MovementSheet visible={movementOpen} onClose={() => setMovementOpen(false)} day={record.day} />
         </>
       ) : null}
 

@@ -31,6 +31,8 @@ export type RootStackParamList = {
   LogFood: { meal: FoodEntry['meal'] };
   LogWeight: undefined;
   CheckIn: undefined;
+  /** The movement logging flow; `day` is today unless logging for yesterday. */
+  LogMovement: { day?: string } | undefined;
   EditFood: { entryId: string };
   SaveMeal: { meal: FoodEntry['meal'] };
   Settings: NavigatorScreenParams<SettingsStackParamList> | undefined;

@@ -9,10 +9,12 @@ import { useDayKey } from '@shared/hooks/useDayKey';
 import { addDays } from '@shared/utils/date';
 import { TrendRanges, TrendRange } from '@shared/models/trendRange';
 import { useSettings } from '@settings/SettingsContext';
+import { useUnits } from '@settings/hooks/useUnits';
 import { useMovement } from '@movement/MovementContext';
 import {
   ACTIVITY_LABEL,
   activityShare,
+  formatDistance,
   goalMinutesByDay,
   minutesByDay,
   type MovementEntry,
@@ -22,6 +24,7 @@ import { averageMinutes, bucketMinutes } from '@movement/models/movementBars';
 /** Active minutes over the Trends range: the daily average, a bar per day (or week), and what kinds. */
 export function MovementTrendCard({ range }: { range: TrendRange }) {
   const { settings } = useSettings();
+  const { units } = useUnits();
   const { todayMinutes, loadRange } = useMovement(); // todayMinutes is a trigger: reload after logging
   const today = useDayKey();
   const [entries, setEntries] = useState<MovementEntry[]>([]);
@@ -47,6 +50,8 @@ export function MovementTrendCard({ range }: { range: TrendRange }) {
     .slice(0, 3)
     .map((a) => `${ACTIVITY_LABEL[a.activity]} ${Math.round(a.share * 100)}%`)
     .join(' · ');
+  const distanceM = entries.reduce((s, e) => s + (e.distanceM ?? 0), 0);
+  const extras = [share, distanceM > 0 ? `${formatDistance(distanceM, units)} in all` : null].filter(Boolean).join(' · ');
 
   return (
     <Card style={{ marginBottom: space.md }}>
@@ -65,7 +70,7 @@ export function MovementTrendCard({ range }: { range: TrendRange }) {
         showLegend={false}
         showLabels={range !== TrendRange.Month}
       />
-      {share ? <Text style={[s.sub, { marginTop: space.sm }]}>{share}</Text> : null}
+      {extras ? <Text style={[s.sub, { marginTop: space.sm }]}>{extras}</Text> : null}
     </Card>
   );
 }

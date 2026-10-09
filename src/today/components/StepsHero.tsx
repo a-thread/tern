@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useNavigation } from '@react-navigation/native';
@@ -15,7 +15,6 @@ import { StepsStatus } from '@today/data/steps.repository';
 import { useDayKey } from '@shared/hooks/useDayKey';
 import { useMovement } from '@movement/MovementContext';
 import { entriesOn, movementSummary } from '@movement/models/movementEntry';
-import { MovementSheet } from '@movement/components/MovementSheet';
 
 /** The sky card: greeting, streak, the bird's flight toward the step goal, and today's steps. */
 export function StepsHero({
@@ -39,7 +38,6 @@ export function StepsHero({
   const remaining = Math.max(settings.stepGoal - todaySteps, 0);
   const reached = stepsProgress >= 1;
   const movedToGoal = !reached && movedProgress >= 1;
-  const [movementOpen, setMovementOpen] = useState(false);
 
   return (
     <View ref={heroRef} collapsable={false}>
@@ -93,7 +91,7 @@ export function StepsHero({
         {/* Movement is the other way to a goal day, so it's logged from here. */}
         {movement.enabled ? (
           <Pressable
-            onPress={() => setMovementOpen(true)}
+            onPress={() => navigation.navigate('LogMovement', {})}
             hitSlop={8}
             style={s.moveChip}
             accessibilityRole='button'
@@ -103,7 +101,6 @@ export function StepsHero({
           </Pressable>
         ) : null}
       </LinearGradient>
-      <MovementSheet visible={movementOpen} onClose={() => setMovementOpen(false)} />
     </View>
   );
 }

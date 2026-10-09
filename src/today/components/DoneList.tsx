@@ -11,7 +11,6 @@ import { useFoodDisplay } from '@food/hooks/useFoodDisplay';
 import { useMedication } from '@medication/MedicationContext';
 import { useWater } from '@water/WaterContext';
 import WaterSheet from '@water/components/WaterSheet';
-import { MovementSheet } from '@movement/components/MovementSheet';
 import { movementSummary } from '@movement/models/movementEntry';
 import { scoreWord, MoodMetric } from '@mood/models/moodEntry';
 import { formatLoggedAt } from '@weight/models/weightEntry';
@@ -30,7 +29,6 @@ export function DoneList() {
   const { setTaken } = useMedication();
   const { todaySteps } = useActivity();
   const [waterOpen, setWaterOpen] = useState(false);
-  const [movementOpen, setMovementOpen] = useState(false);
   const fromHealthConnect = movementToday.some((e) => e.source === 'healthConnect');
 
   if (!anythingDone) return null;
@@ -98,7 +96,7 @@ export function DoneList() {
             sub={fromHealthConnect ? 'Includes workouts from Health Connect' : 'Add more, or remove one'}
             icon={<DoneBadge />}
             chevron
-            onPress={() => setMovementOpen(true)}
+            onPress={() => navigation.navigate('LogMovement', {})}
           />
         ) : null}
         {summary.stepGoalReached ? (
@@ -117,7 +115,6 @@ export function DoneList() {
         ) : null}
       </Group>
       <WaterSheet visible={waterOpen} onClose={() => setWaterOpen(false)} />
-      <MovementSheet visible={movementOpen} onClose={() => setMovementOpen(false)} />
     </>
   );
 }
