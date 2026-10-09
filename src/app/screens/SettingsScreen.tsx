@@ -26,6 +26,7 @@ import { WaterSettingsRows } from '@water/components/WaterSettingsRows';
 import { WaterReminderRows } from '@water/components/WaterReminderRows';
 import { MoodSettingsRows } from '@mood/components/MoodSettingsRows';
 import { MoodReminderRows } from '@mood/components/MoodReminderRows';
+import { MovementSettingsRows } from '@movement/components/MovementSettingsRows';
 
 type Props = NativeStackScreenProps<SettingsStackParamList, 'SettingsRoot'>;
 
@@ -56,6 +57,7 @@ export default function SettingsScreen({ navigation }: Props) {
           <HealthDataRow onPress={() => navigation.navigate('HealthData')} />
           <RestDaysRow onPress={() => navigation.navigate('RestDays')} />
           <StreakReminderRows />
+          <MovementSettingsRows />
         </Group>
 
         <GroupLabel>Food</GroupLabel>

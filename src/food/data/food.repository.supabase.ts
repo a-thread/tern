@@ -109,6 +109,19 @@ export function createSupabaseFoodRepository(db: TernClient): FoodRepository {
       if (error) throw error;
       return (data ?? []).map((r: { meal: FoodEntry['meal'] }) => r.meal);
     },
+    async skippedHistory(from, to) {
+      const { data, error } = await db
+        .from('skipped_meals')
+        .select('day, meal')
+        .gte('day', from)
+        .lte('day', to);
+      if (error) throw error;
+      const out: Record<string, FoodEntry['meal'][]> = {};
+      for (const r of (data ?? []) as { day: string; meal: FoodEntry['meal'] }[]) {
+        (out[r.day] ??= []).push(r.meal);
+      }
+      return out;
+    },
     async setSkipped(day, meal, skipped) {
       // Primary key (user, day, meal): marking twice is harmless.
       const { error } = skipped

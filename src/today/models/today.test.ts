@@ -301,6 +301,8 @@ describe('suggestGoal', () => {
       day: `2026-08-${String(i + 1).padStart(2, '0')}`,
       steps: s,
       goal,
+      minutes: 0,
+      movedToGoal: false,
       state: s >= goal ? DayState.Goal : DayState.Partial,
       chosenRest: false,
       isToday: false,

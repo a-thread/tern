@@ -12,6 +12,8 @@ import { initialSettings, changesAnything } from '@settings/models/appSettings';
 import type { AppSettings } from '@settings/models/appSettings';
 import { Frequency } from '@shared/models/frequency';
 import { sanitizeCalorieZone } from '@food/models/intakeZone';
+import { clampMovementGoal, MovementLimits } from '@movement/models/movementEntry';
+import { Aim } from '@food/models/energyBalance';
 
 type SettingsContextValue = {
   settings: AppSettings;
@@ -63,6 +65,16 @@ export function SettingsProvider({
           medications: mergeMedications(saved?.medications),
           trackWater: saved?.trackWater === true,
           trackMood: saved?.trackMood === true,
+          trackMovement: saved?.trackMovement === true,
+          movementGoalMinutes:
+            typeof saved?.movementGoalMinutes === 'number' && Number.isFinite(saved.movementGoalMinutes)
+              ? clampMovementGoal(saved.movementGoalMinutes)
+              : MovementLimits.DEFAULT_GOAL,
+          adaptTarget: saved?.adaptTarget === true,
+          aim: Object.values(Aim).includes(saved?.aim as Aim) ? (saved!.aim as Aim) : Aim.LoseSlowly,
+          lastSuggestionWeek: typeof saved?.lastSuggestionWeek === 'string' ? saved.lastSuggestionWeek : null,
+          // A setting added later inside health data takes its default.
+          healthData: { ...initialSettings.healthData, ...saved?.healthData },
           trackWeight: saved?.trackWeight !== false,
           showIntakeBars: saved?.showIntakeBars === true,
           proteinAsMinimum: saved?.proteinAsMinimum !== false,

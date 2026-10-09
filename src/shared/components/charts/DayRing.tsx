@@ -16,6 +16,7 @@ function DayRingBase({
   rest,
   frozen,
   selected,
+  moved,
   size = 23,
   replayKey = 0,
   delay = 0,
@@ -28,6 +29,8 @@ function DayRingBase({
   frozen?: boolean;
   /** The day being looked at: drawn with a thin outline. */
   selected?: boolean;
+  /** The goal was reached by movement rather than steps: a small mark on the ring. */
+  moved?: boolean;
   size?: number;
   /** Bump to refill the ring from empty. */
   replayKey?: number;
@@ -89,6 +92,7 @@ function DayRingBase({
             transform='rotate(-90 15 15)'
           />
         </Svg>
+        {moved ? <View style={cs.moved} accessibilityLabel='Goal reached by movement' /> : null}
       </View>
       <Text
         style={[
@@ -106,6 +110,17 @@ function DayRingBase({
 export const DayRing = React.memo(DayRingBase);
 
 const cs = StyleSheet.create({
+  moved: {
+    position: 'absolute',
+    right: 1,
+    bottom: 1,
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: colors.glacierDeep,
+    borderWidth: 1.5,
+    borderColor: colors.paper,
+  },
   outline: {
     padding: 3,
     borderRadius: 999,

@@ -6,6 +6,10 @@ export type DayRecord = {
   steps: number;
   /** The step goal that applied on this day (goal changes only affect days from then on). */
   goal: number;
+  /** Minutes of movement that count toward a goal day (walks and runs are in the steps). */
+  minutes: number;
+  /** A goal day reached by movement rather than steps. */
+  movedToGoal: boolean;
   state: DayState;
   /** The user chose this as a rest day (as opposed to it being detected). */
   chosenRest: boolean;
@@ -25,11 +29,16 @@ export type BuildDaysInput = {
   today: string;
   /** How many days to return, ending today. */
   count: number;
+  /** Movement minutes per day that count toward a goal day; with `movementGoal`, enough makes one. */
+  minutesByDay?: Record<string, number>;
+  /** Minutes that make a goal day; 0 or absent when movement doesn't count. */
+  movementGoal?: number;
 };
 
 /**
  * Turns raw step counts into a day-by-day record, oldest to newest, ending
- * today. Reaching the goal always reads as 'goal'. Otherwise a chosen rest
+ * today. Reaching the step goal, or moving for `movementGoal` minutes, always
+ * reads as 'goal' (once, either way). Otherwise a chosen rest
  * day (or, with auto-detect on, any past day under the goal) reads as 'rest' —
  * within the weekly allowance, chosen days first — and anything else is
  * 'partial' (some steps) or 'none'. Weeks run Monday to Sunday.
@@ -49,7 +58,11 @@ export function buildDays(input: BuildDaysInput): DayRecord[] {
     autoDetect,
     today,
     count,
+    minutesByDay = {},
+    movementGoal = 0,
   } = input;
+  const moved = (k: string) => movementGoal > 0 && (minutesByDay[k] ?? 0) >= movementGoal;
+  const reached = (k: string) => (stepsByDay[k] ?? 0) >= goalFor(k) || moved(k);
   const keys = Array.from({ length: count }, (_, i) =>
     addDays(today, i - (count - 1)),
   );
@@ -58,7 +71,7 @@ export function buildDays(input: BuildDaysInput): DayRecord[] {
   // week never crowds one the user picked.
   const chosenPerWeek = new Map<string, number>();
   for (const k of keys) {
-    if (restDays.has(k) && (stepsByDay[k] ?? 0) < goalFor(k)) {
+    if (restDays.has(k) && !reached(k)) {
       const w = weekStartKey(k);
       chosenPerWeek.set(w, (chosenPerWeek.get(w) ?? 0) + 1);
     }
@@ -72,7 +85,7 @@ export function buildDays(input: BuildDaysInput): DayRecord[] {
     const chosenRest = restDays.has(k);
     const w = weekStartKey(k);
     let state: DayState;
-    if (steps >= goal) {
+    if (reached(k)) {
       state = DayState.Goal;
     } else if (chosenRest) {
       state = DayState.Rest;
@@ -92,6 +105,8 @@ export function buildDays(input: BuildDaysInput): DayRecord[] {
       day: k,
       steps,
       goal,
+      minutes: minutesByDay[k] ?? 0,
+      movedToGoal: steps < goal && moved(k),
       state,
       chosenRest,
       isToday: k === today,
@@ -185,6 +200,8 @@ export function weekOf(days: DayRecord[], today: string): DayRecord[] {
         day: k,
         steps: 0,
         goal: 0,
+        minutes: 0,
+        movedToGoal: false,
         state: DayState.None as DayState,
         chosenRest: false,
         isToday: false,

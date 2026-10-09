@@ -11,6 +11,7 @@ import { dayKey } from '@shared/utils/date';
 import { FoodProvider } from '@food/FoodContext';
 import { WaypointsProvider } from '@journey/WaypointsContext';
 import { ActivityProvider } from '@today/ActivityContext';
+import { MovementProvider } from '@movement/MovementContext';
 import { StepsRepository, StepsStatus } from '@today/data/steps.repository';
 import { SettingsProvider } from '@settings/SettingsContext';
 import HealthDataScreen from './HealthDataScreen';
@@ -52,9 +53,11 @@ async function open(steps: StepsRepository) {
           <SettingsProvider repo={backend.settings}>
             <WaypointsProvider repo={backend.waypoints}>
               <FoodProvider repo={backend.food}>
-                <ActivityProvider steps={backend.steps} restDays={backend.restDays}>
-                  <HealthDataScreen />
-                </ActivityProvider>
+                <MovementProvider repo={backend.movement}>
+                  <ActivityProvider steps={backend.steps} restDays={backend.restDays}>
+                    <HealthDataScreen />
+                  </ActivityProvider>
+                </MovementProvider>
               </FoodProvider>
             </WaypointsProvider>
           </SettingsProvider>

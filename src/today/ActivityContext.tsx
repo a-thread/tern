@@ -15,6 +15,7 @@ import type { RestDaysRepository } from '@today/data/restDays.repository';
 import { sameDays, sameSteps } from '@today/utils/sameData';
 import { streakBonus, WaypointSource } from '@journey/models/waypoint';
 import { DayState } from '@shared/models/dayState';
+import { useMovement } from '@movement/MovementContext';
 
 /** How much history is read: enough for the 6-month views. */
 export const HISTORY_DAYS = 180;
@@ -73,6 +74,9 @@ export function ActivityProvider({
 }) {
   const { settings } = useSettings();
   const today = useDayKey();
+  const movement = useMovement();
+  // With movement tracked, enough of it in a day makes a goal day too.
+  const movementGoal = movement.enabled ? settings.movementGoalMinutes : 0;
 
   const [status, setStatus] = useState<StepsStatus>(StepsStatus.Unavailable);
   const [rawStepsByDay, setStepsByDay] = useState<Record<string, number>>({});
@@ -133,8 +137,12 @@ export function ActivityProvider({
         autoDetect: settings.autoDetectRestDays,
         today,
         count: HISTORY_DAYS,
+        minutesByDay: movement.goalMinutesByDay,
+        movementGoal,
       }),
     [
+      movement.goalMinutesByDay,
+      movementGoal,
       stepsByDay,
       restSet,
       settings.stepGoal,
@@ -157,18 +165,25 @@ export function ActivityProvider({
   // these can run freely; they wait for today's ledger so a stale one never decides.
   // Like meals and water, they follow the day as it stands now, not its high-water mark.
   const goalReachedToday = todaySteps >= settings.stepGoal;
+  const movedToGoalToday = movementGoal > 0 && movement.todayGoalMinutes >= movementGoal;
   // Steps are only judged while they can be read: with Health Connect
   // disconnected or "read steps" switched off, what was earned stays put.
   const stepsReadable = status === StepsStatus.Connected && readSteps;
 
   // Lowering the goal to collect the award and raising it again doesn't
   // keep it: today is judged against the goal it ends up with.
-  useAward(WaypointSource.Steps, goalReachedToday, ready && stepsReadable);
+  // A goal day reached by movement earns it too. With steps unreadable, movement decides alone
+  // (so removing the swim that made the goal day takes the award back).
+  useAward(
+    WaypointSource.Steps,
+    goalReachedToday || movedToGoalToday,
+    ready && movement.ready && (stepsReadable || movementGoal > 0),
+  );
 
   // A day is either a goal day or a rest day, never both: a rest day taken
   // early earns its waypoints only if the goal isn't reached after all. So
   // taking one "just in case" is never better than waiting to see.
-  const restCounts = todayIsRest && !(stepsReadable && goalReachedToday);
+  const restCounts = todayIsRest && !((stepsReadable && goalReachedToday) || movedToGoalToday);
   useAward(WaypointSource.Rest, restCounts, ready);
 
   // A streak milestone pays a one-time bonus on the day the streak gets there, so it needs
@@ -180,7 +195,7 @@ export function ActivityProvider({
   useAward(
     WaypointSource.Streak,
     reachedToday && bonus > 0,
-    ready && stepsReadable,
+    ready && movement.ready && (stepsReadable || movementGoal > 0),
     bonus > 0 ? bonus : streakBonus(streak + 1),
   );
 

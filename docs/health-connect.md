@@ -25,13 +25,21 @@ Health Connect is a native module, so Expo Go can't load it. You need a dev clie
 
 ## What's already configured
 
-The package, its config plugin, the `READ_STEPS` permission and the Android build
+The package, its config plugin, the `READ_STEPS` and `READ_EXERCISE` permissions and the Android build
 settings (minSdk 26) are set up in `package.json` and `app.json`. The config plugin adds
 both the rationale intent and the Android 14 permission-usage alias, which Health Connect
 requires.
 
 `react-native-health-connect` 4.x needs compileSdk 35+, which Expo SDK 54 provides. The
 app targets API 36, as Google Play requires.
+
+## Workouts
+
+With movement tracked, Tern can also read exercise sessions (Settings → Health data →
+Workouts, which asks for the `ExerciseSession` read permission). Each session becomes
+read-only movement on the day it started: its length in minutes and an activity mapped from
+the exercise type (`src/movement/data/movement.healthconnect.ts`). Sessions are read live
+and never stored, so nothing is duplicated. Logging movement by hand always works too.
 
 ## Rules of thumb
 

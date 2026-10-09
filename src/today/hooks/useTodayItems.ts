@@ -7,6 +7,9 @@ import { useMood } from '@mood/MoodContext';
 import { leftToDo } from '@today/models/leftToDo';
 import { todaySummary } from '@today/models/todaySummary';
 import { useActivity } from '@today/ActivityContext';
+import { useMovement } from '@movement/MovementContext';
+import { entriesOn } from '@movement/models/movementEntry';
+import { useDayKey } from '@shared/hooks/useDayKey';
 
 const capitalize = (word: string) => word.charAt(0).toUpperCase() + word.slice(1);
 
@@ -19,9 +22,16 @@ export function useTodayItems() {
   const mood = useMood();
   const { due: dueMedications, taken: takenMedications } = useMedication();
   const { todaySteps } = useActivity();
+  const movement = useMovement();
+  const today = useDayKey();
 
   const lastWeight = weightEntries[0];
-  const reached = todaySteps / settings.stepGoal >= 1;
+  const stepsReached = todaySteps / settings.stepGoal >= 1;
+  // A goal day reached by movement rather than steps.
+  const movedToGoal =
+    movement.enabled && !stepsReached && movement.todayGoalMinutes >= settings.movementGoalMinutes;
+  const reached = stepsReached || movedToGoal;
+  const movementToday = entriesOn(movement.entries, today);
 
   const openItems = leftToDo(foodLog, lastWeight, new Date(), {
     weighIn: settings.trackWeight
@@ -58,7 +68,19 @@ export function useTodayItems() {
     summary.checkIn !== null ||
     takenMedications.length > 0 ||
     waterDone ||
+    movementToday.length > 0 ||
     summary.stepGoalReached;
 
-  return { openItems, summary, mealsDone, waterDone, anythingDone, takenMedications, lastWeight, reached };
+  return {
+    openItems,
+    summary,
+    mealsDone,
+    waterDone,
+    anythingDone,
+    takenMedications,
+    lastWeight,
+    reached,
+    movementToday,
+    movedToGoal,
+  };
 }

@@ -2,6 +2,8 @@ import type { Units } from '@shared/utils/units';
 import type { GoalChange } from '@today/models/stepGoal';
 import type { Medication } from '@medication/models/medication';
 import { WaterLimits } from '@water/models/waterEntry';
+import { MovementLimits } from '@movement/models/movementEntry';
+import { Aim } from '@food/models/energyBalance';
 import { settingsSeed } from '@settings/data/settings.mock';
 import { Frequency } from '@shared/models/frequency';
 import { type ReminderConfig, Reminders } from './reminderPlan';
@@ -10,6 +12,8 @@ export type ReminderSettings = ReminderConfig;
 
 export type HealthDataSettings = {
   readSteps: boolean;
+  /** Read workouts (exercise sessions) as movement. */
+  readWorkouts: boolean;
 };
 
 export type AppSettings = {
@@ -50,6 +54,16 @@ export type AppSettings = {
   waterGoalOz: number;
   /** Optional daily mood and stress check-in; off by default so it stays out of the way. */
   trackMood: boolean;
+  /** Optional movement logging; off by default so it stays out of the way. */
+  trackMovement: boolean;
+  /** Minutes of movement in a day that make it a goal day, like reaching the step goal. */
+  movementGoalMinutes: number;
+  /** Suggest a calorie target from logged intake and the weight trend. Off by default. */
+  adaptTarget: boolean;
+  /** Which way the adaptive target aims. */
+  aim: Aim;
+  /** The week (its Monday) a target suggestion was last offered, so it's offered at most weekly. */
+  lastSuggestionWeek: string | null;
   /**
    * The waypoint total of the last milestone that was celebrated, so each one
    * is marked once. Null until the first time Tern looks, when it's set to
@@ -85,9 +99,15 @@ export const initialSettings: AppSettings = {
   trackWater: false,
   waterGoalOz: WaterLimits.DEFAULT_GOAL_OZ,
   trackMood: false,
+  trackMovement: false,
+  movementGoalMinutes: MovementLimits.DEFAULT_GOAL,
+  adaptTarget: false,
+  aim: Aim.LoseSlowly,
+  lastSuggestionWeek: null,
   celebratedMilestone: null,
   healthData: {
     readSteps: true,
+    readWorkouts: true,
   },
 };
 

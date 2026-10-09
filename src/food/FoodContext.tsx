@@ -19,6 +19,8 @@ type FoodContextValue = {
   ready: boolean;
   /** Entries grouped by day for `from`..`to` inclusive, for averages and "recent foods". Days with nothing logged are absent. */
   loadHistory: (from: string, to: string) => Promise<Record<string, FoodEntry[]>>;
+  /** Meals marked "nothing today" by day for `from`..`to`, for the adaptive target. */
+  loadSkippedHistory: (from: string, to: string) => Promise<Record<string, FoodEntry['meal'][]>>;
   addFoodEntry: (entry: NewFoodEntry) => void;
   /** Adds several entries at once (e.g. a saved meal) as a single update. */
   addFoodEntries: (entries: NewFoodEntry[]) => void;
@@ -73,6 +75,10 @@ export function FoodProvider({
   );
 
   const loadHistory = useCallback((from: string, to: string) => food.history(from, to), [food]);
+  const loadSkippedHistory = useCallback(
+    (from: string, to: string) => food.skippedHistory(from, to),
+    [food],
+  );
 
   const addFoodEntry = useCallback(
     (entry: NewFoodEntry) => {
@@ -149,6 +155,7 @@ export function FoodProvider({
       loadedDay,
       ready,
       loadHistory,
+      loadSkippedHistory,
       addFoodEntry,
       addFoodEntries,
       updateFoodEntry,
@@ -161,6 +168,7 @@ export function FoodProvider({
       loadedDay,
       ready,
       loadHistory,
+      loadSkippedHistory,
       addFoodEntry,
       addFoodEntries,
       updateFoodEntry,

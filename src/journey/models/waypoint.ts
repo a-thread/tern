@@ -13,6 +13,8 @@ export enum WaypointSource {
   Dinner = 'dinner',
   /** A one-time bonus at a streak milestone; the only source whose points vary (see `StreakBonuses`). */
   Streak = 'streak',
+  /** Logging any movement in a day: a walk, a swim, a class. */
+  Movement = 'movement',
 }
 
 /** One award in the ledger. */
@@ -32,13 +34,14 @@ export class WaypointRules {
    * is the first milestone's bonus; later ones pay more.
    */
   static readonly ALL: { id: WaypointSource; label: string; points: number }[] = [
-    { id: WaypointSource.Steps, label: 'Reaching your step goal', points: 40 },
+    { id: WaypointSource.Steps, label: 'A goal day: steps or movement', points: 40 },
     { id: WaypointSource.Meals, label: 'Logging all meals', points: 15 },
     { id: WaypointSource.Breakfast, label: 'Logging breakfast', points: 5 },
     { id: WaypointSource.Lunch, label: 'Logging lunch', points: 5 },
     { id: WaypointSource.Dinner, label: 'Logging dinner', points: 5 },
     { id: WaypointSource.Rest, label: 'Taking a rest day', points: 10 },
     { id: WaypointSource.Water, label: 'Reaching your water goal', points: 10 },
+    { id: WaypointSource.Movement, label: 'Logging movement', points: 10 },
     { id: WaypointSource.Mood, label: 'Checking in on mood and stress', points: 10 },
     { id: WaypointSource.Medication, label: 'Taking all your medication', points: 10 },
     { id: WaypointSource.Weight, label: 'Logging a weigh-in', points: 5 },

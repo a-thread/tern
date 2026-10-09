@@ -20,6 +20,8 @@ import { useWeight } from '@weight/WeightContext';
 import { signedChange } from '@weight/models/weightEntry';
 import { useSettings } from '@settings/SettingsContext';
 import WaterTrendCard from '@water/components/WaterTrendCard';
+import { MovementTrendCard } from '@movement/components/MovementTrendCard';
+import { EnergyTrendCard } from '@food/components/EnergyTrendCard';
 import MoodTrendCard from '@mood/components/MoodTrendCard';
 import { useUnits } from '@settings/hooks/useUnits';
 import { bucketSteps } from '@trends/models/stepBars';
@@ -232,6 +234,8 @@ export default function TrendsScreen({ navigation }: Props) {
         </Card>
         ) : null}
 
+        {settings.adaptTarget && settings.trackCalories && settings.trackWeight ? <EnergyTrendCard /> : null}
+        {settings.trackMovement ? <MovementTrendCard range={range} /> : null}
         {settings.trackWater ? <WaterTrendCard range={range} /> : null}
 
         {settings.trackMood ? <MoodTrendCard range={range} /> : null}

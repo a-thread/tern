@@ -22,6 +22,7 @@ import {
   BottomSheet,
 } from '@shared/components/ui';
 import { useSettings } from '@settings/SettingsContext';
+import { AdaptiveTargetCard } from '@food/components/AdaptiveTargetCard';
 import { useSliderValue } from '@shared/hooks/useSliderValue';
 import { nudgeZone, resolveZone, type CalorieZone } from '@food/models/intakeZone';
 import {
@@ -213,6 +214,8 @@ export default function TargetsScreen() {
                     </FootNote>
                   </>
                 ) : null}
+
+                <AdaptiveTargetCard />
               </>
             ) : (
               <>

@@ -18,6 +18,14 @@ import { dayTotals, type FoodEntry } from '@food/models/foodEntry';
 import { mealTotals, Meals } from '@food/models/meals';
 import { useWeight } from '@weight/WeightContext';
 import type { DayRecord } from '@today/models/dayRecord';
+import { useDayKey } from '@shared/hooks/useDayKey';
+import { useMovement } from '@movement/MovementContext';
+import {
+  ACTIVITY_LABEL,
+  EFFORT_LABEL,
+  entriesOn,
+  isLoggableDay,
+} from '@movement/models/movementEntry';
 
 const REST_DAY_POINTS = pointsFor(WaypointSource.Rest);
 
@@ -31,6 +39,11 @@ export function DayLog({ record }: { record: DayRecord }) {
   const { weightEntries } = useWeight();
   const { formatWeight } = useUnits();
   const [entries, setEntries] = useState<FoodEntry[] | null>(null);
+  const movement = useMovement();
+  const today = useDayKey();
+  const moved = entriesOn(movement.entries, record.day);
+  const loggable = isLoggableDay(record.day, today);
+  const movedMinutes = moved.reduce((s, e) => s + e.minutes, 0);
 
   useEffect(() => {
     let cancelled = false;
@@ -67,8 +80,43 @@ export function DayLog({ record }: { record: DayRecord }) {
           value={record.steps.toLocaleString()}
           label={`of ${record.goal.toLocaleString()} steps`}
         />
+        {movement.enabled && movedMinutes > 0 ? (
+          <Stat value={`${movedMinutes}`} label='min moved' />
+        ) : null}
         {weighIn ? <Stat value={formatWeight(weighIn.lb)} label='weight' /> : null}
       </View>
+
+      {movement.enabled && (moved.length || loggable) ? (
+        <>
+          <GroupLabel>Movement</GroupLabel>
+          <Group>
+            {[
+              ...moved.map((e) => (
+                <View key={e.id} style={s.foodRow}>
+                  <View style={{ flex: 1 }}>
+                    <Text style={s.foodName}>{ACTIVITY_LABEL[e.activity]}</Text>
+                    <Text style={s.foodSub}>
+                      {[`${e.minutes} min`, e.effort ? `${EFFORT_LABEL[e.effort].toLowerCase()} intensity` : null, e.source === 'healthConnect' ? 'Health Connect' : null]
+                        .filter(Boolean)
+                        .join(' · ')}
+                    </Text>
+                  </View>
+                </View>
+              )),
+              ...(loggable
+                ? [
+                    <Pressable key='log' style={s.foodRow} onPress={() => navigation.navigate('LogMovement', { day: record.day })} accessibilityRole='button'>
+                      <Text style={[s.foodName, { color: colors.coral }]}>
+                        {moved.length ? 'Edit movement' : 'Log movement'}
+                      </Text>
+                    </Pressable>,
+                  ]
+                : []),
+            ]}
+          </Group>
+          {record.movedToGoal ? <Text style={s.note}>A goal day by movement.</Text> : null}
+        </>
+      ) : null}
 
       {record.state === DayState.Rest ? (
         <Pressable

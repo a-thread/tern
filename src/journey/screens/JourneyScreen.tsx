@@ -37,6 +37,7 @@ const RULE_STYLE: Record<WaypointSource, { bg: string; fg: string }> = {
   [WaypointSource.Medication]: { bg: colors.coralTint, fg: colors.coral },
   [WaypointSource.Rest]: { bg: colors.driftwoodTint, fg: colors.driftwood },
   [WaypointSource.Streak]: { bg: colors.sunTint, fg: colors.sunDeep },
+  [WaypointSource.Movement]: { bg: colors.glacierTint, fg: colors.glacierDeep },
 };
 
 export default function JourneyScreen() {
@@ -179,6 +180,7 @@ export default function JourneyScreen() {
               (rule) =>
                 (rule.id !== WaypointSource.Water || settings.trackWater) &&
                 (rule.id !== WaypointSource.Mood || settings.trackMood) &&
+                (rule.id !== WaypointSource.Movement || settings.trackMovement) &&
                 (rule.id !== WaypointSource.Weight || settings.trackWeight) &&
                 (rule.id !== WaypointSource.Medication || settings.medications.length > 0),
             )

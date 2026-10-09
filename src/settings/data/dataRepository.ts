@@ -12,6 +12,7 @@ export type TernExport = {
   waterEntries: unknown[];
   moodCheckins: unknown[];
   skippedMeals: unknown[];
+  movementEntries: unknown[];
 };
 
 /** Whole-account operations: a copy of your data, and erasing it. */

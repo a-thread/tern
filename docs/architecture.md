@@ -83,7 +83,7 @@ Code only depends downward. From the bottom up:
 | shared       | `src/shared`                                                | nothing                                     |
 | settings     | `src/settings`                                              | shared                                      |
 | journey      | `src/journey` (the waypoints ledger)                        | shared, settings                            |
-| leaf domains | `weight`, `water`, `mood`, `medication`                     | shared, settings, journey                   |
+| leaf domains | `weight`, `water`, `mood`, `medication`, `movement`         | shared, settings, journey                   |
 | food         | `src/food`                                                  | everything above (it shows a water card)    |
 | today        | `src/today`                                                 | everything above                            |
 | trends       | `src/trends`                                                | everything above                            |
@@ -155,7 +155,7 @@ src/
   food/                    the Food tab, the Add food stack, saved meals, search, food settings
   journey/                 waypoints ledger, the map, milestones, reward cards
   trends/                  steps, weight, water and mood over time
-  weight/, water/, mood/, medication/
+  weight/, water/, mood/, medication/, movement/
   settings/                the settings document, units, reminders, profile and account sections
 supabase/migrations/       the schema, in order
 ```
