@@ -48,7 +48,7 @@ tables. With no keys configured, the app runs on local mock data instead.
 | `tern.medication_doses` | which medications were taken on which day (the medications themselves live in settings) |
 | `tern.mood_checkins`  | one mood and stress check-in (each 1 to 10) per day                 |
 | `tern.water_entries`   | each drink logged, in fluid ounces (ml is a display choice), by day  |
-| `tern.movement_entries` | movement logged by hand: activity, minutes and optional effort, by day (today or yesterday only). Health Connect workouts are read on the phone, not stored |
+| `tern.movement_entries` | movement logged by hand: activity, minutes, optional effort and distance, by day (today or yesterday only). The list of activities lives in the app; the table only checks an id is lowercase letters and underscores. Health Connect workouts are read on the phone, not stored |
 | `tern.common_foods`    | the shared common-foods list search uses (read-only; published by `scripts/publishCommonFoods.ts`) |
 
 Every table is row-level-secured to `auth.uid()`; signed-out (`anon`) requests

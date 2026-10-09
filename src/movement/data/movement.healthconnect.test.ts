@@ -4,12 +4,17 @@ import { activityForExercise, sessionToEntry } from './movement.healthconnect';
 describe('Health Connect workouts', () => {
   it('reads exercise types as Tern activities', () => {
     expect(activityForExercise('WALKING')).toBe(Activity.Walk);
+    expect(activityForExercise('RUNNING')).toBe(Activity.Run);
     expect(activityForExercise('RUNNING_TREADMILL')).toBe(Activity.Run);
+    expect(activityForExercise('BIKING')).toBe(Activity.Bike);
     expect(activityForExercise('BIKING_STATIONARY')).toBe(Activity.Bike);
     expect(activityForExercise('SWIMMING_POOL')).toBe(Activity.Swim);
     expect(activityForExercise('WEIGHTLIFTING')).toBe(Activity.Strength);
-    expect(activityForExercise('PILATES')).toBe(Activity.Yoga);
-    expect(activityForExercise('HIGH_INTENSITY_INTERVAL_TRAINING')).toBe(Activity.Class);
+    expect(activityForExercise('PILATES')).toBe(Activity.Pilates);
+    expect(activityForExercise('HIGH_INTENSITY_INTERVAL_TRAINING')).toBe(Activity.Hiit);
+    expect(activityForExercise('HIKING')).toBe(Activity.Hike);
+    expect(activityForExercise('PADDLING')).toBe(Activity.Kayaking);
+    expect(activityForExercise('CALISTHENICS')).toBe(Activity.Strength);
     expect(activityForExercise('FENCING')).toBe(Activity.Other);
     expect(activityForExercise(undefined)).toBe(Activity.Other);
   });

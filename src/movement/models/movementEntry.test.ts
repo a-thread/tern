@@ -1,7 +1,11 @@
 import {
   Activity,
   activityShare,
+  ACTIVITY_INFO,
   clampMovementGoal,
+  distanceFromDisplay,
+  formatDistance,
+  searchActivities,
   countsTowardGoal,
   goalMinutesByDay,
   dayMinutes,
@@ -12,6 +16,7 @@ import {
   movementSummary,
   type MovementEntry,
 } from './movementEntry';
+import { Units } from '@shared/utils/units';
 
 const entry = (day: string, activity: Activity, minutes: number, at = `${day}T08:00:00Z`): MovementEntry => ({
   id: `${day}-${activity}-${minutes}`,
@@ -71,9 +76,33 @@ describe('movementEntry', () => {
     expect(activityShare([])).toEqual([]);
   });
 
+  it('finds exercises by search', () => {
+    expect(searchActivities('ball').map((a) => ACTIVITY_INFO[a].label)).toEqual([
+      'Basketball',
+      'Pickleball',
+      'Volleyball',
+    ]);
+    expect(searchActivities('')).toHaveLength(Object.keys(ACTIVITY_INFO).length);
+  });
+
+  it('counts steps-based exercises out of goal days, and offers distance where it fits', () => {
+    expect(countsTowardGoal(Activity.Hike)).toBe(false);
+    expect(countsTowardGoal(Activity.Run)).toBe(false);
+    expect(countsTowardGoal(Activity.Dancing)).toBe(true);
+    expect(countsTowardGoal(Activity.Shoveling)).toBe(true);
+    expect(ACTIVITY_INFO[Activity.Bike].distance).toBe(true);
+    expect(ACTIVITY_INFO[Activity.Swim].distance).toBeUndefined();
+  });
+
+  it("shows distance in the person's units", () => {
+    expect(formatDistance(4023, Units.Imperial)).toBe('2.5 mi');
+    expect(formatDistance(4000, Units.Metric)).toBe('4 km');
+    expect(distanceFromDisplay(2.5, Units.Imperial)).toBe(4023);
+  });
+
   it('summarises a day', () => {
-    expect(movementSummary([entry('d', Activity.Swim, 35)])).toBe('35 min swim');
-    expect(movementSummary(entriesOn(log, '2026-10-07'))).toBe('50 min · swim and walk');
+    expect(movementSummary([entry('d', Activity.Swim, 35)])).toBe('35 min swimming');
+    expect(movementSummary(entriesOn(log, '2026-10-07'))).toBe('50 min · swimming and walking');
     expect(movementSummary([])).toBe('');
   });
 });

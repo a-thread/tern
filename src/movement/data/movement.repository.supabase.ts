@@ -8,6 +8,7 @@ type MovementRow = {
   activity: string;
   minutes: number;
   effort: string | null;
+  distance_m: number | null;
   logged_at: string;
 };
 
@@ -20,6 +21,7 @@ export const rowToMovement = (row: MovementRow): MovementEntry => ({
   activity: ACTIVITIES.has(row.activity) ? (row.activity as Activity) : Activity.Other,
   minutes: Number(row.minutes),
   effort: row.effort && EFFORTS.has(row.effort) ? (row.effort as Effort) : null,
+  distanceM: row.distance_m ?? null,
   source: 'manual',
   loggedAt: row.logged_at,
 });
@@ -29,7 +31,7 @@ export function createSupabaseMovementRepository(db: TernClient): MovementReposi
     async load(from, to) {
       const { data, error } = await db
         .from('movement_entries')
-        .select('id, day, activity, minutes, effort, logged_at')
+        .select('id, day, activity, minutes, effort, distance_m, logged_at')
         .gte('day', from)
         .lte('day', to)
         .order('logged_at', { ascending: true })
@@ -44,6 +46,7 @@ export function createSupabaseMovementRepository(db: TernClient): MovementReposi
         activity: entry.activity,
         minutes: entry.minutes,
         effort: entry.effort,
+        distance_m: entry.distanceM ?? null,
         logged_at: entry.loggedAt,
       });
       if (error) throw error;

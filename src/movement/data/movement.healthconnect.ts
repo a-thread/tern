@@ -12,14 +12,35 @@ export interface WorkoutsSource {
 /** Health Connect's exercise type names, read as the activities Tern offers. */
 export function activityForExercise(name: string | undefined): Activity {
   const n = (name ?? '').toUpperCase();
-  if (/WALK|HIK/.test(n)) return Activity.Walk;
-  if (/RUN/.test(n)) return Activity.Run;
-  if (/BIK|CYCL/.test(n)) return Activity.Bike;
-  if (/SWIM/.test(n)) return Activity.Swim;
-  if (/STRENGTH|WEIGHT|CALISTHENICS/.test(n)) return Activity.Strength;
-  if (/YOGA|PILATES|STRETCH/.test(n)) return Activity.Yoga;
-  if (/CLASS|DANC|BOOT_CAMP|HIGH_INTENSITY|AEROBIC|SPINNING/.test(n)) return Activity.Class;
-  return Activity.Other;
+  const rules: [RegExp, Activity][] = [
+    [/HIK/, Activity.Hike],
+    [/WALK|STAIR/, Activity.Walk],
+    [/RUN/, Activity.Run],
+    [/BIK|CYCL|SPINNING/, Activity.Bike],
+    [/SWIM/, Activity.Swim],
+    [/ROW/, Activity.Rowing],
+    [/ELLIPTICAL/, Activity.Elliptical],
+    [/KAYAK|PADDL|CANOE/, Activity.Kayaking],
+    [/HIGH_INTENSITY/, Activity.Hiit],
+    [/STRENGTH|WEIGHT|CALISTHENICS/, Activity.Strength],
+    [/PILATES/, Activity.Pilates],
+    [/YOGA/, Activity.Yoga],
+    [/STRETCH/, Activity.Stretching],
+    [/DANC/, Activity.Dancing],
+    [/AEROBIC/, Activity.Aerobics],
+    [/BOXING/, Activity.Boxing],
+    [/MARTIAL/, Activity.MartialArts],
+    [/BASKETBALL/, Activity.Basketball],
+    [/SOCCER/, Activity.Soccer],
+    [/TENNIS/, Activity.Tennis],
+    [/VOLLEYBALL/, Activity.Volleyball],
+    [/GOLF/, Activity.Golf],
+    [/CLIMB/, Activity.Climbing],
+    [/SKI/, Activity.Skiing],
+    [/SKAT/, Activity.Skating],
+    [/BOOT_CAMP|CLASS/, Activity.Aerobics],
+  ];
+  return rules.find(([re]) => re.test(n))?.[1] ?? Activity.Other;
 }
 
 // The common Health Connect exercise types, by number, for when the library doesn't name them.

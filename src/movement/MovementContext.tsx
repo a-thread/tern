@@ -16,6 +16,7 @@ import {
   goalMinutesByDay,
   isLoggableDay,
   isValidMinutes,
+  MovementLimits,
   minutesByDay,
   type Activity,
   type Effort,
@@ -38,7 +39,13 @@ type MovementContextValue = {
   goalMinutesByDay: Record<string, number>;
   todayGoalMinutes: number;
   /** Logs movement for `day` (today or yesterday). False if it can't be logged. */
-  add: (input: { day: string; activity: Activity; minutes: number; effort: Effort | null }) => boolean;
+  add: (input: {
+    day: string;
+    activity: Activity;
+    minutes: number;
+    effort: Effort | null;
+    distanceM?: number | null;
+  }) => boolean;
   /** Removes a manual entry; workouts from Health Connect can't be removed here. */
   remove: (id: string) => void;
   /** Entries from `from` to `to` inclusive, for Trends. */
@@ -104,7 +111,7 @@ export function MovementProvider({
   useAward(WaypointSource.Movement, todayMinutes > 0, enabled && ready);
 
   const add = useCallback<MovementContextValue['add']>(
-    ({ day, activity, minutes, effort }) => {
+    ({ day, activity, minutes, effort, distanceM = null }) => {
       if (!isLoggableDay(day, today) || !isValidMinutes(minutes)) return false;
       const entry: MovementEntry = {
         id: newId(),
@@ -112,6 +119,7 @@ export function MovementProvider({
         activity,
         minutes,
         effort,
+        distanceM: distanceM && distanceM > 0 ? Math.min(Math.round(distanceM), MovementLimits.MAX_DISTANCE_M) : null,
         source: 'manual',
         loggedAt: new Date().toISOString(),
       };

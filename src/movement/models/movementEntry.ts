@@ -1,23 +1,106 @@
 import { addDays } from '@shared/utils/date';
+import { Units } from '@shared/utils/units';
 
-/** What kind of movement. A closed set, so the database can check it. */
+/**
+ * What kind of movement. Stored by id, so an id never changes once it is in use;
+ * add new ones freely, and anything unknown reads back as Other.
+ */
 export enum Activity {
   Walk = 'walk',
   Run = 'run',
+  Hike = 'hike',
   Bike = 'bike',
   Swim = 'swim',
   Strength = 'strength',
+  Cleaning = 'cleaning',
+  Shoveling = 'shoveling',
+  Gardening = 'gardening',
+  Dancing = 'dancing',
+  Rowing = 'rowing',
+  Kayaking = 'kayaking',
+  Elliptical = 'elliptical',
+  Hiit = 'hiit',
+  Circuit = 'circuit',
   Yoga = 'yoga',
-  Class = 'class',
+  Pilates = 'pilates',
+  Stretching = 'stretching',
+  Aerobics = 'aerobics',
+  Boxing = 'boxing',
+  MartialArts = 'martial_arts',
+  Basketball = 'basketball',
+  Soccer = 'soccer',
+  Tennis = 'tennis',
+  Pickleball = 'pickleball',
+  Volleyball = 'volleyball',
+  Golf = 'golf',
+  Climbing = 'climbing',
+  Skiing = 'skiing',
+  Skating = 'skating',
   Other = 'other',
 }
 
-/** How hard it felt. Optional: plenty of movement isn't worth rating. */
+/** How hard it felt. */
 export enum Effort {
   Easy = 'easy',
   Moderate = 'moderate',
   Hard = 'hard',
 }
+
+type ActivityInfo = {
+  label: string;
+  /** Counted by steps already (walking, running…), so it doesn't add to a goal day. */
+  inSteps?: boolean;
+  /** Offers an optional distance. */
+  distance?: boolean;
+};
+
+/** Every activity, in the order the list shows them: the everyday ones first. */
+export const ACTIVITY_INFO: Record<Activity, ActivityInfo> = {
+  [Activity.Walk]: { label: 'Walking', inSteps: true, distance: true },
+  [Activity.Run]: { label: 'Running', inSteps: true, distance: true },
+  [Activity.Hike]: { label: 'Hiking', inSteps: true, distance: true },
+  [Activity.Bike]: { label: 'Biking', distance: true },
+  [Activity.Swim]: { label: 'Swimming' },
+  [Activity.Strength]: { label: 'Strength training' },
+  [Activity.Cleaning]: { label: 'Cleaning' },
+  [Activity.Shoveling]: { label: 'Shoveling snow' },
+  [Activity.Gardening]: { label: 'Gardening' },
+  [Activity.Dancing]: { label: 'Dancing' },
+  [Activity.Rowing]: { label: 'Rowing' },
+  [Activity.Kayaking]: { label: 'Kayaking', distance: true },
+  [Activity.Elliptical]: { label: 'Elliptical' },
+  [Activity.Hiit]: { label: 'HIIT' },
+  [Activity.Circuit]: { label: 'Circuit training' },
+  [Activity.Yoga]: { label: 'Yoga' },
+  [Activity.Pilates]: { label: 'Pilates' },
+  [Activity.Stretching]: { label: 'Stretching' },
+  [Activity.Aerobics]: { label: 'Aerobics' },
+  [Activity.Boxing]: { label: 'Boxing' },
+  [Activity.MartialArts]: { label: 'Martial arts' },
+  [Activity.Basketball]: { label: 'Basketball' },
+  [Activity.Soccer]: { label: 'Soccer' },
+  [Activity.Tennis]: { label: 'Tennis' },
+  [Activity.Pickleball]: { label: 'Pickleball' },
+  [Activity.Volleyball]: { label: 'Volleyball' },
+  [Activity.Golf]: { label: 'Golf' },
+  [Activity.Climbing]: { label: 'Climbing' },
+  [Activity.Skiing]: { label: 'Skiing' },
+  [Activity.Skating]: { label: 'Skating' },
+  [Activity.Other]: { label: 'Other' },
+};
+
+/** Activities in list order. */
+export const ACTIVITY_ORDER = Object.keys(ACTIVITY_INFO) as Activity[];
+
+export const ACTIVITY_LABEL = Object.fromEntries(
+  ACTIVITY_ORDER.map((a) => [a, ACTIVITY_INFO[a].label]),
+) as Record<Activity, string>;
+
+/** The list filtered by a search ("ball" finds basketball, pickleball, volleyball). */
+export const searchActivities = (query: string) => {
+  const q = query.trim().toLowerCase();
+  return q ? ACTIVITY_ORDER.filter((a) => ACTIVITY_INFO[a].label.toLowerCase().includes(q)) : ACTIVITY_ORDER;
+};
 
 /**
  * One stretch of movement on a day. No calories: what someone burns shows up
@@ -30,6 +113,8 @@ export type MovementEntry = {
   activity: Activity;
   minutes: number;
   effort: Effort | null;
+  /** Optional, in meters (miles or kilometers are a display choice). */
+  distanceM?: number | null;
   /** Logged by hand, or read from Health Connect (read-only, never stored). */
   source: 'manual' | 'healthConnect';
   loggedAt: string;
@@ -38,31 +123,22 @@ export type MovementEntry = {
 export class MovementLimits {
   static readonly MIN_MINUTES = 1;
   static readonly MAX_MINUTES = 600;
-  /** How the minutes stepper moves. */
+  /** What a new entry starts at. */
+  static readonly DEFAULT_MINUTES = 30;
+  /** How the goal stepper moves. */
   static readonly STEP = 5;
-  /** What the quick-add button logs: a walk of this long. */
-  static readonly QUICK_MINUTES = 30;
   /** Minutes in a day that make it a goal day, until changed in settings. */
   static readonly DEFAULT_GOAL = 30;
   static readonly GOAL_MIN = 10;
   static readonly GOAL_MAX = 120;
+  /** The longest distance an entry can hold: 300 km. */
+  static readonly MAX_DISTANCE_M = 300_000;
 }
 
-export const ACTIVITY_LABEL: Record<Activity, string> = {
-  [Activity.Walk]: 'Walk',
-  [Activity.Run]: 'Run',
-  [Activity.Bike]: 'Bike',
-  [Activity.Swim]: 'Swim',
-  [Activity.Strength]: 'Strength',
-  [Activity.Yoga]: 'Yoga',
-  [Activity.Class]: 'Class',
-  [Activity.Other]: 'Other',
-};
-
 export const EFFORT_LABEL: Record<Effort, string> = {
-  [Effort.Easy]: 'Easy',
-  [Effort.Moderate]: 'Moderate',
-  [Effort.Hard]: 'Hard',
+  [Effort.Easy]: 'Low',
+  [Effort.Moderate]: 'Medium',
+  [Effort.Hard]: 'High',
 };
 
 export const isValidMinutes = (m: number) =>
@@ -83,8 +159,7 @@ export const isLoggableDay = (day: string, today: string) =>
  * steps already count them, and counting them again would make a short walk a
  * goal day. Movement is for what steps can't see: swims, rides, lifting, classes.
  */
-export const countsTowardGoal = (activity: Activity) =>
-  activity !== Activity.Walk && activity !== Activity.Run;
+export const countsTowardGoal = (activity: Activity) => !ACTIVITY_INFO[activity].inSteps;
 
 /** Minutes moved per day, keyed by day. */
 export function minutesByDay(entries: readonly MovementEntry[]): Record<string, number> {
@@ -124,3 +199,18 @@ export function movementSummary(entries: readonly MovementEntry[]): string {
   if (!kinds.length) return '';
   return kinds.length === 1 ? `${total} min ${kinds[0]}` : `${total} min · ${kinds.join(' and ')}`;
 }
+
+const METERS_PER_MILE = 1609.344;
+
+/** Stored meters as miles or kilometers, whichever the person uses. */
+export const distanceToDisplay = (m: number, units: Units) =>
+  units === Units.Imperial ? m / METERS_PER_MILE : m / 1000;
+
+export const distanceFromDisplay = (value: number, units: Units) =>
+  Math.round(units === Units.Imperial ? value * METERS_PER_MILE : value * 1000);
+
+export const distanceUnit = (units: Units) => (units === Units.Imperial ? 'mi' : 'km');
+
+/** "2.5 mi", "4 km". */
+export const formatDistance = (m: number, units: Units) =>
+  `${Number(distanceToDisplay(m, units).toFixed(1))} ${distanceUnit(units)}`;
