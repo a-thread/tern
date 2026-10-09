@@ -8,12 +8,13 @@ import { useUnits } from '@settings/hooks/useUnits';
 const UNITS: readonly Units[] = [Units.Imperial, Units.Metric];
 
 /** Pounds or kilograms (and the volume units that go with them), for display only. */
-export function UnitsRow() {
+export function UnitsRow({ icon }: { icon?: React.ReactNode } = {}) {
   const { updateSettings } = useSettings();
   const { units } = useUnits();
   return (
     <Row
       title='Units'
+      icon={icon}
       right={
         <PillToggle
           options={UNITS}

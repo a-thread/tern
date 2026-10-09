@@ -2,19 +2,13 @@ import React from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { colors, font, space } from '@shared/theme';
-import { Group, GroupLabel, Row } from '@shared/components/ui';
 import { useAuth } from '@shared/auth/AuthContext';
 
-/** The app version, and signing out (or leaving the preview). */
+/** Signing out (or leaving the preview), and the app version, at the foot of Settings. */
 export function AccountSection() {
   const auth = useAuth();
   return (
     <>
-      <GroupLabel>About</GroupLabel>
-      <Group>
-        <Row title='Version' value='1.0.0' />
-      </Group>
-
       {auth ? (
         <View style={s.signOut}>
           {auth.isGuest ? (
@@ -27,6 +21,7 @@ export function AccountSection() {
           </Pressable>
         </View>
       ) : null}
+      <Text style={s.version}>Tern 1.0.0</Text>
     </>
   );
 }
@@ -35,4 +30,5 @@ const s = StyleSheet.create({
   signOut: { alignItems: 'center', gap: space.md, paddingVertical: space.lg },
   createText: { fontFamily: font.bold, fontSize: 14, color: colors.coral },
   signOutText: { fontFamily: font.semibold, fontSize: 14, color: colors.ink2 },
+  version: { fontFamily: font.body, fontSize: 11.5, color: colors.ink3, textAlign: 'center', marginTop: space.md },
 });

@@ -4,35 +4,30 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 
 import { colors, space } from '@shared/theme';
-import { FootNote, Group, GroupLabel, PushHeader } from '@shared/components/ui';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
+
+import { FootNote, Group, GroupLabel, IconBadge, PushHeader } from '@shared/components/ui';
 import type { SettingsStackParamList } from '@shared/navigation/types';
 import { useBackend } from '@app/BackendContext';
 import { useSettings } from '@settings/SettingsContext';
 import { ProfileSection } from '@settings/components/ProfileSection';
+import { SectionRow } from '@settings/components/SectionRow';
 import { UnitsRow } from '@settings/components/UnitsRow';
-import { DataSection } from '@settings/components/DataSection';
 import { AccountSection } from '@settings/components/AccountSection';
-import { StepGoalRow } from '@today/components/StepGoalRow';
-import { RestDaysRow } from '@today/components/RestDaysRow';
-import { HealthDataRow } from '@today/components/HealthDataRow';
-import { CalorieTargetsRow } from '@food/components/CalorieTargetsRow';
-import { FoodDisplayRow } from '@food/components/FoodDisplayRow';
-import { StreakReminderRows } from '@today/components/StreakReminderRows';
-import { MealReminderRows } from '@food/components/MealReminderRows';
-import { MedicationRow } from '@medication/components/MedicationRow';
-import { WeightSettingsRows } from '@weight/components/WeightSettingsRows';
-import { WeightReminderRows } from '@weight/components/WeightReminderRows';
-import { WaterSettingsRows } from '@water/components/WaterSettingsRows';
-import { WaterReminderRows } from '@water/components/WaterReminderRows';
-import { MoodSettingsRows } from '@mood/components/MoodSettingsRows';
-import { MoodReminderRows } from '@mood/components/MoodReminderRows';
-import { MovementSettingsRows } from '@movement/components/MovementSettingsRows';
+import { healthDataSummary, remindersSummary } from '@settings/models/settingsSummary';
+import { activitySummary } from '@today/models/settingsSummary';
+import { foodSummary } from '@food/models/settingsSummary';
+import { weightSummary } from '@weight/models/settingsSummary';
+import { waterSummary } from '@water/models/settingsSummary';
+import { moodSummary } from '@mood/models/settingsSummary';
+import { medicationSummary } from '@medication/models/settingsSummary';
 
 type Props = NativeStackScreenProps<SettingsStackParamList, 'SettingsRoot'>;
 
 /**
- * The settings menu. It only arranges sections: each feature supplies the rows for what it
- * owns, so a new feature adds its settings here without this screen knowing how they work.
+ * The settings index: one row per section, each with a line saying how it's set, so the
+ * whole page fits on a screen. Each section's page is made of rows its feature supplies,
+ * and each feature supplies its own summary line here.
  */
 export default function SettingsScreen({ navigation }: Props) {
   const insets = useSafeAreaInsets();
@@ -46,51 +41,94 @@ export default function SettingsScreen({ navigation }: Props) {
       <ScrollView contentContainerStyle={{ paddingHorizontal: space.lg, paddingBottom: 60 }}>
         <ProfileSection />
 
-        <GroupLabel>Units</GroupLabel>
+        <GroupLabel>Tracking</GroupLabel>
         <Group>
-          <UnitsRow />
+          <SectionRow
+            icon='shoe-print'
+            color={colors.sunDeep}
+            tint={colors.sunTint}
+            title='Steps and activity'
+            summary={activitySummary(settings)}
+            onPress={() => navigation.navigate('ActivitySettings')}
+          />
+          <SectionRow
+            icon='silverware-fork-knife'
+            color={colors.kelp}
+            tint={colors.kelpTint}
+            title='Food'
+            summary={foodSummary(settings)}
+            onPress={() => navigation.navigate('FoodSettings')}
+          />
+          <SectionRow
+            icon='scale-bathroom'
+            color={colors.glacierDeep}
+            tint={colors.glacierTint}
+            title='Weight'
+            summary={weightSummary(settings)}
+            onPress={() => navigation.navigate('WeightSettings')}
+          />
+          <SectionRow
+            icon='water-outline'
+            color={colors.water}
+            tint={colors.waterTint}
+            title='Water'
+            summary={waterSummary(settings)}
+            onPress={() => navigation.navigate('WaterSettings')}
+          />
+          <SectionRow
+            icon='emoticon-happy-outline'
+            color={colors.violet}
+            tint={colors.violetTint}
+            title='Mood and stress'
+            summary={moodSummary(settings)}
+            onPress={() => navigation.navigate('MoodSettings')}
+          />
+          <SectionRow
+            icon='pill'
+            color={colors.aurora}
+            tint={colors.auroraTint}
+            title='Medication'
+            summary={medicationSummary(settings)}
+            onPress={() => navigation.navigate('Medication')}
+          />
         </Group>
 
-        <GroupLabel>Activity</GroupLabel>
+        <GroupLabel>App</GroupLabel>
         <Group>
-          <StepGoalRow onPress={() => navigation.navigate('StepGoal')} />
-          <HealthDataRow onPress={() => navigation.navigate('HealthData')} />
-          <RestDaysRow onPress={() => navigation.navigate('RestDays')} />
-          <StreakReminderRows />
-          <MovementSettingsRows />
+          <SectionRow
+            icon='bell-outline'
+            color={colors.coral}
+            tint={colors.coralTint}
+            title='Reminders'
+            summary={remindersSummary(settings)}
+            onPress={() => navigation.navigate('RemindersSettings')}
+          />
+          <SectionRow
+            icon='heart-pulse'
+            color={colors.coral}
+            tint={colors.coralTint}
+            title='Health data'
+            summary={healthDataSummary(settings)}
+            onPress={() => navigation.navigate('HealthData')}
+          />
+          <UnitsRow
+            icon={
+              <IconBadge bg={colors.doveTint}>
+                <MaterialCommunityIcons name='ruler' size={17} color={colors.ink2} />
+              </IconBadge>
+            }
+          />
+          {dataRepo ? (
+            <SectionRow
+              icon='database-outline'
+              color={colors.driftwood}
+              tint={colors.driftwoodTint}
+              title='Your data'
+              summary='Export or delete'
+              onPress={() => navigation.navigate('DataSettings')}
+            />
+          ) : null}
         </Group>
-
-        <GroupLabel>Food</GroupLabel>
-        <Group>
-          <CalorieTargetsRow onPress={() => navigation.navigate('Targets')} />
-          <FoodDisplayRow onPress={() => navigation.navigate('FoodDisplay')} />
-          <MealReminderRows />
-        </Group>
-
-        <GroupLabel>Medication</GroupLabel>
-        <Group>
-          <MedicationRow onPress={() => navigation.navigate('Medication')} />
-        </Group>
-
-        <GroupLabel>Weight</GroupLabel>
-        <Group>
-          <WeightSettingsRows />
-          {settings.trackWeight ? <WeightReminderRows /> : null}
-        </Group>
-
-        <GroupLabel>Water</GroupLabel>
-        <Group>
-          <WaterSettingsRows />
-          {settings.trackWater ? <WaterReminderRows /> : null}
-        </Group>
-
-        <GroupLabel>Mood &amp; stress</GroupLabel>
-        <Group>
-          <MoodSettingsRows />
-          {settings.trackMood ? <MoodReminderRows /> : null}
-        </Group>
-
-        {dataRepo ? <DataSection repo={dataRepo} /> : null}
 
         <AccountSection />
 

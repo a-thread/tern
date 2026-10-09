@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { Divider, PillToggle, Row, ToggleRow } from '@shared/components/ui';
+import { Divider, ToggleRow } from '@shared/components/ui';
 import { useReminders } from '@settings/hooks/useReminders';
 import TimeStepperRow from '@settings/components/TimeStepperRow';
 import {
@@ -13,32 +13,13 @@ import {
 } from '@settings/models/reminderPlan';
 import { Frequency } from '@shared/models/frequency';
 
-const FREQUENCIES = [Frequency.Daily, Frequency.Weekly];
-
-/** How often to weigh in, and the weigh-in reminder. Only offered while weight is tracked. */
+/** The weigh-in reminder, on the day and time it fires. Only offered while weight is tracked. */
 export function WeightReminderRows() {
-  const { settings, updateSettings, reminders, text, patch } = useReminders();
+  const { settings, reminders, text, patch } = useReminders();
   const weighIn = reminders.weighIn;
   if (!settings.trackWeight) return null;
   return (
     <>
-      <Row
-        title='How often'
-        sub={
-          settings.weighInFrequency === Frequency.Daily
-            ? 'Today asks for a weight every day'
-            : 'Today asks once a week'
-        }
-        right={
-          <PillToggle
-            options={FREQUENCIES}
-            value={settings.weighInFrequency}
-            onChange={(f) => updateSettings({ weighInFrequency: f })}
-            label={(f) => (f === Frequency.Daily ? 'Daily' : 'Weekly')}
-          />
-        }
-      />
-      <Divider />
       <ToggleRow
         title='Weigh-in reminder'
         sub={text.weighIn}

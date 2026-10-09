@@ -33,7 +33,7 @@ export default function FoodDisplayScreen() {
     >
       <PushHeader
         title='Food display'
-        backLabel='Settings'
+        backLabel='Food'
         onBack={() => navigation.goBack()}
       />
 

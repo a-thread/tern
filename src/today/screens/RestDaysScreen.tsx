@@ -30,7 +30,7 @@ export default function RestDaysScreen() {
     >
       <PushHeader
         title='Rest days'
-        backLabel='Settings'
+        backLabel='Back'
         onBack={() => navigation.goBack()}
       />
 

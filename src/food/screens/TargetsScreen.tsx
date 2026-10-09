@@ -122,7 +122,7 @@ export default function TargetsScreen() {
     >
       <PushHeader
         title='Targets'
-        backLabel='Settings'
+        backLabel='Back'
         onBack={() => navigation.goBack()}
       />
 

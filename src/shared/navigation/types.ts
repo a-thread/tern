@@ -3,6 +3,14 @@ import type { FoodEntry } from '@food/models/foodEntry';
 
 export type SettingsStackParamList = {
   SettingsRoot: undefined;
+  /** Section pages, one per row of the Settings index. */
+  ActivitySettings: undefined;
+  FoodSettings: undefined;
+  WeightSettings: undefined;
+  WaterSettings: undefined;
+  MoodSettings: undefined;
+  RemindersSettings: undefined;
+  DataSettings: undefined;
   StepGoal: undefined;
   FoodDisplay: undefined;
   HealthData: undefined;

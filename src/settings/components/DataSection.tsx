@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Alert, Pressable, Share, StyleSheet, Text, View } from 'react-native';
 
 import { colors, font } from '@shared/theme';
-import { Group, GroupLabel } from '@shared/components/ui';
+import { Group } from '@shared/components/ui';
 import { useAuth } from '@shared/auth/AuthContext';
 import { useToast } from '@shared/state/ToastContext';
 import type { DataRepository } from '@settings/data/dataRepository';
@@ -86,9 +86,7 @@ export function DataSection({ repo }: { repo: DataRepository }) {
   };
 
   return (
-    <>
-      <GroupLabel>Your data</GroupLabel>
-      <Group>
+    <Group>
         <Pressable style={s.row} onPress={exportData} disabled={busy}>
           <View style={{ flex: 1 }}>
             <Text style={s.title}>Export my data</Text>
@@ -107,8 +105,7 @@ export function DataSection({ repo }: { repo: DataRepository }) {
             <Text style={s.sub}>Remove your login and everything in it</Text>
           </View>
         </Pressable>
-      </Group>
-    </>
+    </Group>
   );
 }
 

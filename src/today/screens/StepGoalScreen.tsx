@@ -53,7 +53,7 @@ export default function StepGoalScreen() {
     >
       <PushHeader
         title='Step goal'
-        backLabel='Settings'
+        backLabel='Back'
         onBack={() => navigation.goBack()}
       />
 
