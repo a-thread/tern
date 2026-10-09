@@ -18,6 +18,7 @@ module.exports = function (api) {
             '@settings': './src/settings',
             '@medication': './src/medication',
             '@water': './src/water',
+            '@movement': './src/movement',
             '@mood': './src/mood',
           },
         },
