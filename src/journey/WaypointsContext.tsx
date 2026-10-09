@@ -25,6 +25,8 @@ type WaypointsContextValue = {
   waypoints: number;
   /** False until the ledger has loaded. */
   ready: boolean;
+  /** Reads the ledger again (pull to refresh). */
+  reload: () => Promise<void>;
   /** The day the ledger is loaded for; awards are ignored until it matches today (briefly false after midnight). */
   day: string | null;
   /** Every award on record, kept current as awards are made and taken back. */
@@ -67,23 +69,32 @@ export function WaypointsProvider({
   const awarded = useRef(new Set<WaypointSource>());
   const nextId = useRef(1);
 
-  useEffect(() => {
-    let cancelled = false;
-    Promise.all([ledger.load(day), ledger.history()])
-      .then(([snapshot, history]) => {
-        if (cancelled) return;
-        awarded.current = new Set(snapshot.todaySources);
-        ledgerDayRef.current = day;
-        setLedgerDay(day);
-        setEvents(history);
-        setWaypoints(snapshot.total);
-      })
-      .catch((e) => console.warn('Could not load waypoints', e))
-      .finally(() => !cancelled && setReady(true));
-    return () => {
-      cancelled = true;
-    };
+  // Bumped by each read, so a read that finishes after a newer one started is dropped.
+  const readId = useRef(0);
+  const reload = useCallback(async () => {
+    const id = ++readId.current;
+    try {
+      const [snapshot, history] = await Promise.all([ledger.load(day), ledger.history()]);
+      if (id !== readId.current) return;
+      awarded.current = new Set(snapshot.todaySources);
+      ledgerDayRef.current = day;
+      setLedgerDay(day);
+      setEvents(history);
+      setWaypoints(snapshot.total);
+    } catch (e) {
+      console.warn('Could not load waypoints', e);
+    } finally {
+      if (id === readId.current) setReady(true);
+    }
   }, [ledger, day]);
+
+  useEffect(() => {
+    const reads = readId;
+    reload();
+    return () => {
+      reads.current++; // ignore a read still in flight
+    };
+  }, [reload]);
 
   const enqueue = useCallback((points: number, source: WaypointSource) => {
     setCelebrations((prev) => [...prev, { id: nextId.current++, points, source }]);
@@ -140,6 +151,7 @@ export function WaypointsProvider({
     () => ({
       waypoints,
       ready,
+      reload,
       day: ledgerDay,
       events,
       addWaypoints: award,
@@ -151,6 +163,7 @@ export function WaypointsProvider({
     [
       waypoints,
       ready,
+      reload,
       ledgerDay,
       events,
       award,

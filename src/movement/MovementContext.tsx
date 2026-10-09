@@ -29,6 +29,8 @@ const HISTORY_DAYS = 180;
 type MovementContextValue = {
   /** False until movement has loaded once. */
   ready: boolean;
+  /** Reads everything again from storage (pull to refresh). */
+  reload: () => Promise<unknown>;
   /** Movement tracking is switched on in Settings. */
   enabled: boolean;
   /** Everything loaded, manual and from Health Connect, oldest first. */
@@ -156,6 +158,7 @@ export function MovementProvider({
   const value = useMemo<MovementContextValue>(
     () => ({
       ready,
+      reload,
       enabled,
       entries: enabled ? entries : [],
       minutesByDay: byDay,
@@ -168,7 +171,7 @@ export function MovementProvider({
       workoutsAvailable: !!workouts,
       connectWorkouts,
     }),
-    [ready, enabled, entries, byDay, todayMinutes, goalByDay, todayGoalMinutes, add, remove, load, workouts, connectWorkouts],
+    [ready, reload, enabled, entries, byDay, todayMinutes, goalByDay, todayGoalMinutes, add, remove, load, workouts, connectWorkouts],
   );
 
   return <MovementContext.Provider value={value}>{children}</MovementContext.Provider>;

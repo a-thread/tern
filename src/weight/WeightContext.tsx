@@ -17,6 +17,8 @@ type WeightContextValue = {
   /** Smoothed trend, oldest to newest. Empty until something is logged. */
   weightTrend: number[];
   ready: boolean;
+  /** Reads everything again from storage (pull to refresh). */
+  reload: () => Promise<unknown>;
   addWeightEntry: (lb: number) => void;
   /** Corrects an existing weigh-in in place, keeping when it was logged. */
   updateWeightEntry: (id: string, lb: number) => void;
@@ -83,8 +85,8 @@ export function WeightProvider({
   const weightTrend = useMemo(() => computeTrend(weightEntries), [weightEntries]);
 
   const value = useMemo<WeightContextValue>(
-    () => ({ weightEntries, weightTrend, ready, addWeightEntry, updateWeightEntry }),
-    [weightEntries, weightTrend, ready, addWeightEntry, updateWeightEntry],
+    () => ({ weightEntries, weightTrend, ready, reload, addWeightEntry, updateWeightEntry }),
+    [weightEntries, weightTrend, ready, reload, addWeightEntry, updateWeightEntry],
   );
 
   return (

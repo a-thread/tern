@@ -15,6 +15,8 @@ import type { Medication } from '@medication/models/medication';
 type MedicationContextValue = {
   /** False until today's doses have loaded once. */
   ready: boolean;
+  /** Reads everything again from storage (pull to refresh). */
+  reload: () => Promise<unknown>;
   medications: Medication[];
   /** Ids of the medications taken today. */
   takenToday: ReadonlySet<string>;
@@ -103,8 +105,8 @@ export function MedicationProvider({
   useAward(WaypointSource.Medication, taken.length > 0 && due.length === 0, ready && medications.length > 0);
 
   const value = useMemo<MedicationContextValue>(
-    () => ({ ready, medications, takenToday, due, taken, setTaken, removeMedication }),
-    [ready, medications, takenToday, due, taken, setTaken, removeMedication],
+    () => ({ ready, reload, medications, takenToday, due, taken, setTaken, removeMedication }),
+    [ready, reload, medications, takenToday, due, taken, setTaken, removeMedication],
   );
 
   return <MedicationContext.Provider value={value}>{children}</MedicationContext.Provider>;

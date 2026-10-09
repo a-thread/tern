@@ -15,6 +15,7 @@ import {
 } from '@shared/components/ui';
 import type { RootStackParamList } from '@shared/navigation/types';
 import { useDayKey } from '@shared/hooks/useDayKey';
+import { usePullToRefresh } from '@shared/hooks/usePullToRefresh';
 import { formatLongDate } from '@shared/utils/date';
 import { useSettings } from '@settings/SettingsContext';
 import { mealTotals, Meals } from '@food/models/meals';
@@ -31,10 +32,12 @@ export default function FoodScreen() {
   const insets = useSafeAreaInsets();
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
-  const { foodLog, skippedMeals, setMealSkipped, removeFoodEntry } = useFood();
+  const { foodLog, skippedMeals, setMealSkipped, removeFoodEntry, reload: reloadFood } =
+    useFood();
   const { settings } = useSettings();
   const { showCalories } = useFoodDisplay();
   const water = useWater();
+  const refreshControl = usePullToRefresh([reloadFood, water.reload]);
   const totals = dayTotals(foodLog);
   const remainingCalories = Math.max(
     settings.calorieTarget - totals.calories,
@@ -51,6 +54,7 @@ export default function FoodScreen() {
       </View>
 
       <ScrollView
+        refreshControl={refreshControl}
         contentContainerStyle={{
           paddingHorizontal: space.lg,
           paddingBottom: 100,

@@ -18,6 +18,8 @@ export const HISTORY_DAYS = 180;
 type MoodContextValue = {
   /** False until check-ins have loaded once. */
   ready: boolean;
+  /** Reads everything again from storage (pull to refresh). */
+  reload: () => Promise<unknown>;
   /** Mood and stress tracking is switched on in Settings. */
   enabled: boolean;
   /** The last 180 days of check-ins, oldest first. */
@@ -83,8 +85,8 @@ export function MoodProvider({
   }, [repo, today, persist]);
 
   const value = useMemo<MoodContextValue>(
-    () => ({ ready, enabled, entries, today: todays, checkIn, clearToday }),
-    [ready, enabled, entries, todays, checkIn, clearToday],
+    () => ({ ready, reload, enabled, entries, today: todays, checkIn, clearToday }),
+    [ready, reload, enabled, entries, todays, checkIn, clearToday],
   );
 
   return <MoodContext.Provider value={value}>{children}</MoodContext.Provider>;

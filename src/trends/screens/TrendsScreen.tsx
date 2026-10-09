@@ -13,10 +13,14 @@ import { WeightTrend } from '@shared/components/charts/WeightTrend';
 import { ConsistencyGrid } from '@shared/components/charts/ConsistencyGrid';
 import { useActivity } from '@today/ActivityContext';
 import { useDayKey } from '@shared/hooks/useDayKey';
+import { usePullToRefresh } from '@shared/hooks/usePullToRefresh';
 import { addDays, monthName } from '@shared/utils/date';
 import { averageIntake, type IntakeAverage } from '@food/models/intake';
 import { useFood } from '@food/FoodContext';
 import { useWeight } from '@weight/WeightContext';
+import { useWater } from '@water/WaterContext';
+import { useMood } from '@mood/MoodContext';
+import { useMovement } from '@movement/MovementContext';
 import { signedChange } from '@weight/models/weightEntry';
 import { useSettings } from '@settings/SettingsContext';
 import WaterTrendCard from '@water/components/WaterTrendCard';
@@ -35,13 +39,31 @@ type Props = NativeStackScreenProps<TrendsStackParamList, 'TrendsHome'>;
 export default function TrendsScreen({ navigation }: Props) {
   const insets = useSafeAreaInsets();
   const [range, setRange] = useState<TrendRange>(TrendRange.Month);
-  const { foodLog, loadHistory } = useFood();
-  const { weightEntries, weightTrend } = useWeight();
+  const { foodLog, loadHistory, reload: reloadFood } = useFood();
+  const { weightEntries, weightTrend, reload: reloadWeight } = useWeight();
   const { settings } = useSettings();
   const { formatWeight, toDisplay, weightLabel } = useUnits();
   const [intake, setIntake] = useState<IntakeAverage | null>(null);
 
-  const { days, status: stepsStatus } = useActivity();
+  const { days, status: stepsStatus, refresh: refreshSteps } = useActivity();
+  const { reload: reloadWater } = useWater();
+  const { reload: reloadMood } = useMood();
+  const { reload: reloadMovement } = useMovement();
+  // Bumped after a pull, so the history read for the range is read again too.
+  const [refreshKey, setRefreshKey] = useState(0);
+  const refreshControl = usePullToRefresh([
+    async () => {
+      await Promise.allSettled([
+        refreshSteps(),
+        reloadFood(),
+        reloadWeight(),
+        reloadWater(),
+        reloadMood(),
+        reloadMovement(),
+      ]);
+      setRefreshKey((k) => k + 1);
+    },
+  ]);
   const todayKey = useDayKey();
   // Food averages cover the last week, or the last 30 days for longer ranges
   // (a longer window would mean loading a lot of rows for little gain).
@@ -57,9 +79,9 @@ export default function TrendsScreen({ navigation }: Props) {
       return () => {
         cancelled = true;
       };
-      // foodLog is a trigger, not an input: reload after something is logged.
+      // foodLog and refreshKey are triggers, not inputs: reload after something is logged or a pull.
       // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [loadHistory, todayKey, foodDays, foodLog]),
+    }, [loadHistory, todayKey, foodDays, foodLog, refreshKey]),
   );
   const stepsConnected = stepsStatus === StepsStatus.Connected;
   const rangeSteps = summarizeSteps(days, TrendRanges.DAYS[range]);
@@ -84,6 +106,7 @@ export default function TrendsScreen({ navigation }: Props) {
       </View>
 
       <ScrollView
+        refreshControl={refreshControl}
         contentContainerStyle={{
           paddingHorizontal: space.lg,
           paddingBottom: 100,
@@ -234,9 +257,9 @@ export default function TrendsScreen({ navigation }: Props) {
         </Card>
         ) : null}
 
-        {settings.adaptTarget && settings.trackCalories && settings.trackWeight ? <EnergyTrendCard /> : null}
-        {settings.trackMovement ? <MovementTrendCard range={range} /> : null}
-        {settings.trackWater ? <WaterTrendCard range={range} /> : null}
+        {settings.adaptTarget && settings.trackCalories && settings.trackWeight ? <EnergyTrendCard refreshKey={refreshKey} /> : null}
+        {settings.trackMovement ? <MovementTrendCard range={range} refreshKey={refreshKey} /> : null}
+        {settings.trackWater ? <WaterTrendCard range={range} refreshKey={refreshKey} /> : null}
 
         {settings.trackMood ? <MoodTrendCard range={range} /> : null}
 

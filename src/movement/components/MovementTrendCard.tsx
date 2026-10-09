@@ -22,7 +22,14 @@ import {
 import { averageMinutes, bucketMinutes } from '@movement/models/movementBars';
 
 /** Active minutes over the Trends range: the daily average, a bar per day (or week), and what kinds. */
-export function MovementTrendCard({ range }: { range: TrendRange }) {
+export function MovementTrendCard({
+  range,
+  refreshKey = 0,
+}: {
+  range: TrendRange;
+  /** Bump to read the history again (pull to refresh). */
+  refreshKey?: number;
+}) {
   const { settings } = useSettings();
   const { units } = useUnits();
   const { todayMinutes, loadRange } = useMovement(); // todayMinutes is a trigger: reload after logging
@@ -38,9 +45,9 @@ export function MovementTrendCard({ range }: { range: TrendRange }) {
       return () => {
         cancelled = true;
       };
-      // todayMinutes is a trigger, not an input.
+      // todayMinutes and refreshKey are triggers, not inputs.
       // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [loadRange, today, range, todayMinutes]),
+    }, [loadRange, today, range, todayMinutes, refreshKey]),
   );
 
   const byDay = minutesByDay(entries);

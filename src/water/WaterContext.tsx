@@ -14,6 +14,8 @@ import { WaypointSource } from '@journey/models/waypoint';
 type WaterContextValue = {
   /** False until today's drinks have loaded once. */
   ready: boolean;
+  /** Reads everything again from storage (pull to refresh). */
+  reload: () => Promise<unknown>;
   /** Water tracking is switched on in Settings. */
   enabled: boolean;
   /** Millilitres drunk today. */
@@ -102,6 +104,7 @@ export function WaterProvider({
   const value = useMemo<WaterContextValue>(
     () => ({
       ready,
+      reload,
       enabled,
       totalOz,
       goalOz,
@@ -112,7 +115,7 @@ export function WaterProvider({
       lastOz: last?.oz ?? null,
       loadRange,
     }),
-    [ready, enabled, totalOz, goalOz, reached, addWater, undoLast, last?.oz, loadRange],
+    [ready, reload, enabled, totalOz, goalOz, reached, addWater, undoLast, last?.oz, loadRange],
   );
 
   return <WaterContext.Provider value={value}>{children}</WaterContext.Provider>;

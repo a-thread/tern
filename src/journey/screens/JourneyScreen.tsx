@@ -15,6 +15,7 @@ import {
 } from '@shared/components/ui';
 import { JourneyRoute } from '@shared/components/charts/JourneyRoute';
 import { useReplayOnFocus } from '@shared/hooks/useReplayOnFocus';
+import { usePullToRefresh } from '@shared/hooks/usePullToRefresh';
 import { AnimatedNumber } from '@shared/components/AnimatedNumber';
 import { formatShortDate, monthName } from '@shared/utils/date';
 import { daysWithWaypoints, listedRules, WaypointSource } from '@journey/models/waypoint';
@@ -42,7 +43,8 @@ const RULE_STYLE: Record<WaypointSource, { bg: string; fg: string }> = {
 
 export default function JourneyScreen() {
   const insets = useSafeAreaInsets();
-  const { waypoints, events } = useWaypoints();
+  const { waypoints, events, reload } = useWaypoints();
+  const refreshControl = usePullToRefresh([reload]);
   const { settings } = useSettings();
 
   // Redraw the route when Journey comes into view the first time, when the total changes or after a minute away.
@@ -99,6 +101,7 @@ export default function JourneyScreen() {
       </LinearGradient>
 
       <ScrollView
+        refreshControl={refreshControl}
         contentContainerStyle={{
           paddingHorizontal: space.lg,
           paddingBottom: 100,

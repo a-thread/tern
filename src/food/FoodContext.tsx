@@ -17,6 +17,8 @@ type FoodContextValue = {
   loadedDay: string | null;
   /** False until the first load finishes — don't derive "nothing logged" from an unloaded log. */
   ready: boolean;
+  /** Reads everything again from storage (pull to refresh). */
+  reload: () => Promise<unknown>;
   /** Entries grouped by day for `from`..`to` inclusive, for averages and "recent foods". Days with nothing logged are absent. */
   loadHistory: (from: string, to: string) => Promise<Record<string, FoodEntry[]>>;
   /** Meals marked "nothing today" by day for `from`..`to`, for the adaptive target. */
@@ -154,6 +156,7 @@ export function FoodProvider({
       foodLog,
       loadedDay,
       ready,
+      reload,
       loadHistory,
       loadSkippedHistory,
       addFoodEntry,
@@ -167,6 +170,7 @@ export function FoodProvider({
       foodLog,
       loadedDay,
       ready,
+      reload,
       loadHistory,
       loadSkippedHistory,
       addFoodEntry,

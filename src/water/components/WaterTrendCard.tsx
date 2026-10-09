@@ -16,7 +16,14 @@ import { useWater } from '@water/WaterContext';
 
 
 /** Average water per day, and a bar per day (or week), for the Trends range. */
-export default function WaterTrendCard({ range }: { range: TrendRange }) {
+export default function WaterTrendCard({
+  range,
+  refreshKey = 0,
+}: {
+  range: TrendRange;
+  /** Bump to read the history again (pull to refresh). */
+  refreshKey?: number;
+}) {
   const { settings } = useSettings();
   const { formatVolume } = useUnits();
   const { totalOz, loadRange } = useWater(); // totalOz is a trigger: reload after logging a drink
@@ -32,9 +39,9 @@ export default function WaterTrendCard({ range }: { range: TrendRange }) {
       return () => {
         cancelled = true;
       };
-      // totalOz is a trigger, not an input.
+      // totalOz and refreshKey are triggers, not inputs.
       // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [loadRange, today, range, totalOz]),
+    }, [loadRange, today, range, totalOz, refreshKey]),
   );
 
   const average = averageDaily(byDay, today, TrendRanges.DAYS[range]);

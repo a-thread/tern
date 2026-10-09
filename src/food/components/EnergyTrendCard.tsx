@@ -19,7 +19,12 @@ const H = 90;
  * Estimated burn against logged intake, week by week, for the last eight
  * weeks: why the adaptive target moves. Shown in Trends while it's on.
  */
-export function EnergyTrendCard() {
+export function EnergyTrendCard({
+  refreshKey = 0,
+}: {
+  /** Bump to read the history again (pull to refresh). */
+  refreshKey?: number;
+} = {}) {
   const { loadHistory, loadSkippedHistory, foodLog } = useFood();
   const { weightEntries } = useWeight();
   const today = useDayKey();
@@ -38,9 +43,9 @@ export function EnergyTrendCard() {
       return () => {
         cancelled = true;
       };
-      // foodLog is a trigger, not an input.
+      // foodLog and refreshKey are triggers, not inputs.
       // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [loadHistory, loadSkippedHistory, weightEntries, today, foodLog.length]),
+    }, [loadHistory, loadSkippedHistory, weightEntries, today, foodLog.length, refreshKey]),
   );
 
   const values = weeks.flatMap((w) => [w.burn, w.intake]).filter((v): v is number => v !== null);
