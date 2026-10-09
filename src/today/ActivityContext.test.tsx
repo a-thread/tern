@@ -10,6 +10,7 @@ import { SettingsProvider, useSettings } from '@settings/SettingsContext';
 import { FoodProvider } from '@food/FoodContext';
 import { WaypointsProvider, useWaypoints } from '@journey/WaypointsContext';
 import { ActivityProvider, useActivity } from './ActivityContext';
+import { MovementProvider } from '@movement/MovementContext';
 import type { StepsRepository } from '@today/data/steps.repository';
 import { StepsStatus } from '@today/data/steps.repository';
 import { WaypointSource } from '@journey/models/waypoint';
@@ -29,7 +30,9 @@ async function setup(steps: StepsRepository) {
       <SettingsProvider repo={backend.settings}>
         <WaypointsProvider repo={backend.waypoints}>
           <FoodProvider repo={backend.food}>
-            <ActivityProvider steps={backend.steps} restDays={backend.restDays}>{children}</ActivityProvider>
+            <MovementProvider repo={backend.movement}>
+              <ActivityProvider steps={backend.steps} restDays={backend.restDays}>{children}</ActivityProvider>
+            </MovementProvider>
           </FoodProvider>
         </WaypointsProvider>
       </SettingsProvider>

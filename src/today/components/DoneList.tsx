@@ -11,6 +11,8 @@ import { useFoodDisplay } from '@food/hooks/useFoodDisplay';
 import { useMedication } from '@medication/MedicationContext';
 import { useWater } from '@water/WaterContext';
 import WaterSheet from '@water/components/WaterSheet';
+import { MovementSheet } from '@movement/components/MovementSheet';
+import { movementSummary } from '@movement/models/movementEntry';
 import { scoreWord, MoodMetric } from '@mood/models/moodEntry';
 import { formatLoggedAt } from '@weight/models/weightEntry';
 import { useActivity } from '@today/ActivityContext';
@@ -20,13 +22,16 @@ import { DoneBadge } from './DoneBadge';
 /** "Today so far": what has been done, with a way to undo or edit the ones that allow it. */
 export function DoneList() {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
-  const { summary, mealsDone, waterDone, anythingDone, takenMedications } = useTodayItems();
+  const { summary, mealsDone, waterDone, anythingDone, takenMedications, movementToday, movedToGoal } =
+    useTodayItems();
   const { formatWeight, formatVolume } = useUnits();
   const { showCalories } = useFoodDisplay();
   const water = useWater();
   const { setTaken } = useMedication();
   const { todaySteps } = useActivity();
   const [waterOpen, setWaterOpen] = useState(false);
+  const [movementOpen, setMovementOpen] = useState(false);
+  const fromHealthConnect = movementToday.some((e) => e.source === 'healthConnect');
 
   if (!anythingDone) return null;
   return (
@@ -86,11 +91,25 @@ export function DoneList() {
             onPress={() => setWaterOpen(true)}
           />
         ) : null}
+        {movementToday.length ? (
+          <Row
+            key='done-movement'
+            title={`Moved ${movementSummary(movementToday)}`}
+            sub={fromHealthConnect ? 'Includes workouts from Health Connect' : 'Add more, or remove one'}
+            icon={<DoneBadge />}
+            chevron
+            onPress={() => setMovementOpen(true)}
+          />
+        ) : null}
         {summary.stepGoalReached ? (
           <Row
             key='done-steps'
-            title='Step goal reached'
-            sub={`${todaySteps.toLocaleString()} steps`}
+            title={movedToGoal ? 'Goal day' : 'Step goal reached'}
+            sub={
+              movedToGoal
+                ? `by movement · ${todaySteps.toLocaleString()} steps`
+                : `${todaySteps.toLocaleString()} steps`
+            }
             icon={<DoneBadge />}
             chevron
             onPress={() => navigation.navigate('Tabs', { screen: 'Trends' })}
@@ -98,6 +117,7 @@ export function DoneList() {
         ) : null}
       </Group>
       <WaterSheet visible={waterOpen} onClose={() => setWaterOpen(false)} />
+      <MovementSheet visible={movementOpen} onClose={() => setMovementOpen(false)} />
     </>
   );
 }

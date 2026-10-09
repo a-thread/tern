@@ -10,6 +10,8 @@ const record = (states: DayState[]): DayRecord[] =>
     day: addDays(TODAY, i - (states.length - 1)),
     steps: state === DayState.Goal ? 9000 : state === DayState.Partial ? 3000 : 0,
     goal: 8000,
+    minutes: 0,
+    movedToGoal: false,
     state,
     chosenRest: state === DayState.Rest,
     isToday: i === states.length - 1,

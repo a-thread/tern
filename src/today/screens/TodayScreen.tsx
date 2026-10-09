@@ -17,6 +17,7 @@ import { LeftToDoList } from '@today/components/LeftToDoList';
 import { DoneList } from '@today/components/DoneList';
 import { NutritionCard } from '@today/components/NutritionCard';
 import { DayLog } from '@today/components/DayLog';
+import { TargetSuggestionCard } from '@food/components/TargetSuggestionCard';
 
 /** The Today tab: steps, the week, what is left to do and what is done, and the waypoint celebrations. */
 export default function TodayScreen() {
@@ -53,6 +54,7 @@ export default function TodayScreen() {
             <LeftToDoList />
             <DoneList />
             <NutritionCard />
+            <TargetSuggestionCard />
           </>
         ) : (
           <DayLog record={selected} />

@@ -27,7 +27,8 @@ export function WeekStrip({
   const todayKey = useDayKey();
   const { settings } = useSettings();
   const { week, todaySteps, status, restLeft, todayIsRest, takeRestDay, undoRestDay } = useActivity();
-  const reached = todaySteps / settings.stepGoal >= 1;
+  const reached = todaySteps / settings.stepGoal >= 1 || week.find((d) => d.isToday)?.state === DayState.Goal;
+  const movementGoal = settings.trackMovement ? settings.movementGoalMinutes : 0;
 
   return (
     <>
@@ -41,7 +42,15 @@ export function WeekStrip({
             accessibilityState={{ selected: d.day === selectedDay }}
           >
             <DayRing
-              progress={d.goal > 0 ? Math.min(d.steps / d.goal, 1) : 0}
+              // Whichever got closer to a goal day: steps, or minutes of movement.
+              progress={Math.min(
+                Math.max(
+                  d.goal > 0 ? d.steps / d.goal : 0,
+                  movementGoal > 0 ? d.minutes / movementGoal : 0,
+                ),
+                1,
+              )}
+              moved={d.movedToGoal}
               replayKey={replayKey}
               delay={i * 80}
               label={weekdayLetter(d.day)}

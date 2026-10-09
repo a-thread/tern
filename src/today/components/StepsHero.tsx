@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useNavigation } from '@react-navigation/native';
@@ -12,6 +12,10 @@ import { useSettings } from '@settings/SettingsContext';
 import { useActivity } from '@today/ActivityContext';
 import { greetingFor } from '@today/models/greeting';
 import { StepsStatus } from '@today/data/steps.repository';
+import { useDayKey } from '@shared/hooks/useDayKey';
+import { useMovement } from '@movement/MovementContext';
+import { entriesOn, movementSummary } from '@movement/models/movementEntry';
+import { MovementSheet } from '@movement/components/MovementSheet';
 
 /** The sky card: greeting, streak, the bird's flight toward the step goal, and today's steps. */
 export function StepsHero({
@@ -25,9 +29,17 @@ export function StepsHero({
   const { settings } = useSettings();
   const { todaySteps, streak, freezes, status } = useActivity();
   const greeting = greetingFor();
-  const progress = todaySteps / settings.stepGoal;
+  const movement = useMovement();
+  const today = useDayKey();
+  const stepsProgress = todaySteps / settings.stepGoal;
+  const movementGoal = movement.enabled ? settings.movementGoalMinutes : 0;
+  const movedProgress = movementGoal > 0 ? movement.todayGoalMinutes / movementGoal : 0;
+  // The sky and the bird follow whichever is closer to a goal day.
+  const progress = Math.max(stepsProgress, movedProgress);
   const remaining = Math.max(settings.stepGoal - todaySteps, 0);
-  const reached = progress >= 1;
+  const reached = stepsProgress >= 1;
+  const movedToGoal = !reached && movedProgress >= 1;
+  const [movementOpen, setMovementOpen] = useState(false);
 
   return (
     <View ref={heroRef} collapsable={false}>
@@ -59,7 +71,11 @@ export function StepsHero({
         <FlightPath progress={progress} replayKey={replayKey} />
 
         <CountUp target={todaySteps} replayKey={replayKey} style={s.stepBig} />
-        {status !== StepsStatus.Connected ? (
+        {movedToGoal ? (
+          <Text style={s.stepSub}>
+            {`Goal reached · ${movementSummary(entriesOn(movement.entries, today))}`}
+          </Text>
+        ) : status !== StepsStatus.Connected ? (
           <Pressable
             onPress={() => navigation.navigate('Settings', { screen: 'HealthData' })}
             hitSlop={8}
@@ -74,7 +90,20 @@ export function StepsHero({
               : `${remaining.toLocaleString()} to go`}
           </Text>
         )}
+        {/* Movement is the other way to a goal day, so it's logged from here. */}
+        {movement.enabled ? (
+          <Pressable
+            onPress={() => setMovementOpen(true)}
+            hitSlop={8}
+            style={s.moveChip}
+            accessibilityRole='button'
+            accessibilityLabel='Log movement'
+          >
+            <Text style={s.streakText}>{movement.todayMinutes > 0 ? '+ More movement' : '+ Log movement'}</Text>
+          </Pressable>
+        ) : null}
       </LinearGradient>
+      <MovementSheet visible={movementOpen} onClose={() => setMovementOpen(false)} />
     </View>
   );
 }
@@ -89,6 +118,14 @@ const s = StyleSheet.create({
   },
   greeting: { fontFamily: font.body, fontSize: 11.5, color: '#E4DCE4' },
   chips: { flexDirection: 'row', gap: 6 },
+  moveChip: {
+    alignSelf: 'center',
+    backgroundColor: 'rgba(0,0,0,0.28)',
+    borderRadius: 13,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    marginTop: space.sm,
+  },
   streakChip: {
     backgroundColor: 'rgba(0,0,0,0.22)',
     borderRadius: 13,

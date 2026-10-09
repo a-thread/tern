@@ -19,12 +19,14 @@ import { formatLoggedAt } from '@weight/models/weightEntry';
 import { useActivity, useLastSynced } from '@today/ActivityContext';
 import { useSettings } from '@settings/SettingsContext';
 import { StepsStatus } from '@today/data/steps.repository';
+import { useMovement } from '@movement/MovementContext';
 
 export default function HealthDataScreen() {
   const navigation = useNavigation();
   const insets = useSafeAreaInsets();
   const { settings, updateSettings } = useSettings();
   const hd = settings.healthData;
+  const movement = useMovement();
   const { status, refresh, connect } = useActivity();
   const lastSynced = useLastSynced();
   const toast = useToast();
@@ -139,6 +141,19 @@ export default function HealthDataScreen() {
             on={hd.readSteps}
             onToggle={(v) => patchHealthData({ readSteps: v })}
           />
+          {settings.trackMovement && movement.workoutsAvailable ? (
+            <ToggleRow
+              title='Workouts'
+              sub='Count as movement. Read-only: they stay in Health Connect'
+              on={hd.readWorkouts}
+              onToggle={async (v) => {
+                patchHealthData({ readWorkouts: v });
+                if (v && !(await movement.connectWorkouts())) {
+                  toast.show('Allow Tern to read exercise in Health Connect to count workouts.');
+                }
+              }}
+            />
+          ) : null}
         </Group>
 
         <GroupLabel>{status === StepsStatus.NeedsPermission ? 'Get started' : "If steps aren't syncing"}</GroupLabel>
@@ -157,8 +172,8 @@ export default function HealthDataScreen() {
         </Group>
 
         <FootNote>
-          Tern only reads your steps, and never shares your health data with
-          anyone. To disconnect, remove Tern's access in Health Connect; everything
+          Tern only reads your steps, and your workouts when movement is on, and
+          never shares your health data with anyone. To disconnect, remove Tern's access in Health Connect; everything
           you've logged stays.
         </FootNote>
 
