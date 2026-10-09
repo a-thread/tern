@@ -28,6 +28,8 @@ type MedicationContextValue = {
   setTaken: (medicationId: string, taken: boolean) => void;
   /** Stops tracking a medication and forgets its doses. */
   removeMedication: (medicationId: string) => void;
+  /** The medications taken on an earlier `day`, earliest due first: read-only, for looking back. */
+  loadTaken: (day: string) => Promise<Medication[]>;
 };
 
 const [MedicationContext, useMedication] = createRequiredContext<MedicationContextValue>(
@@ -104,9 +106,15 @@ export function MedicationProvider({
   // is due (or paid) on a day with no medication scheduled.
   useAward(WaypointSource.Medication, taken.length > 0 && due.length === 0, ready && medications.length > 0);
 
+  const loadTaken = useCallback(
+    async (day: string) =>
+      takenMeds(medications, new Set((await repo.load(day, day)).map((d) => d.medicationId))),
+    [repo, medications],
+  );
+
   const value = useMemo<MedicationContextValue>(
-    () => ({ ready, reload, medications, takenToday, due, taken, setTaken, removeMedication }),
-    [ready, reload, medications, takenToday, due, taken, setTaken, removeMedication],
+    () => ({ ready, reload, medications, takenToday, due, taken, setTaken, removeMedication, loadTaken }),
+    [ready, reload, medications, takenToday, due, taken, setTaken, removeMedication, loadTaken],
   );
 
   return <MedicationContext.Provider value={value}>{children}</MedicationContext.Provider>;

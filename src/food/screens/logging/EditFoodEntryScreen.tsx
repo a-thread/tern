@@ -17,6 +17,7 @@ import type { RootStackParamList } from '@shared/navigation/types';
 import { Meals } from '@food/models/meals';
 import { Meal, type Tier } from '@food/models/foodEntry';
 import { useFood } from '@food/FoodContext';
+import { useViewedDay } from '@shared/state/ViewedDayContext';
 import { TierPicker } from '@food/components/TierPicker';
 import { MealPicker } from '@food/components/MealPicker';
 import { MeasurePicker } from '@food/components/MeasurePicker';
@@ -30,6 +31,7 @@ export default function EditFoodEntryScreen({ navigation, route }: Props) {
   const { entryId } = route.params;
   const insets = useSafeAreaInsets();
   const { foodLog, updateFoodEntry, removeFoodEntry } = useFood();
+  const { isToday } = useViewedDay();
   const entry = foodLog.find((f) => f.id === entryId);
   const { showTiers, showTierNumber, showCalories } = useFoodDisplay();
 
@@ -80,7 +82,7 @@ export default function EditFoodEntryScreen({ navigation, route }: Props) {
   };
 
   const confirmDelete = () => {
-    Alert.alert('Remove food?', `Remove "${entry.name}" from today's log.`, [
+    Alert.alert('Remove food?', `Remove "${entry.name}" from ${isToday ? "today's" : "yesterday's"} log.`, [
       { text: 'Cancel', style: 'cancel' },
       {
         text: 'Remove',

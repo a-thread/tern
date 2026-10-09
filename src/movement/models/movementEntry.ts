@@ -1,4 +1,4 @@
-import { addDays } from '@shared/utils/date';
+import { isTodayOrYesterday } from '@shared/utils/date';
 import { Units } from '@shared/utils/units';
 
 /**
@@ -151,8 +151,7 @@ export const clampMovementGoal = (m: number) =>
   Math.min(Math.max(Math.round(m), MovementLimits.GOAL_MIN), MovementLimits.GOAL_MAX);
 
 /** Movement can be logged by hand for today and yesterday, never further back or ahead. */
-export const isLoggableDay = (day: string, today: string) =>
-  day === today || day === addDays(today, -1);
+export const isLoggableDay = isTodayOrYesterday;
 
 /**
  * Whether an activity's minutes count toward a goal day. Walks and runs don't:

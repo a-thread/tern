@@ -12,11 +12,16 @@ import { useSettings } from '@settings/SettingsContext';
 import { useActivity } from '@today/ActivityContext';
 import { greetingFor } from '@today/models/greeting';
 import { StepsStatus } from '@today/data/steps.repository';
-import { useDayKey } from '@shared/hooks/useDayKey';
+import { useViewedDay } from '@shared/state/ViewedDayContext';
+import { addDays, formatLongDate } from '@shared/utils/date';
+import { DayState } from '@shared/models/dayState';
 import { useMovement } from '@movement/MovementContext';
 import { entriesOn, movementSummary } from '@movement/models/movementEntry';
 
-/** The sky card: greeting, streak, the bird's flight toward the step goal, and today's steps. */
+/**
+ * The sky card: greeting, streak, the bird's flight toward the step goal, and the steps, for the
+ * viewed day. A past day shows how far the bird got that day, and its date in place of the greeting.
+ */
 export function StepsHero({
   heroRef,
   replayKey,
@@ -26,16 +31,29 @@ export function StepsHero({
 }) {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const { settings } = useSettings();
-  const { todaySteps, streak, freezes, status } = useActivity();
+  const { todaySteps, streak, freezes, status, week } = useActivity();
   const greeting = greetingFor();
   const movement = useMovement();
-  const today = useDayKey();
-  const stepsProgress = todaySteps / settings.stepGoal;
+  const { day, today, isToday, editable } = useViewedDay();
+  const record = week.find((d) => d.day === day);
+  const steps = isToday ? todaySteps : (record?.steps ?? 0);
+  // A past day keeps the goal it had then.
+  const stepGoal = isToday ? settings.stepGoal : (record?.goal ?? settings.stepGoal);
+  const goalMinutes = isToday ? movement.todayGoalMinutes : (record?.minutes ?? 0);
+  const stepsProgress = steps / stepGoal;
   const movementGoal = movement.enabled ? settings.movementGoalMinutes : 0;
-  const movedProgress = movementGoal > 0 ? movement.todayGoalMinutes / movementGoal : 0;
+  const movedProgress = movementGoal > 0 ? goalMinutes / movementGoal : 0;
   // The sky and the bird follow whichever is closer to a goal day.
   const progress = Math.max(stepsProgress, movedProgress);
-  const remaining = Math.max(settings.stepGoal - todaySteps, 0);
+  const remaining = Math.max(stepGoal - steps, 0);
+  const movedOnDay = entriesOn(movement.entries, day);
+  const title = isToday
+    ? settings.firstName
+      ? `${greeting}, ${settings.firstName}`
+      : greeting
+    : day === addDays(today, -1)
+      ? 'Yesterday'
+      : formatLongDate(day);
   const reached = stepsProgress >= 1;
   const movedToGoal = !reached && movedProgress >= 1;
 
@@ -43,18 +61,16 @@ export function StepsHero({
     <View ref={heroRef} collapsable={false}>
       <LinearGradient colors={skyFor(progress) as [string, string, ...string[]]} style={s.hero}>
         <View style={s.top}>
-          <Text style={s.greeting}>
-            {settings.firstName ? `${greeting}, ${settings.firstName}` : greeting}
-          </Text>
+          <Text style={s.greeting}>{title}</Text>
           <View style={s.chips}>
-            {streak > 0 ? (
+            {isToday && streak > 0 ? (
               <View style={s.streakChip}>
                 <Text style={s.streakText}>
                   ☀ {streak} {streak === 1 ? 'day' : 'days'}
                 </Text>
               </View>
             ) : null}
-            {freezes > 0 ? (
+            {isToday && freezes > 0 ? (
               <View
                 style={s.streakChip}
                 accessible
@@ -68,11 +84,13 @@ export function StepsHero({
 
         <FlightPath progress={progress} replayKey={replayKey} />
 
-        <CountUp target={todaySteps} replayKey={replayKey} style={s.stepBig} />
+        <CountUp target={steps} replayKey={replayKey} style={s.stepBig} />
         {movedToGoal ? (
-          <Text style={s.stepSub}>
-            {`Goal reached · ${movementSummary(entriesOn(movement.entries, today))}`}
-          </Text>
+          <Text style={s.stepSub}>{`Goal reached · ${movementSummary(movedOnDay)}`}</Text>
+        ) : !isToday && record?.state === DayState.Rest ? (
+          <Text style={s.stepSub}>Rest day</Text>
+        ) : !isToday && record?.state === DayState.Frozen ? (
+          <Text style={s.stepSub}>A streak freeze covered this day</Text>
         ) : status !== StepsStatus.Connected ? (
           <Pressable
             onPress={() => navigation.navigate('Settings', { screen: 'HealthData' })}
@@ -84,20 +102,22 @@ export function StepsHero({
         ) : (
           <Text style={s.stepSub}>
             {reached
-              ? `Goal reached · ${settings.stepGoal.toLocaleString()} steps`
-              : `${remaining.toLocaleString()} to go`}
+              ? `Goal reached · ${stepGoal.toLocaleString()} steps`
+              : isToday
+                ? `${remaining.toLocaleString()} to go`
+                : `${remaining.toLocaleString()} short of ${stepGoal.toLocaleString()}`}
           </Text>
         )}
-        {/* Movement is the other way to a goal day, so it's logged from here. */}
-        {movement.enabled ? (
+        {/* Movement is the other way to a goal day, so it's logged from here (today and yesterday). */}
+        {movement.enabled && editable ? (
           <Pressable
-            onPress={() => navigation.navigate('LogMovement', {})}
+            onPress={() => navigation.navigate('LogMovement', { day })}
             hitSlop={8}
             style={s.moveChip}
             accessibilityRole='button'
             accessibilityLabel='Log movement'
           >
-            <Text style={s.streakText}>{movement.todayMinutes > 0 ? '+ More movement' : '+ Log movement'}</Text>
+            <Text style={s.streakText}>{movedOnDay.length > 0 ? '+ More movement' : '+ Log movement'}</Text>
           </Pressable>
         ) : null}
       </LinearGradient>

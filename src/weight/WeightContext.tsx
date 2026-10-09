@@ -19,7 +19,8 @@ type WeightContextValue = {
   ready: boolean;
   /** Reads everything again from storage (pull to refresh). */
   reload: () => Promise<unknown>;
-  addWeightEntry: (lb: number) => void;
+  /** Logs a weigh-in, now unless `loggedAt` says otherwise (filling in yesterday). */
+  addWeightEntry: (lb: number, loggedAt?: string) => void;
   /** Corrects an existing weigh-in in place, keeping when it was logged. */
   updateWeightEntry: (id: string, lb: number) => void;
 };
@@ -56,13 +57,12 @@ export function WeightProvider({
   useAward(WaypointSource.Weight, weighedToday, settings.trackWeight && ready);
 
   const addWeightEntry = useCallback(
-    (lb: number) => {
-      const entry: WeightEntry = {
-        id: newId(),
-        lb,
-        loggedAt: new Date().toISOString(),
-      };
-      setWeightEntries((prev) => [entry, ...prev]);
+    (lb: number, loggedAt: string = new Date().toISOString()) => {
+      const entry: WeightEntry = { id: newId(), lb, loggedAt };
+      // Newest first, wherever a back-dated one lands.
+      setWeightEntries((prev) =>
+        [entry, ...prev].sort((a, b) => b.loggedAt.localeCompare(a.loggedAt)),
+      );
       persist(weight.add(entry), {
         log: 'Could not save weight entry',
         toast: "Couldn't save that weigh-in — please try again.",

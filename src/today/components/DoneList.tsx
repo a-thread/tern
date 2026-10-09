@@ -4,7 +4,7 @@ import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
 import { colors, font } from '@shared/theme';
-import { Group, GroupLabel, Row } from '@shared/components/ui';
+import { FootNote, Group, GroupLabel, Row } from '@shared/components/ui';
 import type { RootStackParamList } from '@shared/navigation/types';
 import { useUnits } from '@settings/hooks/useUnits';
 import { useFoodDisplay } from '@food/hooks/useFoodDisplay';
@@ -14,27 +14,33 @@ import WaterSheet from '@water/components/WaterSheet';
 import { movementSummary } from '@movement/models/movementEntry';
 import { scoreWord, MoodMetric } from '@mood/models/moodEntry';
 import { formatLoggedAt } from '@weight/models/weightEntry';
-import { useActivity } from '@today/ActivityContext';
-import { useTodayItems } from '@today/hooks/useTodayItems';
+import { useViewedDay } from '@shared/state/ViewedDayContext';
+import { dayWord } from '@shared/utils/date';
+import { useDayItems } from '@today/hooks/useDayItems';
 import { DoneBadge } from './DoneBadge';
 
-/** "Today so far": what has been done, with a way to undo or edit the ones that allow it. */
+/**
+ * What has been done on the viewed day ("Today so far", "Yesterday", "Tuesday"), with a way
+ * to undo or edit the ones that allow it. Before yesterday it's read-only, except that
+ * "Meals logged" still opens that day in the Food tab.
+ */
 export function DoneList() {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
-  const { summary, mealsDone, waterDone, anythingDone, takenMedications, movementToday, movedToGoal } =
-    useTodayItems();
+  const { summary, mealsDone, waterDone, anythingDone, takenMedications, movementOnDay, movedToGoal, steps, day, isToday, editable } =
+    useDayItems();
+  const { today } = useViewedDay();
   const { formatWeight, formatVolume } = useUnits();
   const { showCalories } = useFoodDisplay();
   const water = useWater();
   const { setTaken } = useMedication();
-  const { todaySteps } = useActivity();
   const [waterOpen, setWaterOpen] = useState(false);
-  const fromHealthConnect = movementToday.some((e) => e.source === 'healthConnect');
+  const fromHealthConnect = movementOnDay.some((e) => e.source === 'healthConnect');
 
-  if (!anythingDone) return null;
+  // An older day with nothing on it says so; today and yesterday have "Left to do" above.
+  if (!anythingDone) return editable ? null : <FootNote>Nothing logged this day.</FootNote>;
   return (
     <>
-      <GroupLabel>Today so far</GroupLabel>
+      <GroupLabel>{isToday ? 'Today so far' : dayWord(day, today)}</GroupLabel>
       <Group>
         {mealsDone.length ? (
           <Row
@@ -55,8 +61,8 @@ export function DoneList() {
             title='Weighed in'
             sub={`${formatWeight(summary.weighedIn.lb)}, ${formatLoggedAt(summary.weighedIn.loggedAt)}`}
             icon={<DoneBadge />}
-            chevron
-            onPress={() => navigation.navigate('LogWeight')}
+            chevron={editable}
+            onPress={editable ? () => navigation.navigate('LogWeight') : undefined}
           />
         ) : null}
         {summary.checkIn ? (
@@ -65,8 +71,8 @@ export function DoneList() {
             title='Checked in'
             sub={`Mood ${summary.checkIn.mood} · ${scoreWord(MoodMetric.Mood, summary.checkIn.mood)} · Stress ${summary.checkIn.stress} · ${scoreWord(MoodMetric.Stress, summary.checkIn.stress)}`}
             icon={<DoneBadge />}
-            chevron
-            onPress={() => navigation.navigate('CheckIn')}
+            chevron={editable}
+            onPress={editable ? () => navigation.navigate('CheckIn') : undefined}
           />
         ) : null}
         {takenMedications.map((m) => (
@@ -74,9 +80,9 @@ export function DoneList() {
             key={`done-med-${m.id}`}
             title={`Took ${m.name}`}
             icon={<DoneBadge />}
-            // Mirrors "Mark taken" in Left to do: the row is the action.
-            right={<Text style={s.markText}>Undo</Text>}
-            onPress={() => setTaken(m.id, false)}
+            // Mirrors "Mark taken" in Left to do: the row is the action (today only).
+            right={isToday ? <Text style={s.markText}>Undo</Text> : undefined}
+            onPress={isToday ? () => setTaken(m.id, false) : undefined}
           />
         ))}
         {waterDone && summary.waterOz !== null ? (
@@ -85,18 +91,24 @@ export function DoneList() {
             title='Water'
             sub={`${formatVolume(summary.waterOz)} of ${formatVolume(water.goalOz)}`}
             icon={<DoneBadge />}
-            chevron
-            onPress={() => setWaterOpen(true)}
+            chevron={editable}
+            onPress={editable ? () => setWaterOpen(true) : undefined}
           />
         ) : null}
-        {movementToday.length ? (
+        {movementOnDay.length ? (
           <Row
             key='done-movement'
-            title={`Moved ${movementSummary(movementToday)}`}
-            sub={fromHealthConnect ? 'Includes workouts from Health Connect' : 'Add more, or remove one'}
+            title={`Moved ${movementSummary(movementOnDay)}`}
+            sub={
+              fromHealthConnect
+                ? 'Includes workouts from Health Connect'
+                : editable
+                  ? 'Add more, or remove one'
+                  : undefined
+            }
             icon={<DoneBadge />}
-            chevron
-            onPress={() => navigation.navigate('LogMovement', {})}
+            chevron={editable}
+            onPress={editable ? () => navigation.navigate('LogMovement', { day }) : undefined}
           />
         ) : null}
         {summary.stepGoalReached ? (
@@ -105,8 +117,8 @@ export function DoneList() {
             title={movedToGoal ? 'Goal day' : 'Step goal reached'}
             sub={
               movedToGoal
-                ? `by movement · ${todaySteps.toLocaleString()} steps`
-                : `${todaySteps.toLocaleString()} steps`
+                ? `by movement · ${steps.toLocaleString()} steps`
+                : `${steps.toLocaleString()} steps`
             }
             icon={<DoneBadge />}
             chevron

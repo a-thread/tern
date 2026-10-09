@@ -8,12 +8,15 @@ import { useToast } from '@shared/state/ToastContext';
 import { useUnits } from '@settings/hooks/useUnits';
 import { WaterLimits } from '@water/models/waterEntry';
 import { useWater } from '@water/WaterContext';
+import { useViewedDay } from '@shared/state/ViewedDayContext';
 import { waterMessage } from '@water/models/waterMessage';
 import WaterGlass from '@water/components/WaterGlass';
 
 /** Today's water on the Food screen: progress toward the goal, quick-add drink sizes and an undo. */
 export default function WaterCard({ bare = false }: { bare?: boolean }) {
   const { totalOz, goalOz, progress, reached, addWater, undoLast, lastOz } = useWater();
+  // Before yesterday the day's water is only shown, not added to.
+  const { editable } = useViewedDay();
   const { formatVolume, quickWaterOz, fromDisplayVolume, toDisplayVolume, volumeLabel } = useUnits();
   const toast = useToast();
   const [custom, setCustom] = useState<string | null>(null); // the typed amount, while "Other" is open
@@ -67,52 +70,56 @@ export default function WaterCard({ bare = false }: { bare?: boolean }) {
         </>
       )}
 
-      <View style={s.quickRow}>
-        {quickWaterOz.map((oz) => (
-          <Pressable
-            key={oz}
-            onPress={() => addWater(oz)}
-            style={s.quick}
-            accessibilityRole='button'
-            accessibilityLabel={`Add ${formatVolume(oz)} of water`}
-          >
-            <Text style={s.quickText}>{`+${toDisplayVolume(oz)} ${volumeLabel}`}</Text>
-          </Pressable>
-        ))}
-        <Pressable
-          onPress={() => setCustom(custom === null ? '' : null)}
-          style={[s.quick, custom !== null && s.quickOn]}
-          accessibilityRole='button'
-          accessibilityLabel='Add another amount of water'
-        >
-          <Text style={s.quickText}>Other</Text>
-        </Pressable>
-      </View>
+      {editable ? (
+        <>
+          <View style={s.quickRow}>
+            {quickWaterOz.map((oz) => (
+              <Pressable
+                key={oz}
+                onPress={() => addWater(oz)}
+                style={s.quick}
+                accessibilityRole='button'
+                accessibilityLabel={`Add ${formatVolume(oz)} of water`}
+              >
+                <Text style={s.quickText}>{`+${toDisplayVolume(oz)} ${volumeLabel}`}</Text>
+              </Pressable>
+            ))}
+            <Pressable
+              onPress={() => setCustom(custom === null ? '' : null)}
+              style={[s.quick, custom !== null && s.quickOn]}
+              accessibilityRole='button'
+              accessibilityLabel='Add another amount of water'
+            >
+              <Text style={s.quickText}>Other</Text>
+            </Pressable>
+          </View>
 
-      {custom !== null ? (
-        <View style={s.customRow}>
-          <TextInput
-            value={custom}
-            onChangeText={setCustom}
-            onSubmitEditing={addCustom}
-            keyboardType='decimal-pad'
-            placeholder={`Amount in ${volumeLabel}`}
-            placeholderTextColor={colors.ink3}
-            maxLength={6}
-            autoFocus
-            accessibilityLabel={`Amount of water in ${volumeLabel}`}
-            style={s.input}
-          />
-          <Pressable onPress={addCustom} style={s.addBtn} accessibilityRole='button'>
-            <Text style={s.addText}>Add</Text>
-          </Pressable>
-        </View>
-      ) : null}
+          {custom !== null ? (
+            <View style={s.customRow}>
+              <TextInput
+                value={custom}
+                onChangeText={setCustom}
+                onSubmitEditing={addCustom}
+                keyboardType='decimal-pad'
+                placeholder={`Amount in ${volumeLabel}`}
+                placeholderTextColor={colors.ink3}
+                maxLength={6}
+                autoFocus
+                accessibilityLabel={`Amount of water in ${volumeLabel}`}
+                style={s.input}
+              />
+              <Pressable onPress={addCustom} style={s.addBtn} accessibilityRole='button'>
+                <Text style={s.addText}>Add</Text>
+              </Pressable>
+            </View>
+          ) : null}
 
-      {lastOz !== null ? (
-        <Pressable onPress={undoLast} hitSlop={8} accessibilityRole='button'>
-          <Text style={s.undo}>{`Undo last (${formatVolume(lastOz)})`}</Text>
-        </Pressable>
+          {lastOz !== null ? (
+            <Pressable onPress={undoLast} hitSlop={8} accessibilityRole='button'>
+              <Text style={s.undo}>{`Undo last (${formatVolume(lastOz)})`}</Text>
+            </Pressable>
+          ) : null}
+        </>
       ) : null}
     </Shell>
   );

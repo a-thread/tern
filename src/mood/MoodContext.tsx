@@ -3,6 +3,7 @@ import React, { useCallback, useMemo, useState } from 'react';
 import type { MoodRepository } from '@mood/data/mood.repository';
 import { createRequiredContext } from '@shared/state/createRequiredContext';
 import { useDayKey } from '@shared/hooks/useDayKey';
+import { useViewedDay } from '@shared/state/ViewedDayContext';
 import { useLoader } from '@shared/hooks/useLoader';
 import { usePersist } from '@shared/hooks/usePersist';
 import { addDays } from '@shared/utils/date';
@@ -26,10 +27,15 @@ type MoodContextValue = {
   entries: MoodEntry[];
   /** Today's check-in, if there is one. */
   today: MoodEntry | undefined;
-  /** Saves today's check-in, replacing an earlier one. False if a score is off the scale. */
+  /** The viewed day's check-in (today unless a past day is picked; see `useViewedDay`). */
+  onDay: MoodEntry | undefined;
+  /**
+   * Saves the viewed day's check-in, replacing an earlier one. False if a score is off the
+   * scale or the day can't be edited (before yesterday).
+   */
   checkIn: (mood: number, stress: number) => boolean;
-  /** Removes today's check-in. */
-  clearToday: () => void;
+  /** Removes the viewed day's check-in. */
+  clearDay: () => void;
 };
 
 const [MoodContext, useMood] = createRequiredContext<MoodContextValue>('useMood', 'MoodProvider');
@@ -45,6 +51,7 @@ export function MoodProvider({
 }) {
   const { settings } = useSettings();
   const today = useDayKey();
+  const { day, editable } = useViewedDay();
 
   const [entries, setEntries] = useState<MoodEntry[]>([]);
   const { ready, reload } = useLoader(
@@ -56,6 +63,7 @@ export function MoodProvider({
 
   const enabled = settings.trackMood;
   const todays = entryFor(entries, today);
+  const onDay = entryFor(entries, day);
   const checkedIn = todays !== undefined;
 
   // The waypoint follows the check-in, like the water goal: earned on checking in,
@@ -64,29 +72,30 @@ export function MoodProvider({
 
   const checkIn = useCallback(
     (mood: number, stress: number) => {
-      if (!isValidScore(mood) || !isValidScore(stress)) return false;
-      const entry: MoodEntry = { day: today, mood, stress };
-      setEntries((prev) => [...prev.filter((e) => e.day !== today), entry]);
+      if (!editable || !isValidScore(mood) || !isValidScore(stress)) return false;
+      const entry: MoodEntry = { day, mood, stress };
+      setEntries((prev) => [...prev.filter((e) => e.day !== day), entry]);
       persist(repo.save(entry), {
         log: 'Could not save check-in',
         toast: "Couldn't save your check-in — please try again.",
       });
       return true;
     },
-    [repo, today, persist],
+    [repo, day, editable, persist],
   );
 
-  const clearToday = useCallback(() => {
-    setEntries((prev) => prev.filter((e) => e.day !== today));
-    persist(repo.remove(today), {
+  const clearDay = useCallback(() => {
+    if (!editable) return;
+    setEntries((prev) => prev.filter((e) => e.day !== day));
+    persist(repo.remove(day), {
       log: 'Could not remove check-in',
       toast: "Couldn't undo that — please try again.",
     });
-  }, [repo, today, persist]);
+  }, [repo, day, editable, persist]);
 
   const value = useMemo<MoodContextValue>(
-    () => ({ ready, reload, enabled, entries, today: todays, checkIn, clearToday }),
-    [ready, reload, enabled, entries, todays, checkIn, clearToday],
+    () => ({ ready, reload, enabled, entries, today: todays, onDay, checkIn, clearDay }),
+    [ready, reload, enabled, entries, todays, onDay, checkIn, clearDay],
   );
 
   return <MoodContext.Provider value={value}>{children}</MoodContext.Provider>;

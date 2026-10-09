@@ -16,8 +16,8 @@ import { colors, font, radius, space } from '@shared/theme';
 import { Group, GroupLabel, SheetNav } from '@shared/components/ui';
 import { WeightTrend } from '@shared/components/charts/WeightTrend';
 import type { RootStackParamList } from '@shared/navigation/types';
-import { useDayKey } from '@shared/hooks/useDayKey';
-import { addDays } from '@shared/utils/date';
+import { useViewedDay } from '@shared/state/ViewedDayContext';
+import { addDays, dayWord } from '@shared/utils/date';
 import { clampScore, scoreWord, MoodScale, MoodMetric } from '@mood/models/moodEntry';
 import { average, entriesBetween, seriesOf } from '@mood/models/moodStats';
 import { scoreColor, scoreTint, smile } from '@mood/utils/scoreColor';
@@ -39,8 +39,10 @@ const PIPS = Array.from({ length: MoodScale.MAX - MoodScale.MIN + 1 }, (_, i) =>
 
 export default function CheckInScreen({ navigation }: Props) {
   const insets = useSafeAreaInsets();
-  const today = useDayKey();
-  const { entries, today: todays, checkIn, clearToday } = useMood();
+  // The viewed day: today, or yesterday when filling it in from a past day.
+  const { day: today, today: realToday } = useViewedDay();
+  const { entries, onDay: todays, checkIn, clearDay } = useMood();
+  const dayLabel = dayWord(today, realToday);
 
   const last = entries[entries.length - 1];
   const start = (m: MoodMetric) => todays?.[m] ?? last?.[m] ?? MoodScale.DEFAULT;
@@ -101,7 +103,7 @@ export default function CheckInScreen({ navigation }: Props) {
   };
 
   const remove = () => {
-    clearToday();
+    clearDay();
     navigation.goBack();
   };
 
@@ -234,7 +236,7 @@ export default function CheckInScreen({ navigation }: Props) {
         <Group>
           <View style={s.row}>
             <Text style={s.rowTitle}>Date</Text>
-            <Text style={s.rowSub}>Today</Text>
+            <Text style={s.rowSub}>{dayLabel}</Text>
           </View>
           <View style={s.row}>
             <Text style={s.rowTitle}>Mood</Text>
@@ -250,7 +252,7 @@ export default function CheckInScreen({ navigation }: Props) {
           </View>
           {todays ? (
             <Pressable style={s.row} onPress={remove} accessibilityRole='button'>
-              <Text style={[s.rowTitle, s.danger]}>Remove today’s check-in</Text>
+              <Text style={[s.rowTitle, s.danger]}>{`Remove ${dayLabel.toLowerCase()}’s check-in`}</Text>
             </Pressable>
           ) : null}
         </Group>

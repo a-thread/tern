@@ -94,7 +94,7 @@ describe('MoodProvider', () => {
     await backend.mood.save({ day: today, mood: 8, stress: 2 });
     const { result } = await setup(backend);
     await act(async () => {
-      result.current.mood.clearToday();
+      result.current.mood.clearDay();
     });
     expect(result.current.mood.today).toBeUndefined();
     expect(await backend.mood.load(today, today)).toEqual([]);
@@ -109,7 +109,7 @@ describe('MoodProvider', () => {
     });
     await waitFor(() => expect(hasAward(result)).toBe(true));
     await act(async () => {
-      result.current.mood.clearToday();
+      result.current.mood.clearDay();
     });
     await waitFor(() => expect(hasAward(result)).toBe(false));
   });

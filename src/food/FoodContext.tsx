@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { createRequiredContext } from '@shared/state/createRequiredContext';
 import { useDayKey } from '@shared/hooks/useDayKey';
+import { useViewedDay } from '@shared/state/ViewedDayContext';
 import { useLoader } from '@shared/hooks/useLoader';
 import { usePersist } from '@shared/hooks/usePersist';
 import { useAward } from '@journey/hooks/useAward';
@@ -11,9 +12,12 @@ import type { FoodRepository, NewFoodEntry } from '@food/data/food.repository';
 import { WaypointSource } from '@journey/models/waypoint';
 
 type FoodContextValue = {
-  /** Today's entries. */
+  /**
+   * The viewed day's entries (today unless a past day is picked; see `useViewedDay`).
+   * Empty until that day has loaded: check `loadedDay`.
+   */
   foodLog: FoodEntry[];
-  /** The day `foodLog` was loaded for — differs from today briefly after midnight. */
+  /** The day `foodLog` was loaded for; differs from the viewed day while it loads. */
   loadedDay: string | null;
   /** False until the first load finishes — don't derive "nothing logged" from an unloaded log. */
   ready: boolean;
@@ -23,16 +27,20 @@ type FoodContextValue = {
   loadHistory: (from: string, to: string) => Promise<Record<string, FoodEntry[]>>;
   /** Meals marked "nothing today" by day for `from`..`to`, for the adaptive target. */
   loadSkippedHistory: (from: string, to: string) => Promise<Record<string, FoodEntry['meal'][]>>;
+  /** Adds to the viewed day. Every write is ignored on a day that can't be edited (before yesterday). */
   addFoodEntry: (entry: NewFoodEntry) => void;
   /** Adds several entries at once (e.g. a saved meal) as a single update. */
   addFoodEntries: (entries: NewFoodEntry[]) => void;
   updateFoodEntry: (id: string, patch: Partial<NewFoodEntry>) => void;
   removeFoodEntry: (id: string) => void;
-  /** Core meals marked "nothing today". Logging food to one un-marks it. */
+  /** Core meals marked "nothing today" on the viewed day. Logging food to one un-marks it. */
   skippedMeals: FoodEntry['meal'][];
   /** Marks (or unmarks) a core meal as "nothing today". */
   setMealSkipped: (meal: FoodEntry['meal'], skipped: boolean) => void;
 };
+
+const NO_ENTRIES: FoodEntry[] = [];
+const NO_MEALS: FoodEntry['meal'][] = [];
 
 const [FoodContext, useFood] = createRequiredContext<FoodContextValue>('useFood', 'FoodProvider');
 export { useFood };
@@ -51,7 +59,8 @@ export function FoodProvider({
 }) {
   const [foodLog, setFoodLog] = useState<FoodEntry[]>([]);
   const [skippedMeals, setSkippedMeals] = useState<FoodEntry['meal'][]>([]);
-  const day = useDayKey();
+  const today = useDayKey();
+  const { day, editable } = useViewedDay();
   const [loadedDay, setLoadedDay] = useState<string | null>(null);
 
   const { ready, reload } = useLoader(
@@ -84,61 +93,65 @@ export function FoodProvider({
 
   const addFoodEntry = useCallback(
     (entry: NewFoodEntry) => {
+      if (!editable) return;
       const full: FoodEntry = { ...entry, id: newId() };
       setFoodLog((prev) => [...prev, full]);
       persist(food.add(day, full));
     },
-    [food, day, persist],
+    [food, day, editable, persist],
   );
 
   const addFoodEntries = useCallback(
     (entries: NewFoodEntry[]) => {
-      if (!entries.length) return;
+      if (!entries.length || !editable) return;
       const full: FoodEntry[] = entries.map((e) => ({ ...e, id: newId() }));
       setFoodLog((prev) => [...prev, ...full]);
       persist(Promise.all(full.map((f) => food.add(day, f))).then(() => undefined));
     },
-    [food, day, persist],
+    [food, day, editable, persist],
   );
 
   const updateFoodEntry = useCallback(
     (id: string, patch: Partial<NewFoodEntry>) => {
+      if (!editable) return;
       setFoodLog((prev) =>
         prev.map((f) => (f.id === id ? { ...f, ...patch } : f)),
       );
       persist(food.update(id, patch));
     },
-    [food, persist],
+    [food, editable, persist],
   );
 
   const removeFoodEntry = useCallback(
     (id: string) => {
+      if (!editable) return;
       setFoodLog((prev) => prev.filter((f) => f.id !== id));
       persist(food.remove(id));
     },
-    [food, persist],
+    [food, editable, persist],
   );
 
   const setMealSkipped = useCallback(
     (meal: FoodEntry['meal'], skipped: boolean) => {
+      if (!editable) return;
       setSkippedMeals((prev) => {
         const rest = prev.filter((m) => m !== meal);
         return skipped ? [...rest, meal] : rest;
       });
       persist(food.setSkipped(day, meal, skipped));
     },
-    [food, day, persist],
+    [food, day, editable, persist],
   );
 
   // The "logging all meals" bonus follows the log, like the water goal: earned once every core
   // meal has an entry (or is marked "nothing today"), quietly taken back if a removal or edit
   // drops coverage again. It waits for today's log, so an unloaded (empty) one is never mistaken
-  // for a dropped one.
-  useAward(WaypointSource.Meals, allMealsLogged(foodLog, skippedMeals), ready && loadedDay === day);
+  // for a dropped one, and sits out while a past day is loaded (nothing is paid or taken back then).
+  const loaded = ready && loadedDay === today;
+  useAward(WaypointSource.Meals, allMealsLogged(foodLog, skippedMeals), loaded);
 
   // Each meal logged also earns a little on its own, so a partial day still counts for something.
   // Only food logged: marking a meal "nothing today" completes the day above but isn't paid here.
-  const loaded = ready && loadedDay === day;
   useAward(WaypointSource.Breakfast, foodLog.some((f) => f.meal === Meal.Breakfast), loaded);
   useAward(WaypointSource.Lunch, foodLog.some((f) => f.meal === Meal.Lunch), loaded);
   useAward(WaypointSource.Dinner, foodLog.some((f) => f.meal === Meal.Dinner), loaded);
@@ -151,9 +164,11 @@ export function FoodProvider({
     }
   }, [foodLog, skippedMeals, setMealSkipped]);
 
+  // Another day's log stays out of sight while the viewed one loads.
+  const current = loadedDay === day;
   const value = useMemo<FoodContextValue>(
     () => ({
-      foodLog,
+      foodLog: current ? foodLog : NO_ENTRIES,
       loadedDay,
       ready,
       reload,
@@ -163,10 +178,11 @@ export function FoodProvider({
       addFoodEntries,
       updateFoodEntry,
       removeFoodEntry,
-      skippedMeals,
+      skippedMeals: current ? skippedMeals : NO_MEALS,
       setMealSkipped,
     }),
     [
+      current,
       foodLog,
       loadedDay,
       ready,

@@ -13,12 +13,15 @@ import { useMedication } from '@medication/MedicationContext';
 import { useWater } from '@water/WaterContext';
 import WaterSheet from '@water/components/WaterSheet';
 import { formatLoggedAt } from '@weight/models/weightEntry';
-import { useTodayItems } from '@today/hooks/useTodayItems';
+import { useDayItems } from '@today/hooks/useDayItems';
 
-/** What is still open today: meals, a weigh-in, water, a check-in and medication. Empty hides it. */
+/**
+ * What is still open on the viewed day: meals, a weigh-in, water, a check-in and (today only)
+ * medication. Yesterday can still be filled in; earlier days have nothing open. Empty hides it.
+ */
 export function LeftToDoList() {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
-  const { openItems, lastWeight } = useTodayItems();
+  const { openItems, lastWeight, isToday } = useDayItems();
   const { formatWeight, formatVolume, quickWaterOz } = useUnits();
   const water = useWater();
   const { setTaken } = useMedication();
@@ -27,7 +30,7 @@ export function LeftToDoList() {
   if (!openItems.length) return null;
   return (
     <>
-      <GroupLabel>Left to do</GroupLabel>
+      <GroupLabel>{isToday ? 'Left to do' : 'Left from yesterday'}</GroupLabel>
       <Group>
         {openItems.map((item) =>
           item.kind === 'water' ? (
@@ -60,7 +63,7 @@ export function LeftToDoList() {
             <Row
               key='check-in'
               title='Check in'
-              sub='How are your mood and stress today?'
+              sub={`${isToday ? 'How are your mood and stress today' : 'How were your mood and stress yesterday'}?`}
               onPress={() => navigation.navigate('CheckIn')}
               icon={
                 <IconBadge bg={colors.violetTint}>

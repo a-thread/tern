@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, ScrollView, StyleSheet, Pressable } from 'react-native';
+import { ActivityIndicator, View, Text, ScrollView, StyleSheet, Pressable } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -14,7 +14,7 @@ import {
   SwipeToRemove,
 } from '@shared/components/ui';
 import type { RootStackParamList } from '@shared/navigation/types';
-import { useDayKey } from '@shared/hooks/useDayKey';
+import { useViewedDay } from '@shared/state/ViewedDayContext';
 import { usePullToRefresh } from '@shared/hooks/usePullToRefresh';
 import { formatLongDate } from '@shared/utils/date';
 import { useSettings } from '@settings/SettingsContext';
@@ -28,12 +28,15 @@ import { TierDot } from '@food/components/TierDot';
 import { IntakeBarometer } from '@food/components/IntakeBarometer';
 
 export default function FoodScreen() {
-  const todayKey = useDayKey();
+  // Today unless a past day was picked on Home; yesterday can still be filled in.
+  const { day, isToday, editable, showToday } = useViewedDay();
+  const when = isToday ? 'today' : 'yesterday';
   const insets = useSafeAreaInsets();
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
-  const { foodLog, skippedMeals, setMealSkipped, removeFoodEntry, reload: reloadFood } =
+  const { foodLog, skippedMeals, loadedDay, setMealSkipped, removeFoodEntry, reload: reloadFood } =
     useFood();
+  const dayLoaded = loadedDay === day;
   const { settings } = useSettings();
   const { showCalories } = useFoodDisplay();
   const water = useWater();
@@ -49,8 +52,15 @@ export default function FoodScreen() {
       style={{ flex: 1, backgroundColor: colors.paper, paddingTop: insets.top }}
     >
       <View style={{ paddingHorizontal: space.lg, paddingBottom: space.sm }}>
-        <Text style={s.eyebrow}>{formatLongDate(todayKey)}</Text>
-        <Text style={s.title}>Food</Text>
+        <Text style={s.eyebrow}>{formatLongDate(day)}</Text>
+        <View style={s.titleRow}>
+          <Text style={s.title}>Food</Text>
+          {isToday ? null : (
+            <Pressable onPress={showToday} hitSlop={8} style={s.backChip} accessibilityRole='button'>
+              <Text style={s.backText}>Back to today</Text>
+            </Pressable>
+          )}
+        </View>
       </View>
 
       <ScrollView
@@ -68,7 +78,7 @@ export default function FoodScreen() {
           {!showCalories ? null : settings.showRemainingVsTarget ? (
             <Stat
               value={Math.round(remainingCalories).toLocaleString()}
-              label='left today'
+              label={isToday ? 'left today' : 'left'}
             />
           ) : (
             <Stat
@@ -91,73 +101,102 @@ export default function FoodScreen() {
 
         {water.enabled ? <WaterCard /> : null}
 
-        {Meals.OPTIONS.map(({ key, label }) => {
-          const items = foodLog.filter((f) => f.meal === key);
-          const cals = Math.round(mealTotals(foodLog, key));
-          const core = Meals.CORE.includes(key);
-          const skipped = skippedMeals.includes(key);
-          const name = label.toLowerCase();
-          return (
-            <View key={key}>
-              <GroupLabel>
-                {showCalories ? `${label} · ${cals}` : label}
-              </GroupLabel>
-              <Group>
-                {[
-                  ...(skipped && !items.length
-                    ? [
-                        <SkippedRow
-                          key='skipped'
-                          text={`No ${name} today`}
-                          onUndo={() => setMealSkipped(key, false)}
-                        />,
-                      ]
-                    : []),
-                  ...items.map((item) => (
-                    <SwipeToRemove
-                      key={item.id}
-                      onRemove={() => removeFoodEntry(item.id)}
-                    >
-                      <FoodRow
-                        item={item}
-                        showTiers={settings.showTiers}
-                        showTierNumber={settings.showTierNumber}
-                        showCalories={showCalories}
-                        onPress={() =>
-                          navigation.navigate('EditFood', { entryId: item.id })
-                        }
-                      />
-                    </SwipeToRemove>
-                  )),
-                  <AddRow
-                    key='add'
-                    onPress={() =>
-                      navigation.navigate('LogFood', { meal: key })
-                    }
-                  />,
-                  ...(items.length
-                    ? [
-                        <SaveMealRow
-                          key='save'
-                          onPress={() =>
-                            navigation.navigate('SaveMeal', { meal: key })
-                          }
-                        />,
-                      ]
-                    : core && !skipped
+        {!dayLoaded ? (
+          // Another day's food never shows under this day's date while it loads.
+          <ActivityIndicator color={colors.ink3} style={{ marginTop: space.xl }} />
+        ) : !editable && !foodLog.length && !skippedMeals.length ? (
+          <FootNote>Nothing logged this day.</FootNote>
+        ) : (
+          Meals.OPTIONS.map(({ key, label }) => {
+            const items = foodLog.filter((f) => f.meal === key);
+            const cals = Math.round(mealTotals(foodLog, key));
+            const core = Meals.CORE.includes(key);
+            const skipped = skippedMeals.includes(key);
+            const name = label.toLowerCase();
+            // Before yesterday a day is only looked at: meals with nothing in them are left out.
+            if (!editable && !items.length && !skipped) return null;
+            return (
+              <View key={key}>
+                <GroupLabel>
+                  {showCalories ? `${label} · ${cals}` : label}
+                </GroupLabel>
+                <Group>
+                  {[
+                    ...(skipped && !items.length
                       ? [
-                          <SkipMealRow
-                            key='skip'
-                            text={`No ${name} today`}
-                            onPress={() => setMealSkipped(key, true)}
+                          editable ? (
+                            <SkippedRow
+                              key='skipped'
+                              text={`No ${name} ${when}`}
+                              onUndo={() => setMealSkipped(key, false)}
+                            />
+                          ) : (
+                            <SkippedRow key='skipped' text={`No ${name}`} />
+                          ),
+                        ]
+                      : []),
+                    ...items.map((item) =>
+                      editable ? (
+                        <SwipeToRemove
+                          key={item.id}
+                          onRemove={() => removeFoodEntry(item.id)}
+                        >
+                          <FoodRow
+                            item={item}
+                            showTiers={settings.showTiers}
+                            showTierNumber={settings.showTierNumber}
+                            showCalories={showCalories}
+                            onPress={() =>
+                              navigation.navigate('EditFood', { entryId: item.id })
+                            }
+                          />
+                        </SwipeToRemove>
+                      ) : (
+                        <FoodRow
+                          key={item.id}
+                          item={item}
+                          showTiers={settings.showTiers}
+                          showTierNumber={settings.showTierNumber}
+                          showCalories={showCalories}
+                        />
+                      ),
+                    ),
+                    ...(editable
+                      ? [
+                          <AddRow
+                            key='add'
+                            onPress={() =>
+                              navigation.navigate('LogFood', { meal: key })
+                            }
                           />,
                         ]
                       : []),
-                ]}
-              </Group>
-            </View>
-          );
-        })}
+                    ...(!editable
+                      ? []
+                      : items.length
+                        ? [
+                            <SaveMealRow
+                              key='save'
+                              onPress={() =>
+                                navigation.navigate('SaveMeal', { meal: key })
+                              }
+                            />,
+                          ]
+                        : core && !skipped
+                          ? [
+                              <SkipMealRow
+                                key='skip'
+                                text={`No ${name} ${when}`}
+                                onPress={() => setMealSkipped(key, true)}
+                              />,
+                            ]
+                          : []),
+                  ]}
+                </Group>
+              </View>
+            );
+          })
+        )}
 
         {settings.showTiers ? (
           <FootNote>
@@ -183,13 +222,15 @@ function FoodRow({
   showTiers: boolean;
   showTierNumber: boolean;
   showCalories: boolean;
-  onPress: () => void;
+  /** Leave out on a day that can only be looked at. */
+  onPress?: () => void;
 }) {
   return (
     <Pressable
       style={s.foodRow}
-      android_ripple={{ color: colors.doveTint }}
+      android_ripple={onPress ? { color: colors.doveTint } : undefined}
       onPress={onPress}
+      disabled={!onPress}
     >
       {showTiers ? (
         <TierDot
@@ -212,7 +253,7 @@ function FoodRow({
           {Math.round(item.calories * item.servings)}
         </Text>
       ) : null}
-      <Chevron />
+      {onPress ? <Chevron /> : null}
     </Pressable>
   );
 }
@@ -283,16 +324,18 @@ function SkipMealRow({ text, onPress }: { text: string; onPress: () => void }) {
   );
 }
 
-function SkippedRow({ text, onUndo }: { text: string; onUndo: () => void }) {
+function SkippedRow({ text, onUndo }: { text: string; onUndo?: () => void }) {
   return (
     <View style={s.foodRow}>
       <View style={{ flex: 1 }}>
         <Text style={s.foodName}>{text}</Text>
         <Text style={s.foodSub}>Counts as logged</Text>
       </View>
-      <Pressable onPress={onUndo} hitSlop={8} accessibilityRole='button'>
-        <Text style={[s.foodCals, { color: colors.coral }]}>Undo</Text>
-      </Pressable>
+      {onUndo ? (
+        <Pressable onPress={onUndo} hitSlop={8} accessibilityRole='button'>
+          <Text style={[s.foodCals, { color: colors.coral }]}>Undo</Text>
+        </Pressable>
+      ) : null}
     </View>
   );
 }
@@ -316,6 +359,14 @@ function Stat({
 
 const s = StyleSheet.create({
   eyebrow: { fontFamily: font.body, fontSize: 12.5, color: colors.ink2 },
+  titleRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+  backChip: {
+    backgroundColor: colors.coralTint,
+    borderRadius: radius.md,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+  },
+  backText: { fontFamily: font.semibold, fontSize: 12, color: colors.coral },
   title: {
     fontFamily: font.display,
     fontSize: 28,

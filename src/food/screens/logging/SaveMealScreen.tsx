@@ -114,7 +114,7 @@ export default function SaveMealScreen({ navigation, route }: Props) {
           <Text style={s.empty}>Nothing is logged in {mealLabel.toLowerCase()} yet.</Text>
         )}
         <Text style={s.note}>
-          The foods are saved with the portions you logged. Later changes to today's
+          The foods are saved with the portions you logged. Later changes to this day's
           log won't change the saved meal.
         </Text>
 

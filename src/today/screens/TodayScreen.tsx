@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { ScrollView, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -9,6 +9,7 @@ import { WaypointRules } from '@journey/models/waypoint';
 import { useWaypoints } from '@journey/WaypointsContext';
 import WaypointBurst from '@journey/components/WaypointBurst';
 import { useActivity } from '@today/ActivityContext';
+import { useViewedDay } from '@shared/state/ViewedDayContext';
 import { useFood } from '@food/FoodContext';
 import { useWeight } from '@weight/WeightContext';
 import { useWater } from '@water/WaterContext';
@@ -23,19 +24,14 @@ import { WeekStrip } from '@today/components/WeekStrip';
 import { LeftToDoList } from '@today/components/LeftToDoList';
 import { DoneList } from '@today/components/DoneList';
 import { NutritionCard } from '@today/components/NutritionCard';
-import { DayLog } from '@today/components/DayLog';
 import { TargetSuggestionCard } from '@food/components/TargetSuggestionCard';
 
 /** The Today tab: steps, the week, what is left to do and what is done, and the waypoint celebrations. */
 export default function TodayScreen() {
   const insets = useSafeAreaInsets();
-  const { todaySteps, week, refresh: refreshSteps } = useActivity();
-  // Today unless a past day this week was tapped; a stale pick (new week) falls back to today.
-  const [picked, setPicked] = useState<string | null>(null);
-  const selected =
-    week.find((d) => d.day === picked && !d.future) ??
-    week.find((d) => d.isToday) ??
-    week[week.length - 1];
+  const { todaySteps, refresh: refreshSteps } = useActivity();
+  // Today unless a past day was tapped in the week strip; every section below follows it.
+  const { day, isToday } = useViewedDay();
   const { completeCelebration, reload: reloadWaypoints } = useWaypoints();
   const { reload: reloadFood } = useFood();
   const { reload: reloadWeight } = useWeight();
@@ -55,6 +51,10 @@ export default function TodayScreen() {
     reloadWaypoints,
   ]);
   const replayKey = useReplayOnFocus(todaySteps);
+  // Each day picked flies the bird again from the start (both keys only ever count up).
+  const [dayPicks, setDayPicks] = useState(0);
+  useEffect(() => setDayPicks((n) => n + 1), [day]);
+  const flightKey = replayKey + dayPicks;
   const { rootRef, heroRef, chipRef, playing, finish } = useCelebrationPlayback();
   useMilestoneReward(playing !== null);
 
@@ -70,22 +70,12 @@ export default function TodayScreen() {
         refreshControl={refreshControl}
         contentContainerStyle={{ paddingHorizontal: space.lg, paddingBottom: 100 }}
       >
-        <StepsHero heroRef={heroRef} replayKey={replayKey} />
-        <WeekStrip
-          replayKey={replayKey}
-          selectedDay={selected.day}
-          onSelect={setPicked}
-        />
-        {selected.isToday ? (
-          <>
-            <LeftToDoList />
-            <DoneList />
-            <NutritionCard />
-            <TargetSuggestionCard />
-          </>
-        ) : (
-          <DayLog record={selected} />
-        )}
+        <StepsHero heroRef={heroRef} replayKey={flightKey} />
+        <WeekStrip replayKey={replayKey} />
+        <LeftToDoList />
+        <DoneList />
+        <NutritionCard />
+        {isToday ? <TargetSuggestionCard /> : null}
       </ScrollView>
 
       {playing ? (

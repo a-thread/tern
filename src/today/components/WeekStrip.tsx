@@ -3,7 +3,7 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { colors, font, space } from '@shared/theme';
 import { DayRing } from '@shared/components/charts/DayRing';
-import { useDayKey } from '@shared/hooks/useDayKey';
+import { useViewedDay } from '@shared/state/ViewedDayContext';
 import { weekdayLetter } from '@shared/utils/date';
 import { useSettings } from '@settings/SettingsContext';
 import { useActivity } from '@today/ActivityContext';
@@ -13,18 +13,11 @@ import { StepsStatus } from '@today/data/steps.repository';
 
 /**
  * This week's seven rings, a fact for the day, and the rest-day link. Tapping a
- * day that has happened selects it (`onSelect`); the screen shows its log below.
+ * day that has happened views it (see `useViewedDay`): Home and Food show that day,
+ * and a link here leads back to today.
  */
-export function WeekStrip({
-  replayKey,
-  selectedDay,
-  onSelect,
-}: {
-  replayKey: number;
-  selectedDay: string;
-  onSelect: (day: string) => void;
-}) {
-  const todayKey = useDayKey();
+export function WeekStrip({ replayKey }: { replayKey: number }) {
+  const { day: selectedDay, today: todayKey, isToday, setDay: onSelect, showToday } = useViewedDay();
   const { settings } = useSettings();
   const { week, todaySteps, status, restLeft, todayIsRest, takeRestDay, undoRestDay } = useActivity();
   const reached = todaySteps / settings.stepGoal >= 1 || week.find((d) => d.isToday)?.state === DayState.Goal;
@@ -64,7 +57,11 @@ export function WeekStrip({
       </View>
       <Text style={s.caption}>{factForDay(todayKey)}</Text>
       {/* Once the goal is reached today is a goal day, so there's no rest day to take or undo. */}
-      {reached ? null : todayIsRest ? (
+      {!isToday ? (
+        <Pressable onPress={showToday} hitSlop={8} accessibilityRole='button'>
+          <Text style={[s.restLink, s.backLink]}>Back to today</Text>
+        </Pressable>
+      ) : reached ? null : todayIsRest ? (
         <Pressable onPress={undoRestDay} hitSlop={8}>
           <Text style={s.restLink}>Undo today's rest day</Text>
         </Pressable>
@@ -103,4 +100,5 @@ const s = StyleSheet.create({
     marginTop: space.sm,
   },
   restNote: { fontFamily: font.body, color: colors.ink3 },
+  backLink: { color: colors.coral },
 });

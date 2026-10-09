@@ -87,3 +87,21 @@ export function monthName(key: string): string {
     'December',
   ][d.getMonth()];
 }
+
+/** Whether `day` is `today` or the day before: the days that can still be filled in. */
+export const isTodayOrYesterday = (day: string, today: string) =>
+  day === today || day === addDays(today, -1);
+
+/** "Today", "Yesterday", or the weekday ("Tuesday") for an earlier day. */
+export function dayWord(day: string, today: string): string {
+  if (day === today) return 'Today';
+  if (day === addDays(today, -1)) return 'Yesterday';
+  return weekdayName(day);
+}
+
+/** `now`'s clock time on `day`, as an ISO timestamp: when something logged after the fact is dated. */
+export function atTimeOn(day: string, now: Date = new Date()): string {
+  const d = parseDayKey(day);
+  d.setHours(now.getHours(), now.getMinutes(), now.getSeconds(), now.getMilliseconds());
+  return d.toISOString();
+}

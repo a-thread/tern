@@ -18,7 +18,9 @@ import { WeightTrend } from '@shared/components/charts/WeightTrend';
 import type { RootStackParamList } from '@shared/navigation/types';
 import { useUnits } from '@settings/hooks/useUnits';
 import { useWeight } from '@weight/WeightContext';
-import { isLoggedToday } from '@weight/models/weightEntry';
+import { isLoggedOn } from '@weight/models/weightEntry';
+import { useViewedDay } from '@shared/state/ViewedDayContext';
+import { atTimeOn, dayWord } from '@shared/utils/date';
 import { Units } from '@shared/utils/units';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'LogWeight'>;
@@ -32,12 +34,14 @@ export default function LogWeightScreen({ navigation }: Props) {
   const insets = useSafeAreaInsets();
   const { weightEntries, weightTrend, addWeightEntry, updateWeightEntry } =
     useWeight();
-  // Opening this after weighing in today edits that weigh-in rather than stacking a second one.
-  const todaysEntry = weightEntries.find((e) => isLoggedToday(e.loggedAt));
+  // The viewed day: today, or yesterday when filling it in from a past day.
+  const { day, today, isToday } = useViewedDay();
+  // Opening this after weighing in that day edits that weigh-in rather than stacking a second one.
+  const todaysEntry = weightEntries.find((e) => isLoggedOn(e.loggedAt, day));
   const { units, weightLabel, toDisplay, fromDisplay, formatWeight } =
     useUnits();
   // The ruler works in the user's unit; storage stays lb.
-  const latest = Math.round(toDisplay(weightEntries[0]?.lb ?? 172.4) * 10) / 10;
+  const latest = Math.round(toDisplay(todaysEntry?.lb ?? weightEntries[0]?.lb ?? 172.4) * 10) / 10;
 
   const min = Math.ceil(toDisplay(MIN_LB) * 10) / 10;
   const max = Math.floor(toDisplay(MAX_LB) * 10) / 10;
@@ -88,7 +92,7 @@ export default function LogWeightScreen({ navigation }: Props) {
 
   const save = () => {
     if (todaysEntry) updateWeightEntry(todaysEntry.id, fromDisplay(weight));
-    else addWeightEntry(fromDisplay(weight));
+    else addWeightEntry(fromDisplay(weight), isToday ? undefined : atTimeOn(day));
     navigation.goBack();
   };
 
@@ -179,7 +183,7 @@ export default function LogWeightScreen({ navigation }: Props) {
         <Group>
           <View style={s.row}>
             <Text style={s.rowTitle}>Date</Text>
-            <Text style={s.rowSub}>Today</Text>
+            <Text style={s.rowSub}>{dayWord(day, today)}</Text>
           </View>
           <View style={s.row}>
             <Text style={s.rowTitle}>Units</Text>

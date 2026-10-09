@@ -8,6 +8,11 @@ export function isLoggedToday(iso: string, now: Date = new Date()): boolean {
   return dayKey(new Date(iso)) === dayKey(now);
 }
 
+/** Whether a weigh-in logged at `iso` falls on the local day `day` (YYYY-MM-DD). */
+export function isLoggedOn(iso: string, day: string): boolean {
+  return dayKey(new Date(iso)) === day;
+}
+
 const WEEKDAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 

@@ -1,6 +1,7 @@
 import React from 'react';
 import LoadingScreen from '@shared/components/LoadingScreen';
 import { DayKeyProvider } from '@shared/hooks/useDayKey';
+import { ViewedDayProvider } from '@shared/state/ViewedDayContext';
 import { SettingsProvider, useSettings } from '@settings/SettingsContext';
 import { RemindersSync } from '@settings/components/RemindersSync';
 import { FoodProvider, useFood } from '@food/FoodContext';
@@ -103,7 +104,11 @@ export function AppProviders({ children }: { children: React.ReactNode }) {
     </>
   );
   const tree = PROVIDERS.reduceRight<React.ReactNode>((child, p) => p.wrap(child, backend), inner);
-  return <DayKeyProvider>{tree}</DayKeyProvider>;
+  return (
+    <DayKeyProvider>
+      <ViewedDayProvider>{tree}</ViewedDayProvider>
+    </DayKeyProvider>
+  );
 }
 
 /** Holds the UI back until every domain has loaded, so no screen flashes defaults or zeros. */
