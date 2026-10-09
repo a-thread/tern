@@ -50,6 +50,8 @@ your dinner.
 want one — there's no goal line until you do.
 • Tern never shows exercise as earning calories back, and never warns you for
 going over.
+• Tern can learn your real daily burn from your log and weight trend, and suggest
+a target to match. It never changes one on its own.
 
 STEPS
 • Connect Health Connect to see today's steps, your streak and your goal.

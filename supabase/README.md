@@ -48,6 +48,8 @@ tables. With no keys configured, the app runs on local mock data instead.
 | `tern.medication_doses` | which medications were taken on which day (the medications themselves live in settings) |
 | `tern.mood_checkins`  | one mood and stress check-in (each 1 to 10) per day                 |
 | `tern.water_entries`   | each drink logged, in fluid ounces (ml is a display choice), by day  |
+| `tern.movement_entries` | movement logged by hand: activity, minutes and optional effort, by day (today or yesterday only). Health Connect workouts are read on the phone, not stored |
+| `tern.common_foods`    | the shared common-foods list search uses (read-only; published by `scripts/publishCommonFoods.ts`) |
 
 Every table is row-level-secured to `auth.uid()`; signed-out (`anon`) requests
 get nothing.
@@ -55,7 +57,9 @@ get nothing.
 ## Waypoints ledger
 
 Waypoints are earned for behavior only. `waypoint_events.source` is restricted
-to `steps`, `meals`, `rest`, `water` and `mood`, each worth fixed points, there
+to the sources in `WaypointRules` (`src/journey/models/waypoint.ts`), each worth
+fixed points except streak milestones; the newest migration with
+`waypoint_events_points_check` lists them. There
 is at most one award per source per day (so awarding is idempotent), and taking
 one back deletes its row. A row can only be written for the day it happened —
 within a day of UTC now, which covers every time zone's "today". The total is

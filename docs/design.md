@@ -26,7 +26,13 @@ These are deliberate and worth preserving as the app grows:
    and resting. Nothing pays out for a number on the scale or staying under a calorie
    target.
 2. **No compensatory mechanics.** Exercise never "earns back" food. There is no
-   equivalent of banking steps for a treat.
+   equivalent of banking steps for a treat. Movement is logged in minutes, never as
+   calories burned.
+6. **The calorie target can learn, from your own data.** With the adaptive target on,
+   Tern estimates what you actually burn from what you log and how your trend weight
+   moves, so all activity counts without per-workout estimates. It only ever suggests a
+   new target, at most once a week and by at most 100 calories; nothing changes until
+   you choose it. See [adaptive-target.md](adaptive-target.md).
 3. **Rest days are first-class.** They hold the streak (don't increment it), earn
    waypoints, and render in driftwood — visually distinct from a missed day. A streak
    freeze does the same job for a day a rest day couldn't cover, and renders in blue.
@@ -38,8 +44,9 @@ These are deliberate and worth preserving as the app grows:
 
 ## Earning rules
 
-A day is a goal day or a rest day, never both: reaching the goal after taking a rest day
-returns that rest day to the week's allowance. Skipping a meal with "nothing today"
+A day is a goal day or a rest day, never both: reaching the goal (by steps or by movement)
+after taking a rest day returns that rest day to the week's allowance. A day counts as a
+goal day once, however it got there. Skipping a meal with "nothing today"
 counts exactly as logging it, so a complete log never means eating more than you wanted.
 Nothing about these rules rewards under-reporting, and there is no leaderboard — the only
 person a padded ledger fools is the person keeping it.
@@ -52,7 +59,8 @@ Every rule is for something done, never for a number. The amounts live in
 
 | Source | Waypoints | For |
 | --- | --- | --- |
-| Steps | 40 | reaching the step goal |
+| Goal day | 40 | reaching the step goal, or the movement goal (30 minutes unless changed) of activity steps can't see: swims, rides, lifting, yoga, classes. Walks and runs are already in the steps |
+| Movement | 10 | logging any movement today |
 | All meals | 15 | every core meal logged or marked "nothing today" |
 | Each meal | 5 each | food logged in breakfast, lunch and dinner. A skipped meal doesn't pay this one |
 | Rest day | 10 | taking one (a goal day is never also a rest day) |
