@@ -17,9 +17,10 @@ function measureInWindow(ref: React.RefObject<View | null>) {
 /**
  * Plays the next queued waypoint award while Today is actually on screen — an award made in
  * the food-logging sheet waits until you are back. The feathers fly from the hero card to the
- * waypoint chip, so the three views are measured and handed back as refs.
+ * waypoint chip, so the three views are measured and handed back as refs. While `hold` is
+ * true the next award waits (the tern is still flying in; the feathers follow its landing).
  */
-export function useCelebrationPlayback() {
+export function useCelebrationPlayback(hold = false) {
   const insets = useSafeAreaInsets();
   const { celebrations } = useWaypoints();
   const isFocused = useIsFocused();
@@ -31,7 +32,7 @@ export function useCelebrationPlayback() {
   const nextCelebration = celebrations[0];
 
   useEffect(() => {
-    if (!isFocused || playing || starting.current || !nextCelebration) return;
+    if (hold || !isFocused || playing || starting.current || !nextCelebration) return;
     starting.current = true;
     (async () => {
       const [root, hero, chip] = await Promise.all([
@@ -48,7 +49,7 @@ export function useCelebrationPlayback() {
       setPlaying({ celebration: nextCelebration, origin, target: inRoot(chip) });
       starting.current = false;
     })();
-  }, [isFocused, playing, nextCelebration, insets.top]);
+  }, [hold, isFocused, playing, nextCelebration, insets.top]);
 
   return { rootRef, heroRef, chipRef, playing, finish: () => setPlaying(null) };
 }

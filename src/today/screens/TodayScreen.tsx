@@ -5,6 +5,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { colors, font, space } from '@shared/theme';
 import { useReplayOnFocus } from '@shared/hooks/useReplayOnFocus';
 import { usePullToRefresh } from '@shared/hooks/usePullToRefresh';
+import { easeLayout } from '@shared/utils/easeLayout';
 import { WaypointRules } from '@journey/models/waypoint';
 import { useWaypoints } from '@journey/WaypointsContext';
 import WaypointBurst from '@journey/components/WaypointBurst';
@@ -42,7 +43,9 @@ export default function TodayScreen() {
   // "Log something anyway": the usual lists on a rest day, until the day or the rest changes.
   const [reveal, setReveal] = useState(false);
   useEffect(() => setReveal(false), [day, rest.isRest]);
-  const calm = rest.isRest && !reveal;
+  // Calm while resting, and through the take-off after undoing it: the usual lists wait until
+  // the tern has gone, so the page changes once, not twice.
+  const calm = (rest.isRest || rest.leaving) && !reveal;
   const { completeCelebration, reload: reloadWaypoints } = useWaypoints();
   const { foodLog, reload: reloadFood } = useFood();
   const { reload: reloadWeight } = useWeight();
@@ -66,7 +69,10 @@ export default function TodayScreen() {
   const [dayPicks, setDayPicks] = useState(0);
   useEffect(() => setDayPicks((n) => n + 1), [day]);
   const flightKey = replayKey + dayPicks;
-  const { rootRef, heroRef, chipRef, playing, finish } = useCelebrationPlayback();
+  // The waypoints for resting wait for the tern to land.
+  const { rootRef, heroRef, chipRef, playing, finish } = useCelebrationPlayback(
+    rest.holdCelebrations,
+  );
   useMilestoneReward(playing !== null);
 
   return (
@@ -79,17 +85,31 @@ export default function TodayScreen() {
 
       <ScrollView
         refreshControl={refreshControl}
-        contentContainerStyle={{ paddingHorizontal: space.lg, paddingBottom: 100 }}
+        contentContainerStyle={{
+          paddingHorizontal: space.lg,
+          paddingBottom: 100,
+        }}
       >
         {rest.showScene ? (
           <RestScene
             heroRef={heroRef}
             entrance={rest.entrance}
             leaving={rest.leaving}
-            onLeft={rest.finishLeaving}
+            onLeft={() => {
+              easeLayout(); // the taller scene card gives way to the sky card
+              rest.finishLeaving();
+            }}
+            onTouchdown={rest.markTouchedDown}
             title='Rest day'
-            line={isToday ? 'Your streak is safe. Nothing to log today.' : 'A day off. Your streak carried on.'}
-            detail={restDetail(rest.record?.steps ?? todaySteps, isToday ? streak : 0)}
+            line={
+              isToday
+                ? 'Your streak is safe. Nothing to log today.'
+                : 'A day off. Your streak carried on.'
+            }
+            detail={restDetail(
+              rest.record?.steps ?? todaySteps,
+              isToday ? streak : 0,
+            )}
             note={isToday ? 'Reminders are quiet until tomorrow' : undefined}
           />
         ) : (
@@ -98,8 +118,16 @@ export default function TodayScreen() {
         <WeekStrip replayKey={replayKey} />
         {calm ? (
           <>
-            {editable ? (
-              <Pressable onPress={() => setReveal(true)} hitSlop={8} style={s.anyway} accessibilityRole='button'>
+            {editable && !rest.leaving ? (
+              <Pressable
+                onPress={() => {
+                  easeLayout();
+                  setReveal(true);
+                }}
+                hitSlop={8}
+                style={s.anyway}
+                accessibilityRole='button'
+              >
                 <Text style={s.anywayText}>Log something anyway</Text>
               </Pressable>
             ) : null}
@@ -121,7 +149,10 @@ export default function TodayScreen() {
           key={playing.celebration.id}
           id={playing.celebration.id}
           points={playing.celebration.points}
-          label={WaypointRules.ALL.find((r) => r.id === playing.celebration.source)?.label ?? ''}
+          label={
+            WaypointRules.ALL.find((r) => r.id === playing.celebration.source)
+              ?.label ?? ''
+          }
           origin={playing.origin}
           target={playing.target}
           onArrive={() => completeCelebration(playing.celebration.id)}
@@ -134,7 +165,8 @@ export default function TodayScreen() {
 
 /** "2,310 steps · ☀ 9 days" under the rest day scene. */
 function restDetail(steps: number, streak: number): string {
-  const sun = streak > 0 ? ` · ☀ ${streak} ${streak === 1 ? 'day' : 'days'}` : '';
+  const sun =
+    streak > 0 ? ` · ☀ ${streak} ${streak === 1 ? 'day' : 'days'}` : '';
   return `${steps.toLocaleString()} steps${sun}`;
 }
 

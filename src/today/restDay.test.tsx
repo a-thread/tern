@@ -18,6 +18,7 @@ import { MovementProvider } from '@movement/MovementContext';
 import { ActivityProvider, useActivity } from '@today/ActivityContext';
 import { StepsStatus, type StepsRepository } from '@today/data/steps.repository';
 import { useRestDay } from '@today/hooks/useRestDay';
+import { RestScenes } from '@today/models/restScene';
 import TodayScreen from '@today/screens/TodayScreen';
 
 // With reduce motion on nothing flies or loops, so the scene is easy to test: it is just
@@ -166,20 +167,83 @@ describe('useRestDay', () => {
   it('has the tern fly in only when today has just become a rest day', async () => {
     const r = setup();
     await ready(r);
-    expect(r.result.current.rest).toMatchObject({ isRest: false, showScene: false, entrance: 'settled' });
+    expect(r.result.current.rest).toMatchObject({ isRest: false, showScene: false, entrance: false });
 
     await act(async () => {
       r.result.current.activity.takeRestDay();
     });
     await waitFor(() => expect(r.result.current.rest.isRest).toBe(true));
-    expect(r.result.current.rest).toMatchObject({ showScene: true, entrance: 'arrive', leaving: false });
+    expect(r.result.current.rest).toMatchObject({ showScene: true, entrance: true, leaving: false });
+  });
+
+  it('holds the waypoints for resting until the tern has touched down', async () => {
+    const r = setup();
+    await ready(r);
+    expect(r.result.current.rest.holdCelebrations).toBe(false);
+
+    await act(async () => {
+      r.result.current.activity.takeRestDay();
+    });
+    await waitFor(() => expect(r.result.current.rest.isRest).toBe(true));
+    expect(r.result.current.rest.holdCelebrations).toBe(true); // flying in
+
+    act(() => r.result.current.rest.markTouchedDown());
+    expect(r.result.current.rest.holdCelebrations).toBe(false); // landed: let them go
+  });
+
+  it('never keeps the waypoints waiting for long, whatever happens to the scene', async () => {
+    const r = setup();
+    await ready(r);
+    jest.useFakeTimers({ doNotFake: ['nextTick', 'setImmediate', 'queueMicrotask'] });
+    try {
+      await act(async () => {
+        r.result.current.activity.takeRestDay();
+      });
+      await waitFor(() => expect(r.result.current.rest.holdCelebrations).toBe(true));
+      act(() => {
+        jest.advanceTimersByTime(RestScenes.FLIGHT_MS + 999);
+      });
+      expect(r.result.current.rest.holdCelebrations).toBe(true);
+      act(() => {
+        jest.advanceTimersByTime(2);
+      });
+      expect(r.result.current.rest.holdCelebrations).toBe(false);
+    } finally {
+      jest.useRealTimers();
+    }
+  });
+
+  it('holds nothing for a rest day that was already there, or for no rest day', async () => {
+    const existing = setup(quietBackend([dayKey()]));
+    await ready(existing);
+    await waitFor(() => expect(existing.result.current.rest.isRest).toBe(true));
+    expect(existing.result.current.rest.holdCelebrations).toBe(false);
+  });
+
+  it('starts holding again for a second rest day taken after undoing the first', async () => {
+    const r = setup();
+    await ready(r);
+    await act(async () => {
+      r.result.current.activity.takeRestDay();
+    });
+    await waitFor(() => expect(r.result.current.rest.isRest).toBe(true));
+    act(() => r.result.current.rest.markTouchedDown());
+    await act(async () => {
+      r.result.current.activity.undoRestDay();
+    });
+    await waitFor(() => expect(r.result.current.rest.isRest).toBe(false));
+    await act(async () => {
+      r.result.current.activity.takeRestDay();
+    });
+    await waitFor(() => expect(r.result.current.rest.isRest).toBe(true));
+    expect(r.result.current.rest.holdCelebrations).toBe(true);
   });
 
   it('shows an existing rest day already settled', async () => {
     const r = setup(quietBackend([dayKey()]));
     await ready(r);
     await waitFor(() => expect(r.result.current.rest.isRest).toBe(true));
-    expect(r.result.current.rest.entrance).toBe('settled');
+    expect(r.result.current.rest.entrance).toBe(false);
   });
 
   it('keeps the scene up while the tern leaves after an undo', async () => {
@@ -221,7 +285,7 @@ describe('useRestDay', () => {
     const r = setup();
     await ready(r);
     act(() => r.result.current.viewed.setDay(addDays(dayKey(), -1)));
-    expect(r.result.current.rest.entrance).toBe('settled');
+    expect(r.result.current.rest.entrance).toBe(false);
     expect(r.result.current.rest.leaving).toBe(false);
   });
 });
