@@ -1,4 +1,4 @@
-import { upcomingDates, describeReminders, formatMinutes, mergeReminders, medicationReminderId, planReminders, waterReminderId, waterTimes, stepMinutes, stepWeekday, type ReminderConfig, Reminders } from './reminderPlan';
+import { restDayTriggers, upcomingDates, describeReminders, formatMinutes, mergeReminders, medicationReminderId, planReminders, waterReminderId, waterTimes, stepMinutes, stepWeekday, type ReminderConfig, Reminders } from './reminderPlan';
 import { Frequency } from '@shared/models/frequency';
 import { ReminderKey } from './reminderPlan';
 
@@ -264,5 +264,30 @@ describe('upcomingDates', () => {
     // A weekly reminder for today (Saturday), on a rest day, skips today and comes next week.
     const saturdays = upcomingDates({ hour: 18, minute: 0, weekday: 7 }, now, 14, true);
     expect(saturdays.map((d) => d.getDate())).toEqual([17]);
+  });
+});
+
+describe('restDayTriggers', () => {
+  // Saturday 10 October 2026, 10:00 (weekday 7).
+  const now = new Date(2026, 9, 10, 10, 0);
+
+  it('keeps a weekly repeat for six weekdays and dates today\'s a week out', () => {
+    const t = restDayTriggers({ id: 'x', hour: 12, minute: 30 }, now);
+    expect(t).toHaveLength(7);
+    const dated = t.filter((x) => 'date' in x);
+    expect(dated).toHaveLength(1);
+    expect((dated[0] as { date: Date }).date).toEqual(new Date(2026, 9, 17, 12, 30));
+    const weekdays = t.filter((x) => 'weekday' in x).map((x) => (x as { weekday: number }).weekday);
+    expect(weekdays.sort()).toEqual([1, 2, 3, 4, 5, 6]);
+  });
+
+  it('is empty once today\'s time has passed, or a weekly reminder is not due today', () => {
+    expect(restDayTriggers({ id: 'x', hour: 8, minute: 0 }, now)).toEqual([]);
+    expect(restDayTriggers({ id: 'x', hour: 12, minute: 0, weekday: 1 }, now)).toEqual([]);
+  });
+
+  it('is just next week\'s date for a weekly reminder due today', () => {
+    const t = restDayTriggers({ id: 'x', hour: 18, minute: 0, weekday: 7 }, now);
+    expect(t).toEqual([{ id: 'x-rest-7', date: new Date(2026, 9, 17, 18, 0) }]);
   });
 });

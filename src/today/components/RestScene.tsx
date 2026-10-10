@@ -18,7 +18,7 @@ import Svg, {
 } from 'react-native-svg';
 import { useIsFocused } from '@react-navigation/native';
 
-import { font, radius, space } from '@shared/theme';
+import { colors, font, radius, space } from '@shared/theme';
 import { Icon } from '@shared/components/ui';
 import { useReduceMotion } from '@shared/hooks/useReduceMotion';
 import { Driftwood, DriftwoodDefs } from '@today/components/Driftwood';
@@ -36,6 +36,7 @@ const SPRITE = require('../../../assets/tern-landing.png');
 const W = 260;
 const H = 132;
 const HORIZON = RestScenes.HORIZON;
+/** The light of the stars and the ripples: part of the scene's art, not the app's palette. */
 const PAPER = '#FBFAF7';
 const STARS = [
   { x: 30, y: 16, r: 1.2 },
@@ -54,9 +55,12 @@ const RIPPLES = [
   { x1: 190, x2: 236, y: 118 },
 ];
 
-/** Milliseconds between redraws: smooth in flight, relaxed while resting. */
+/**
+ * Milliseconds between redraws: smooth in flight, slow while resting, when only the water, sun
+ * and breathing drift and every redraw re-renders the whole scene.
+ */
 const FLIGHT_FRAME_MS = 33;
-const REST_FRAME_MS = 50;
+const REST_FRAME_MS = 100;
 
 interface RestSceneProps {
   /** Where the waypoint feathers start from when resting earns its waypoints. */
@@ -147,15 +151,17 @@ export function RestScene({
       : 'settled';
 
   const [now, setNow] = useState(() => Date.now());
-  const startTimeRef = useRef(now);
   const globalStartRef = useRef(now);
-  const lastMotionRef = useRef<SceneMotion>(motion);
   const leftRef = useRef(false);
 
-  // Each new motion counts its time from the moment it begins.
-  if (lastMotionRef.current !== motion) {
-    lastMotionRef.current = motion;
-    startTimeRef.current = Date.now();
+  // Each new motion counts its time from the moment it begins. Noticed while rendering (React's
+  // way of adjusting state to a change in what it reads), with the clock brought up to the same
+  // instant so a motion never starts at a negative time.
+  const [motionState, setMotionState] = useState({ motion, startedAt: now });
+  if (motionState.motion !== motion) {
+    const t = Date.now();
+    setMotionState({ motion, startedAt: t });
+    setNow(t);
   }
 
   // A steady clock, only while the screen is showing and motion is allowed.
@@ -174,7 +180,7 @@ export function RestScene({
     return () => cancelAnimationFrame(frame);
   }, [isFocused, reduceMotion, motion]);
 
-  const sinceMs = now - startTimeRef.current;
+  const sinceMs = Math.max(now - motionState.startedAt, 0);
 
   // The landing is over, or the take-off is.
   useEffect(() => {
@@ -312,7 +318,7 @@ export function RestScene({
 
       <View style={styles.textContainer}>
         <View style={styles.headerRow}>
-          <Icon name='weather-sunset' size={16} color='#7FA3BA' />
+          <Icon name='weather-sunset' size={16} color={colors.glacier} />
           <Text style={styles.titleText}>{title}</Text>
         </View>
 
@@ -331,11 +337,11 @@ export function RestScene({
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: PAPER,
+    backgroundColor: colors.card,
     borderRadius: radius.lg,
     padding: space.md,
     borderWidth: 1,
-    borderColor: '#EFEFEA',
+    borderColor: colors.border,
     // As wide as the week strip and the lists below, and set down the way the sky card was.
     marginTop: space.xs,
   },
@@ -359,38 +365,35 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: space.xs,
   },
-  headerIcon: {
-    marginRight: space.xs,
-  },
   titleText: {
     fontFamily: font.display,
     fontSize: 14,
     textTransform: 'uppercase',
     letterSpacing: 1,
-    color: '#8A8984',
+    color: colors.ink3,
   },
   lineText: {
     fontFamily: font.displayMedium,
     fontSize: 18,
-    color: '#2A2925',
+    color: colors.ink,
     lineHeight: 24,
     marginBottom: space.xs,
   },
   detailText: {
     fontFamily: font.body,
     fontSize: 14,
-    color: '#656460',
+    color: colors.ink2,
     lineHeight: 20,
   },
   noteBox: {
     marginTop: space.md,
     paddingTop: space.sm,
     borderTopWidth: StyleSheet.hairlineWidth,
-    borderColor: '#EFEFEA',
+    borderColor: colors.border,
   },
   noteText: {
     fontFamily: font.displayMedium,
     fontSize: 12,
-    color: '#9A9994',
+    color: colors.ink3,
   },
 });

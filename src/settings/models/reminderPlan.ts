@@ -295,3 +295,29 @@ export function upcomingDates(
   }
   return out;
 }
+
+/** A replacement trigger for a reminder on a rest day: a weekly repeat, or a single date. */
+export type RestTrigger = { id: string; weekday: number } | { id: string; date: Date };
+
+/**
+ * How a reminder that repeats by itself goes quiet for the rest of today, when a repeating
+ * trigger can't skip a day: every other weekday keeps a weekly repeat, and today's weekday is a
+ * single date a week from now. Only that one weekday needs the next sync to repeat again, so a
+ * missed sync costs at most one day a week, not every day. Empty when today's time has passed,
+ * or a weekly reminder isn't due today: the usual trigger is already right.
+ */
+export function restDayTriggers(
+  r: Pick<PlannedReminder, 'id' | 'hour' | 'minute' | 'weekday'>,
+  now: Date,
+): RestTrigger[] {
+  if (!upcomingDates(r, now, 1).length) return [];
+  const today = now.getDay() + 1;
+  const nextWeek = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 7, r.hour, r.minute);
+  const out: RestTrigger[] = [{ id: `${r.id}-rest-${today}`, date: nextWeek }];
+  if (!r.weekday) {
+    for (let weekday = 1; weekday <= 7; weekday++) {
+      if (weekday !== today) out.push({ id: `${r.id}-rest-${weekday}`, weekday });
+    }
+  }
+  return out;
+}

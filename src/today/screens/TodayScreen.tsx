@@ -41,8 +41,10 @@ export default function TodayScreen() {
   const { day, isToday, editable } = useViewedDay();
   const rest = useRestDay();
   // "Log something anyway": the usual lists on a rest day, until the day or the rest changes.
-  const [reveal, setReveal] = useState(false);
-  useEffect(() => setReveal(false), [day, rest.isRest]);
+  // Kept as the day and rest it was tapped for, so changing either puts the calm back at once.
+  const revealKey = `${day}|${rest.isRest}`;
+  const [revealedFor, setRevealedFor] = useState<string | null>(null);
+  const reveal = revealedFor === revealKey;
   // Calm while resting, and through the take-off after undoing it: the usual lists wait until
   // the tern has gone, so the page changes once, not twice.
   const calm = (rest.isRest || rest.leaving) && !reveal;
@@ -85,10 +87,7 @@ export default function TodayScreen() {
 
       <ScrollView
         refreshControl={refreshControl}
-        contentContainerStyle={{
-          paddingHorizontal: space.lg,
-          paddingBottom: 100,
-        }}
+        contentContainerStyle={{ paddingHorizontal: space.lg, paddingBottom: 100 }}
       >
         {rest.showScene ? (
           <RestScene
@@ -106,10 +105,7 @@ export default function TodayScreen() {
                 ? 'Your streak is safe. Nothing to log today.'
                 : 'A day off. Your streak carried on.'
             }
-            detail={restDetail(
-              rest.record?.steps ?? todaySteps,
-              isToday ? streak : 0,
-            )}
+            detail={restDetail(rest.record?.steps ?? todaySteps, isToday ? streak : 0)}
             note={isToday ? 'Reminders are quiet until tomorrow' : undefined}
           />
         ) : (
@@ -122,7 +118,7 @@ export default function TodayScreen() {
               <Pressable
                 onPress={() => {
                   easeLayout();
-                  setReveal(true);
+                  setRevealedFor(revealKey);
                 }}
                 hitSlop={8}
                 style={s.anyway}
@@ -149,10 +145,7 @@ export default function TodayScreen() {
           key={playing.celebration.id}
           id={playing.celebration.id}
           points={playing.celebration.points}
-          label={
-            WaypointRules.ALL.find((r) => r.id === playing.celebration.source)
-              ?.label ?? ''
-          }
+          label={WaypointRules.ALL.find((r) => r.id === playing.celebration.source)?.label ?? ''}
           origin={playing.origin}
           target={playing.target}
           onArrive={() => completeCelebration(playing.celebration.id)}
@@ -165,8 +158,7 @@ export default function TodayScreen() {
 
 /** "2,310 steps · ☀ 9 days" under the rest day scene. */
 function restDetail(steps: number, streak: number): string {
-  const sun =
-    streak > 0 ? ` · ☀ ${streak} ${streak === 1 ? 'day' : 'days'}` : '';
+  const sun = streak > 0 ? ` · ☀ ${streak} ${streak === 1 ? 'day' : 'days'}` : '';
   return `${steps.toLocaleString()} steps${sun}`;
 }
 

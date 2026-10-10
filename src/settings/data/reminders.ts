@@ -4,6 +4,7 @@ import * as Notifications from 'expo-notifications';
 import { dayNumber, variantFor } from '@settings/models/mealMessages';
 import {
   planReminders,
+  restDayTriggers,
   upcomingDates,
   type PlanExtras,
   type PlannedReminder,
@@ -53,14 +54,15 @@ async function ensurePermission(): Promise<boolean> {
 
 /** Cancels scheduled notifications, keeping (or only taking) the streak ones. */
 async function cancelScheduled(streak: boolean) {
-  const scheduled = await Notifications.getAllScheduledNotificationsAsync().catch(
-    () => [],
-  );
+  const scheduled =
+    await Notifications.getAllScheduledNotificationsAsync().catch(() => []);
   await Promise.all(
     scheduled
       .filter((n) => StreakAlerts.ALL_IDS.includes(n.identifier) === streak)
       .map((n) =>
-        Notifications.cancelScheduledNotificationAsync(n.identifier).catch(() => {}),
+        Notifications.cancelScheduledNotificationAsync(n.identifier).catch(
+          () => {},
+        ),
       ),
   );
 }
@@ -80,8 +82,10 @@ function rotated(
 /**
  * Syncs scheduled reminders with the enabled settings. On a rest day (`restToday`) nothing more
  * fires today, except medication, which stays on: a day off from logging isn't a day off from a
- * dose. Reminders that repeat by themselves are scheduled day by day for the next two weeks
- * instead, leaving today out, and go back to repeating at the next sync (tomorrow, or on undo).
+ * dose. Meal reminders are already scheduled day by day, so today is simply left out. The others
+ * repeat by themselves, so they become weekly repeats for the other six weekdays plus one date
+ * a week out for today's weekday (see `restDayTriggers`), and go back to repeating at the next
+ * sync (tomorrow, or on undo).
  */
 export async function syncReminders(
   config: ReminderConfig,
@@ -115,16 +119,26 @@ export async function syncReminders(
       continue;
     }
     // Today's time still to come, on a rest day: a repeating trigger can't skip a day.
-    if (quiet && upcomingDates(r, now, 1).length) {
-      for (const [i, date] of upcomingDates(r, now, ROTATE_DAYS, true).entries()) {
+    const restTriggers = quiet ? restDayTriggers(r, now) : [];
+    if (restTriggers.length) {
+      for (const t of restTriggers) {
         await Notifications.scheduleNotificationAsync({
-          identifier: `${r.id}-rest-${i}`,
+          identifier: t.id,
           content: { title: r.title, body: r.body },
-          trigger: {
-            type: Notifications.SchedulableTriggerInputTypes.DATE,
-            date,
-            channelId: CHANNEL_ID,
-          },
+          trigger:
+            'date' in t
+              ? {
+                  type: Notifications.SchedulableTriggerInputTypes.DATE,
+                  date: t.date,
+                  channelId: CHANNEL_ID,
+                }
+              : {
+                  type: Notifications.SchedulableTriggerInputTypes.WEEKLY,
+                  weekday: t.weekday,
+                  hour: r.hour,
+                  minute: r.minute,
+                  channelId: CHANNEL_ID,
+                },
         });
       }
       continue;

@@ -79,6 +79,8 @@ export function RemindersSync() {
   // actually be read, otherwise "not reached yet" would just mean "not seen yet".
   const stepsReadable =
     activity.status === StepsStatus.Connected && settings.healthData.readSteps;
+  // (A chosen rest day, not `todayRestCounts`: a goal reached by movement ends the rest day but
+  // the alert is moot either way, and `todayIsRest` keeps the two from flickering.)
   const todayOpen =
     stepsReadable &&
     !activity.todayIsRest &&
