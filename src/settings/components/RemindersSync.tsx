@@ -21,10 +21,14 @@ export function RemindersSync() {
     trackMood,
     trackWeight,
   } = settings;
+  // A rest day is quiet: nothing more fires today (see `syncReminders`). Undoing it, or the
+  // next day, brings them back.
+  const restToday = activity.todayRestCounts;
   // Reschedule when a toggle, a time, the weigh-in frequency or a medication reminder changes.
   // The day is part of it: meal reminders are scheduled day by day, so a new day tops them up.
   const key = JSON.stringify({
     today,
+    restToday,
     reminders,
     weighInFrequency,
     medications,
@@ -41,18 +45,23 @@ export function RemindersSync() {
     medications.some((m) => m.remind);
 
   useEffect(() => {
-    if (!ready) return;
+    // Wait for the rest days too, so a quiet day isn't scheduled loud for a moment first.
+    if (!ready || !activity.ready) return;
     if (key === lastKey.current) return;
     const firstRun = lastKey.current === null;
     lastKey.current = key;
 
-    syncReminders(reminders, {
-      weighInFrequency,
-      medications,
-      trackWater,
-      trackMood,
-      trackWeight,
-    })
+    syncReminders(
+      reminders,
+      {
+        weighInFrequency,
+        medications,
+        trackWater,
+        trackMood,
+        trackWeight,
+      },
+      restToday,
+    )
       .then((result) => {
         if (result === SyncResult.Denied && anyOn && !firstRun) {
           toast.show(
@@ -63,7 +72,7 @@ export function RemindersSync() {
       .catch((e) => console.warn('Could not schedule reminders', e));
     // `key` captures every field of `reminders`.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [ready, key, toast]);
+  }, [ready, activity.ready, key, toast]);
 
   // Streak alerts follow today's steps, so they're re-planned whenever those change: once the
   // goal is reached (or a rest day taken) they're cleared. They're only offered while steps can

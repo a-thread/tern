@@ -1,4 +1,4 @@
-import { describeReminders, formatMinutes, mergeReminders, medicationReminderId, planReminders, waterReminderId, waterTimes, stepMinutes, stepWeekday, type ReminderConfig, Reminders } from './reminderPlan';
+import { upcomingDates, describeReminders, formatMinutes, mergeReminders, medicationReminderId, planReminders, waterReminderId, waterTimes, stepMinutes, stepWeekday, type ReminderConfig, Reminders } from './reminderPlan';
 import { Frequency } from '@shared/models/frequency';
 import { ReminderKey } from './reminderPlan';
 
@@ -233,5 +233,36 @@ describe('check-in reminder', () => {
   it('reads a saved setting back safely', () => {
     expect(mergeReminders({ mood: { on: true, at: 'x' } }).mood).toEqual({ on: true, at: 20 * 60 });
     expect(mergeReminders({ mood: { at: 540 } }).mood).toEqual({ on: false, at: 540 });
+  });
+});
+
+describe('upcomingDates', () => {
+  // Saturday 10 October 2026, 10:00. Weekdays run 1 = Sunday … 7 = Saturday.
+  const now = new Date(2026, 9, 10, 10, 0);
+
+  it('lists a daily reminder from today (if its time is still to come) for the days asked', () => {
+    const dates = upcomingDates({ hour: 12, minute: 30 }, now, 3);
+    expect(dates.map((d) => [d.getDate(), d.getHours(), d.getMinutes()])).toEqual([
+      [10, 12, 30],
+      [11, 12, 30],
+      [12, 12, 30],
+    ]);
+  });
+
+  it('starts tomorrow once its time has passed today', () => {
+    expect(upcomingDates({ hour: 8, minute: 0 }, now, 2).map((d) => d.getDate())).toEqual([11]);
+  });
+
+  it('leaves today out on a rest day, even with its time still to come', () => {
+    expect(upcomingDates({ hour: 12, minute: 30 }, now, 3, true).map((d) => d.getDate())).toEqual([11, 12]);
+  });
+
+  it('only falls on the weekday for a weekly reminder', () => {
+    const sundays = upcomingDates({ hour: 8, minute: 0, weekday: 1 }, now, 14);
+    expect(sundays.map((d) => d.getDay())).toEqual([0, 0]);
+    expect(sundays.map((d) => d.getDate())).toEqual([11, 18]);
+    // A weekly reminder for today (Saturday), on a rest day, skips today and comes next week.
+    const saturdays = upcomingDates({ hour: 18, minute: 0, weekday: 7 }, now, 14, true);
+    expect(saturdays.map((d) => d.getDate())).toEqual([17]);
   });
 });

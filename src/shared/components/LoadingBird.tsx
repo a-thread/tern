@@ -14,13 +14,11 @@ import { useReduceMotion } from '@shared/hooks/useReduceMotion';
 const SPRITE = require('../../../assets/bird-sprite.png');
 const FRAME_COUNT = 16;
 const FRAME_ASPECT = 560 / 260;
-const FRAME_MS = 55;
+const FRAME_MS = 42;
 
-// Ping-pong order: 0..15..1, so the last frame never jumps back to the first.
-const SEQUENCE: number[] = [
-  ...Array.from({ length: FRAME_COUNT }, (_, i) => i),
-  ...Array.from({ length: FRAME_COUNT - 2 }, (_, i) => FRAME_COUNT - 2 - i),
-];
+// The sheet already contains a complete wingbeat (wings up → down → up).
+// Play it forward and loop; reversing it creates an unnatural backward stroke.
+const SEQUENCE = Array.from({ length: FRAME_COUNT }, (_, i) => i);
 
 interface LoadingBirdProps {
   /** Width of the bird in points. The footprint is a square this size; the wings sweep past it vertically. */
@@ -29,7 +27,7 @@ interface LoadingBirdProps {
   color?: string;
   label?: string;
   style?: StyleProp<ViewStyle>;
-  /** Wingbeat speed: 1 is normal, 1.2 a fifth faster. Birds on one screen shouldn't flap in step. */
+  /** Wingbeat speed: 1 is normal, 1.2 is 20% faster. */
   speed?: number;
   /** Wait this long (ms) before the first beat. */
   delay?: number;
@@ -54,16 +52,21 @@ export default function LoadingBird({
       setStep(0);
       return;
     }
-    let interval: ReturnType<typeof setInterval> | undefined;
-    const start = setTimeout(() => {
-      interval = setInterval(
-        () => setStep((s) => (s + 1) % SEQUENCE.length),
-        FRAME_MS / speed,
-      );
-    }, delay);
+    let frameTimer: ReturnType<typeof setTimeout> | undefined;
+    let startTimer: ReturnType<typeof setTimeout> | undefined;
+    let cancelled = false;
+
+    const advance = () => {
+      if (cancelled) return;
+      setStep((current) => (current + 1) % SEQUENCE.length);
+      frameTimer = setTimeout(advance, FRAME_MS / Math.max(speed, 0.1));
+    };
+
+    startTimer = setTimeout(advance, Math.max(0, delay));
     return () => {
-      clearTimeout(start);
-      if (interval) clearInterval(interval);
+      cancelled = true;
+      if (startTimer) clearTimeout(startTimer);
+      if (frameTimer) clearTimeout(frameTimer);
     };
   }, [still, speed, delay]);
 

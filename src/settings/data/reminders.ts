@@ -4,6 +4,7 @@ import * as Notifications from 'expo-notifications';
 import { dayNumber, variantFor } from '@settings/models/mealMessages';
 import {
   planReminders,
+  upcomingDates,
   type PlanExtras,
   type PlannedReminder,
   type ReminderConfig,
@@ -68,27 +69,24 @@ async function cancelScheduled(streak: boolean) {
 function rotated(
   r: PlannedReminder,
   now: Date,
+  skipToday: boolean,
 ): { id: string; title: string; body: string; date: Date }[] {
-  const out: { id: string; title: string; body: string; date: Date }[] = [];
-  for (let i = 0; i < ROTATE_DAYS; i++) {
-    const date = new Date(
-      now.getFullYear(),
-      now.getMonth(),
-      now.getDate() + i,
-      r.hour,
-      r.minute,
-    );
-    if (date <= now) continue;
+  return upcomingDates(r, now, ROTATE_DAYS, skipToday).map((date, i) => {
     const { title, body } = variantFor(r.variants ?? [r], dayNumber(date));
-    out.push({ id: `${r.id}-${i}`, title, body, date });
-  }
-  return out;
+    return { id: `${r.id}-${i}`, title, body, date };
+  });
 }
 
-/** Syncs scheduled reminders with the enabled settings. */
+/**
+ * Syncs scheduled reminders with the enabled settings. On a rest day (`restToday`) nothing more
+ * fires today, except medication, which stays on: a day off from logging isn't a day off from a
+ * dose. Reminders that repeat by themselves are scheduled day by day for the next two weeks
+ * instead, leaving today out, and go back to repeating at the next sync (tomorrow, or on undo).
+ */
 export async function syncReminders(
   config: ReminderConfig,
   extras?: PlanExtras,
+  restToday = false,
 ): Promise<SyncResult> {
   const plan = planReminders(config, extras);
 
@@ -101,14 +99,30 @@ export async function syncReminders(
 
   const now = new Date();
   for (const r of plan) {
+    const quiet = restToday && r.key !== 'medication';
     if (r.variants) {
-      for (const d of rotated(r, now)) {
+      for (const d of rotated(r, now, quiet)) {
         await Notifications.scheduleNotificationAsync({
           identifier: d.id,
           content: { title: d.title, body: d.body },
           trigger: {
             type: Notifications.SchedulableTriggerInputTypes.DATE,
             date: d.date,
+            channelId: CHANNEL_ID,
+          },
+        });
+      }
+      continue;
+    }
+    // Today's time still to come, on a rest day: a repeating trigger can't skip a day.
+    if (quiet && upcomingDates(r, now, 1).length) {
+      for (const [i, date] of upcomingDates(r, now, ROTATE_DAYS, true).entries()) {
+        await Notifications.scheduleNotificationAsync({
+          identifier: `${r.id}-rest-${i}`,
+          content: { title: r.title, body: r.body },
+          trigger: {
+            type: Notifications.SchedulableTriggerInputTypes.DATE,
+            date,
             channelId: CHANNEL_ID,
           },
         });
