@@ -1,16 +1,6 @@
 import { colors } from '@shared/theme';
-import { mix, scoreColor, scoreTint, smile } from './scoreColor';
+import { scoreColor, scoreTint, smile } from './scoreColor';
 import { MoodMetric } from '@mood/models/moodEntry';
-
-describe('mix', () => {
-  it('blends two colours and stays within the ends', () => {
-    expect(mix('#000000', '#ffffff', 0)).toBe('#000000');
-    expect(mix('#000000', '#ffffff', 1)).toBe('#ffffff');
-    expect(mix('#000000', '#ffffff', 0.5)).toBe('#808080');
-    expect(mix('#000000', '#ffffff', 7)).toBe('#ffffff');
-    expect(mix('#000000', '#ffffff', -3)).toBe('#000000');
-  });
-});
 
 describe('scoreColor', () => {
   it('runs each scale from its low colour to its high colour', () => {

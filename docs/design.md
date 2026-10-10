@@ -36,6 +36,11 @@ These are deliberate and worth preserving as the app grows:
 3. **Rest days are first-class.** They hold the streak (don't increment it), earn
    waypoints, and render in driftwood — visually distinct from a missed day. A streak
    freeze does the same job for a day a rest day couldn't cover, and renders in blue.
+   A rest day is a real day off, not just a day without a step goal: Today shows a calm
+   scene (a tern landing on driftwood at dusk) instead of the sky card and the to-do list,
+   and every reminder goes quiet until tomorrow except medication, which stays on. Logging
+   remains one tap away and nothing is hidden or locked. A rest day with little logged is
+   left out of the adaptive target like any lightly logged day.
 4. **Weight is shown as a trend with a visible fluctuation band.** Day-to-day deltas are
    deliberately de-emphasized because they're mostly water.
 5. **Food color is information, not judgment.** It maps to NOVA processing level, always

@@ -41,6 +41,11 @@ type ActivityContextValue = {
   restLeft: number;
   /** Whether the user chose today as a rest day. */
   todayIsRest: boolean;
+  /**
+   * Whether today is standing as a rest day: chosen, and the goal not reached after all (which
+   * turns it into a goal day and gives the rest day back).
+   */
+  todayRestCounts: boolean;
   /** Re-reads steps. Resolves to the step status afterwards, or 'failed' if it could not be read. */
   refresh: () => Promise<StepsStatus | 'failed'>;
   /** Ask for access to the step source (Health Connect). Resolves to the status afterwards. */
@@ -229,6 +234,7 @@ export function ActivityProvider({
       freezes,
       restLeft,
       todayIsRest,
+      todayRestCounts: restCounts,
       refresh,
       connect,
       takeRestDay,
@@ -244,6 +250,7 @@ export function ActivityProvider({
       freezes,
       restLeft,
       todayIsRest,
+      restCounts,
       refresh,
       connect,
       takeRestDay,

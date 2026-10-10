@@ -273,3 +273,51 @@ export function mergeReminders(saved: unknown): ReminderConfig {
     streak: { on: bool(s.streak?.on, d.streak.on) },
   };
 }
+
+/**
+ * The one-off times `r` fires over the next `days` days from `now` (today included, if its time
+ * hasn't passed), left out for today when `skipToday`: how a rest day goes quiet for a reminder
+ * that would otherwise repeat on its own. A weekly reminder only falls on its weekday.
+ */
+export function upcomingDates(
+  r: Pick<PlannedReminder, 'hour' | 'minute' | 'weekday'>,
+  now: Date,
+  days: number,
+  skipToday = false,
+): Date[] {
+  const out: Date[] = [];
+  for (let i = skipToday ? 1 : 0; i < days; i++) {
+    const date = new Date(now.getFullYear(), now.getMonth(), now.getDate() + i, r.hour, r.minute);
+    if (date <= now) continue;
+    // Weekdays here run 1 = Sunday … 7 = Saturday, like the settings.
+    if (r.weekday && date.getDay() + 1 !== r.weekday) continue;
+    out.push(date);
+  }
+  return out;
+}
+
+/** A replacement trigger for a reminder on a rest day: a weekly repeat, or a single date. */
+export type RestTrigger = { id: string; weekday: number } | { id: string; date: Date };
+
+/**
+ * How a reminder that repeats by itself goes quiet for the rest of today, when a repeating
+ * trigger can't skip a day: every other weekday keeps a weekly repeat, and today's weekday is a
+ * single date a week from now. Only that one weekday needs the next sync to repeat again, so a
+ * missed sync costs at most one day a week, not every day. Empty when today's time has passed,
+ * or a weekly reminder isn't due today: the usual trigger is already right.
+ */
+export function restDayTriggers(
+  r: Pick<PlannedReminder, 'id' | 'hour' | 'minute' | 'weekday'>,
+  now: Date,
+): RestTrigger[] {
+  if (!upcomingDates(r, now, 1).length) return [];
+  const today = now.getDay() + 1;
+  const nextWeek = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 7, r.hour, r.minute);
+  const out: RestTrigger[] = [{ id: `${r.id}-rest-${today}`, date: nextWeek }];
+  if (!r.weekday) {
+    for (let weekday = 1; weekday <= 7; weekday++) {
+      if (weekday !== today) out.push({ id: `${r.id}-rest-${weekday}`, weekday });
+    }
+  }
+  return out;
+}

@@ -24,7 +24,7 @@ import { DoneBadge } from './DoneBadge';
  * to undo or edit the ones that allow it. Before yesterday it's read-only, except that
  * "Meals logged" still opens that day in the Food tab.
  */
-export function DoneList() {
+export function DoneList({ quietWhenEmpty = false }: { quietWhenEmpty?: boolean } = {}) {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const { summary, mealsDone, waterDone, anythingDone, takenMedications, movementOnDay, movedToGoal, steps, day, isToday, editable } =
     useDayItems();
@@ -37,7 +37,7 @@ export function DoneList() {
   const fromHealthConnect = movementOnDay.some((e) => e.source === 'healthConnect');
 
   // An older day with nothing on it says so; today and yesterday have "Left to do" above.
-  if (!anythingDone) return editable ? null : <FootNote>Nothing logged this day.</FootNote>;
+  if (!anythingDone) return editable || quietWhenEmpty ? null : <FootNote>Nothing logged this day.</FootNote>;
   return (
     <>
       <GroupLabel>{isToday ? 'Today so far' : dayWord(day, today)}</GroupLabel>

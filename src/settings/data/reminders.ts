@@ -4,6 +4,8 @@ import * as Notifications from 'expo-notifications';
 import { dayNumber, variantFor } from '@settings/models/mealMessages';
 import {
   planReminders,
+  restDayTriggers,
+  upcomingDates,
   type PlanExtras,
   type PlannedReminder,
   type ReminderConfig,
@@ -52,14 +54,15 @@ async function ensurePermission(): Promise<boolean> {
 
 /** Cancels scheduled notifications, keeping (or only taking) the streak ones. */
 async function cancelScheduled(streak: boolean) {
-  const scheduled = await Notifications.getAllScheduledNotificationsAsync().catch(
-    () => [],
-  );
+  const scheduled =
+    await Notifications.getAllScheduledNotificationsAsync().catch(() => []);
   await Promise.all(
     scheduled
       .filter((n) => StreakAlerts.ALL_IDS.includes(n.identifier) === streak)
       .map((n) =>
-        Notifications.cancelScheduledNotificationAsync(n.identifier).catch(() => {}),
+        Notifications.cancelScheduledNotificationAsync(n.identifier).catch(
+          () => {},
+        ),
       ),
   );
 }
@@ -68,27 +71,26 @@ async function cancelScheduled(streak: boolean) {
 function rotated(
   r: PlannedReminder,
   now: Date,
+  skipToday: boolean,
 ): { id: string; title: string; body: string; date: Date }[] {
-  const out: { id: string; title: string; body: string; date: Date }[] = [];
-  for (let i = 0; i < ROTATE_DAYS; i++) {
-    const date = new Date(
-      now.getFullYear(),
-      now.getMonth(),
-      now.getDate() + i,
-      r.hour,
-      r.minute,
-    );
-    if (date <= now) continue;
+  return upcomingDates(r, now, ROTATE_DAYS, skipToday).map((date, i) => {
     const { title, body } = variantFor(r.variants ?? [r], dayNumber(date));
-    out.push({ id: `${r.id}-${i}`, title, body, date });
-  }
-  return out;
+    return { id: `${r.id}-${i}`, title, body, date };
+  });
 }
 
-/** Syncs scheduled reminders with the enabled settings. */
+/**
+ * Syncs scheduled reminders with the enabled settings. On a rest day (`restToday`) nothing more
+ * fires today, except medication, which stays on: a day off from logging isn't a day off from a
+ * dose. Meal reminders are already scheduled day by day, so today is simply left out. The others
+ * repeat by themselves, so they become weekly repeats for the other six weekdays plus one date
+ * a week out for today's weekday (see `restDayTriggers`), and go back to repeating at the next
+ * sync (tomorrow, or on undo).
+ */
 export async function syncReminders(
   config: ReminderConfig,
   extras?: PlanExtras,
+  restToday = false,
 ): Promise<SyncResult> {
   const plan = planReminders(config, extras);
 
@@ -101,8 +103,9 @@ export async function syncReminders(
 
   const now = new Date();
   for (const r of plan) {
+    const quiet = restToday && r.key !== 'medication';
     if (r.variants) {
-      for (const d of rotated(r, now)) {
+      for (const d of rotated(r, now, quiet)) {
         await Notifications.scheduleNotificationAsync({
           identifier: d.id,
           content: { title: d.title, body: d.body },
@@ -111,6 +114,31 @@ export async function syncReminders(
             date: d.date,
             channelId: CHANNEL_ID,
           },
+        });
+      }
+      continue;
+    }
+    // Today's time still to come, on a rest day: a repeating trigger can't skip a day.
+    const restTriggers = quiet ? restDayTriggers(r, now) : [];
+    if (restTriggers.length) {
+      for (const t of restTriggers) {
+        await Notifications.scheduleNotificationAsync({
+          identifier: t.id,
+          content: { title: r.title, body: r.body },
+          trigger:
+            'date' in t
+              ? {
+                  type: Notifications.SchedulableTriggerInputTypes.DATE,
+                  date: t.date,
+                  channelId: CHANNEL_ID,
+                }
+              : {
+                  type: Notifications.SchedulableTriggerInputTypes.WEEKLY,
+                  weekday: t.weekday,
+                  hour: r.hour,
+                  minute: r.minute,
+                  channelId: CHANNEL_ID,
+                },
         });
       }
       continue;

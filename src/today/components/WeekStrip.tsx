@@ -4,6 +4,7 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { colors, font, space } from '@shared/theme';
 import { DayRing } from '@shared/components/charts/DayRing';
 import { useViewedDay } from '@shared/state/ViewedDayContext';
+import { easeLayout } from '@shared/utils/easeLayout';
 import { weekdayLetter } from '@shared/utils/date';
 import { useSettings } from '@settings/SettingsContext';
 import { useActivity } from '@today/ActivityContext';
@@ -62,11 +63,23 @@ export function WeekStrip({ replayKey }: { replayKey: number }) {
           <Text style={[s.restLink, s.backLink]}>Back to today</Text>
         </Pressable>
       ) : reached ? null : todayIsRest ? (
-        <Pressable onPress={undoRestDay} hitSlop={8}>
+        <Pressable
+          onPress={() => {
+            easeLayout(); // the page glides to its new shape
+            undoRestDay();
+          }}
+          hitSlop={8}
+        >
           <Text style={s.restLink}>Undo today's rest day</Text>
         </Pressable>
       ) : restLeft > 0 ? (
-        <Pressable onPress={takeRestDay} hitSlop={8}>
+        <Pressable
+          onPress={() => {
+            easeLayout(); // the page glides to its new shape
+            takeRestDay();
+          }}
+          hitSlop={8}
+        >
           <Text style={s.restLink}>Take today as a rest day · {restLeft} left this week</Text>
         </Pressable>
       ) : status === StepsStatus.Connected ? (
