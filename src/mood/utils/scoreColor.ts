@@ -3,8 +3,6 @@ import { clampScore, MoodScale, MoodMetric } from '@mood/models/moodEntry';
 
 import { mix } from '@shared/utils/color';
 
-export { mix };
-
 /**
  * Where a score sits on its colour scale. Nothing here is alarming or red: mood runs
  * from a quiet violet up to warm sun, stress from cool glacier through sun to a
@@ -16,7 +14,8 @@ const STOPS: Record<MoodMetric, [string, string, string]> = {
 };
 
 export function scoreColor(metric: MoodMetric, score: number): string {
-  const t = (clampScore(score) - MoodScale.MIN) / (MoodScale.MAX - MoodScale.MIN);
+  const t =
+    (clampScore(score) - MoodScale.MIN) / (MoodScale.MAX - MoodScale.MIN);
   const [low, mid, high] = STOPS[metric];
   return t < 0.5 ? mix(low, mid, t * 2) : mix(mid, high, (t - 0.5) * 2);
 }
