@@ -4,22 +4,28 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 
 import { colors, font, radius, space, typography } from '@/shared/theme';
-import { TrendRanges, TrendRange } from '@/trends/models/trendRange';
-import { Card, GroupLabel, Row, FootNote, PushHeader, SegmentedControl } from '@/shared/components/ui';
-import { LegendDot } from '@/trends/components/LegendDot/LegendDot';
-import { StepBars } from '@/trends/components/StepBars/StepBars';
-import { ConsistencyGrid } from '@/trends/components/ConsistencyGrid/ConsistencyGrid';
+import { TrendRanges, TrendRange } from '../models/trendRange';
+import {
+  Card,
+  GroupLabel,
+  Row,
+  FootNote,
+  PushHeader,
+  SegmentedControl,
+} from '@/shared/components/ui';
+import { LegendDot } from '../components/LegendDot';
+import { StepBars } from '../components/StepBars';
+import { ConsistencyGrid } from '../components/ConsistencyGrid';
 import { useActivity } from '@/domain/activity/ActivityContext';
 import { weekdayName } from '@/shared/utils/date';
 import { useSettings } from '@/domain/settings/SettingsContext';
-import { bucketSteps } from '@/trends/models/stepBars';
-import { longestProtectedRun, summarizeSteps } from '@/trends/models/stepsSummary';
-import type { TrendsStackParamList } from '@/trends/navigation';
+import { bucketSteps } from '../models/stepBars';
+import { longestProtectedRun, summarizeSteps } from '../models/stepsSummary';
+import type { TrendsStackParamList } from '../navigation';
 import { StepsStatus } from '@/domain/activity/steps.repository';
 import { DayState } from '@/shared/models/dayState';
 
 type Props = NativeStackScreenProps<TrendsStackParamList, 'StepsDetail'>;
-
 
 export default function StepsDetailScreen({ navigation }: Props) {
   const insets = useSafeAreaInsets();
@@ -47,7 +53,11 @@ export default function StepsDetailScreen({ navigation }: Props) {
     null,
   );
   const rangeLabel =
-    range === TrendRange.Week ? 'this week' : range === TrendRange.Month ? 'this month' : 'over 6 months';
+    range === TrendRange.Week
+      ? 'this week'
+      : range === TrendRange.Month
+        ? 'this month'
+        : 'over 6 months';
 
   return (
     <View
@@ -65,7 +75,12 @@ export default function StepsDetailScreen({ navigation }: Props) {
           paddingBottom: 40,
         }}
       >
-        <SegmentedControl options={TrendRanges.ALL} value={range} onChange={setRange} style={s.seg} />
+        <SegmentedControl
+          options={TrendRanges.ALL}
+          value={range}
+          onChange={setRange}
+          style={s.seg}
+        />
 
         <Card style={{ marginBottom: space.md }}>
           <Text style={s.metricValue}>
@@ -73,7 +88,12 @@ export default function StepsDetailScreen({ navigation }: Props) {
           </Text>
           <Text style={s.metricSub}>daily average {rangeLabel}</Text>
           {connected ? (
-            <StepBars days={bars} goal={settings.stepGoal} height={88} showLabels={range !== TrendRange.Month} />
+            <StepBars
+              days={bars}
+              goal={settings.stepGoal}
+              height={88}
+              showLabels={range !== TrendRange.Month}
+            />
           ) : (
             <Text style={s.metricSub}>
               Connect step data in Settings → Health data to see this.
@@ -90,7 +110,9 @@ export default function StepsDetailScreen({ navigation }: Props) {
         <GroupLabel>Consistency</GroupLabel>
         <Card>
           <Text style={s.metricSub}>
-            {range === TrendRange.SixMonths ? 'Last 6 months' : `Last ${TrendRanges.DAYS[range]} days`}
+            {range === TrendRange.SixMonths
+              ? 'Last 6 months'
+              : `Last ${TrendRanges.DAYS[range]} days`}
           </Text>
           <ConsistencyGrid days={inRange.map((d) => d.state)} />
           <View style={s.legend}>

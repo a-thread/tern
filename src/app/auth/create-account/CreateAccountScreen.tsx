@@ -1,14 +1,20 @@
 import React, { useState } from 'react';
 
 import { useAuth } from '@/domain/auth/AuthContext';
-import { AuthBanner } from '@/auth/components/AuthBanner/AuthBanner';
-import { AuthLayout } from '@/auth/components/AuthLayout/AuthLayout';
-import { FormField } from '@/auth/components/FormField/FormField';
-import { LinkButton } from '@/auth/components/LinkButton/LinkButton';
-import { LinkColumn } from '@/auth/components/LinkColumn/LinkColumn';
-import { SubmitButton } from '@/auth/components/SubmitButton/SubmitButton';
+import { AuthBanner } from '@/auth/components/AuthBanner';
+import { AuthLayout } from '@/auth/components/AuthLayout';
+import { FormField } from '@/auth/components/FormField';
+import { LinkButton } from '@/auth/components/LinkButton';
+import { LinkColumn } from '@/auth/components/LinkColumn';
+import { SubmitButton } from '@/auth/components/SubmitButton';
 import { useSubmit } from '@/auth/hooks/useSubmit';
-import { isValidEmail, isValidName, isValidPassword, passwordsMatch, AccountLimits } from '@/domain/auth/validation';
+import {
+  isValidEmail,
+  isValidName,
+  isValidPassword,
+  passwordsMatch,
+  AccountLimits,
+} from '@/domain/auth/validation';
 
 export default function CreateAccountScreen({
   onCreated,
@@ -34,7 +40,9 @@ export default function CreateAccountScreen({
 
   const submit = async () => {
     if (!canSubmit) return;
-    const ok = await run(() => auth.signUp(email.trim(), password, firstName.trim()));
+    const ok = await run(() =>
+      auth.signUp(email.trim(), password, firstName.trim()),
+    );
     // With email confirmation on there's no session yet, so send them back to
     // sign in. (With it off they're already signed in and this unmounts.)
     if (ok) onCreated();

@@ -3,7 +3,7 @@ import { View, Text, StyleSheet, Pressable } from 'react-native';
 import { colors, font, radius, tierColors, typography } from '@/shared/theme';
 import type { Tier } from '@/domain/food/models/foodEntry';
 import type { SearchResult } from '@/domain/food/sources/searchResult';
-import { TierDot } from '@/shared/components/TierDot/TierDot';
+import { TierDot } from '@/shared/components/TierDot';
 
 const tierPickerOptions: { tier: Tier; label: string }[] = [
   { tier: 1, label: 'Whole' },

@@ -14,12 +14,21 @@ import { NativeStackScreenProps } from '@react-navigation/native-stack';
 
 import { colors, font, radius, space, typography } from '@/shared/theme';
 import { Group, GroupLabel, SheetNav } from '@/shared/components/ui';
-import { WeightTrend } from '@/shared/components/WeightTrend/WeightTrend';
+import { WeightTrend } from '@/shared/components/WeightTrend';
 import type { RootStackParamList } from '@/navigation/types';
 import { useViewedDay } from '@/shared/state/ViewedDayContext';
 import { addDays, dayWord } from '@/shared/utils/date';
-import { clampScore, scoreWord, MoodScale, MoodMetric } from '@/domain/mood/models/moodEntry';
-import { average, entriesBetween, seriesOf } from '@/domain/mood/models/moodStats';
+import {
+  clampScore,
+  scoreWord,
+  MoodScale,
+  MoodMetric,
+} from '@/domain/mood/models/moodEntry';
+import {
+  average,
+  entriesBetween,
+  seriesOf,
+} from '@/domain/mood/models/moodStats';
 import { scoreColor, scoreTint, smile } from '@/check-in/utils/scoreColor';
 import MoodFace from '@/check-in/components/MoodFace/MoodFace';
 import { useMood } from '@/domain/mood/MoodContext';
@@ -32,10 +41,17 @@ const RULER_H = 64;
 
 const METRICS: { id: MoodMetric; label: string; hint: string }[] = [
   { id: MoodMetric.Mood, label: 'Mood', hint: '1 is very low, 10 is great.' },
-  { id: MoodMetric.Stress, label: 'Stress', hint: '1 is calm, 10 is very high.' },
+  {
+    id: MoodMetric.Stress,
+    label: 'Stress',
+    hint: '1 is calm, 10 is very high.',
+  },
 ];
 
-const PIPS = Array.from({ length: MoodScale.MAX - MoodScale.MIN + 1 }, (_, i) => MoodScale.MIN + i);
+const PIPS = Array.from(
+  { length: MoodScale.MAX - MoodScale.MIN + 1 },
+  (_, i) => MoodScale.MIN + i,
+);
 
 export default function CheckInScreen({ navigation }: Props) {
   const insets = useSafeAreaInsets();
@@ -45,8 +61,12 @@ export default function CheckInScreen({ navigation }: Props) {
   const dayLabel = dayWord(today, realToday);
 
   const last = entries[entries.length - 1];
-  const start = (m: MoodMetric) => todays?.[m] ?? last?.[m] ?? MoodScale.DEFAULT;
-  const [scores, setScores] = useState({ mood: start(MoodMetric.Mood), stress: start(MoodMetric.Stress) });
+  const start = (m: MoodMetric) =>
+    todays?.[m] ?? last?.[m] ?? MoodScale.DEFAULT;
+  const [scores, setScores] = useState({
+    mood: start(MoodMetric.Mood),
+    stress: start(MoodMetric.Stress),
+  });
   const [active, setActive] = useState<MoodMetric>(MoodMetric.Mood);
   const scoresRef = useRef(scores);
   const activeRef = useRef(active);
@@ -80,7 +100,12 @@ export default function CheckInScreen({ navigation }: Props) {
   const pop = useRef(new Animated.Value(1)).current;
   useEffect(() => {
     pop.setValue(0.82);
-    Animated.spring(pop, { toValue: 1, friction: 4, tension: 160, useNativeDriver: true }).start();
+    Animated.spring(pop, {
+      toValue: 1,
+      friction: 4,
+      tension: 160,
+      useNativeDriver: true,
+    }).start();
   }, [value, active, pop]);
 
   // Ticks swell toward the centre and take the colour of the score they stand for; ticks
@@ -108,7 +133,9 @@ export default function CheckInScreen({ navigation }: Props) {
   };
 
   return (
-    <View style={{ flex: 1, backgroundColor: colors.paper, paddingTop: insets.top }}>
+    <View
+      style={{ flex: 1, backgroundColor: colors.paper, paddingTop: insets.top }}
+    >
       <SheetNav
         title='Check in'
         leftLabel='Cancel'
@@ -119,7 +146,10 @@ export default function CheckInScreen({ navigation }: Props) {
 
       <ScrollView
         keyboardShouldPersistTaps='handled'
-        contentContainerStyle={{ paddingHorizontal: space.lg, paddingBottom: 40 }}
+        contentContainerStyle={{
+          paddingHorizontal: space.lg,
+          paddingBottom: 40,
+        }}
       >
         <View style={s.switch}>
           {METRICS.map((m) => {
@@ -128,11 +158,16 @@ export default function CheckInScreen({ navigation }: Props) {
               <Pressable
                 key={m.id}
                 onPress={() => setActive(m.id)}
-                style={[s.switchItem, on && { backgroundColor: scoreColor(m.id, scores[m.id]) }]}
+                style={[
+                  s.switchItem,
+                  on && { backgroundColor: scoreColor(m.id, scores[m.id]) },
+                ]}
                 accessibilityRole='button'
                 accessibilityState={{ selected: on }}
               >
-                <Text style={[s.switchText, on && s.switchTextOn]}>{m.label}</Text>
+                <Text style={[s.switchText, on && s.switchTextOn]}>
+                  {m.label}
+                </Text>
               </Pressable>
             );
           })}
@@ -167,13 +202,19 @@ export default function CheckInScreen({ navigation }: Props) {
                           height: 12 + 34 * near,
                           width: t.d === 0 ? 6 : 3,
                           opacity: t.visible ? 0.25 + 0.75 * near : 0,
-                          backgroundColor: scoreColor(active, t.visible ? t.v : value),
+                          backgroundColor: scoreColor(
+                            active,
+                            t.visible ? t.v : value,
+                          ),
                         },
                       ]}
                     />
                     {t.visible ? (
                       <Text
-                        style={[s.tickLabel, t.d === 0 && { color, fontFamily: font.semibold }]}
+                        style={[
+                          s.tickLabel,
+                          t.d === 0 && { color, fontFamily: font.semibold },
+                        ]}
                       >
                         {t.v}
                       </Text>
@@ -185,7 +226,10 @@ export default function CheckInScreen({ navigation }: Props) {
           </View>
         </LinearGradient>
 
-        <View style={s.pips} accessibilityLabel={`${meta.label} scale, tap a segment to set it`}>
+        <View
+          style={s.pips}
+          accessibilityLabel={`${meta.label} scale, tap a segment to set it`}
+        >
           {PIPS.map((n) => (
             <Pressable
               key={n}
@@ -193,7 +237,10 @@ export default function CheckInScreen({ navigation }: Props) {
               hitSlop={{ top: 12, bottom: 12 }}
               style={[
                 s.pip,
-                { backgroundColor: n <= value ? scoreColor(active, n) : colors.doveTint },
+                {
+                  backgroundColor:
+                    n <= value ? scoreColor(active, n) : colors.doveTint,
+                },
                 n === value && s.pipCurrent,
               ]}
               accessibilityRole='button'
@@ -216,7 +263,8 @@ export default function CheckInScreen({ navigation }: Props) {
         </View>
 
         <Text style={s.hint}>
-          {meta.hint} There are no right answers. Tern only shows you the pattern over time.
+          {meta.hint} There are no right answers. Tern only shows you the
+          pattern over time.
         </Text>
 
         {weekAvg !== null ? (
@@ -224,10 +272,16 @@ export default function CheckInScreen({ navigation }: Props) {
             <GroupLabel>This week</GroupLabel>
             <View style={s.weekCard}>
               <View style={s.weekTop}>
-                <Text style={s.weekVal}>{`${meta.label} ${weekAvg.toFixed(1)}`}</Text>
+                <Text
+                  style={s.weekVal}
+                >{`${meta.label} ${weekAvg.toFixed(1)}`}</Text>
                 <Text style={s.weekSub}>7-day average</Text>
               </View>
-              <WeightTrend trend={seriesOf(week, active)} spread={0.5} height={44} />
+              <WeightTrend
+                trend={seriesOf(week, active)}
+                spread={0.5}
+                height={44}
+              />
             </View>
           </>
         ) : null}
@@ -240,19 +294,35 @@ export default function CheckInScreen({ navigation }: Props) {
           </View>
           <View style={s.row}>
             <Text style={s.rowTitle}>Mood</Text>
-            <Text style={[s.rowSub, { color: scoreColor(MoodMetric.Mood, scores.mood) }]}>
+            <Text
+              style={[
+                s.rowSub,
+                { color: scoreColor(MoodMetric.Mood, scores.mood) },
+              ]}
+            >
               {`${scores.mood} · ${scoreWord(MoodMetric.Mood, scores.mood)}`}
             </Text>
           </View>
           <View style={s.row}>
             <Text style={s.rowTitle}>Stress</Text>
-            <Text style={[s.rowSub, { color: scoreColor(MoodMetric.Stress, scores.stress) }]}>
+            <Text
+              style={[
+                s.rowSub,
+                { color: scoreColor(MoodMetric.Stress, scores.stress) },
+              ]}
+            >
               {`${scores.stress} · ${scoreWord(MoodMetric.Stress, scores.stress)}`}
             </Text>
           </View>
           {todays ? (
-            <Pressable style={s.row} onPress={remove} accessibilityRole='button'>
-              <Text style={[s.rowTitle, s.danger]}>{`Remove ${dayLabel.toLowerCase()}’s check-in`}</Text>
+            <Pressable
+              style={s.row}
+              onPress={remove}
+              accessibilityRole='button'
+            >
+              <Text
+                style={[s.rowTitle, s.danger]}
+              >{`Remove ${dayLabel.toLowerCase()}’s check-in`}</Text>
             </Pressable>
           ) : null}
         </Group>
@@ -271,7 +341,11 @@ const s = StyleSheet.create({
     marginTop: space.sm,
     marginBottom: space.md,
   },
-  switchItem: { paddingHorizontal: 22, paddingVertical: 7, borderRadius: radius.md - 2 },
+  switchItem: {
+    paddingHorizontal: 22,
+    paddingVertical: 7,
+    borderRadius: radius.md - 2,
+  },
   switchText: { fontFamily: font.semibold, fontSize: 13, color: colors.ink2 },
   switchTextOn: { color: colors.card },
   hero: {
@@ -281,7 +355,12 @@ const s = StyleSheet.create({
     paddingBottom: space.sm,
     overflow: 'hidden',
   },
-  display: { alignItems: 'baseline', flexDirection: 'row', justifyContent: 'center', marginTop: space.sm },
+  display: {
+    alignItems: 'baseline',
+    flexDirection: 'row',
+    justifyContent: 'center',
+    marginTop: space.sm,
+  },
   val: {
     minWidth: 60,
     textAlign: 'center',
@@ -289,9 +368,19 @@ const s = StyleSheet.create({
     fontSize: 52,
     lineHeight: 58,
   },
-  unit: { fontFamily: font.body, fontSize: 15, color: colors.ink2, marginLeft: 5 },
+  unit: {
+    fontFamily: font.body,
+    fontSize: 15,
+    color: colors.ink2,
+    marginLeft: 5,
+  },
   word: { fontFamily: font.semibold, fontSize: 14, marginBottom: space.sm },
-  ruler: { height: RULER_H, width: '100%', justifyContent: 'flex-end', overflow: 'hidden' },
+  ruler: {
+    height: RULER_H,
+    width: '100%',
+    justifyContent: 'flex-end',
+    overflow: 'hidden',
+  },
   rulerTrack: {
     flexDirection: 'row',
     alignItems: 'flex-end',
@@ -301,7 +390,13 @@ const s = StyleSheet.create({
   },
   tickCol: { width: TICK_W, alignItems: 'center' },
   tick: { borderRadius: 3 },
-  tickLabel: { position: 'absolute', top: 40, fontSize: 9.5, color: colors.ink3, fontFamily: font.body },
+  tickLabel: {
+    position: 'absolute',
+    top: 40,
+    fontSize: 9.5,
+    color: colors.ink3,
+    fontFamily: font.body,
+  },
   pips: { flexDirection: 'row', gap: 5, marginTop: space.md },
   pip: { flex: 1, height: 12, borderRadius: 6 },
   pipCurrent: { transform: [{ scaleY: 1.5 }] },
@@ -311,11 +406,30 @@ const s = StyleSheet.create({
     gap: space.sm,
     marginVertical: space.md,
   },
-  stepBtn: { minWidth: 56, alignItems: 'center', paddingVertical: 8, borderRadius: radius.md },
+  stepBtn: {
+    minWidth: 56,
+    alignItems: 'center',
+    paddingVertical: 8,
+    borderRadius: radius.md,
+  },
   stepText: { fontFamily: font.semibold, fontSize: 13.5 },
-  hint: { ...typography.caption, textAlign: 'center', lineHeight: 17, paddingHorizontal: 12 },
-  weekCard: { backgroundColor: colors.card, borderRadius: radius.lg, padding: space.md + 1 },
-  weekTop: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 8 },
+  hint: {
+    ...typography.caption,
+    textAlign: 'center',
+    lineHeight: 17,
+    paddingHorizontal: 12,
+  },
+  weekCard: {
+    backgroundColor: colors.card,
+    borderRadius: radius.lg,
+    padding: space.md + 1,
+  },
+  weekTop: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'baseline',
+    marginBottom: 8,
+  },
   weekVal: { fontFamily: font.displayMedium, fontSize: 19, color: colors.ink },
   weekSub: typography.caption,
   row: {

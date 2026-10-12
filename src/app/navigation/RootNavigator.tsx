@@ -5,7 +5,7 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { colors, font } from '@/shared/theme';
-import TernMark from '@/shared/components/TernMark/TernMark';
+import TernMark from '@/shared/components/TernMark';
 import TodayScreen from '@/today/TodayScreen';
 import RestDayScreen from '@/today/rest-day/RestDayScreen';
 import FoodScreen from '@/food/FoodScreen';

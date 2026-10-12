@@ -1,18 +1,43 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, TextInput, ScrollView, StyleSheet, Pressable } from 'react-native';
+import {
+  View,
+  Text,
+  TextInput,
+  ScrollView,
+  StyleSheet,
+  Pressable,
+} from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 
 import { colors, font, radius, space, typography } from '@/shared/theme';
 import { Frequency } from '@/shared/models/frequency';
-import { Group, GroupLabel, FootNote, PushHeader, ToggleRow } from '@/shared/components/ui';
+import {
+  Group,
+  GroupLabel,
+  FootNote,
+  PushHeader,
+  ToggleRow,
+} from '@/shared/components/ui';
 import { useToast } from '@/shared/state/ToastContext';
 import { newId } from '@/shared/utils/id';
 import { useMedication } from '@/domain/medication/MedicationContext';
-import { cleanMedName, newMedication, validateMedName, type Medication, MedicationLimits } from '@/domain/medication/models/medication';
+import {
+  cleanMedName,
+  newMedication,
+  validateMedName,
+  type Medication,
+  MedicationLimits,
+} from '@/domain/medication/models/medication';
 import { useSettings } from '@/domain/settings/SettingsContext';
-import TimeStepperRow from '@/settings/components/TimeStepperRow/TimeStepperRow';
-import { formatMinutes, stepMinutes, stepWeekday, weekdayPlural, Reminders } from '@/domain/settings/models/reminderPlan';
+import TimeStepperRow from '@/settings/components/TimeStepperRow';
+import {
+  formatMinutes,
+  stepMinutes,
+  stepWeekday,
+  weekdayPlural,
+  Reminders,
+} from '@/domain/settings/models/reminderPlan';
 import { confirm } from '@/shared/utils/confirm';
 
 export default function MedicationScreen() {
@@ -25,7 +50,9 @@ export default function MedicationScreen() {
   const [newName, setNewName] = useState('');
 
   const change = (id: string, patch: Partial<Medication>) =>
-    updateSettings({ medications: meds.map((m) => (m.id === id ? { ...m, ...patch } : m)) });
+    updateSettings({
+      medications: meds.map((m) => (m.id === id ? { ...m, ...patch } : m)),
+    });
 
   const add = () => {
     const problem = validateMedName(newName, meds);
@@ -46,16 +73,25 @@ export default function MedicationScreen() {
     });
 
   return (
-    <View style={{ flex: 1, backgroundColor: colors.paper, paddingTop: insets.top }}>
-      <PushHeader title='Medication' backLabel='Settings' onBack={() => navigation.goBack()} />
+    <View
+      style={{ flex: 1, backgroundColor: colors.paper, paddingTop: insets.top }}
+    >
+      <PushHeader
+        title='Medication'
+        backLabel='Settings'
+        onBack={() => navigation.goBack()}
+      />
 
       <ScrollView
         keyboardShouldPersistTaps='handled'
-        contentContainerStyle={{ paddingHorizontal: space.lg, paddingBottom: 40 }}
+        contentContainerStyle={{
+          paddingHorizontal: space.lg,
+          paddingBottom: 40,
+        }}
       >
         <FootNote>
-          Optional. Tern only keeps whether you took each one, nothing about doses or why. Tap
-          a medication on Today to mark it taken.
+          Optional. Tern only keeps whether you took each one, nothing about
+          doses or why. Tap a medication on Today to mark it taken.
         </FootNote>
 
         {meds.map((m) => (
@@ -71,7 +107,9 @@ export default function MedicationScreen() {
 
         {meds.length < MedicationLimits.MAX_COUNT ? (
           <>
-            <GroupLabel>{meds.length ? 'Add another' : 'Add a medication'}</GroupLabel>
+            <GroupLabel>
+              {meds.length ? 'Add another' : 'Add a medication'}
+            </GroupLabel>
             <View style={s.addRow}>
               <TextInput
                 value={newName}
@@ -176,7 +214,9 @@ function MedicationCard({
         <TimeStepperRow
           label='Due'
           value={formatMinutes(med.at)}
-          onStep={(d) => onChange({ at: stepMinutes(med.at, d * Reminders.STEP_MINUTES) })}
+          onStep={(d) =>
+            onChange({ at: stepMinutes(med.at, d * Reminders.STEP_MINUTES) })
+          }
         />
         <ToggleRow
           title='Remind me'
@@ -190,7 +230,11 @@ function MedicationCard({
           on={med.remind}
           onToggle={(v) => onChange({ remind: v })}
         />
-        <Pressable style={s.removeRow} onPress={onRemove} accessibilityRole='button'>
+        <Pressable
+          style={s.removeRow}
+          onPress={onRemove}
+          accessibilityRole='button'
+        >
           <Text style={s.removeText}>Stop tracking</Text>
         </Pressable>
       </Group>
@@ -225,7 +269,11 @@ const s = StyleSheet.create({
   freqText: typography.meta,
   freqTextOn: { fontFamily: font.semibold, color: colors.ink },
   removeRow: { paddingHorizontal: 13, paddingVertical: 12 },
-  removeText: { fontFamily: font.semibold, fontSize: 13.5, color: colors.danger },
+  removeText: {
+    fontFamily: font.semibold,
+    fontSize: 13.5,
+    color: colors.danger,
+  },
   addRow: { flexDirection: 'row', alignItems: 'center', gap: space.sm },
   input: {
     flex: 1,

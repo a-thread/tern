@@ -1,16 +1,20 @@
 import React, { useState } from 'react';
 
 import { useAuth } from '@/domain/auth/AuthContext';
-import { AuthBanner } from '@/auth/components/AuthBanner/AuthBanner';
-import { AuthLayout } from '@/auth/components/AuthLayout/AuthLayout';
-import { FormField } from '@/auth/components/FormField/FormField';
-import { LinkButton } from '@/auth/components/LinkButton/LinkButton';
-import { LinkColumn } from '@/auth/components/LinkColumn/LinkColumn';
-import { SubmitButton } from '@/auth/components/SubmitButton/SubmitButton';
+import { AuthBanner } from '@/auth/components/AuthBanner';
+import { AuthLayout } from '@/auth/components/AuthLayout';
+import { FormField } from '@/auth/components/FormField';
+import { LinkButton } from '@/auth/components/LinkButton';
+import { LinkColumn } from '@/auth/components/LinkColumn';
+import { SubmitButton } from '@/auth/components/SubmitButton';
 import { useSubmit } from '@/auth/hooks/useSubmit';
 import { isValidEmail } from '@/domain/auth/validation';
 
-export default function ForgotPasswordScreen({ onBack }: { onBack: () => void }) {
+export default function ForgotPasswordScreen({
+  onBack,
+}: {
+  onBack: () => void;
+}) {
   const auth = useAuth()!;
   const [email, setEmail] = useState('');
   const [sent, setSent] = useState(false);

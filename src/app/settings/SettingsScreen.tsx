@@ -6,15 +6,24 @@ import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { colors, space } from '@/shared/theme';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 
-import { FootNote, Group, GroupLabel, IconBadge, PushHeader } from '@/shared/components/ui';
+import {
+  FootNote,
+  Group,
+  GroupLabel,
+  IconBadge,
+  PushHeader,
+} from '@/shared/components/ui';
 import type { SettingsStackParamList } from '@/navigation/types';
 import { useBackend } from '@/BackendContext';
 import { useSettings } from '@/domain/settings/SettingsContext';
-import { ProfileSection } from '@/settings/components/ProfileSection/ProfileSection';
-import { SectionRow } from '@/settings/components/SectionRow/SectionRow';
-import { UnitsRow } from '@/settings/components/UnitsRow/UnitsRow';
-import { AccountSection } from '@/settings/components/AccountSection/AccountSection';
-import { healthDataSummary, remindersSummary } from '@/settings/models/settingsSummary';
+import { ProfileSection } from '@/settings/components/ProfileSection';
+import { SectionRow } from '@/settings/components/SectionRow';
+import { UnitsRow } from '@/settings/components/UnitsRow';
+import { AccountSection } from '@/settings/components/AccountSection';
+import {
+  healthDataSummary,
+  remindersSummary,
+} from '@/settings/models/settingsSummary';
 import { activitySummary } from '@/settings/models/activitySummary';
 import { foodSummary } from '@/settings/models/foodSummary';
 import { weightSummary } from '@/settings/models/weightSummary';
@@ -35,10 +44,21 @@ export default function SettingsScreen({ navigation }: Props) {
   const { settings } = useSettings();
 
   return (
-    <View style={{ flex: 1, backgroundColor: colors.paper, paddingTop: insets.top }}>
-      <PushHeader title='Settings' backLabel='Back' onBack={() => navigation.getParent()?.goBack()} />
+    <View
+      style={{ flex: 1, backgroundColor: colors.paper, paddingTop: insets.top }}
+    >
+      <PushHeader
+        title='Settings'
+        backLabel='Back'
+        onBack={() => navigation.getParent()?.goBack()}
+      />
 
-      <ScrollView contentContainerStyle={{ paddingHorizontal: space.lg, paddingBottom: 60 }}>
+      <ScrollView
+        contentContainerStyle={{
+          paddingHorizontal: space.lg,
+          paddingBottom: 60,
+        }}
+      >
         <ProfileSection />
 
         <GroupLabel>Tracking</GroupLabel>
@@ -114,7 +134,11 @@ export default function SettingsScreen({ navigation }: Props) {
           <UnitsRow
             icon={
               <IconBadge bg={colors.doveTint}>
-                <MaterialCommunityIcons name='ruler' size={17} color={colors.ink2} />
+                <MaterialCommunityIcons
+                  name='ruler'
+                  size={17}
+                  color={colors.ink2}
+                />
               </IconBadge>
             }
           />
@@ -133,8 +157,8 @@ export default function SettingsScreen({ navigation }: Props) {
         <AccountSection />
 
         <FootNote>
-          Nutrition data from Open Food Facts, used under the Open Database License, and USDA
-          FoodData Central.
+          Nutrition data from Open Food Facts, used under the Open Database
+          License, and USDA FoodData Central.
         </FootNote>
       </ScrollView>
     </View>

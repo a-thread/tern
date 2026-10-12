@@ -1,15 +1,29 @@
 import React, { useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import {
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
+} from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 
 import { colors, font, radius, space } from '@/shared/theme';
-import { FootNote, Group, GroupLabel, Row, SheetNav, Icon } from '@/shared/components/ui';
+import {
+  FootNote,
+  Group,
+  GroupLabel,
+  Row,
+  SheetNav,
+  Icon,
+} from '@/shared/components/ui';
 import { useDayKey } from '@/shared/hooks/useDayKey';
 import { addDays } from '@/shared/utils/date';
 import { useUnits } from '@/domain/settings/hooks/useUnits';
 import { useMovement } from '@/domain/movement/MovementContext';
-import { ActivityGlyph } from '@/movement/components/ActivityGlyph/ActivityGlyph';
+import { ActivityGlyph } from '@/movement/components/ActivityGlyph';
 import type { MovementStackParamList } from '@/movement/navigation';
 import {
   ACTIVITY_INFO,
@@ -36,14 +50,31 @@ export default function ExercisesScreen({ navigation, route }: Props) {
 
   const logged = entriesOn(entries, day);
   const canLog = isLoggableDay(day, today);
-  const title = day === today ? 'Log movement' : day === addDays(today, -1) ? "Yesterday's movement" : 'Movement';
+  const title =
+    day === today
+      ? 'Log movement'
+      : day === addDays(today, -1)
+        ? "Yesterday's movement"
+        : 'Movement';
   const list = searchActivities(query);
 
   return (
-    <View style={{ flex: 1, backgroundColor: colors.paper, paddingTop: insets.top }}>
-      <SheetNav title={title} leftLabel='Done' onLeftPress={() => navigation.getParent()?.goBack()} />
+    <View
+      style={{ flex: 1, backgroundColor: colors.paper, paddingTop: insets.top }}
+    >
+      <SheetNav
+        title={title}
+        leftLabel='Done'
+        onLeftPress={() => navigation.getParent()?.goBack()}
+      />
 
-      <ScrollView contentContainerStyle={{ paddingHorizontal: space.lg, paddingBottom: 40 }} keyboardShouldPersistTaps='handled'>
+      <ScrollView
+        contentContainerStyle={{
+          paddingHorizontal: space.lg,
+          paddingBottom: 40,
+        }}
+        keyboardShouldPersistTaps='handled'
+      >
         {logged.length ? (
           <>
             <GroupLabel>Logged</GroupLabel>
@@ -55,7 +86,9 @@ export default function ExercisesScreen({ navigation, route }: Props) {
                   title={ACTIVITY_INFO[e.activity].label}
                   sub={[
                     `${e.minutes} min`,
-                    e.effort ? `${EFFORT_LABEL[e.effort].toLowerCase()} intensity` : null,
+                    e.effort
+                      ? `${EFFORT_LABEL[e.effort].toLowerCase()} intensity`
+                      : null,
                     e.distanceM ? formatDistance(e.distanceM, units) : null,
                     e.source === 'healthConnect' ? 'Health Connect' : null,
                   ]
@@ -63,7 +96,12 @@ export default function ExercisesScreen({ navigation, route }: Props) {
                     .join(' · ')}
                   right={
                     e.source === 'manual' && canLog ? (
-                      <Pressable onPress={() => remove(e.id)} hitSlop={8} accessibilityRole='button' accessibilityLabel={`Remove ${ACTIVITY_INFO[e.activity].label}`}>
+                      <Pressable
+                        onPress={() => remove(e.id)}
+                        hitSlop={8}
+                        accessibilityRole='button'
+                        accessibilityLabel={`Remove ${ACTIVITY_INFO[e.activity].label}`}
+                      >
                         <Text style={s.remove}>Remove</Text>
                       </Pressable>
                     ) : undefined
@@ -96,7 +134,12 @@ export default function ExercisesScreen({ navigation, route }: Props) {
                     icon={<ActivityGlyph activity={a} />}
                     title={ACTIVITY_INFO[a].label}
                     chevron
-                    onPress={() => navigation.navigate('ExerciseDetail', { activity: a, day })}
+                    onPress={() =>
+                      navigation.navigate('ExerciseDetail', {
+                        activity: a,
+                        day,
+                      })
+                    }
                   />
                 ))}
               </Group>
@@ -104,8 +147,8 @@ export default function ExercisesScreen({ navigation, route }: Props) {
               <FootNote>{`Nothing matches "${query.trim()}". Try "Other".`}</FootNote>
             )}
             <FootNote>
-              Walking, running, hiking and stairs are already in your steps, so they're logged but don't
-              add to a goal day.
+              Walking, running, hiking and stairs are already in your steps, so
+              they're logged but don't add to a goal day.
             </FootNote>
           </>
         ) : (
@@ -128,5 +171,11 @@ const s = StyleSheet.create({
     paddingVertical: 10,
     marginTop: space.md,
   },
-  input: { flex: 1, fontFamily: font.body, fontSize: 14, color: colors.ink, padding: 0 },
+  input: {
+    flex: 1,
+    fontFamily: font.body,
+    fontSize: 14,
+    color: colors.ink,
+    padding: 0,
+  },
 });

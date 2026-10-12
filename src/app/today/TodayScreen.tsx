@@ -7,7 +7,7 @@ import { useReplayOnFocus } from '@/shared/hooks/useReplayOnFocus';
 import { easeLayout } from '@/today/utils/easeLayout';
 import { WaypointRules } from '@/domain/waypoints/models/waypoint';
 import { useWaypoints } from '@/domain/waypoints/WaypointsContext';
-import WaypointBurst from '@/shared/components/WaypointBurst/WaypointBurst';
+import WaypointBurst from '@/shared/components/WaypointBurst';
 import { useActivity } from '@/domain/activity/ActivityContext';
 import { useViewedDay } from '@/shared/state/ViewedDayContext';
 import { useFood } from '@/domain/food/FoodContext';
@@ -15,15 +15,15 @@ import { useSettings } from '@/domain/settings/SettingsContext';
 import { useCelebrationPlayback } from '@/today/hooks/useCelebrationPlayback';
 import { useMilestoneReward } from '@/today/hooks/useMilestoneReward';
 import { useTodayRefresh } from '@/today/hooks/useTodayRefresh';
-import { TodayHeader } from '@/today/components/TodayHeader/TodayHeader';
+import { TodayHeader } from '@/today/components/TodayHeader';
 import { StepsHero } from '@/today/components/StepsHero/StepsHero';
 import { RestScene } from '@/today/components/RestScene/RestScene';
 import { useRestDay } from '@/today/hooks/useRestDay';
 import { WeekStrip } from '@/today/components/WeekStrip/WeekStrip';
-import { LeftToDoList } from '@/today/components/LeftToDoList/LeftToDoList';
+import { LeftToDoList } from '@/today/components/LeftToDoList';
 import { DoneList } from '@/today/components/DoneList/DoneList';
 import { FoodSummary } from '@/shared/components/FoodSummary/FoodSummary';
-import { TargetSuggestionCard } from '@/today/components/TargetSuggestionCard/TargetSuggestionCard';
+import { TargetSuggestionCard } from '@/today/components/TargetSuggestionCard';
 
 /**
  * The Today tab: steps, the week, what is left to do and what is done, and the waypoint
@@ -69,7 +69,10 @@ export default function TodayScreen() {
 
       <ScrollView
         refreshControl={refreshControl}
-        contentContainerStyle={{ paddingHorizontal: space.lg, paddingBottom: 100 }}
+        contentContainerStyle={{
+          paddingHorizontal: space.lg,
+          paddingBottom: 100,
+        }}
       >
         {rest.showScene ? (
           <RestScene
@@ -87,7 +90,10 @@ export default function TodayScreen() {
                 ? 'Your streak is safe. Nothing to log today.'
                 : 'A day off. Your streak carried on.'
             }
-            detail={restDetail(rest.record?.steps ?? todaySteps, isToday ? streak : 0)}
+            detail={restDetail(
+              rest.record?.steps ?? todaySteps,
+              isToday ? streak : 0,
+            )}
             note={isToday ? 'Reminders are quiet until tomorrow' : undefined}
           />
         ) : (
@@ -110,7 +116,9 @@ export default function TodayScreen() {
               </Pressable>
             ) : null}
             <DoneList quietWhenEmpty />
-            {foodLog.length > 0 && settings.trackCalories ? <FoodSummary /> : null}
+            {foodLog.length > 0 && settings.trackCalories ? (
+              <FoodSummary />
+            ) : null}
           </>
         ) : (
           <>
@@ -127,7 +135,10 @@ export default function TodayScreen() {
           key={playing.celebration.id}
           id={playing.celebration.id}
           points={playing.celebration.points}
-          label={WaypointRules.ALL.find((r) => r.id === playing.celebration.source)?.label ?? ''}
+          label={
+            WaypointRules.ALL.find((r) => r.id === playing.celebration.source)
+              ?.label ?? ''
+          }
           origin={playing.origin}
           target={playing.target}
           onArrive={() => completeCelebration(playing.celebration.id)}
@@ -140,7 +151,8 @@ export default function TodayScreen() {
 
 /** "2,310 steps · ☀ 9 days" under the rest day scene. */
 function restDetail(steps: number, streak: number): string {
-  const sun = streak > 0 ? ` · ☀ ${streak} ${streak === 1 ? 'day' : 'days'}` : '';
+  const sun =
+    streak > 0 ? ` · ☀ ${streak} ${streak === 1 ? 'day' : 'days'}` : '';
   return `${steps.toLocaleString()} steps${sun}`;
 }
 

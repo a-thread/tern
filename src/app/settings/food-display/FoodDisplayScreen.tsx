@@ -3,9 +3,22 @@ import { View, Text, ScrollView, StyleSheet } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 
-import { colors, font, radius, space, tierColors, typography } from '@/shared/theme';
-import { Group, GroupLabel, FootNote, PushHeader, ToggleRow } from '@/shared/components/ui';
-import { TierDot } from '@/shared/components/TierDot/TierDot';
+import {
+  colors,
+  font,
+  radius,
+  space,
+  tierColors,
+  typography,
+} from '@/shared/theme';
+import {
+  Group,
+  GroupLabel,
+  FootNote,
+  PushHeader,
+  ToggleRow,
+} from '@/shared/components/ui';
+import { TierDot } from '@/shared/components/TierDot';
 import { useFoodDisplay } from '@/domain/food/hooks/useFoodDisplay';
 import { useSettings } from '@/domain/settings/SettingsContext';
 
@@ -97,7 +110,8 @@ export default function FoodDisplayScreen() {
           </Group>
         ) : (
           <FootNote>
-            Calorie tracking is off, so no calorie numbers are shown. Turn it on under Settings → Calorie & macro targets.
+            Calorie tracking is off, so no calorie numbers are shown. Turn it on
+            under Settings → Calorie & macro targets.
           </FootNote>
         )}
         {settings.trackCalories ? (

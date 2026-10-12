@@ -6,7 +6,7 @@ import { Row, Icon } from '@/shared/components/ui';
 import type { SearchResult } from '@/domain/food/sources/searchResult';
 import type { FoodSource } from '@/domain/food/models/foodRanking';
 import { useFoodDisplay } from '@/domain/food/hooks/useFoodDisplay';
-import { TierDot } from '@/shared/components/TierDot/TierDot';
+import { TierDot } from '@/shared/components/TierDot';
 
 const SOURCE_TAG: Record<FoodSource, string> = {
   mine: 'Your food',
@@ -85,5 +85,11 @@ const s = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  tierSlot: { width: 19, height: 19, borderRadius: 10, borderWidth: 1, borderColor: colors.border },
+  tierSlot: {
+    width: 19,
+    height: 19,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
 });

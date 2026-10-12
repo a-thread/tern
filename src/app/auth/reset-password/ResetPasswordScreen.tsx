@@ -1,12 +1,16 @@
 import React, { useState } from 'react';
 
 import { useAuth } from '@/domain/auth/AuthContext';
-import { AuthBanner } from '@/auth/components/AuthBanner/AuthBanner';
-import { AuthLayout } from '@/auth/components/AuthLayout/AuthLayout';
-import { FormField } from '@/auth/components/FormField/FormField';
-import { SubmitButton } from '@/auth/components/SubmitButton/SubmitButton';
+import { AuthBanner } from '@/auth/components/AuthBanner';
+import { AuthLayout } from '@/auth/components/AuthLayout';
+import { FormField } from '@/auth/components/FormField';
+import { SubmitButton } from '@/auth/components/SubmitButton';
 import { useSubmit } from '@/auth/hooks/useSubmit';
-import { isValidPassword, passwordsMatch, AccountLimits } from '@/domain/auth/validation';
+import {
+  isValidPassword,
+  passwordsMatch,
+  AccountLimits,
+} from '@/domain/auth/validation';
 
 /** Shown when a password-reset link brings someone back into the app. */
 export default function ResetPasswordScreen() {
@@ -17,7 +21,8 @@ export default function ResetPasswordScreen() {
     'Unable to update password. Please try again.',
   );
 
-  const canSubmit = isValidPassword(password) && passwordsMatch(password, confirm);
+  const canSubmit =
+    isValidPassword(password) && passwordsMatch(password, confirm);
   // On success the recovery flag clears and AuthGate lets them into the app.
   const submit = () => {
     if (canSubmit) run(() => auth.updatePassword(password));

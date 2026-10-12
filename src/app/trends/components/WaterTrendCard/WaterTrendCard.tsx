@@ -1,13 +1,16 @@
 import React, { useState } from 'react';
 
-import { StepBars } from '@/trends/components/StepBars/StepBars';
-import { TrendCard, TrendFigure } from '@/trends/components/TrendCard/TrendCard';
+import { StepBars } from '@/trends/components/StepBars';
+import { TrendCard, TrendFigure } from '@/trends/components/TrendCard';
 import { useDayKey } from '@/shared/hooks/useDayKey';
 import { useFocusLoad } from '@/trends/hooks/useFocusLoad';
 import { addDays } from '@/shared/utils/date';
 import { useSettings } from '@/domain/settings/SettingsContext';
 import { useUnits } from '@/domain/settings/hooks/useUnits';
-import { averageDaily, bucketWater } from '@/trends/components/WaterTrendCard/models/waterBars';
+import {
+  averageDaily,
+  bucketWater,
+} from '@/trends/components/WaterTrendCard/models/waterBars';
 import { totalsByDay } from '@/domain/water/models/waterEntry';
 import { TrendRanges, TrendRange } from '@/trends/models/trendRange';
 import { useWater } from '@/domain/water/WaterContext';

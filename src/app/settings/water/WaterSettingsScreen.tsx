@@ -2,9 +2,9 @@ import React from 'react';
 
 import { Group, GroupLabel } from '@/shared/components/ui';
 import { useSettings } from '@/domain/settings/SettingsContext';
-import { SettingsPage } from '@/settings/components/SettingsPage/SettingsPage';
-import { WaterSettingsRows } from '@/settings/water/components/WaterSettingsRows/WaterSettingsRows';
-import { WaterReminderRows } from '@/settings/components/WaterReminderRows/WaterReminderRows';
+import { SettingsPage } from '@/settings/components/SettingsPage';
+import { WaterSettingsRows } from '@/settings/water/components/WaterSettingsRows';
+import { WaterReminderRows } from '@/settings/components/WaterReminderRows';
 
 /** Settings › Water: tracking, the daily goal, and the reminder. */
 export default function WaterSettingsScreen() {

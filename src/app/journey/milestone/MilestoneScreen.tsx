@@ -2,17 +2,25 @@ import React, { useEffect, useRef, useState } from 'react';
 import { Animated, Text, View } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 
-import TernMark from '@/shared/components/TernMark/TernMark';
+import TernMark from '@/shared/components/TernMark';
 import { useReduceMotion } from '@/shared/hooks/useReduceMotion';
 import type { RootStackParamList } from '@/navigation/types';
 import { useWaypoints } from '@/domain/waypoints/WaypointsContext';
-import { latestMilestone, Milestones } from '@/domain/waypoints/models/milestone';
+import {
+  latestMilestone,
+  Milestones,
+} from '@/domain/waypoints/models/milestone';
 import { daysWithWaypoints } from '@/domain/waypoints/models/waypoint';
 import { legFor, routeFraction } from '@/journey/models/waypointSummary';
-import WaypointBurst from '@/shared/components/WaypointBurst/WaypointBurst';
+import WaypointBurst from '@/shared/components/WaypointBurst';
 import { RouteStrip } from '@/journey/milestone/components/RouteStrip/RouteStrip';
 import { FadeIn } from '@/journey/components/FadeIn/FadeIn';
-import { CARD_WIDTH, GOLD, PopupCard, popup } from '@/journey/components/PopupCard/PopupCard';
+import {
+  CARD_WIDTH,
+  GOLD,
+  PopupCard,
+  popup,
+} from '@/journey/components/PopupCard/PopupCard';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Milestone'>;
 
@@ -44,14 +52,23 @@ export default function MilestoneScreen({ route }: Props) {
   useEffect(() => {
     if (still) return;
     const t = setTimeout(() => setBurst(true), Timing.BURST);
-    Animated.spring(markScale, { toValue: 1, friction: 5, tension: 90, delay: Timing.BURST, useNativeDriver: true }).start();
+    Animated.spring(markScale, {
+      toValue: 1,
+      friction: 5,
+      tension: 90,
+      delay: Timing.BURST,
+      useNativeDriver: true,
+    }).start();
     return () => clearTimeout(t);
   }, [still, markScale]);
 
   if (!stop) return null;
   const index = Milestones.STOPS.findIndex((s) => stop.id.endsWith(`-${s.id}`));
   const to = routeFraction(stop.waypoints);
-  const from = index > 0 ? Milestones.STOPS[index - 1].waypoints / Milestones.MIGRATION_LENGTH : 0;
+  const from =
+    index > 0
+      ? Milestones.STOPS[index - 1].waypoints / Milestones.MIGRATION_LENGTH
+      : 0;
   const next = legFor(Math.max(waypoints, stop.waypoints), events).next;
   const days = daysWithWaypoints(events);
 
@@ -74,9 +91,14 @@ export default function MilestoneScreen({ route }: Props) {
         <TernMark size={MARK} color={GOLD} />
       </Animated.View>
 
-      <FadeIn delay={Timing.NAME} style={{ alignItems: 'center', marginTop: 6 }}>
+      <FadeIn
+        delay={Timing.NAME}
+        style={{ alignItems: 'center', marginTop: 6 }}
+      >
         <Text style={popup.label}>
-          {stop.lap > 1 ? `Milestone reached · Migration ${stop.lap}` : 'Milestone reached'}
+          {stop.lap > 1
+            ? `Milestone reached · Migration ${stop.lap}`
+            : 'Milestone reached'}
         </Text>
         <Text style={popup.title}>{stop.name}</Text>
         <Text style={popup.label}>
@@ -86,8 +108,21 @@ export default function MilestoneScreen({ route }: Props) {
 
       <RouteStrip from={from} to={to} delay={Timing.FLIGHT} />
 
-      <FadeIn delay={Timing.STORY} style={{ alignItems: 'center', alignSelf: 'stretch' }}>
-        <Text style={[popup.lineText, { textAlign: 'center', marginTop: 10, lineHeight: 19, fontStyle: 'italic' }]}>
+      <FadeIn
+        delay={Timing.STORY}
+        style={{ alignItems: 'center', alignSelf: 'stretch' }}
+      >
+        <Text
+          style={[
+            popup.lineText,
+            {
+              textAlign: 'center',
+              marginTop: 10,
+              lineHeight: 19,
+              fontStyle: 'italic',
+            },
+          ]}
+        >
           {stop.note}
         </Text>
         <View style={[popup.section, { alignItems: 'center' }]}>

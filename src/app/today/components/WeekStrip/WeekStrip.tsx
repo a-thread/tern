@@ -2,7 +2,7 @@ import React from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { colors, font, space } from '@/shared/theme';
-import { DayRing } from '@/today/components/WeekStrip/components/DayRing/DayRing';
+import { DayRing } from '@/today/components/WeekStrip/components/DayRing';
 import { useViewedDay } from '@/shared/state/ViewedDayContext';
 import { easeLayout } from '@/today/utils/easeLayout';
 import { weekdayLetter } from '@/shared/utils/date';
@@ -18,11 +18,29 @@ import { StepsStatus } from '@/domain/activity/steps.repository';
  * and a link here leads back to today.
  */
 export function WeekStrip({ replayKey }: { replayKey: number }) {
-  const { day: selectedDay, today: todayKey, isToday, setDay: onSelect, showToday } = useViewedDay();
+  const {
+    day: selectedDay,
+    today: todayKey,
+    isToday,
+    setDay: onSelect,
+    showToday,
+  } = useViewedDay();
   const { settings } = useSettings();
-  const { week, todaySteps, status, restLeft, todayIsRest, takeRestDay, undoRestDay } = useActivity();
-  const reached = todaySteps / settings.stepGoal >= 1 || week.find((d) => d.isToday)?.state === DayState.Goal;
-  const movementGoal = settings.trackMovement ? settings.movementGoalMinutes : 0;
+  const {
+    week,
+    todaySteps,
+    status,
+    restLeft,
+    todayIsRest,
+    takeRestDay,
+    undoRestDay,
+  } = useActivity();
+  const reached =
+    todaySteps / settings.stepGoal >= 1 ||
+    week.find((d) => d.isToday)?.state === DayState.Goal;
+  const movementGoal = settings.trackMovement
+    ? settings.movementGoalMinutes
+    : 0;
 
   return (
     <>
@@ -80,10 +98,14 @@ export function WeekStrip({ replayKey }: { replayKey: number }) {
           }}
           hitSlop={8}
         >
-          <Text style={s.restLink}>Take today as a rest day · {restLeft} left this week</Text>
+          <Text style={s.restLink}>
+            Take today as a rest day · {restLeft} left this week
+          </Text>
         </Pressable>
       ) : status === StepsStatus.Connected ? (
-        <Text style={[s.restLink, s.restNote]}>This week's rest days are used · more on Monday</Text>
+        <Text style={[s.restLink, s.restNote]}>
+          This week's rest days are used · more on Monday
+        </Text>
       ) : null}
     </>
   );

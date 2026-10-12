@@ -3,11 +3,24 @@ import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 
-import { colors, font, radius, space, tierColors, typography } from '@/shared/theme';
-import { Group, GroupLabel, SheetNav, Stepper, Icon } from '@/shared/components/ui';
+import {
+  colors,
+  font,
+  radius,
+  space,
+  tierColors,
+  typography,
+} from '@/shared/theme';
+import {
+  Group,
+  GroupLabel,
+  SheetNav,
+  Stepper,
+  Icon,
+} from '@/shared/components/ui';
 import { TextField } from '@/food/components/TextField/TextField';
 import { useToast } from '@/shared/state/ToastContext';
-import { TierDot } from '@/shared/components/TierDot/TierDot';
+import { TierDot } from '@/shared/components/TierDot';
 import { useFoodDisplay } from '@/domain/food/hooks/useFoodDisplay';
 import { useSavedMeals } from '@/domain/saved-meals/SavedMealsContext';
 import { isDraftDirty, scaledTotals } from '@/domain/food/models/mealDraft';
@@ -41,8 +54,18 @@ export default function MealEditorScreen({ navigation }: Props) {
 
   if (!draft) {
     return (
-      <View style={{ flex: 1, backgroundColor: colors.paper, paddingTop: insets.top }}>
-        <SheetNav title='Meal' leftLabel='Back' onLeftPress={() => navigation.goBack()} />
+      <View
+        style={{
+          flex: 1,
+          backgroundColor: colors.paper,
+          paddingTop: insets.top,
+        }}
+      >
+        <SheetNav
+          title='Meal'
+          leftLabel='Back'
+          onLeftPress={() => navigation.goBack()}
+        />
         <Text style={s.gone}>There is no meal open.</Text>
       </View>
     );
@@ -60,7 +83,9 @@ export default function MealEditorScreen({ navigation }: Props) {
     if (!isDraftDirty(draft)) return close();
     confirm({
       title: 'Discard changes?',
-      message: isNew ? 'This meal has not been saved.' : 'Your changes to this meal will be lost.',
+      message: isNew
+        ? 'This meal has not been saved.'
+        : 'Your changes to this meal will be lost.',
       action: 'Discard',
       cancel: 'Keep editing',
       onConfirm: close,
@@ -70,7 +95,11 @@ export default function MealEditorScreen({ navigation }: Props) {
   const save = () => {
     const result = commitDraft();
     if (!result.ok) return setError(result.error);
-    toast.show(result.created ? `Saved “${result.meal.name}”` : `Updated “${result.meal.name}”`);
+    toast.show(
+      result.created
+        ? `Saved “${result.meal.name}”`
+        : `Updated “${result.meal.name}”`,
+    );
     navigation.goBack();
   };
 
@@ -80,7 +109,9 @@ export default function MealEditorScreen({ navigation }: Props) {
   };
 
   return (
-    <View style={{ flex: 1, backgroundColor: colors.paper, paddingTop: insets.top }}>
+    <View
+      style={{ flex: 1, backgroundColor: colors.paper, paddingTop: insets.top }}
+    >
       <SheetNav
         title={isNew ? 'New meal' : 'Edit meal'}
         leftLabel='Cancel'
@@ -90,7 +121,10 @@ export default function MealEditorScreen({ navigation }: Props) {
       />
 
       <ScrollView
-        contentContainerStyle={{ paddingHorizontal: space.lg, paddingBottom: 40 }}
+        contentContainerStyle={{
+          paddingHorizontal: space.lg,
+          paddingBottom: 40,
+        }}
         keyboardShouldPersistTaps='handled'
       >
         <GroupLabel>Name</GroupLabel>
@@ -124,11 +158,17 @@ export default function MealEditorScreen({ navigation }: Props) {
                 <Text style={s.name}>{item.name}</Text>
                 <Text style={s.sub}>
                   {item.servingLabel}
-                  {showCalories ? ` · ${Math.round(item.calories * item.servings)} cal` : ''}
+                  {showCalories
+                    ? ` · ${Math.round(item.calories * item.servings)} cal`
+                    : ''}
                 </Text>
               </View>
               <Stepper
-                value={item.measure ? quantityText(item.measure) : `${item.servings}×`}
+                value={
+                  item.measure
+                    ? quantityText(item.measure)
+                    : `${item.servings}×`
+                }
                 onDecrement={() => stepDraftItem(i, -Servings.STEP)}
                 onIncrement={() => stepDraftItem(i, Servings.STEP)}
                 decrementLabel={`Less ${item.name}`}
@@ -136,7 +176,11 @@ export default function MealEditorScreen({ navigation }: Props) {
                 valueMinWidth={32}
                 compact
               />
-              <Pressable onPress={() => removeDraftItem(i)} hitSlop={10} accessibilityLabel={`Remove ${item.name}`}>
+              <Pressable
+                onPress={() => removeDraftItem(i)}
+                hitSlop={10}
+                accessibilityLabel={`Remove ${item.name}`}
+              >
                 <Text style={s.remove}>✕</Text>
               </Pressable>
             </View>
@@ -149,7 +193,9 @@ export default function MealEditorScreen({ navigation }: Props) {
           >
             <Icon name='plus' size={15} color={colors.coral} />
             <Text style={[s.name, { color: colors.coral }]}>
-              {atLimit ? `Up to ${SavedMealLimits.MAX_ITEMS} foods` : 'Add food'}
+              {atLimit
+                ? `Up to ${SavedMealLimits.MAX_ITEMS} foods`
+                : 'Add food'}
             </Text>
           </Pressable>
         </Group>

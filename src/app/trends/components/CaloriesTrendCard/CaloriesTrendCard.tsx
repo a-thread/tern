@@ -5,7 +5,7 @@ import { colors, space } from '@/shared/theme';
 import { useDayKey } from '@/shared/hooks/useDayKey';
 import { addDays } from '@/shared/utils/date';
 import { TrendRange } from '@/trends/models/trendRange';
-import { TrendCard, TrendFigure } from '@/trends/components/TrendCard/TrendCard';
+import { TrendCard, TrendFigure } from '@/trends/components/TrendCard';
 import { MacroBox } from '@/trends/components/CaloriesTrendCard/components/MacroBox/MacroBox';
 import { useFocusLoad } from '@/trends/hooks/useFocusLoad';
 import { averageIntake, type IntakeAverage } from '@/trends/models/intake';
@@ -42,9 +42,24 @@ export function CaloriesTrendCard({
         sub={`${intake ? `daily average · last ${foodDays} days` : 'no food logged yet'} · target ${settings.calorieTarget.toLocaleString()}`}
       />
       <View style={s.macroRow}>
-        <MacroBox value={intake ? `${intake.protein}g` : '—'} label='protein' bg={colors.kelpTint} color={colors.kelp} />
-        <MacroBox value={intake ? `${intake.carbs}g` : '—'} label='carbs' bg={colors.glacierTint} color={colors.glacierDeep} />
-        <MacroBox value={intake ? `${intake.fat}g` : '—'} label='fat' bg={colors.sunTint} color={colors.sunDeep} />
+        <MacroBox
+          value={intake ? `${intake.protein}g` : '—'}
+          label='protein'
+          bg={colors.kelpTint}
+          color={colors.kelp}
+        />
+        <MacroBox
+          value={intake ? `${intake.carbs}g` : '—'}
+          label='carbs'
+          bg={colors.glacierTint}
+          color={colors.glacierDeep}
+        />
+        <MacroBox
+          value={intake ? `${intake.fat}g` : '—'}
+          label='fat'
+          bg={colors.sunTint}
+          color={colors.sunDeep}
+        />
       </View>
     </TrendCard>
   );

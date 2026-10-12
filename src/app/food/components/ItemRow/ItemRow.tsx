@@ -3,7 +3,7 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { colors, tierColors, typography } from '@/shared/theme';
 import type { FoodEntry } from '@/domain/food/models/foodEntry';
-import { TierDot } from '@/shared/components/TierDot/TierDot';
+import { TierDot } from '@/shared/components/TierDot';
 import { useFoodDisplay } from '@/domain/food/hooks/useFoodDisplay';
 
 type Item = Pick<

@@ -3,7 +3,7 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 
 import { font, radius, skyFor, space } from '@/shared/theme';
-import { FlightPath } from '@/shared/components/FlightPath/FlightPath';
+import { FlightPath } from '@/shared/components/FlightPath';
 import { CountUp } from '@/shared/components/AnimatedNumber/AnimatedNumber';
 import { useSettings } from '@/domain/settings/SettingsContext';
 import { useActivity } from '@/domain/activity/ActivityContext';
@@ -13,7 +13,10 @@ import { useViewedDay } from '@/shared/state/ViewedDayContext';
 import { addDays, formatLongDate } from '@/shared/utils/date';
 import { DayState } from '@/shared/models/dayState';
 import { useMovement } from '@/domain/movement/MovementContext';
-import { entriesOn, movementSummary } from '@/domain/movement/models/movementEntry';
+import {
+  entriesOn,
+  movementSummary,
+} from '@/domain/movement/models/movementEntry';
 import { useRootNavigation } from '@/navigation/useAppNavigation';
 
 /**
@@ -36,8 +39,12 @@ export function StepsHero({
   const record = week.find((d) => d.day === day);
   const steps = isToday ? todaySteps : (record?.steps ?? 0);
   // A past day keeps the goal it had then.
-  const stepGoal = isToday ? settings.stepGoal : (record?.goal ?? settings.stepGoal);
-  const goalMinutes = isToday ? movement.todayGoalMinutes : (record?.minutes ?? 0);
+  const stepGoal = isToday
+    ? settings.stepGoal
+    : (record?.goal ?? settings.stepGoal);
+  const goalMinutes = isToday
+    ? movement.todayGoalMinutes
+    : (record?.minutes ?? 0);
   const stepsProgress = steps / stepGoal;
   const movementGoal = movement.enabled ? settings.movementGoalMinutes : 0;
   const movedProgress = movementGoal > 0 ? goalMinutes / movementGoal : 0;
@@ -57,7 +64,10 @@ export function StepsHero({
 
   return (
     <View ref={heroRef} collapsable={false}>
-      <LinearGradient colors={skyFor(progress) as [string, string, ...string[]]} style={s.hero}>
+      <LinearGradient
+        colors={skyFor(progress) as [string, string, ...string[]]}
+        style={s.hero}
+      >
         <View style={s.top}>
           <Text style={s.greeting}>{title}</Text>
           <View style={s.chips}>
@@ -84,14 +94,18 @@ export function StepsHero({
 
         <CountUp target={steps} replayKey={replayKey} style={s.stepBig} />
         {movedToGoal ? (
-          <Text style={s.stepSub}>{`Goal reached · ${movementSummary(movedOnDay)}`}</Text>
+          <Text
+            style={s.stepSub}
+          >{`Goal reached · ${movementSummary(movedOnDay)}`}</Text>
         ) : !isToday && record?.state === DayState.Rest ? (
           <Text style={s.stepSub}>Rest day</Text>
         ) : !isToday && record?.state === DayState.Frozen ? (
           <Text style={s.stepSub}>A streak freeze covered this day</Text>
         ) : status !== StepsStatus.Connected ? (
           <Pressable
-            onPress={() => navigation.navigate('Settings', { screen: 'HealthData' })}
+            onPress={() =>
+              navigation.navigate('Settings', { screen: 'HealthData' })
+            }
             hitSlop={8}
             accessibilityRole='button'
           >
@@ -115,7 +129,9 @@ export function StepsHero({
             accessibilityRole='button'
             accessibilityLabel='Log movement'
           >
-            <Text style={s.streakText}>{movedOnDay.length > 0 ? '+ More movement' : '+ Log movement'}</Text>
+            <Text style={s.streakText}>
+              {movedOnDay.length > 0 ? '+ More movement' : '+ Log movement'}
+            </Text>
           </Pressable>
         ) : null}
       </LinearGradient>
@@ -156,5 +172,10 @@ const s = StyleSheet.create({
     marginTop: 4,
   },
   // Sits over the lightest end of every sky gradient (pale blue, peach, gold), so it's dark ink, not white.
-  stepSub: { fontFamily: font.medium, fontSize: 12, color: '#1F2D38', textAlign: 'center' },
+  stepSub: {
+    fontFamily: font.medium,
+    fontSize: 12,
+    color: '#1F2D38',
+    textAlign: 'center',
+  },
 });

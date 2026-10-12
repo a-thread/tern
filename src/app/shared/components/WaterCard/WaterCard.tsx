@@ -9,14 +9,21 @@ import { WaterLimits } from '@/domain/water/models/waterEntry';
 import { useWater } from '@/domain/water/WaterContext';
 import { useViewedDay } from '@/shared/state/ViewedDayContext';
 import { waterMessage } from '@/shared/components/WaterCard/models/waterMessage';
-import WaterGlass from '@/shared/components/WaterCard/components/WaterGlass/WaterGlass';
+import WaterGlass from '@/shared/components/WaterCard/components/WaterGlass';
 
 /** Today's water on the Food screen: progress toward the goal, quick-add drink sizes and an undo. */
 export default function WaterCard({ bare = false }: { bare?: boolean }) {
-  const { totalOz, goalOz, progress, reached, addWater, undoLast, lastOz } = useWater();
+  const { totalOz, goalOz, progress, reached, addWater, undoLast, lastOz } =
+    useWater();
   // Before yesterday the day's water is only shown, not added to.
   const { editable } = useViewedDay();
-  const { formatVolume, quickWaterOz, fromDisplayVolume, toDisplayVolume, volumeLabel } = useUnits();
+  const {
+    formatVolume,
+    quickWaterOz,
+    fromDisplayVolume,
+    toDisplayVolume,
+    volumeLabel,
+  } = useUnits();
   const toast = useToast();
   const [custom, setCustom] = useState<string | null>(null); // the typed amount, while "Other" is open
 
@@ -24,7 +31,9 @@ export default function WaterCard({ bare = false }: { bare?: boolean }) {
     const typed = parseFloat((custom ?? '').replace(',', '.'));
     const oz = Number.isFinite(typed) ? fromDisplayVolume(typed) : NaN;
     if (!addWater(oz)) {
-      toast.show(`Enter an amount up to ${toDisplayVolume(WaterLimits.MAX_DRINK_OZ)} ${volumeLabel}.`);
+      toast.show(
+        `Enter an amount up to ${toDisplayVolume(WaterLimits.MAX_DRINK_OZ)} ${volumeLabel}.`,
+      );
       return;
     }
     setCustom(null);
@@ -59,7 +68,9 @@ export default function WaterCard({ bare = false }: { bare?: boolean }) {
           <View style={{ marginTop: space.sm }}>
             <ProgressBar value={progress} color={colors.water} height={7} />
           </View>
-          {reached ? <Text style={s.done}>Goal reached. Nicely done.</Text> : null}
+          {reached ? (
+            <Text style={s.done}>Goal reached. Nicely done.</Text>
+          ) : null}
         </>
       )}
 
@@ -74,7 +85,9 @@ export default function WaterCard({ bare = false }: { bare?: boolean }) {
                 accessibilityRole='button'
                 accessibilityLabel={`Add ${formatVolume(oz)} of water`}
               >
-                <Text style={s.quickText}>{`+${toDisplayVolume(oz)} ${volumeLabel}`}</Text>
+                <Text
+                  style={s.quickText}
+                >{`+${toDisplayVolume(oz)} ${volumeLabel}`}</Text>
               </Pressable>
             ))}
             <Pressable
@@ -101,15 +114,25 @@ export default function WaterCard({ bare = false }: { bare?: boolean }) {
                 accessibilityLabel={`Amount of water in ${volumeLabel}`}
                 style={s.input}
               />
-              <Pressable onPress={addCustom} style={s.addBtn} accessibilityRole='button'>
+              <Pressable
+                onPress={addCustom}
+                style={s.addBtn}
+                accessibilityRole='button'
+              >
                 <Text style={s.addText}>Add</Text>
               </Pressable>
             </View>
           ) : null}
 
           {lastOz !== null ? (
-            <Pressable onPress={undoLast} hitSlop={8} accessibilityRole='button'>
-              <Text style={s.undo}>{`Undo last (${formatVolume(lastOz)})`}</Text>
+            <Pressable
+              onPress={undoLast}
+              hitSlop={8}
+              accessibilityRole='button'
+            >
+              <Text
+                style={s.undo}
+              >{`Undo last (${formatVolume(lastOz)})`}</Text>
             </Pressable>
           ) : null}
         </>
@@ -133,12 +156,33 @@ const s = StyleSheet.create({
     textAlign: 'center',
     marginTop: 2,
   },
-  top: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', gap: space.sm },
+  top: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    gap: space.sm,
+  },
   title: { flexDirection: 'row', alignItems: 'center', gap: 6, flexShrink: 1 },
   name: { fontFamily: font.semibold, fontSize: 13, color: colors.ink },
-  amount: { fontFamily: font.body, fontSize: 12, color: colors.ink2, flexShrink: 1, textAlign: 'right' },
-  done: { fontFamily: font.body, fontSize: 11.5, color: colors.water, marginTop: 6 },
-  quickRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginTop: space.md },
+  amount: {
+    fontFamily: font.body,
+    fontSize: 12,
+    color: colors.ink2,
+    flexShrink: 1,
+    textAlign: 'right',
+  },
+  done: {
+    fontFamily: font.body,
+    fontSize: 11.5,
+    color: colors.water,
+    marginTop: 6,
+  },
+  quickRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 6,
+    marginTop: space.md,
+  },
   quick: {
     paddingHorizontal: 12,
     paddingVertical: 8,
@@ -147,7 +191,12 @@ const s = StyleSheet.create({
   },
   quickOn: { backgroundColor: colors.doveTint },
   quickText: { fontFamily: font.semibold, fontSize: 12.5, color: colors.water },
-  customRow: { flexDirection: 'row', alignItems: 'center', gap: space.sm, marginTop: space.sm },
+  customRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: space.sm,
+    marginTop: space.sm,
+  },
   input: {
     flex: 1,
     backgroundColor: colors.paper,

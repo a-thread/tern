@@ -1,11 +1,11 @@
 import React from 'react';
 
 import { Group, GroupLabel } from '@/shared/components/ui';
-import { SettingsPage } from '@/settings/components/SettingsPage/SettingsPage';
-import { StepGoalRow } from '@/settings/activity/components/StepGoalRow/StepGoalRow';
-import { RestDaysRow } from '@/settings/activity/components/RestDaysRow/RestDaysRow';
-import { StreakReminderRows } from '@/settings/components/StreakReminderRows/StreakReminderRows';
-import { MovementSettingsRows } from '@/settings/activity/components/MovementSettingsRows/MovementSettingsRows';
+import { SettingsPage } from '@/settings/components/SettingsPage';
+import { StepGoalRow } from '@/settings/activity/components/StepGoalRow';
+import { RestDaysRow } from '@/settings/activity/components/RestDaysRow';
+import { StreakReminderRows } from '@/settings/components/StreakReminderRows';
+import { MovementSettingsRows } from '@/settings/activity/components/MovementSettingsRows';
 import { useSettingsNavigation } from '@/navigation/useAppNavigation';
 
 /** Settings › Steps and activity: the step goal, rest days, movement, and the streak alert. */

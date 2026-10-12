@@ -7,14 +7,14 @@ import { FootNote, SegmentedControl } from '@/shared/components/ui';
 import { useDayKey } from '@/shared/hooks/useDayKey';
 import { monthName } from '@/shared/utils/date';
 import { TrendRanges, TrendRange } from '@/trends/models/trendRange';
-import { StepsTrendCard } from '@/trends/components/StepsTrendCard/StepsTrendCard';
-import { WeightTrendCard } from '@/trends/components/WeightTrendCard/WeightTrendCard';
+import { StepsTrendCard } from '@/trends/components/StepsTrendCard';
+import { WeightTrendCard } from '@/trends/components/WeightTrendCard';
 import { CaloriesTrendCard } from '@/trends/components/CaloriesTrendCard/CaloriesTrendCard';
-import { EnergyTrendCard } from '@/trends/components/EnergyTrendCard/EnergyTrendCard';
+import { EnergyTrendCard } from '@/trends/components/EnergyTrendCard';
 import { MovementTrendCard } from '@/trends/components/MovementTrendCard/MovementTrendCard';
 import WaterTrendCard from '@/trends/components/WaterTrendCard/WaterTrendCard';
-import MoodTrendCard from '@/trends/components/MoodTrendCard/MoodTrendCard';
-import { ConsistencyCard } from '@/trends/components/ConsistencyCard/ConsistencyCard';
+import MoodTrendCard from '@/trends/components/MoodTrendCard';
+import { ConsistencyCard } from '@/trends/components/ConsistencyCard';
 import { useSettings } from '@/domain/settings/SettingsContext';
 import { useTrendsRefresh } from '@/trends/hooks/useTrendsRefresh';
 
@@ -27,7 +27,9 @@ export default function TrendsScreen() {
   const { refreshControl, refreshKey } = useTrendsRefresh();
 
   return (
-    <View style={{ flex: 1, backgroundColor: colors.paper, paddingTop: insets.top }}>
+    <View
+      style={{ flex: 1, backgroundColor: colors.paper, paddingTop: insets.top }}
+    >
       <View style={{ paddingHorizontal: space.lg, paddingBottom: space.sm }}>
         <Text style={s.eyebrow}>{monthName(todayKey)}</Text>
         <Text style={s.title}>Trends</Text>
@@ -35,27 +37,43 @@ export default function TrendsScreen() {
 
       <ScrollView
         refreshControl={refreshControl}
-        contentContainerStyle={{ paddingHorizontal: space.lg, paddingBottom: 100 }}
+        contentContainerStyle={{
+          paddingHorizontal: space.lg,
+          paddingBottom: 100,
+        }}
       >
-        <SegmentedControl options={TrendRanges.ALL} value={range} onChange={setRange} style={s.seg} />
+        <SegmentedControl
+          options={TrendRanges.ALL}
+          value={range}
+          onChange={setRange}
+          style={s.seg}
+        />
 
         <StepsTrendCard range={range} />
         {/* weight: gone when weight isn't tracked */}
         {settings.trackWeight ? <WeightTrendCard range={range} /> : null}
         {/* nutrition: part of "Track calories & macros", so gone when that is off */}
-        {settings.trackCalories ? <CaloriesTrendCard range={range} refreshKey={refreshKey} /> : null}
-        {settings.adaptTarget && settings.trackCalories && settings.trackWeight ? (
+        {settings.trackCalories ? (
+          <CaloriesTrendCard range={range} refreshKey={refreshKey} />
+        ) : null}
+        {settings.adaptTarget &&
+        settings.trackCalories &&
+        settings.trackWeight ? (
           <EnergyTrendCard refreshKey={refreshKey} />
         ) : null}
-        {settings.trackMovement ? <MovementTrendCard range={range} refreshKey={refreshKey} /> : null}
-        {settings.trackWater ? <WaterTrendCard range={range} refreshKey={refreshKey} /> : null}
+        {settings.trackMovement ? (
+          <MovementTrendCard range={range} refreshKey={refreshKey} />
+        ) : null}
+        {settings.trackWater ? (
+          <WaterTrendCard range={range} refreshKey={refreshKey} />
+        ) : null}
         {settings.trackMood ? <MoodTrendCard range={range} /> : null}
 
         <ConsistencyCard range={range} />
 
         <FootNote>
-          Averages smooth out day-to-day noise. Single-day weight changes are mostly water and rarely
-          meaningful.
+          Averages smooth out day-to-day noise. Single-day weight changes are
+          mostly water and rarely meaningful.
         </FootNote>
       </ScrollView>
     </View>

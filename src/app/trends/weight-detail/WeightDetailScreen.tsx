@@ -4,14 +4,25 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 
 import { colors, font, space, typography } from '@/shared/theme';
-import { Card, GroupLabel, Row, FootNote, PushHeader, SegmentedControl, Icon } from '@/shared/components/ui';
-import { Insight } from '@/trends/components/Insight/Insight';
-import { LegendDot } from '@/trends/components/LegendDot/LegendDot';
-import { WeightTrend } from '@/shared/components/WeightTrend/WeightTrend';
+import {
+  Card,
+  GroupLabel,
+  Row,
+  FootNote,
+  PushHeader,
+  SegmentedControl,
+  Icon,
+} from '@/shared/components/ui';
+import { Insight } from '@/trends/components/Insight';
+import { LegendDot } from '@/trends/components/LegendDot';
+import { WeightTrend } from '@/shared/components/WeightTrend';
 import { useWeight } from '@/domain/weight/WeightContext';
 import { useSettings } from '@/domain/settings/SettingsContext';
 import { useUnits } from '@/domain/settings/hooks/useUnits';
-import { formatLoggedAt, signedChange } from '@/domain/weight/models/weightEntry';
+import {
+  formatLoggedAt,
+  signedChange,
+} from '@/domain/weight/models/weightEntry';
 import { weightTrendFor } from '@/trends/models/weightTrend';
 import type { TrendsStackParamList } from '@/trends/navigation';
 
@@ -30,7 +41,10 @@ export default function WeightDetailScreen({ navigation }: Props) {
   // The line follows the range; the headline weight is always the latest.
   const weightTrend = weightTrendFor(weightEntries, RANGE_DAYS[range]);
   const latest = overallTrend[overallTrend.length - 1];
-  const delta = weightTrend.length > 1 ? weightTrend[weightTrend.length - 1] - weightTrend[0] : 0;
+  const delta =
+    weightTrend.length > 1
+      ? weightTrend[weightTrend.length - 1] - weightTrend[0]
+      : 0;
   const spread = 1.3; // lb, either side of the trend
   const hasTrend = weightTrend.length >= 2;
   const goal = settings.weightGoalLb;
@@ -52,7 +66,12 @@ export default function WeightDetailScreen({ navigation }: Props) {
           paddingBottom: 40,
         }}
       >
-        <SegmentedControl options={RANGES} value={range} onChange={setRange} style={s.seg} />
+        <SegmentedControl
+          options={RANGES}
+          value={range}
+          onChange={setRange}
+          style={s.seg}
+        />
 
         <Card style={{ marginBottom: space.md }}>
           {hasTrend ? (
@@ -61,7 +80,9 @@ export default function WeightDetailScreen({ navigation }: Props) {
                 <View>
                   <Text style={s.metricValue}>{formatWeight(latest)}</Text>
                   <Text style={s.metricSub}>
-                    {goal === null ? '7-day average' : `7-day average · goal ${formatGoal(goal)}`}
+                    {goal === null
+                      ? '7-day average'
+                      : `7-day average · goal ${formatGoal(goal)}`}
                   </Text>
                 </View>
                 <View style={s.delta}>
@@ -81,7 +102,9 @@ export default function WeightDetailScreen({ navigation }: Props) {
               <View style={s.legend}>
                 <LegendDot color={colors.water} label='trend' />
                 <LegendDot color={colors.doveTint} label='daily range' />
-                {goal === null ? null : <LegendDot color={colors.kelp} label='goal' />}
+                {goal === null ? null : (
+                  <LegendDot color={colors.kelp} label='goal' />
+                )}
               </View>
             </>
           ) : (
@@ -100,9 +123,7 @@ export default function WeightDetailScreen({ navigation }: Props) {
 
         {hasTrend ? (
           <Insight
-            icon={
-              <Icon name='trending-up' size={15} color={colors.water} />
-            }
+            icon={<Icon name='trending-up' size={15} color={colors.water} />}
           >
             {`The shaded band is your day-to-day spread — usually about ${formatWeight(spread * 2)} wide. That's normal fluctuation, not change.`}
           </Insight>

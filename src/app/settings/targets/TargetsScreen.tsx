@@ -1,20 +1,28 @@
 import React, { useState } from 'react';
-import {
-  View,
-  Text,
-  ScrollView,
-  StyleSheet,
-  Pressable,
-} from 'react-native';
+import { View, Text, ScrollView, StyleSheet, Pressable } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 
 import { colors, font, radius, space, typography } from '@/shared/theme';
-import { Group, GroupLabel, FootNote, Row, PushHeader, ToggleRow, SegmentedControl, Stepper, BottomSheet } from '@/shared/components/ui';
+import {
+  Group,
+  GroupLabel,
+  FootNote,
+  Row,
+  PushHeader,
+  ToggleRow,
+  SegmentedControl,
+  Stepper,
+  BottomSheet,
+} from '@/shared/components/ui';
 import { useSettings } from '@/domain/settings/SettingsContext';
-import { AdaptiveTargetCard } from '@/settings/targets/components/AdaptiveTargetCard/AdaptiveTargetCard';
+import { AdaptiveTargetCard } from '@/settings/targets/components/AdaptiveTargetCard';
 import { useSliderValue } from '@/settings/hooks/useSliderValue';
-import { nudgeZone, resolveZone, type CalorieZone } from '@/domain/food/models/intakeZone';
+import {
+  nudgeZone,
+  resolveZone,
+  type CalorieZone,
+} from '@/domain/food/models/intakeZone';
 import {
   gramRange,
   isValidSplit,
@@ -255,7 +263,9 @@ export default function TargetsScreen() {
                         title='Protein as a minimum'
                         sub='Something to reach, not a limit'
                         on={settings.proteinAsMinimum}
-                        onToggle={(v) => updateSettings({ proteinAsMinimum: v })}
+                        onToggle={(v) =>
+                          updateSettings({ proteinAsMinimum: v })
+                        }
                       />
                     </Group>
                   </>
@@ -292,11 +302,7 @@ export default function TargetsScreen() {
 
           <View style={s.cols}>
             {MacroSplits.KEYS.map((key) => {
-              const range = gramRange(
-                settings.calorieTarget,
-                draft[key],
-                key,
-              );
+              const range = gramRange(settings.calorieTarget, draft[key], key);
               return (
                 <View key={key} style={s.col}>
                   <Text style={s.rowTitle}>{MACRO_LABEL[key]}</Text>
@@ -323,9 +329,7 @@ export default function TargetsScreen() {
               {total}%
             </Text>
           </View>
-          {!valid ? (
-            <Text style={s.hint}>Total must equal 100%</Text>
-          ) : null}
+          {!valid ? <Text style={s.hint}>Total must equal 100%</Text> : null}
 
           <Pressable
             style={[s.update, !valid && s.updateOff]}
@@ -355,8 +359,12 @@ function ZoneStepper({ end, zone }: { end: 'min' | 'max'; zone: CalorieZone }) {
       valueMinWidth={56}
       decrementLabel={`Lower the zone ${label}`}
       incrementLabel={`Raise the zone ${label}`}
-      onDecrement={() => updateSettings({ calorieZone: nudgeZone(zone, end, -1) })}
-      onIncrement={() => updateSettings({ calorieZone: nudgeZone(zone, end, 1) })}
+      onDecrement={() =>
+        updateSettings({ calorieZone: nudgeZone(zone, end, -1) })
+      }
+      onIncrement={() =>
+        updateSettings({ calorieZone: nudgeZone(zone, end, 1) })
+      }
     />
   );
 }

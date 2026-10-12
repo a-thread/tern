@@ -7,14 +7,14 @@ import { useUnits } from '@/domain/settings/hooks/useUnits';
 import { useFoodDisplay } from '@/domain/food/hooks/useFoodDisplay';
 import { useMedication } from '@/domain/medication/MedicationContext';
 import { useWater } from '@/domain/water/WaterContext';
-import WaterSheet from '@/today/components/WaterSheet/WaterSheet';
+import WaterSheet from '@/today/components/WaterSheet';
 import { movementSummary } from '@/domain/movement/models/movementEntry';
 import { scoreWord, MoodMetric } from '@/domain/mood/models/moodEntry';
 import { formatLoggedAt } from '@/domain/weight/models/weightEntry';
 import { useViewedDay } from '@/shared/state/ViewedDayContext';
 import { dayWord } from '@/shared/utils/date';
 import { useDayItems } from '@/today/hooks/useDayItems';
-import { DoneBadge } from '@/today/components/DoneList/components/DoneBadge/DoneBadge';
+import { DoneBadge } from '@/today/components/DoneList/components/DoneBadge';
 import { useRootNavigation } from '@/navigation/useAppNavigation';
 
 /**
@@ -22,20 +22,38 @@ import { useRootNavigation } from '@/navigation/useAppNavigation';
  * to undo or edit the ones that allow it. Before yesterday it's read-only, except that
  * "Meals logged" still opens that day in the Food tab.
  */
-export function DoneList({ quietWhenEmpty = false }: { quietWhenEmpty?: boolean } = {}) {
+export function DoneList({
+  quietWhenEmpty = false,
+}: { quietWhenEmpty?: boolean } = {}) {
   const navigation = useRootNavigation();
-  const { summary, mealsDone, waterDone, anythingDone, takenMedications, movementOnDay, movedToGoal, steps, day, isToday, editable } =
-    useDayItems();
+  const {
+    summary,
+    mealsDone,
+    waterDone,
+    anythingDone,
+    takenMedications,
+    movementOnDay,
+    movedToGoal,
+    steps,
+    day,
+    isToday,
+    editable,
+  } = useDayItems();
   const { today } = useViewedDay();
   const { formatWeight, formatVolume } = useUnits();
   const { showCalories } = useFoodDisplay();
   const water = useWater();
   const { setTaken } = useMedication();
   const [waterOpen, setWaterOpen] = useState(false);
-  const fromHealthConnect = movementOnDay.some((e) => e.source === 'healthConnect');
+  const fromHealthConnect = movementOnDay.some(
+    (e) => e.source === 'healthConnect',
+  );
 
   // An older day with nothing on it says so; today and yesterday have "Left to do" above.
-  if (!anythingDone) return editable || quietWhenEmpty ? null : <FootNote>Nothing logged this day.</FootNote>;
+  if (!anythingDone)
+    return editable || quietWhenEmpty ? null : (
+      <FootNote>Nothing logged this day.</FootNote>
+    );
   return (
     <>
       <GroupLabel>{isToday ? 'Today so far' : dayWord(day, today)}</GroupLabel>
@@ -46,7 +64,9 @@ export function DoneList({ quietWhenEmpty = false }: { quietWhenEmpty?: boolean 
             title='Meals logged'
             sub={
               mealsDone.join(', ') +
-              (showCalories && summary.meals ? ` · ${summary.meals.calories.toLocaleString()} cal` : '')
+              (showCalories && summary.meals
+                ? ` · ${summary.meals.calories.toLocaleString()} cal`
+                : '')
             }
             icon={<DoneBadge />}
             chevron
@@ -60,7 +80,9 @@ export function DoneList({ quietWhenEmpty = false }: { quietWhenEmpty?: boolean 
             sub={`${formatWeight(summary.weighedIn.lb)}, ${formatLoggedAt(summary.weighedIn.loggedAt)}`}
             icon={<DoneBadge />}
             chevron={editable}
-            onPress={editable ? () => navigation.navigate('LogWeight') : undefined}
+            onPress={
+              editable ? () => navigation.navigate('LogWeight') : undefined
+            }
           />
         ) : null}
         {summary.checkIn ? (
@@ -70,7 +92,9 @@ export function DoneList({ quietWhenEmpty = false }: { quietWhenEmpty?: boolean 
             sub={`Mood ${summary.checkIn.mood} · ${scoreWord(MoodMetric.Mood, summary.checkIn.mood)} · Stress ${summary.checkIn.stress} · ${scoreWord(MoodMetric.Stress, summary.checkIn.stress)}`}
             icon={<DoneBadge />}
             chevron={editable}
-            onPress={editable ? () => navigation.navigate('CheckIn') : undefined}
+            onPress={
+              editable ? () => navigation.navigate('CheckIn') : undefined
+            }
           />
         ) : null}
         {takenMedications.map((m) => (
@@ -106,7 +130,11 @@ export function DoneList({ quietWhenEmpty = false }: { quietWhenEmpty?: boolean 
             }
             icon={<DoneBadge />}
             chevron={editable}
-            onPress={editable ? () => navigation.navigate('LogMovement', { day }) : undefined}
+            onPress={
+              editable
+                ? () => navigation.navigate('LogMovement', { day })
+                : undefined
+            }
           />
         ) : null}
         {summary.stepGoalReached ? (

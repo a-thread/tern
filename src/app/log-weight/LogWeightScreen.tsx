@@ -14,7 +14,7 @@ import { NativeStackScreenProps } from '@react-navigation/native-stack';
 
 import { colors, font, radius, space, typography } from '@/shared/theme';
 import { Group, GroupLabel, SheetNav } from '@/shared/components/ui';
-import { WeightTrend } from '@/shared/components/WeightTrend/WeightTrend';
+import { WeightTrend } from '@/shared/components/WeightTrend';
 import type { RootStackParamList } from '@/navigation/types';
 import { useUnits } from '@/domain/settings/hooks/useUnits';
 import { useWeight } from '@/domain/weight/WeightContext';
@@ -41,7 +41,10 @@ export default function LogWeightScreen({ navigation }: Props) {
   const { units, weightLabel, toDisplay, fromDisplay, formatWeight } =
     useUnits();
   // The ruler works in the user's unit; storage stays lb.
-  const latest = Math.round(toDisplay(todaysEntry?.lb ?? weightEntries[0]?.lb ?? 172.4) * 10) / 10;
+  const latest =
+    Math.round(
+      toDisplay(todaysEntry?.lb ?? weightEntries[0]?.lb ?? 172.4) * 10,
+    ) / 10;
 
   const min = Math.ceil(toDisplay(MIN_LB) * 10) / 10;
   const max = Math.floor(toDisplay(MAX_LB) * 10) / 10;
@@ -92,7 +95,8 @@ export default function LogWeightScreen({ navigation }: Props) {
 
   const save = () => {
     if (todaysEntry) updateWeightEntry(todaysEntry.id, fromDisplay(weight));
-    else addWeightEntry(fromDisplay(weight), isToday ? undefined : atTimeOn(day));
+    else
+      addWeightEntry(fromDisplay(weight), isToday ? undefined : atTimeOn(day));
     navigation.goBack();
   };
 
@@ -267,7 +271,12 @@ const s = StyleSheet.create({
     backgroundColor: colors.coral,
     borderRadius: 2,
   },
-  hint: { ...typography.caption, textAlign: 'center', lineHeight: 17, paddingHorizontal: 12 },
+  hint: {
+    ...typography.caption,
+    textAlign: 'center',
+    lineHeight: 17,
+    paddingHorizontal: 12,
+  },
   weekCard: {
     backgroundColor: colors.card,
     borderRadius: radius.lg,

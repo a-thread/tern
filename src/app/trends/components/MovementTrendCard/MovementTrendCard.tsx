@@ -2,8 +2,8 @@ import React, { useState } from 'react';
 import { Text } from 'react-native';
 
 import { space, typography } from '@/shared/theme';
-import { TrendCard, TrendFigure } from '@/trends/components/TrendCard/TrendCard';
-import { StepBars } from '@/trends/components/StepBars/StepBars';
+import { TrendCard, TrendFigure } from '@/trends/components/TrendCard';
+import { StepBars } from '@/trends/components/StepBars';
 import { useDayKey } from '@/shared/hooks/useDayKey';
 import { useFocusLoad } from '@/trends/hooks/useFocusLoad';
 import { addDays } from '@/shared/utils/date';
@@ -19,7 +19,10 @@ import {
   minutesByDay,
   type MovementEntry,
 } from '@/domain/movement/models/movementEntry';
-import { averageMinutes, bucketMinutes } from '@/trends/components/MovementTrendCard/models/movementBars';
+import {
+  averageMinutes,
+  bucketMinutes,
+} from '@/trends/components/MovementTrendCard/models/movementBars';
 
 /** Active minutes over the Trends range: the daily average, a bar per day (or week), and what kinds. */
 export function MovementTrendCard({
@@ -45,13 +48,24 @@ export function MovementTrendCard({
 
   const byDay = minutesByDay(entries);
   const average = averageMinutes(byDay, today, TrendRanges.DAYS[range]);
-  const bars = bucketMinutes(byDay, settings.movementGoalMinutes, range, today, goalMinutesByDay(entries));
+  const bars = bucketMinutes(
+    byDay,
+    settings.movementGoalMinutes,
+    range,
+    today,
+    goalMinutesByDay(entries),
+  );
   const share = activityShare(entries)
     .slice(0, 3)
     .map((a) => `${ACTIVITY_LABEL[a.activity]} ${Math.round(a.share * 100)}%`)
     .join(' · ');
   const distanceM = entries.reduce((s, e) => s + (e.distanceM ?? 0), 0);
-  const extras = [share, distanceM > 0 ? `${formatDistance(distanceM, units)} in all` : null].filter(Boolean).join(' · ');
+  const extras = [
+    share,
+    distanceM > 0 ? `${formatDistance(distanceM, units)} in all` : null,
+  ]
+    .filter(Boolean)
+    .join(' · ');
 
   return (
     <TrendCard title='Active minutes'>
@@ -65,12 +79,19 @@ export function MovementTrendCard({
       />
       <StepBars
         days={bars}
-        goal={range === TrendRange.Week || range === TrendRange.Month ? settings.movementGoalMinutes : settings.movementGoalMinutes * 7}
+        goal={
+          range === TrendRange.Week || range === TrendRange.Month
+            ? settings.movementGoalMinutes
+            : settings.movementGoalMinutes * 7
+        }
         showLegend={false}
         showLabels={range !== TrendRange.Month}
       />
-      {extras ? <Text style={{ ...typography.small, marginTop: space.sm }}>{extras}</Text> : null}
+      {extras ? (
+        <Text style={{ ...typography.small, marginTop: space.sm }}>
+          {extras}
+        </Text>
+      ) : null}
     </TrendCard>
   );
 }
-

@@ -1,9 +1,29 @@
 import React from 'react';
-import { ActivityIndicator, View, Text, ScrollView, StyleSheet, Pressable } from 'react-native';
+import {
+  ActivityIndicator,
+  View,
+  Text,
+  ScrollView,
+  StyleSheet,
+  Pressable,
+} from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { colors, font, radius, space, tierColors, typography } from '@/shared/theme';
-import { Group, GroupLabel, FootNote, Chevron, Icon } from '@/shared/components/ui';
+import {
+  colors,
+  font,
+  radius,
+  space,
+  tierColors,
+  typography,
+} from '@/shared/theme';
+import {
+  Group,
+  GroupLabel,
+  FootNote,
+  Chevron,
+  Icon,
+} from '@/shared/components/ui';
 import { SwipeToRemove } from '@/food/components/SwipeToRemove/SwipeToRemove';
 import { useViewedDay } from '@/shared/state/ViewedDayContext';
 import { usePullToRefresh } from '@/shared/hooks/usePullToRefresh';
@@ -15,7 +35,7 @@ import { useFood } from '@/domain/food/FoodContext';
 import { useFoodDisplay } from '@/domain/food/hooks/useFoodDisplay';
 import WaterCard from '@/shared/components/WaterCard/WaterCard';
 import { useWater } from '@/domain/water/WaterContext';
-import { TierDot } from '@/shared/components/TierDot/TierDot';
+import { TierDot } from '@/shared/components/TierDot';
 import { FoodSummary } from '@/shared/components/FoodSummary/FoodSummary';
 import { useRootNavigation } from '@/navigation/useAppNavigation';
 
@@ -25,8 +45,14 @@ export default function FoodScreen() {
   const when = isToday ? 'today' : 'yesterday';
   const insets = useSafeAreaInsets();
   const navigation = useRootNavigation();
-  const { foodLog, skippedMeals, loadedDay, setMealSkipped, removeFoodEntry, reload: reloadFood } =
-    useFood();
+  const {
+    foodLog,
+    skippedMeals,
+    loadedDay,
+    setMealSkipped,
+    removeFoodEntry,
+    reload: reloadFood,
+  } = useFood();
   const dayLoaded = loadedDay === day;
   const { settings } = useSettings();
   const { showCalories } = useFoodDisplay();
@@ -42,7 +68,12 @@ export default function FoodScreen() {
         <View style={s.titleRow}>
           <Text style={s.title}>Food</Text>
           {isToday ? null : (
-            <Pressable onPress={showToday} hitSlop={8} style={s.backChip} accessibilityRole='button'>
+            <Pressable
+              onPress={showToday}
+              hitSlop={8}
+              style={s.backChip}
+              accessibilityRole='button'
+            >
               <Text style={s.backText}>Back to today</Text>
             </Pressable>
           )}
@@ -62,7 +93,10 @@ export default function FoodScreen() {
 
         {!dayLoaded ? (
           // Another day's food never shows under this day's date while it loads.
-          <ActivityIndicator color={colors.ink3} style={{ marginTop: space.xl }} />
+          <ActivityIndicator
+            color={colors.ink3}
+            style={{ marginTop: space.xl }}
+          />
         ) : !editable && !foodLog.length && !skippedMeals.length ? (
           <FootNote>Nothing logged this day.</FootNote>
         ) : (
@@ -106,7 +140,9 @@ export default function FoodScreen() {
                             showTierNumber={settings.showTierNumber}
                             showCalories={showCalories}
                             onPress={() =>
-                              navigation.navigate('EditFood', { entryId: item.id })
+                              navigation.navigate('EditFood', {
+                                entryId: item.id,
+                              })
                             }
                           />
                         </SwipeToRemove>
@@ -280,7 +316,11 @@ function SkippedRow({ text, onUndo }: { text: string; onUndo?: () => void }) {
 
 const s = StyleSheet.create({
   eyebrow: typography.meta,
-  titleRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+  titleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
   backChip: {
     backgroundColor: colors.coralTint,
     borderRadius: radius.md,
