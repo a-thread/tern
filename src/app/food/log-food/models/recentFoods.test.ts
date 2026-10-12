@@ -1,0 +1,117 @@
+import type { FoodEntry } from '@/domain/food/models/foodEntry';
+import { filterFoods, loggedAsResult, recentFoods } from '@/food/log-food/models/recentFoods';
+import { Meal } from '@/domain/food/models/foodEntry';
+import { amountOf } from '@/domain/food/models/measure';
+
+const eggsAmount = amountOf({
+  per100: { calories: 143, protein: 12.6, carbs: 0.7, fat: 9.5 },
+  portions: [{ label: 'large egg', grams: 50 }],
+  unit: 'large egg',
+  quantity: 2,
+});
+
+const entry = (name: string, over: Partial<FoodEntry> = {}): FoodEntry => ({
+  id: `${name}-${Math.random()}`,
+  name,
+  meal: Meal.Lunch,
+  servings: 1,
+  servingLabel: '1 bowl',
+  calories: 200,
+  protein: 10,
+  carbs: 20,
+  fat: 5,
+  tier: 1,
+  ...over,
+});
+
+describe('recentFoods', () => {
+  it('lists distinct foods, newest day first and newest entry first within a day', () => {
+    const list = recentFoods({
+      '2026-09-10': [entry('Chili')],
+      '2026-09-12': [entry('Toast'), entry('Eggs')],
+    });
+    expect(list.map((f) => f.name)).toEqual(['Eggs', 'Toast', 'Chili']);
+  });
+
+  it('keeps only the latest version of a repeated food, including a changed tier', () => {
+    const list = recentFoods({
+      '2026-09-10': [entry('Granola', { tier: 3, calories: 300 })],
+      '2026-09-12': [entry('Granola', { tier: 4, calories: 320 })],
+    });
+    expect(list).toHaveLength(1);
+    expect(list[0]).toMatchObject({ tier: 4, calories: 320 });
+  });
+
+  it('treats the same name from different brands as different foods, ignoring case', () => {
+    const list = recentFoods({
+      '2026-09-12': [
+        entry('oat milk', { brand: 'Oatly' }),
+        entry('Oat Milk', { brand: 'Silk' }),
+        entry('OAT MILK', { brand: 'oatly' }),
+      ],
+    });
+    expect(list).toHaveLength(2);
+  });
+
+  it('respects fromDay and limit', () => {
+    const byDay = {
+      '2026-08-01': [entry('Old')],
+      '2026-09-12': [entry('A'), entry('B'), entry('C')],
+    };
+    expect(recentFoods(byDay, { fromDay: '2026-09-01' }).map((f) => f.name)).toEqual(['C', 'B', 'A']);
+    expect(recentFoods(byDay, { limit: 2 })).toHaveLength(2);
+  });
+
+  it('is empty with no history', () => {
+    expect(recentFoods({})).toEqual([]);
+  });
+});
+
+describe('filterFoods', () => {
+  const foods = recentFoods({
+    '2026-09-12': [
+      entry('Rolled oats', { brand: "Bob's Red Mill" }),
+      entry('Oat milk', { brand: 'Oatly' }),
+      entry('Chili'),
+    ],
+  });
+
+  it('returns everything for a blank query', () => {
+    expect(filterFoods(foods, '  ')).toHaveLength(3);
+  });
+
+  it('matches every word against name and brand', () => {
+    expect(filterFoods(foods, 'oat').map((f) => f.name).sort()).toEqual(['Oat milk', 'Rolled oats']);
+    expect(filterFoods(foods, 'oatly milk').map((f) => f.name)).toEqual(['Oat milk']);
+    expect(filterFoods(foods, 'pizza')).toEqual([]);
+  });
+});
+
+describe('recentFoods with a measure', () => {
+  it('offers a food logged by amount per 100 g again, in the same unit and count', () => {
+    const [eggs] = recentFoods({ '2026-09-12': [entry('Eggs', { ...eggsAmount })] });
+    expect(eggs).toMatchObject({
+      servingLabel: '100 g',
+      calories: 143,
+      portions: [{ label: 'large egg', grams: 50 }],
+      last: { unit: 'large egg', quantity: 2 },
+    });
+  });
+
+  it('keeps an entry without a measure as it was logged', () => {
+    const [bowl] = recentFoods({ '2026-09-12': [entry('Chili')] });
+    expect(bowl).toMatchObject({ servingLabel: '1 bowl', calories: 200 });
+    expect(bowl.last).toBeUndefined();
+  });
+});
+
+describe('loggedAsResult', () => {
+  it('keeps how many servings you had of an unmeasured food, and leaves one serving implied', () => {
+    expect(loggedAsResult(entry('Milk', { servings: 1.5, servingLabel: '240 ml' }))).toMatchObject({ servingLabel: '240 ml', servings: 1.5 });
+    expect(loggedAsResult(entry('Chili')).servings).toBeUndefined();
+  });
+
+  it('brings a measured food back per 100 g, ready to start from what you had', () => {
+    expect(loggedAsResult(entry('Eggs', { ...eggsAmount }))).toMatchObject({ servingLabel: '100 g', last: { unit: 'large egg', quantity: 2 } });
+  });
+});

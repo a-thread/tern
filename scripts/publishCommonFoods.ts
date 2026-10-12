@@ -12,7 +12,7 @@ import { createHash } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 import { createClient } from '@supabase/supabase-js';
 
-import type { CommonFood } from '@food/models/commonFoods';
+import type { CommonFood } from '@/domain/common-foods/models/commonFoods';
 
 const BATCH = 500;
 
