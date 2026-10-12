@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
 
 import { useAuth } from '@/domain/auth/AuthContext';
-import { AuthBanner } from '@/auth/components/AuthBanner';
-import { AuthLayout } from '@/auth/components/AuthLayout';
-import { FormField } from '@/auth/components/FormField';
-import { SubmitButton } from '@/auth/components/SubmitButton';
-import { useSubmit } from '@/auth/hooks/useSubmit';
+import { AuthBanner } from '../components/AuthBanner';
+import { AuthLayout } from '../components/AuthLayout';
+import { FormField } from '../components/FormField';
+import { SubmitButton } from '../components/SubmitButton';
+import { useSubmit } from '../hooks/useSubmit';
 import {
   isValidPassword,
   passwordsMatch,

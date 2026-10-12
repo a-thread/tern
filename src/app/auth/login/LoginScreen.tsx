@@ -1,13 +1,13 @@
 import React, { useState } from 'react';
 
 import { useAuth } from '@/domain/auth/AuthContext';
-import { AuthBanner } from '@/auth/components/AuthBanner';
-import { AuthLayout } from '@/auth/components/AuthLayout';
-import { FormField } from '@/auth/components/FormField';
-import { LinkButton } from '@/auth/components/LinkButton';
-import { LinkColumn } from '@/auth/components/LinkColumn';
-import { SubmitButton } from '@/auth/components/SubmitButton';
-import { useSubmit } from '@/auth/hooks/useSubmit';
+import { AuthBanner } from '../components/AuthBanner';
+import { AuthLayout } from '../components/AuthLayout';
+import { FormField } from '../components/FormField';
+import { LinkButton } from '../components/LinkButton';
+import { LinkColumn } from '../components/LinkColumn';
+import { SubmitButton } from '../components/SubmitButton';
+import { useSubmit } from '../hooks/useSubmit';
 import { isValidEmail, isValidPassword } from '@/domain/auth/validation';
 
 export default function LoginScreen({

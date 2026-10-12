@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 
 import { useAuth } from '@/domain/auth/AuthContext';
-import LoginScreen from '@/auth/login/LoginScreen';
-import CreateAccountScreen from '@/auth/create-account/CreateAccountScreen';
-import ForgotPasswordScreen from '@/auth/forgot-password/ForgotPasswordScreen';
+import LoginScreen from './login/LoginScreen';
+import CreateAccountScreen from './create-account/CreateAccountScreen';
+import ForgotPasswordScreen from './forgot-password/ForgotPasswordScreen';
 
 type Screen = 'login' | 'signUp' | 'forgotPassword';
 
@@ -13,7 +13,9 @@ type Screen = 'login' | 'signUp' | 'forgotPassword';
  */
 export default function AuthFlow() {
   const { startOnSignUp } = useAuth()!;
-  const [screen, setScreen] = useState<Screen>(startOnSignUp ? 'signUp' : 'login');
+  const [screen, setScreen] = useState<Screen>(
+    startOnSignUp ? 'signUp' : 'login',
+  );
   const [info, setInfo] = useState<string | undefined>();
 
   const goTo = (next: Screen, message?: string) => {
