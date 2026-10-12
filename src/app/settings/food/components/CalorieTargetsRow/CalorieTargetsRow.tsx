@@ -1,8 +1,7 @@
 import React from 'react';
 
 import { colors } from '@/shared/theme';
-import { IconBadge, Row } from '@/shared/components/ui/Layout';
-import { Icon } from '@/shared/components/ui/Icon';
+import { IconBadge, Row, Icon } from '@/shared/components/ui';
 import { useSettings } from '@/domain/settings/SettingsContext';
 
 /** A Settings row showing the calorie target; tapping it opens the calorie and macro targets. */

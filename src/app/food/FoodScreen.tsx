@@ -3,10 +3,8 @@ import { ActivityIndicator, View, Text, ScrollView, StyleSheet, Pressable } from
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { colors, font, radius, space, tierColors, typography } from '@/shared/theme';
-import { Group, GroupLabel, FootNote } from '@/shared/components/ui/Layout';
-import { Chevron } from '@/shared/components/ui/Chevron';
+import { Group, GroupLabel, FootNote, Chevron, Icon } from '@/shared/components/ui';
 import { SwipeToRemove } from '@/food/components/SwipeToRemove/SwipeToRemove';
-import { Icon } from '@/shared/components/ui/Icon';
 import { useViewedDay } from '@/shared/state/ViewedDayContext';
 import { usePullToRefresh } from '@/shared/hooks/usePullToRefresh';
 import { formatLongDate } from '@/shared/utils/date';

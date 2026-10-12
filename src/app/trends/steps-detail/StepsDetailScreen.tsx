@@ -5,10 +5,8 @@ import { NativeStackScreenProps } from '@react-navigation/native-stack';
 
 import { colors, font, radius, space, typography } from '@/shared/theme';
 import { TrendRanges, TrendRange } from '@/trends/models/trendRange';
-import { Card, GroupLabel, Row, FootNote } from '@/shared/components/ui/Layout';
-import { PushHeader } from '@/shared/components/ui/SheetChrome';
+import { Card, GroupLabel, Row, FootNote, PushHeader, SegmentedControl } from '@/shared/components/ui';
 import { LegendDot } from '@/trends/components/LegendDot/LegendDot';
-import { SegmentedControl } from '@/shared/components/ui/SegmentedControl';
 import { StepBars } from '@/trends/components/StepBars/StepBars';
 import { ConsistencyGrid } from '@/trends/components/ConsistencyGrid/ConsistencyGrid';
 import { useActivity } from '@/domain/activity/ActivityContext';

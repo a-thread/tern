@@ -1,11 +1,10 @@
-import type { FoodEntry } from '@/domain/food/models/foodEntry';
+import { type FoodEntry, Meal } from '@/domain/food/models/foodEntry';
 import type { WeightEntry } from '@/domain/weight/models/weightEntry';
 import { buildDays, computeStreak, type DayRecord, restDaysLeft, weekOf, type BuildDaysInput } from '@/domain/activity/models/dayRecord';
 import { goalFor, recordGoalChange, suggestGoal } from '@/domain/activity/models/stepGoal';
 import { greetingFor } from '@/today/components/StepsHero/models/greeting';
 import { leftToDo, mealForTime, weighInDue } from '@/today/models/leftToDo';
 import { todaySummary } from '@/today/models/todaySummary';
-import { Meal } from '@/domain/food/models/foodEntry';
 import { DayState } from '@/shared/models/dayState';
 import { Frequency } from '@/shared/models/frequency';
 

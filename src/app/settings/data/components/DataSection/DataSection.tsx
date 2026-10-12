@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Pressable, Share, StyleSheet, Text, View } from 'react-native';
 
 import { colors, typography } from '@/shared/theme';
-import { Group } from '@/shared/components/ui/Layout';
+import { Group } from '@/shared/components/ui';
 import { useAuth } from '@/domain/auth/AuthContext';
 import { useToast } from '@/shared/state/ToastContext';
 import type { DataRepository } from '@/domain/settings/dataRepository';

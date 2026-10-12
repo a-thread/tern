@@ -2,8 +2,7 @@ import React, { useState } from 'react';
 import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 
 import { colors, font, radius, typography } from '@/shared/theme';
-import { Group } from '@/shared/components/ui/Layout';
-import { Stepper } from '@/shared/components/ui/Stepper';
+import { Group, Stepper } from '@/shared/components/ui';
 import { formatCount } from '@/domain/food/models/servings';
 import { useFoodDisplay } from '@/domain/food/hooks/useFoodDisplay';
 import {

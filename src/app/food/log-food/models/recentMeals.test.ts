@@ -1,11 +1,10 @@
-import type { FoodEntry } from '@/domain/food/models/foodEntry';
+import { type FoodEntry, Meal } from '@/domain/food/models/foodEntry';
 import {
   dayLabel,
   filterRecentMeals,
   recentMealTitle,
   recentMeals,
 } from '@/food/log-food/models/recentMeals';
-import { Meal } from '@/domain/food/models/foodEntry';
 
 const TODAY = '2026-09-24'; // a Thursday
 

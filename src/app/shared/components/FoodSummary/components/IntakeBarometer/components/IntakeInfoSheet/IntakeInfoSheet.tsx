@@ -1,7 +1,7 @@
 import React from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
-import { BottomSheet } from '@/shared/components/ui/BottomSheet';
+import { BottomSheet } from '@/shared/components/ui';
 import { colors, font, space, typography } from '@/shared/theme';
 
 export type IntakeInfoKind = 'calories' | 'macros';

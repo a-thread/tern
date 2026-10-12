@@ -4,9 +4,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 
 import { colors, font, radius, space, tierColors, typography } from '@/shared/theme';
-import { Group, GroupLabel, FootNote } from '@/shared/components/ui/Layout';
-import { PushHeader } from '@/shared/components/ui/SheetChrome';
-import { ToggleRow } from '@/shared/components/ui/Toggle';
+import { Group, GroupLabel, FootNote, PushHeader, ToggleRow } from '@/shared/components/ui';
 import { TierDot } from '@/shared/components/TierDot/TierDot';
 import { useFoodDisplay } from '@/domain/food/hooks/useFoodDisplay';
 import { useSettings } from '@/domain/settings/SettingsContext';

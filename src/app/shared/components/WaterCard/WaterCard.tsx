@@ -2,9 +2,7 @@ import React, { useState } from 'react';
 import { View, Text, TextInput, Pressable, StyleSheet } from 'react-native';
 
 import { colors, font, radius, space } from '@/shared/theme';
-import { Card } from '@/shared/components/ui/Layout';
-import { ProgressBar } from '@/shared/components/ui/Bars';
-import { Icon } from '@/shared/components/ui/Icon';
+import { Card, ProgressBar, Icon } from '@/shared/components/ui';
 import { useToast } from '@/shared/state/ToastContext';
 import { useUnits } from '@/domain/settings/hooks/useUnits';
 import { WaterLimits } from '@/domain/water/models/waterEntry';

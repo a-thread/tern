@@ -4,9 +4,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 
 import { colors, font, radius, space } from '@/shared/theme';
-import { PushHeader } from '@/shared/components/ui/SheetChrome';
-import { SegmentedControl } from '@/shared/components/ui/SegmentedControl';
-import { Stepper } from '@/shared/components/ui/Stepper';
+import { PushHeader, SegmentedControl, Stepper } from '@/shared/components/ui';
 import { useUnits } from '@/domain/settings/hooks/useUnits';
 import { useMovement } from '@/domain/movement/MovementContext';
 import { ActivityGlyph } from '@/movement/components/ActivityGlyph/ActivityGlyph';

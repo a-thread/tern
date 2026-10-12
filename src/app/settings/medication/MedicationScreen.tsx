@@ -5,9 +5,7 @@ import { useNavigation } from '@react-navigation/native';
 
 import { colors, font, radius, space, typography } from '@/shared/theme';
 import { Frequency } from '@/shared/models/frequency';
-import { Group, GroupLabel, FootNote } from '@/shared/components/ui/Layout';
-import { PushHeader } from '@/shared/components/ui/SheetChrome';
-import { ToggleRow } from '@/shared/components/ui/Toggle';
+import { Group, GroupLabel, FootNote, PushHeader, ToggleRow } from '@/shared/components/ui';
 import { useToast } from '@/shared/state/ToastContext';
 import { newId } from '@/shared/utils/id';
 import { useMedication } from '@/domain/medication/MedicationContext';

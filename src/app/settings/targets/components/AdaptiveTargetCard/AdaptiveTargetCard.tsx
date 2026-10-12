@@ -2,11 +2,7 @@ import React, { useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { colors, font, radius, space, typography } from '@/shared/theme';
-import { BottomSheet } from '@/shared/components/ui/BottomSheet';
-import { FootNote, Group, GroupLabel } from '@/shared/components/ui/Layout';
-import { ProgressBar } from '@/shared/components/ui/Bars';
-import { SegmentedControl } from '@/shared/components/ui/SegmentedControl';
-import { ToggleRow } from '@/shared/components/ui/Toggle';
+import { BottomSheet, FootNote, Group, GroupLabel, ProgressBar, SegmentedControl, ToggleRow } from '@/shared/components/ui';
 import { useSettings } from '@/domain/settings/SettingsContext';
 import { useAdaptiveTarget } from '@/domain/food/hooks/useAdaptiveTarget';
 import { AdaptiveTarget, Aim, AIM_LABEL } from '@/domain/food/models/energyBalance';

@@ -2,8 +2,7 @@ import React from 'react';
 import { StyleSheet, View } from 'react-native';
 
 import { colors, tierColors } from '@/shared/theme';
-import { Row } from '@/shared/components/ui/Layout';
-import { Icon } from '@/shared/components/ui/Icon';
+import { Row, Icon } from '@/shared/components/ui';
 import type { SearchResult } from '@/domain/food/sources/searchResult';
 import type { FoodSource } from '@/domain/food/models/foodRanking';
 import { useFoodDisplay } from '@/domain/food/hooks/useFoodDisplay';

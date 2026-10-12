@@ -1,6 +1,5 @@
-import { restDayTriggers, upcomingDates, describeReminders, formatMinutes, mergeReminders, medicationReminderId, planReminders, waterReminderId, waterTimes, stepMinutes, stepWeekday, type ReminderConfig, Reminders } from '@/domain/settings/models/reminderPlan';
+import { restDayTriggers, upcomingDates, describeReminders, formatMinutes, mergeReminders, medicationReminderId, planReminders, waterReminderId, waterTimes, stepMinutes, stepWeekday, type ReminderConfig, Reminders, ReminderKey } from '@/domain/settings/models/reminderPlan';
 import { Frequency } from '@/shared/models/frequency';
-import { ReminderKey } from '@/domain/settings/models/reminderPlan';
 
 const config = (
   over: Partial<{ meals: boolean; weighIn: boolean }> = {},

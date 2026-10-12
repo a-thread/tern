@@ -1,7 +1,6 @@
 import { allMealsLogged, mealTotals, Meals } from '@/domain/food/models/meals';
-import { dayTotals, type FoodEntry } from '@/domain/food/models/foodEntry';
+import { dayTotals, type FoodEntry, Meal } from '@/domain/food/models/foodEntry';
 import { averageIntake } from '@/trends/models/intake';
-import { Meal } from '@/domain/food/models/foodEntry';
 
 function entry(overrides: Partial<FoodEntry>): FoodEntry {
   return {

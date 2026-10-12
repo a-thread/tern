@@ -5,10 +5,7 @@ import { useNavigation } from '@react-navigation/native';
 
 import { colors, font, radius, space, typography } from '@/shared/theme';
 import { useToast } from '@/shared/state/ToastContext';
-import { Group, GroupLabel, IconBadge, Chip, FootNote } from '@/shared/components/ui/Layout';
-import { PushHeader } from '@/shared/components/ui/SheetChrome';
-import { ToggleRow } from '@/shared/components/ui/Toggle';
-import { Icon } from '@/shared/components/ui/Icon';
+import { Group, GroupLabel, IconBadge, Chip, FootNote, PushHeader, ToggleRow, Icon } from '@/shared/components/ui';
 import { formatLoggedAt } from '@/domain/weight/models/weightEntry';
 import { useActivity, useLastSynced } from '@/domain/activity/ActivityContext';
 import { useSettings } from '@/domain/settings/SettingsContext';

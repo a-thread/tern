@@ -10,12 +10,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 
 import { colors, font, radius, space, typography } from '@/shared/theme';
-import { Group, GroupLabel, FootNote, Row } from '@/shared/components/ui/Layout';
-import { PushHeader } from '@/shared/components/ui/SheetChrome';
-import { ToggleRow } from '@/shared/components/ui/Toggle';
-import { SegmentedControl } from '@/shared/components/ui/SegmentedControl';
-import { Stepper } from '@/shared/components/ui/Stepper';
-import { BottomSheet } from '@/shared/components/ui/BottomSheet';
+import { Group, GroupLabel, FootNote, Row, PushHeader, ToggleRow, SegmentedControl, Stepper, BottomSheet } from '@/shared/components/ui';
 import { useSettings } from '@/domain/settings/SettingsContext';
 import { AdaptiveTargetCard } from '@/settings/targets/components/AdaptiveTargetCard/AdaptiveTargetCard';
 import { useSliderValue } from '@/settings/hooks/useSliderValue';

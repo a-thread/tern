@@ -4,11 +4,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 
 import { colors, radius, space, typography } from '@/shared/theme';
-import { Group, GroupLabel, IconBadge } from '@/shared/components/ui/Layout';
-import { PushHeader } from '@/shared/components/ui/SheetChrome';
-import { ToggleRow } from '@/shared/components/ui/Toggle';
-import { Stepper } from '@/shared/components/ui/Stepper';
-import { Icon } from '@/shared/components/ui/Icon';
+import { Group, GroupLabel, IconBadge, PushHeader, ToggleRow, Stepper, Icon } from '@/shared/components/ui';
 import { useSettings } from '@/domain/settings/SettingsContext';
 import { useActivity } from '@/domain/activity/ActivityContext';
 import { StreakFreezes } from '@/domain/activity/models/dayRecord';

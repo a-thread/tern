@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { StyleSheet, Text } from 'react-native';
 
 import { colors, font } from '@/shared/theme';
-import { FootNote, Group, GroupLabel, Row } from '@/shared/components/ui/Layout';
+import { FootNote, Group, GroupLabel, Row } from '@/shared/components/ui';
 import { useUnits } from '@/domain/settings/hooks/useUnits';
 import { useFoodDisplay } from '@/domain/food/hooks/useFoodDisplay';
 import { useMedication } from '@/domain/medication/MedicationContext';

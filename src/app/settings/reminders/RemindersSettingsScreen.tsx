@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { Group, GroupLabel, Row } from '@/shared/components/ui/Layout';
+import { Group, GroupLabel, Row } from '@/shared/components/ui';
 import type { SettingsStackParamList } from '@/navigation/types';
 import { useSettings } from '@/domain/settings/SettingsContext';
 import { SettingsPage } from '@/settings/components/SettingsPage/SettingsPage';

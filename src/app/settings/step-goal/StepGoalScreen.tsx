@@ -4,9 +4,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 
 import { colors, font, radius, space, typography } from '@/shared/theme';
-import { Group, GroupLabel } from '@/shared/components/ui/Layout';
-import { PushHeader } from '@/shared/components/ui/SheetChrome';
-import { ToggleRow } from '@/shared/components/ui/Toggle';
+import { Group, GroupLabel, PushHeader, ToggleRow } from '@/shared/components/ui';
 import { useActivity } from '@/domain/activity/ActivityContext';
 import { suggestGoal, StepGoal } from '@/domain/activity/models/stepGoal';
 import { useSettings } from '@/domain/settings/SettingsContext';

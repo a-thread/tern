@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { Group, GroupLabel } from '@/shared/components/ui/Layout';
+import { Group, GroupLabel } from '@/shared/components/ui';
 
 /** A labelled list of meals to pick from; `Row` draws each one (saved meals and past days' meals). */
 export function MealGroup<T extends { id: string }>({

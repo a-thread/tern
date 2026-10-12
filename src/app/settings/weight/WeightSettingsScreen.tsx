@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { Group, GroupLabel } from '@/shared/components/ui/Layout';
+import { Group, GroupLabel } from '@/shared/components/ui';
 import { useSettings } from '@/domain/settings/SettingsContext';
 import { SettingsPage } from '@/settings/components/SettingsPage/SettingsPage';
 import { WeightSettingsRows } from '@/settings/weight/components/WeightSettingsRows/WeightSettingsRows';

@@ -10,8 +10,7 @@ import { WaypointsProvider, useWaypoints } from '@/domain/waypoints/WaypointsCon
 import { FoodProvider, useFood } from '@/domain/food/FoodContext';
 import { SavedMealsProvider, useSavedMeals } from '@/domain/saved-meals/SavedMealsContext';
 import { itemsToEntries, snapshotItems } from '@/domain/saved-meals/models/savedMeals';
-import type { FoodEntry } from '@/domain/food/models/foodEntry';
-import { Meal } from '@/domain/food/models/foodEntry';
+import { type FoodEntry, Meal } from '@/domain/food/models/foodEntry';
 import { WaypointSource } from '@/domain/waypoints/models/waypoint';
 
 const entry = (name: string, over: Partial<FoodEntry> = {}): FoodEntry => ({

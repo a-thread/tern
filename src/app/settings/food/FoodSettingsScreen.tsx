@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { Group, GroupLabel } from '@/shared/components/ui/Layout';
+import { Group, GroupLabel } from '@/shared/components/ui';
 import { SettingsPage } from '@/settings/components/SettingsPage/SettingsPage';
 import { CalorieTargetsRow } from '@/settings/food/components/CalorieTargetsRow/CalorieTargetsRow';
 import { FoodDisplayRow } from '@/settings/food/components/FoodDisplayRow/FoodDisplayRow';

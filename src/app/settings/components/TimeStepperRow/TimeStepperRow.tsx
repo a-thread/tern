@@ -2,7 +2,7 @@ import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 
 import { colors, font } from '@/shared/theme';
-import { Stepper } from '@/shared/components/ui/Stepper';
+import { Stepper } from '@/shared/components/ui';
 
 /** A labelled row with a − / + stepper around a value, for times and days. */
 export default function TimeStepperRow({

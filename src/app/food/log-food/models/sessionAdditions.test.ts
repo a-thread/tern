@@ -1,6 +1,5 @@
-import type { FoodEntry } from '@/domain/food/models/foodEntry';
+import { type FoodEntry, Meal } from '@/domain/food/models/foodEntry';
 import { additionsSince, describeAdditions } from '@/food/log-food/models/sessionAdditions';
-import { Meal } from '@/domain/food/models/foodEntry';
 
 const entry = (name: string, meal: FoodEntry['meal'] = Meal.Lunch): FoodEntry => ({
   id: `id-${name}`,

@@ -1,5 +1,4 @@
-import type { FoodEntry } from '@/domain/food/models/foodEntry';
-import { Meal } from '@/domain/food/models/foodEntry';
+import { type FoodEntry, Meal } from '@/domain/food/models/foodEntry';
 
 /** The meals of a day: which count toward the logging rule, and how they are listed. */
 export class Meals {

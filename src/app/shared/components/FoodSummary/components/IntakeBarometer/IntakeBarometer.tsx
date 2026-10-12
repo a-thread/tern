@@ -11,7 +11,7 @@ import {
 } from 'react-native';
 
 import { colors, font, radius, space, tierColors, typography } from '@/shared/theme';
-import { ProgressBar } from '@/shared/components/ui/Bars';
+import { ProgressBar } from '@/shared/components/ui';
 import { useSettings } from '@/domain/settings/SettingsContext';
 import { useFoodDisplay } from '@/domain/food/hooks/useFoodDisplay';
 import {

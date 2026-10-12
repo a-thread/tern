@@ -13,8 +13,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 
 import { colors, font, radius, space, typography } from '@/shared/theme';
-import { Group, GroupLabel } from '@/shared/components/ui/Layout';
-import { SheetNav } from '@/shared/components/ui/SheetChrome';
+import { Group, GroupLabel, SheetNav } from '@/shared/components/ui';
 import { WeightTrend } from '@/shared/components/WeightTrend/WeightTrend';
 import type { RootStackParamList } from '@/navigation/types';
 import { useUnits } from '@/domain/settings/hooks/useUnits';

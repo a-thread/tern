@@ -3,8 +3,7 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
 import { colors, font, radius, space, typography } from '@/shared/theme';
-import { Group, GroupLabel } from '@/shared/components/ui/Layout';
-import { Stepper } from '@/shared/components/ui/Stepper';
+import { Group, GroupLabel, Stepper } from '@/shared/components/ui';
 import { Meals } from '@/domain/food/models/meals';
 import { useFood } from '@/domain/food/FoodContext';
 import { MealPicker } from '@/food/components/MealPicker/MealPicker';

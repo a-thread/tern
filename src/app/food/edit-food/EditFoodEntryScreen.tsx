@@ -4,9 +4,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 
 import { colors, font, radius, space, typography } from '@/shared/theme';
-import { Group, GroupLabel } from '@/shared/components/ui/Layout';
-import { SheetNav } from '@/shared/components/ui/SheetChrome';
-import { Stepper } from '@/shared/components/ui/Stepper';
+import { Group, GroupLabel, SheetNav, Stepper } from '@/shared/components/ui';
 import type { RootStackParamList } from '@/navigation/types';
 import { Meals } from '@/domain/food/models/meals';
 import { Meal, type Tier } from '@/domain/food/models/foodEntry';

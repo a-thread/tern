@@ -1,6 +1,5 @@
-import type { FoodEntry } from '@/domain/food/models/foodEntry';
+import { type FoodEntry, Meal } from '@/domain/food/models/foodEntry';
 import { cleanName, filterMeals, findMealByName, itemsToEntries, savedMealTotals, snapshotItems, sortMeals, validateMealName, type SavedMeal, SavedMealLimits } from '@/domain/saved-meals/models/savedMeals';
-import { Meal } from '@/domain/food/models/foodEntry';
 import { amountOf } from '@/domain/food/models/measure';
 
 const entry = (name: string, over: Partial<FoodEntry> = {}): FoodEntry => ({

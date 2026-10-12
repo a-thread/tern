@@ -4,7 +4,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 
 import { colors, font, space, typography } from '@/shared/theme';
-import { SheetNav } from '@/shared/components/ui/SheetChrome';
+import { SheetNav } from '@/shared/components/ui';
 import { useSavedMeals } from '@/domain/saved-meals/SavedMealsContext';
 import { SavedMealLimits } from '@/domain/saved-meals/models/savedMeals';
 import type { LogFoodStackParamList } from '@/food/log-food/navigation';

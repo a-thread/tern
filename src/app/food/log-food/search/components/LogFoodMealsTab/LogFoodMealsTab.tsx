@@ -1,5 +1,5 @@
 import React from 'react';
-import { Icon } from '@/shared/components/ui/Icon';
+import { Icon } from '@/shared/components/ui';
 import { Pressable, StyleSheet, Text } from 'react-native';
 
 import { colors, font, radius, space } from '@/shared/theme';

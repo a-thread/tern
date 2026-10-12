@@ -4,8 +4,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { colors, font, space, gradients, typography } from '@/shared/theme';
-import { Group, GroupLabel, Row, IconBadge, Card, FootNote } from '@/shared/components/ui/Layout';
-import { ProgressBar } from '@/shared/components/ui/Bars';
+import { Group, GroupLabel, Row, IconBadge, Card, FootNote, ProgressBar } from '@/shared/components/ui';
 import { JourneyRoute } from '@/journey/components/JourneyRoute/JourneyRoute';
 import { useReplayOnFocus } from '@/shared/hooks/useReplayOnFocus';
 import { usePullToRefresh } from '@/shared/hooks/usePullToRefresh';

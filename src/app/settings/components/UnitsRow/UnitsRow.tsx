@@ -1,7 +1,7 @@
 import React from 'react';
 
 import { PillToggle } from '@/settings/components/PillToggle/PillToggle';
-import { Row } from '@/shared/components/ui/Layout';
+import { Row } from '@/shared/components/ui';
 import { Units } from '@/shared/utils/units';
 import { useSettings } from '@/domain/settings/SettingsContext';
 import { useUnits } from '@/domain/settings/hooks/useUnits';

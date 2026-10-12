@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { ToggleRow } from '@/shared/components/ui/Toggle';
+import { ToggleRow } from '@/shared/components/ui';
 import { useSettings } from '@/domain/settings/SettingsContext';
 
 /** Whether the daily mood and stress check-in is switched on. */

@@ -1,7 +1,6 @@
 import React from 'react';
 
-import { Divider } from '@/shared/components/ui/Layout';
-import { ToggleRow } from '@/shared/components/ui/Toggle';
+import { Divider, ToggleRow } from '@/shared/components/ui';
 import { useSettings } from '@/domain/settings/SettingsContext';
 import { useUnits } from '@/domain/settings/hooks/useUnits';
 import TimeStepperRow from '@/settings/components/TimeStepperRow/TimeStepperRow';

@@ -4,7 +4,7 @@ import { useNavigation } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { colors, space } from '@/shared/theme';
-import { PushHeader } from '@/shared/components/ui/SheetChrome';
+import { PushHeader } from '@/shared/components/ui';
 
 /** A page one level into Settings: the header back to the index, and its groups scrolling below. */
 export function SettingsPage({

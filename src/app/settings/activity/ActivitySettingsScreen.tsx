@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { Group, GroupLabel } from '@/shared/components/ui/Layout';
+import { Group, GroupLabel } from '@/shared/components/ui';
 import { SettingsPage } from '@/settings/components/SettingsPage/SettingsPage';
 import { StepGoalRow } from '@/settings/activity/components/StepGoalRow/StepGoalRow';
 import { RestDaysRow } from '@/settings/activity/components/RestDaysRow/RestDaysRow';

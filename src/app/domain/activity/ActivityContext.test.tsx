@@ -11,8 +11,7 @@ import { FoodProvider } from '@/domain/food/FoodContext';
 import { WaypointsProvider, useWaypoints } from '@/domain/waypoints/WaypointsContext';
 import { ActivityProvider, useActivity } from '@/domain/activity/ActivityContext';
 import { MovementProvider } from '@/domain/movement/MovementContext';
-import type { StepsRepository } from '@/domain/activity/steps.repository';
-import { StepsStatus } from '@/domain/activity/steps.repository';
+import { type StepsRepository, StepsStatus } from '@/domain/activity/steps.repository';
 import { WaypointSource } from '@/domain/waypoints/models/waypoint';
 
 const todayKey = dayKey();

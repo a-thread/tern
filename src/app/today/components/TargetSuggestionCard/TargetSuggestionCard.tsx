@@ -2,7 +2,7 @@ import React from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { colors, font, radius, space } from '@/shared/theme';
-import { GroupLabel } from '@/shared/components/ui/Layout';
+import { GroupLabel } from '@/shared/components/ui';
 import { useSettings } from '@/domain/settings/SettingsContext';
 import { useAdaptiveTarget } from '@/domain/food/hooks/useAdaptiveTarget';
 

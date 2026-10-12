@@ -2,9 +2,7 @@ import React from 'react';
 import { Pressable, StyleSheet, Text } from 'react-native';
 
 import { colors, font } from '@/shared/theme';
-import { Divider, Row } from '@/shared/components/ui/Layout';
-import { Stepper } from '@/shared/components/ui/Stepper';
-import { ToggleRow } from '@/shared/components/ui/Toggle';
+import { Divider, Row, Stepper, ToggleRow } from '@/shared/components/ui';
 import { useSettings } from '@/domain/settings/SettingsContext';
 import { useUnits } from '@/domain/settings/hooks/useUnits';
 import { useWeight } from '@/domain/weight/WeightContext';

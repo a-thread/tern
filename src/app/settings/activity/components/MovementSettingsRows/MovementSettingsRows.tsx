@@ -1,8 +1,6 @@
 import React from 'react';
 
-import { Divider, Row } from '@/shared/components/ui/Layout';
-import { Stepper } from '@/shared/components/ui/Stepper';
-import { ToggleRow } from '@/shared/components/ui/Toggle';
+import { Divider, Row, Stepper, ToggleRow } from '@/shared/components/ui';
 import { useSettings } from '@/domain/settings/SettingsContext';
 import { clampMovementGoal, MovementLimits } from '@/domain/movement/models/movementEntry';
 

@@ -5,7 +5,7 @@ import { NativeStackScreenProps } from '@react-navigation/native-stack';
 
 import { colors, font, space, typography } from '@/shared/theme';
 import LoadingBird from '@/shared/components/LoadingBird/LoadingBird';
-import { SheetNav } from '@/shared/components/ui/SheetChrome';
+import { SheetNav } from '@/shared/components/ui';
 import { useLoggedFoods } from '@/food/log-food/hooks/useLoggedFoods';
 import type { LogFoodStackParamList } from '@/food/log-food/navigation';
 import { MealAdder, useMealAdder } from '@/food/log-food/components/MealAdder/MealAdder';

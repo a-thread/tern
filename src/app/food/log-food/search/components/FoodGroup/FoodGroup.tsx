@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { Group, GroupLabel } from '@/shared/components/ui/Layout';
+import { Group, GroupLabel } from '@/shared/components/ui';
 import type { SearchResult } from '@/domain/food/sources/searchResult';
 import type { FoodSource } from '@/domain/food/models/foodRanking';
 import { FoodResultRow } from '@/food/log-food/search/components/FoodGroup/components/FoodResultRow/FoodResultRow';

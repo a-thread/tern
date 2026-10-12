@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { FootNote } from '@/shared/components/ui/Layout';
+import { FootNote } from '@/shared/components/ui';
 import { useBackend } from '@/BackendContext';
 import { SettingsPage } from '@/settings/components/SettingsPage/SettingsPage';
 import { DataSection } from '@/settings/data/components/DataSection/DataSection';

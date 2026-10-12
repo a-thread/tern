@@ -6,10 +6,8 @@ import { useFocusEffect } from '@react-navigation/native';
 
 import { colors, font, space, typography } from '@/shared/theme';
 import { TrendRanges, TrendRange } from '@/trends/models/trendRange';
-import { Card, GroupLabel, FootNote } from '@/shared/components/ui/Layout';
+import { Card, GroupLabel, FootNote, SegmentedControl, Icon } from '@/shared/components/ui';
 import { Insight } from '@/trends/components/Insight/Insight';
-import { SegmentedControl } from '@/shared/components/ui/SegmentedControl';
-import { Icon } from '@/shared/components/ui/Icon';
 import { TrendCard, TrendFigure, TrendHeader } from '@/trends/components/TrendCard/TrendCard';
 import { StepBars } from '@/trends/components/StepBars/StepBars';
 import { WeightTrend } from '@/shared/components/WeightTrend/WeightTrend';

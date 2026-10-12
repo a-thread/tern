@@ -2,8 +2,7 @@ import React from 'react';
 import { Animated, Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { colors, font, space, typography } from '@/shared/theme';
-import { Chip } from '@/shared/components/ui/Layout';
-import { Icon } from '@/shared/components/ui/Icon';
+import { Chip, Icon } from '@/shared/components/ui';
 import TernMark from '@/shared/components/TernMark/TernMark';
 import { AnimatedNumber } from '@/shared/components/AnimatedNumber/AnimatedNumber';
 import { useDayKey } from '@/shared/hooks/useDayKey';

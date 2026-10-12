@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Icon } from '@/shared/components/ui/Icon';
+import { Icon } from '@/shared/components/ui';
 import { Animated, Easing, Pressable, StyleSheet, TextInput, View } from 'react-native';
 
 import { colors, font, radius, space } from '@/shared/theme';

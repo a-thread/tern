@@ -1,8 +1,7 @@
 import { addDays, formatShortDate, weekdayName } from '@/shared/utils/date';
 import { Meals } from '@/domain/food/models/meals';
-import type { FoodEntry } from '@/domain/food/models/foodEntry';
+import { type FoodEntry, Meal } from '@/domain/food/models/foodEntry';
 import { snapshotItems, type SavedMealItem } from '@/domain/saved-meals/models/savedMeals';
-import { Meal } from '@/domain/food/models/foodEntry';
 
 /** A meal you've already logged on some day, ready to log again. */
 export type RecentMeal = {

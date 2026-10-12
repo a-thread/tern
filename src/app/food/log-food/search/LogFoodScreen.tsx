@@ -4,9 +4,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 
 import { colors, font, space } from '@/shared/theme';
-import { SheetNav } from '@/shared/components/ui/SheetChrome';
-import { FootNote } from '@/shared/components/ui/Layout';
-import { SegmentedControl } from '@/shared/components/ui/SegmentedControl';
+import { SheetNav, FootNote, SegmentedControl } from '@/shared/components/ui';
 import type { SearchResult } from '@/domain/food/sources/searchResult';
 import type { RecentMeal } from '@/food/log-food/models/recentMeals';
 import type { SavedMeal } from '@/domain/saved-meals/models/savedMeals';

@@ -19,7 +19,7 @@ import Svg, {
 import { useIsFocused } from '@react-navigation/native';
 
 import { colors, font, radius, space } from '@/shared/theme';
-import { Icon } from '@/shared/components/ui/Icon';
+import { Icon } from '@/shared/components/ui';
 import { useReduceMotion } from '@/shared/hooks/useReduceMotion';
 import { Driftwood, DriftwoodDefs } from '@/today/components/RestScene/components/Driftwood/Driftwood';
 import {

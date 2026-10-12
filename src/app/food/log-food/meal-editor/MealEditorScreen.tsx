@@ -4,10 +4,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 
 import { colors, font, radius, space, tierColors, typography } from '@/shared/theme';
-import { Group, GroupLabel } from '@/shared/components/ui/Layout';
-import { SheetNav } from '@/shared/components/ui/SheetChrome';
-import { Stepper } from '@/shared/components/ui/Stepper';
-import { Icon } from '@/shared/components/ui/Icon';
+import { Group, GroupLabel, SheetNav, Stepper, Icon } from '@/shared/components/ui';
 import { TextField } from '@/food/components/TextField/TextField';
 import { useToast } from '@/shared/state/ToastContext';
 import { TierDot } from '@/shared/components/TierDot/TierDot';

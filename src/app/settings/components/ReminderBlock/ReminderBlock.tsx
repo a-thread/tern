@@ -1,7 +1,6 @@
 import React from 'react';
 
-import { Divider } from '@/shared/components/ui/Layout';
-import { ToggleRow } from '@/shared/components/ui/Toggle';
+import { Divider, ToggleRow } from '@/shared/components/ui';
 import TimeStepperRow from '@/settings/components/TimeStepperRow/TimeStepperRow';
 import { formatMinutes, Reminders, stepMinutes } from '@/domain/settings/models/reminderPlan';
 

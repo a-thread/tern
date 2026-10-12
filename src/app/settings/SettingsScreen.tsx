@@ -6,8 +6,7 @@ import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { colors, space } from '@/shared/theme';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 
-import { FootNote, Group, GroupLabel, IconBadge } from '@/shared/components/ui/Layout';
-import { PushHeader } from '@/shared/components/ui/SheetChrome';
+import { FootNote, Group, GroupLabel, IconBadge, PushHeader } from '@/shared/components/ui';
 import type { SettingsStackParamList } from '@/navigation/types';
 import { useBackend } from '@/BackendContext';
 import { useSettings } from '@/domain/settings/SettingsContext';

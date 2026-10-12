@@ -1,5 +1,5 @@
 import React from 'react';
-import { SegmentedControl } from '@/shared/components/ui/SegmentedControl';
+import { SegmentedControl } from '@/shared/components/ui';
 import type { FoodEntry } from '@/domain/food/models/foodEntry';
 
 type Meal = FoodEntry['meal'];

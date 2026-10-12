@@ -1,8 +1,7 @@
 import React from 'react';
 
 import { colors } from '@/shared/theme';
-import { IconBadge } from '@/shared/components/ui/Layout';
-import { Icon } from '@/shared/components/ui/Icon';
+import { IconBadge, Icon } from '@/shared/components/ui';
 
 /** A small green tick for the things already done today. */
 export function DoneBadge() {

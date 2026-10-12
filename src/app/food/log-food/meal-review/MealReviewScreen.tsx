@@ -7,8 +7,7 @@ import type {
 } from '@react-navigation/native-stack';
 
 import { colors, font, radius, space, typography } from '@/shared/theme';
-import { Group, GroupLabel } from '@/shared/components/ui/Layout';
-import { SheetNav } from '@/shared/components/ui/SheetChrome';
+import { Group, GroupLabel, SheetNav } from '@/shared/components/ui';
 import { SwipeToRemove } from '@/food/components/SwipeToRemove/SwipeToRemove';
 import type { RootStackParamList } from '@/navigation/types';
 import { Meals } from '@/domain/food/models/meals';

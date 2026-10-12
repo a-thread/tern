@@ -1,5 +1,5 @@
 import React from 'react';
-import { Icon } from '@/shared/components/ui/Icon';
+import { Icon } from '@/shared/components/ui';
 import { View, Text, StyleSheet, Pressable } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 

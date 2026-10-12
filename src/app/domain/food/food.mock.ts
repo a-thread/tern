@@ -1,6 +1,5 @@
 /** Seed data only — swapping in real Supabase queries means replacing just this file. */
-import type { FoodEntry } from '@/domain/food/models/foodEntry';
-import { Meal } from '@/domain/food/models/foodEntry';
+import { type FoodEntry, Meal } from '@/domain/food/models/foodEntry';
 
 export const foodLog: FoodEntry[] = [
   {
