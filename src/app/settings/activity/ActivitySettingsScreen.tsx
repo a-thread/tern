@@ -6,7 +6,7 @@ import { StepGoalRow } from '@/settings/activity/components/StepGoalRow/StepGoal
 import { RestDaysRow } from '@/settings/activity/components/RestDaysRow/RestDaysRow';
 import { StreakReminderRows } from '@/settings/components/StreakReminderRows/StreakReminderRows';
 import { MovementSettingsRows } from '@/settings/activity/components/MovementSettingsRows/MovementSettingsRows';
-import { useSettingsNavigation } from '@/shared/navigation/useAppNavigation';
+import { useSettingsNavigation } from '@/navigation/useAppNavigation';
 
 /** Settings › Steps and activity: the step goal, rest days, movement, and the streak alert. */
 export default function ActivitySettingsScreen() {

@@ -4,7 +4,8 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 
 import { colors, font, space, typography } from '@/shared/theme';
-import { Card, GroupLabel, Row, Insight, FootNote } from '@/shared/components/ui/Layout';
+import { Card, GroupLabel, Row, FootNote } from '@/shared/components/ui/Layout';
+import { Insight } from '@/trends/components/Insight/Insight';
 import { PushHeader } from '@/shared/components/ui/SheetChrome';
 import { LegendDot } from '@/trends/components/LegendDot/LegendDot';
 import { SegmentedControl } from '@/shared/components/ui/SegmentedControl';

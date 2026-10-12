@@ -3,7 +3,7 @@ import { Animated, Pressable, StyleSheet, Text, View } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 
 import { font } from '@/shared/theme';
-import { useRootNavigation } from '@/shared/navigation/useAppNavigation';
+import { useRootNavigation } from '@/navigation/useAppNavigation';
 
 /** Gold for points, the route and links on the dark cards. */
 export const GOLD = '#F2C888';

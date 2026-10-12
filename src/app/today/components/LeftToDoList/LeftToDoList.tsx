@@ -11,7 +11,7 @@ import { useWater } from '@/domain/water/WaterContext';
 import WaterSheet from '@/today/components/WaterSheet/WaterSheet';
 import { formatLoggedAt } from '@/domain/weight/models/weightEntry';
 import { useDayItems } from '@/today/hooks/useDayItems';
-import { useRootNavigation } from '@/shared/navigation/useAppNavigation';
+import { useRootNavigation } from '@/navigation/useAppNavigation';
 
 /**
  * What is still open on the viewed day: meals, a weigh-in, water, a check-in and (today only)

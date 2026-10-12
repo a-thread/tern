@@ -14,7 +14,7 @@ import { addDays, formatLongDate } from '@/shared/utils/date';
 import { DayState } from '@/shared/models/dayState';
 import { useMovement } from '@/domain/movement/MovementContext';
 import { entriesOn, movementSummary } from '@/domain/movement/models/movementEntry';
-import { useRootNavigation } from '@/shared/navigation/useAppNavigation';
+import { useRootNavigation } from '@/navigation/useAppNavigation';
 
 /**
  * The sky card: greeting, streak, the bird's flight toward the step goal, and the steps, for the

@@ -5,7 +5,7 @@ import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useDayKey } from '@/shared/hooks/useDayKey';
 import { useReduceMotion } from '@/shared/hooks/useReduceMotion';
 import { useAnimatedNumber } from '@/shared/hooks/useAnimatedNumber';
-import type { RootStackParamList } from '@/shared/navigation/types';
+import type { RootStackParamList } from '@/navigation/types';
 import { useSettings } from '@/domain/settings/SettingsContext';
 import { useWaypoints } from '@/domain/waypoints/WaypointsContext';
 import { useLastSeenTotal } from '@/journey/waypoints/hooks/useLastSeenTotal';

@@ -2,7 +2,7 @@ import React from 'react';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 
-import type { RootStackParamList } from '@/shared/navigation/types';
+import type { RootStackParamList } from '@/navigation/types';
 import LogFoodScreen from '@/food/log-food/search/LogFoodScreen';
 import BarcodeScanScreen from '@/food/log-food/barcode-scan/BarcodeScanScreen';
 import FoodDetailScreen from '@/food/log-food/food-detail/FoodDetailScreen';

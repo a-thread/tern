@@ -16,7 +16,7 @@ import { colors, font, radius, space, typography } from '@/shared/theme';
 import { Group, GroupLabel } from '@/shared/components/ui/Layout';
 import { SheetNav } from '@/shared/components/ui/SheetChrome';
 import { WeightTrend } from '@/shared/components/WeightTrend/WeightTrend';
-import type { RootStackParamList } from '@/shared/navigation/types';
+import type { RootStackParamList } from '@/navigation/types';
 import { useUnits } from '@/domain/settings/hooks/useUnits';
 import { useWeight } from '@/domain/weight/WeightContext';
 import { isLoggedOn } from '@/domain/weight/models/weightEntry';

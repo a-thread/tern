@@ -8,7 +8,7 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 
 import { FootNote, Group, GroupLabel, IconBadge } from '@/shared/components/ui/Layout';
 import { PushHeader } from '@/shared/components/ui/SheetChrome';
-import type { SettingsStackParamList } from '@/shared/navigation/types';
+import type { SettingsStackParamList } from '@/navigation/types';
 import { useBackend } from '@/BackendContext';
 import { useSettings } from '@/domain/settings/SettingsContext';
 import { ProfileSection } from '@/settings/components/ProfileSection/ProfileSection';

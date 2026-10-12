@@ -20,7 +20,7 @@ import JourneyScreen from '@/journey/JourneyScreen';
 import WaypointsScreen from '@/journey/waypoints/WaypointsScreen';
 import MilestoneScreen from '@/journey/milestone/MilestoneScreen';
 import SettingsStack from '@/settings/SettingsStack';
-import type { RootStackParamList, TabParamList } from '@/shared/navigation/types';
+import type { RootStackParamList, TabParamList } from '@/navigation/types';
 
 const Tab = createBottomTabNavigator<TabParamList>();
 const RootStack = createNativeStackNavigator<RootStackParamList>();

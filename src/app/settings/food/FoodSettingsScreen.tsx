@@ -5,7 +5,7 @@ import { SettingsPage } from '@/settings/components/SettingsPage/SettingsPage';
 import { CalorieTargetsRow } from '@/settings/food/components/CalorieTargetsRow/CalorieTargetsRow';
 import { FoodDisplayRow } from '@/settings/food/components/FoodDisplayRow/FoodDisplayRow';
 import { MealReminderRows } from '@/settings/components/MealReminderRows/MealReminderRows';
-import { useSettingsNavigation } from '@/shared/navigation/useAppNavigation';
+import { useSettingsNavigation } from '@/navigation/useAppNavigation';
 
 /** Settings › Food: targets, how food is shown, and the meal reminders. */
 export default function FoodSettingsScreen() {

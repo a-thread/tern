@@ -15,7 +15,7 @@ import { useViewedDay } from '@/shared/state/ViewedDayContext';
 import { dayWord } from '@/shared/utils/date';
 import { useDayItems } from '@/today/hooks/useDayItems';
 import { DoneBadge } from '@/today/components/DoneList/components/DoneBadge/DoneBadge';
-import { useRootNavigation } from '@/shared/navigation/useAppNavigation';
+import { useRootNavigation } from '@/navigation/useAppNavigation';
 
 /**
  * What has been done on the viewed day ("Today so far", "Yesterday", "Tuesday"), with a way

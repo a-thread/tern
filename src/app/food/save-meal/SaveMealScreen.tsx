@@ -7,7 +7,7 @@ import { colors, font, radius, space, typography } from '@/shared/theme';
 import { Group, GroupLabel } from '@/shared/components/ui/Layout';
 import { SheetNav } from '@/shared/components/ui/SheetChrome';
 import { TextField } from '@/food/components/TextField/TextField';
-import type { RootStackParamList } from '@/shared/navigation/types';
+import type { RootStackParamList } from '@/navigation/types';
 import { useToast } from '@/shared/state/ToastContext';
 import { Meals } from '@/domain/food/models/meals';
 import { useFood } from '@/domain/food/FoodContext';

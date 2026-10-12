@@ -7,7 +7,7 @@ import { colors, font, radius, space, typography } from '@/shared/theme';
 import { Group, GroupLabel } from '@/shared/components/ui/Layout';
 import { SheetNav } from '@/shared/components/ui/SheetChrome';
 import { Stepper } from '@/shared/components/ui/Stepper';
-import type { RootStackParamList } from '@/shared/navigation/types';
+import type { RootStackParamList } from '@/navigation/types';
 import { Meals } from '@/domain/food/models/meals';
 import { Meal, type Tier } from '@/domain/food/models/foodEntry';
 import { useFood } from '@/domain/food/FoodContext';

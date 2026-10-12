@@ -27,7 +27,7 @@ import type { FoodEntry } from '@/domain/food/models/foodEntry';
 import { tierShares } from '@/shared/components/FoodSummary/components/IntakeBarometer/models/tierShares';
 import { NovaInfoSheet } from '@/shared/components/FoodSummary/components/IntakeBarometer/components/NovaInfoSheet/NovaInfoSheet';
 import { IntakeInfoSheet } from '@/shared/components/FoodSummary/components/IntakeBarometer/components/IntakeInfoSheet/IntakeInfoSheet';
-import { useRootNavigation } from '@/shared/navigation/useAppNavigation';
+import { useRootNavigation } from '@/navigation/useAppNavigation';
 
 type Totals = { calories: number; protein: number; carbs: number; fat: number };
 

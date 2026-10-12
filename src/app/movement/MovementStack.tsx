@@ -2,7 +2,7 @@ import React from 'react';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 
-import type { RootStackParamList } from '@/shared/navigation/types';
+import type { RootStackParamList } from '@/navigation/types';
 import type { MovementStackParamList } from '@/movement/navigation';
 import ExercisesScreen from '@/movement/exercises/ExercisesScreen';
 import ExerciseDetailScreen from '@/movement/exercise-detail/ExerciseDetailScreen';

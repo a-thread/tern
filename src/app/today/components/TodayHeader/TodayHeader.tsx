@@ -11,7 +11,7 @@ import { usePulseOnIncrease } from '@/shared/hooks/useAnimatedNumber';
 import { formatLongDate } from '@/shared/utils/date';
 import { useWaypoints } from '@/domain/waypoints/WaypointsContext';
 import { useActivity } from '@/domain/activity/ActivityContext';
-import { useRootNavigation } from '@/shared/navigation/useAppNavigation';
+import { useRootNavigation } from '@/navigation/useAppNavigation';
 
 /**
  * The date and title, the waypoint chip and the settings gear. The chip holds back awards that

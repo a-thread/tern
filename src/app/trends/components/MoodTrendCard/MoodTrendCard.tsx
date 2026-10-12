@@ -4,7 +4,7 @@ import { Text, View, StyleSheet } from 'react-native';
 import { space, typography } from '@/shared/theme';
 import { WeightTrend } from '@/shared/components/WeightTrend/WeightTrend';
 import { TrendCard, TrendFigure } from '@/trends/components/TrendCard/TrendCard';
-import { useRootNavigation } from '@/shared/navigation/useAppNavigation';
+import { useRootNavigation } from '@/navigation/useAppNavigation';
 import { useDayKey } from '@/shared/hooks/useDayKey';
 import { addDays } from '@/shared/utils/date';
 import { TrendRanges, type TrendRange } from '@/trends/models/trendRange';

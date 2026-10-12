@@ -3,23 +3,6 @@ import { View, Text, StyleSheet, Pressable, ViewStyle } from 'react-native';
 import { colors, font, radius, space, typography } from '@/shared/theme';
 import { Chevron } from '@/shared/components/ui/Chevron';
 
-/* ---------- typography ---------- */
-
-export function LargeTitle({
-  children,
-  eyebrow,
-}: {
-  children: string;
-  eyebrow?: string;
-}) {
-  return (
-    <View style={{ paddingHorizontal: space.lg, paddingBottom: space.sm }}>
-      {eyebrow ? <Text style={s.eyebrow}>{eyebrow}</Text> : null}
-      <Text style={s.largeTitle}>{children}</Text>
-    </View>
-  );
-}
-
 export function GroupLabel({ children }: { children: string }) {
   return <Text style={s.groupLabel}>{children}</Text>;
 }
@@ -159,31 +142,7 @@ export function Chip({
   );
 }
 
-export function Insight({
-  children,
-  bg = colors.auroraTint,
-  icon,
-}: {
-  children: string;
-  bg?: string;
-  icon?: React.ReactNode;
-}) {
-  return (
-    <View style={[s.insight, { backgroundColor: bg }]}>
-      {icon ? <View style={s.insightIcon}>{icon}</View> : null}
-      <Text style={s.insightText}>{children}</Text>
-    </View>
-  );
-}
-
 const s = StyleSheet.create({
-  eyebrow: typography.meta,
-  largeTitle: {
-    fontFamily: font.display,
-    fontSize: 28,
-    color: colors.ink,
-    letterSpacing: -0.3,
-  },
   groupLabel: {
     fontFamily: font.semibold,
     fontSize: 11,
@@ -244,26 +203,4 @@ const s = StyleSheet.create({
     paddingVertical: 5,
   },
   chipText: { fontFamily: font.semibold, fontSize: 12 },
-  insight: {
-    flexDirection: 'row',
-    gap: 10,
-    padding: 12,
-    borderRadius: radius.md,
-    marginTop: space.md,
-  },
-  insightIcon: {
-    width: 25,
-    height: 25,
-    borderRadius: 7,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  insightText: {
-    flex: 1,
-    fontFamily: font.body,
-    fontSize: 12,
-    lineHeight: 18,
-    color: colors.ink,
-  },
 });

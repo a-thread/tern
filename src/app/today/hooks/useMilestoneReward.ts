@@ -3,7 +3,7 @@ import { useIsFocused } from '@react-navigation/native';
 
 import { useWaypoints } from '@/domain/waypoints/WaypointsContext';
 import { usePendingMilestone } from '@/today/hooks/usePendingMilestone';
-import { useRootNavigation } from '@/shared/navigation/useAppNavigation';
+import { useRootNavigation } from '@/navigation/useAppNavigation';
 
 /**
  * Opens the reward screen for a milestone that was just passed. It is marked once the feathers

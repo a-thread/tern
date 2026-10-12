@@ -19,7 +19,7 @@ import WaterCard from '@/shared/components/WaterCard/WaterCard';
 import { useWater } from '@/domain/water/WaterContext';
 import { TierDot } from '@/shared/components/TierDot/TierDot';
 import { FoodSummary } from '@/shared/components/FoodSummary/FoodSummary';
-import { useRootNavigation } from '@/shared/navigation/useAppNavigation';
+import { useRootNavigation } from '@/navigation/useAppNavigation';
 
 export default function FoodScreen() {
   // Today unless a past day was picked on Home; yesterday can still be filled in.

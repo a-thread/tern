@@ -4,7 +4,7 @@ import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 
 import TernMark from '@/shared/components/TernMark/TernMark';
 import { useReduceMotion } from '@/shared/hooks/useReduceMotion';
-import type { RootStackParamList } from '@/shared/navigation/types';
+import type { RootStackParamList } from '@/navigation/types';
 import { useWaypoints } from '@/domain/waypoints/WaypointsContext';
 import { latestMilestone, Milestones } from '@/domain/waypoints/models/milestone';
 import { daysWithWaypoints } from '@/domain/waypoints/models/waypoint';

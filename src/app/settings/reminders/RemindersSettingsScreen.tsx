@@ -1,7 +1,7 @@
 import React from 'react';
 
 import { Group, GroupLabel, Row } from '@/shared/components/ui/Layout';
-import type { SettingsStackParamList } from '@/shared/navigation/types';
+import type { SettingsStackParamList } from '@/navigation/types';
 import { useSettings } from '@/domain/settings/SettingsContext';
 import { SettingsPage } from '@/settings/components/SettingsPage/SettingsPage';
 import { StreakReminderRows } from '@/settings/components/StreakReminderRows/StreakReminderRows';
@@ -9,7 +9,7 @@ import { MealReminderRows } from '@/settings/components/MealReminderRows/MealRem
 import { WeightReminderRows } from '@/settings/components/WeightReminderRows/WeightReminderRows';
 import { WaterReminderRows } from '@/settings/components/WaterReminderRows/WaterReminderRows';
 import { MoodReminderRows } from '@/settings/components/MoodReminderRows/MoodReminderRows';
-import { useSettingsNavigation } from '@/shared/navigation/useAppNavigation';
+import { useSettingsNavigation } from '@/navigation/useAppNavigation';
 
 type Section = keyof Pick<SettingsStackParamList, 'WeightSettings' | 'WaterSettings' | 'MoodSettings'>;
 

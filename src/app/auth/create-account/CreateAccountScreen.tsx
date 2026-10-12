@@ -1,14 +1,12 @@
 import React, { useState } from 'react';
 
 import { useAuth } from '@/domain/auth/AuthContext';
-import {
-  AuthBanner,
-  AuthLayout,
-  FormField,
-  LinkButton,
-  LinkColumn,
-  SubmitButton,
-} from '@/auth/components/AuthForm';
+import { AuthBanner } from '@/auth/components/AuthBanner/AuthBanner';
+import { AuthLayout } from '@/auth/components/AuthLayout/AuthLayout';
+import { FormField } from '@/auth/components/FormField/FormField';
+import { LinkButton } from '@/auth/components/LinkButton/LinkButton';
+import { LinkColumn } from '@/auth/components/LinkColumn/LinkColumn';
+import { SubmitButton } from '@/auth/components/SubmitButton/SubmitButton';
 import { useSubmit } from '@/auth/hooks/useSubmit';
 import { isValidEmail, isValidName, isValidPassword, passwordsMatch, AccountLimits } from '@/domain/auth/validation';
 

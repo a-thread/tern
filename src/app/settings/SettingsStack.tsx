@@ -15,7 +15,7 @@ import WaterSettingsScreen from '@/settings/water/WaterSettingsScreen';
 import MoodSettingsScreen from '@/settings/mood/MoodSettingsScreen';
 import RemindersSettingsScreen from '@/settings/reminders/RemindersSettingsScreen';
 import DataSettingsScreen from '@/settings/data/DataSettingsScreen';
-import type { SettingsStackParamList } from '@/shared/navigation/types';
+import type { SettingsStackParamList } from '@/navigation/types';
 
 const Stack = createNativeStackNavigator<SettingsStackParamList>();
 
