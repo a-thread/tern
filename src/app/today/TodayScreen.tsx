@@ -4,7 +4,6 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { colors, font, space } from '@/shared/theme';
 import { useReplayOnFocus } from '@/shared/hooks/useReplayOnFocus';
-import { usePullToRefresh } from '@/shared/hooks/usePullToRefresh';
 import { easeLayout } from '@/today/utils/easeLayout';
 import { WaypointRules } from '@/domain/waypoints/models/waypoint';
 import { useWaypoints } from '@/domain/waypoints/WaypointsContext';
@@ -13,13 +12,9 @@ import { useActivity } from '@/domain/activity/ActivityContext';
 import { useViewedDay } from '@/shared/state/ViewedDayContext';
 import { useFood } from '@/domain/food/FoodContext';
 import { useSettings } from '@/domain/settings/SettingsContext';
-import { useWeight } from '@/domain/weight/WeightContext';
-import { useWater } from '@/domain/water/WaterContext';
-import { useMood } from '@/domain/mood/MoodContext';
-import { useMedication } from '@/domain/medication/MedicationContext';
-import { useMovement } from '@/domain/movement/MovementContext';
 import { useCelebrationPlayback } from '@/today/hooks/useCelebrationPlayback';
 import { useMilestoneReward } from '@/today/hooks/useMilestoneReward';
+import { useTodayRefresh } from '@/today/hooks/useTodayRefresh';
 import { TodayHeader } from '@/today/components/TodayHeader/TodayHeader';
 import { StepsHero } from '@/today/components/StepsHero/StepsHero';
 import { RestScene } from '@/today/components/RestScene/RestScene';
@@ -37,7 +32,7 @@ import { TargetSuggestionCard } from '@/today/components/TargetSuggestionCard/Ta
  */
 export default function TodayScreen() {
   const insets = useSafeAreaInsets();
-  const { todaySteps, streak, refresh: refreshSteps } = useActivity();
+  const { todaySteps, streak } = useActivity();
   // Today unless a past day was tapped in the week strip; every section below follows it.
   const { day, isToday, editable } = useViewedDay();
   const rest = useRestDay();
@@ -49,25 +44,10 @@ export default function TodayScreen() {
   // Calm while resting, and through the take-off after undoing it: the usual lists wait until
   // the tern has gone, so the page changes once, not twice.
   const calm = (rest.isRest || rest.leaving) && !reveal;
-  const { completeCelebration, reload: reloadWaypoints } = useWaypoints();
-  const { foodLog, reload: reloadFood } = useFood();
+  const { completeCelebration } = useWaypoints();
+  const { foodLog } = useFood();
   const { settings } = useSettings();
-  const { reload: reloadWeight } = useWeight();
-  const { reload: reloadWater } = useWater();
-  const { reload: reloadMood } = useMood();
-  const { reload: reloadMedication } = useMedication();
-  const { reload: reloadMovement } = useMovement();
-  // Everything Today shows: steps, the day's logs, and the waypoint total.
-  const refreshControl = usePullToRefresh([
-    refreshSteps,
-    reloadFood,
-    reloadWeight,
-    reloadWater,
-    reloadMood,
-    reloadMedication,
-    reloadMovement,
-    reloadWaypoints,
-  ]);
+  const refreshControl = useTodayRefresh();
   const replayKey = useReplayOnFocus(todaySteps);
   // Each day picked flies the bird again from the start (both keys only ever count up).
   const [dayPicks, setDayPicks] = useState(0);

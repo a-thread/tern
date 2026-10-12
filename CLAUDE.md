@@ -61,7 +61,11 @@ src/app/
 - **Enums, not string unions**, for a closed set that is compared or switched on (`DayState`,
   `Meal`, `Frequency`, `TrendRange`). Compare with the member, never a literal.
 - **No generic names** (`types.ts`, `helpers.ts`, `components.tsx`) and **no barrel `index.ts`** files.
-  Import the real file.
+  Import the real file. The one exception is `@/shared/components/ui`, the shared primitives
+  (`Group`, `Row`, `Icon`, `Stepper`…), which every screen uses.
+- **Keep import lists short**: one import line per module (lint enforces it), and when a screen pulls
+  in many Contexts just to wire one behaviour (pull to refresh across six of them), put that in a hook
+  beside the screen (`useTodayRefresh`) so the screen imports one thing.
 - **Tokens, not literals**: colors, fonts, radii and spacing come from `@/shared/theme`
   (`colors.danger`, `typography.caption`, `space.md`). Don't hand-write a font/size/color combo that
   a `typography` token already covers.
