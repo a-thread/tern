@@ -6,13 +6,17 @@ import { colors, font, radius, space, typography } from '@/shared/theme';
 import { Group, GroupLabel, Stepper } from '@/shared/components/ui';
 import { Meals } from '@/domain/food/models/meals';
 import { useFood } from '@/domain/food/FoodContext';
-import { MealPicker } from '@/food/components/MealPicker/MealPicker';
+import { MealPicker } from '../../../components/MealPicker/MealPicker';
 import { useFoodDisplay } from '@/domain/food/hooks/useFoodDisplay';
-import { itemsToEntries, scaleServings, type SavedMealItem } from '@/domain/saved-meals/models/savedMeals';
-import { loggedAsResult } from '@/food/log-food/models/recentFoods';
+import {
+  itemsToEntries,
+  scaleServings,
+  type SavedMealItem,
+} from '@/domain/saved-meals/models/savedMeals';
+import { loggedAsResult } from '../../models/recentFoods';
 import { scaledTotals, stepScale } from '@/domain/food/models/mealDraft';
-import type { LogFoodStackParamList } from '@/food/log-food/navigation';
-import ItemRow from '@/food/components/ItemRow/ItemRow';
+import type { LogFoodStackParamList } from '../../navigation';
+import ItemRow from '../../../components/ItemRow/ItemRow';
 
 type Nav = NativeStackNavigationProp<LogFoodStackParamList>;
 
@@ -44,7 +48,10 @@ export function useMealAdder(
   // Just this food: the Details screen, starting from the amount it has here, so it can be changed first.
   const addOne = (index: number) => {
     const [entry] = itemsToEntries([items[index]], target, scale);
-    navigation.navigate('FoodDetail', { meal: target, result: loggedAsResult(entry) });
+    navigation.navigate('FoodDetail', {
+      meal: target,
+      result: loggedAsResult(entry),
+    });
   };
 
   return { target, setTarget, scale, setScale, summary, add, addOne };
@@ -65,7 +72,8 @@ export function MealAdder({
   scaleNoun: string;
 }) {
   const { target, setTarget, scale, setScale, add, addOne } = adder;
-  const targetLabel = Meals.OPTIONS.find((m) => m.key === target)?.label ?? target;
+  const targetLabel =
+    Meals.OPTIONS.find((m) => m.key === target)?.label ?? target;
   return (
     <>
       <GroupLabel>{`${itemsLabel} · tap a food to add just that`}</GroupLabel>
@@ -99,7 +107,11 @@ export function MealAdder({
 
       <GroupLabel>Add to</GroupLabel>
       <View style={s.card}>
-        <MealPicker value={target} onChange={setTarget} options={Meals.OPTIONS} />
+        <MealPicker
+          value={target}
+          onChange={setTarget}
+          options={Meals.OPTIONS}
+        />
       </View>
 
       <Pressable style={s.bigBtn} onPress={add}>

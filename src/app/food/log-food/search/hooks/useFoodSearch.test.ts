@@ -1,12 +1,16 @@
 import { renderHook, act, waitFor } from '@testing-library/react-native';
 
 import { FoodApiError } from '@/domain/food/sources/http';
-import { searchProducts } from '@/food/log-food/sources/openFoodFacts';
-import { clearSearchCache, useFoodSearch, FoodSearch } from '@/food/log-food/search/hooks/useFoodSearch';
+import { searchProducts } from '../../sources/openFoodFacts';
+import {
+  clearSearchCache,
+  useFoodSearch,
+  FoodSearch,
+} from '../../search/hooks/useFoodSearch';
 import type { SearchResult } from '@/domain/food/sources/searchResult';
 
-jest.mock('@/food/log-food/sources/openFoodFacts', () => {
-  const actual = jest.requireActual('@/food/log-food/sources/openFoodFacts');
+jest.mock('../../sources/openFoodFacts', () => {
+  const actual = jest.requireActual('../../sources/openFoodFacts');
   return { ...actual, searchProducts: jest.fn() };
 });
 const search = searchProducts as jest.MockedFunction<typeof searchProducts>;
@@ -37,7 +41,10 @@ const type = async (ms = FoodSearch.DEBOUNCE_MS) => {
 
 describe('useFoodSearch', () => {
   it('does nothing for an empty or one-character query', () => {
-    const { result, rerender } = renderHook(({ q }: { q: string }) => useFoodSearch(q), { initialProps: { q: '' } });
+    const { result, rerender } = renderHook(
+      ({ q }: { q: string }) => useFoodSearch(q),
+      { initialProps: { q: '' } },
+    );
     expect(result.current.state.status).toBe('idle');
     rerender({ q: 'o' });
     expect(result.current.state.status).toBe('idle');
@@ -46,7 +53,10 @@ describe('useFoodSearch', () => {
 
   it('waits for a pause in typing, then searches once', async () => {
     search.mockResolvedValue([food('Rolled oats')]);
-    const { result, rerender } = renderHook(({ q }: { q: string }) => useFoodSearch(q), { initialProps: { q: 'ro' } });
+    const { result, rerender } = renderHook(
+      ({ q }: { q: string }) => useFoodSearch(q),
+      { initialProps: { q: 'ro' } },
+    );
     // Nothing is "loading" until the pause is over and a request really runs.
     expect(result.current.state.status).toBe('idle');
 
@@ -73,7 +83,12 @@ describe('useFoodSearch', () => {
     const { result } = renderHook(() => useFoodSearch('oats'));
     await type();
     await waitFor(() =>
-      expect(result.current.state).toEqual({ status: 'error', kind: 'network', results: [], query: null }),
+      expect(result.current.state).toEqual({
+        status: 'error',
+        kind: 'network',
+        results: [],
+        query: null,
+      }),
     );
 
     search.mockResolvedValueOnce([food('Oats')]);
@@ -85,19 +100,33 @@ describe('useFoodSearch', () => {
   it('keeps the last results on screen while the next search runs', async () => {
     let resolve: (r: SearchResult[]) => void = () => {};
     search.mockResolvedValueOnce([food('Oats')]);
-    const { result, rerender } = renderHook(({ q }: { q: string }) => useFoodSearch(q), { initialProps: { q: 'oats' } });
+    const { result, rerender } = renderHook(
+      ({ q }: { q: string }) => useFoodSearch(q),
+      { initialProps: { q: 'oats' } },
+    );
     await type();
     await waitFor(() => expect(result.current.state.status).toBe('done'));
 
     search.mockImplementationOnce(() => new Promise((r) => (resolve = r)));
     rerender({ q: 'oat milk' });
     // While typing, and while the request runs, the old results stay.
-    expect(result.current.state).toMatchObject({ status: 'done', query: 'oats' });
+    expect(result.current.state).toMatchObject({
+      status: 'done',
+      query: 'oats',
+    });
     await type();
-    expect(result.current.state).toMatchObject({ status: 'loading', query: 'oats', results: [food('Oats')] });
+    expect(result.current.state).toMatchObject({
+      status: 'loading',
+      query: 'oats',
+      results: [food('Oats')],
+    });
 
     await act(async () => resolve([food('Oat milk')]));
-    expect(result.current.state).toMatchObject({ status: 'done', query: 'oat milk', results: [food('Oat milk')] });
+    expect(result.current.state).toMatchObject({
+      status: 'done',
+      query: 'oat milk',
+      results: [food('Oat milk')],
+    });
   });
 
   it('reuses a remembered search instead of asking again', async () => {

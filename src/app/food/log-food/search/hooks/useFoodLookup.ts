@@ -4,13 +4,21 @@ import { useDayKey } from '@/shared/hooks/useDayKey';
 import type { SearchResult } from '@/domain/food/sources/searchResult';
 import { isUsdaEnabled } from '@/domain/food/sources/usda';
 import { useCommonFoods } from '@/domain/common-foods/CommonFoodsContext';
-import { aliasesOf, searchCommonFoods } from '@/domain/common-foods/models/commonFoods';
-import { matchesQuery, rankFoods, stableMerge, type RankedFood } from '@/domain/food/models/foodRanking';
-import { filterFoods } from '@/food/log-food/models/recentFoods';
-import { filterRecentMeals } from '@/food/log-food/models/recentMeals';
+import {
+  aliasesOf,
+  searchCommonFoods,
+} from '@/domain/common-foods/models/commonFoods';
+import {
+  matchesQuery,
+  rankFoods,
+  stableMerge,
+  type RankedFood,
+} from '@/domain/food/models/foodRanking';
+import { filterFoods } from '../../models/recentFoods';
+import { filterRecentMeals } from '../../models/recentMeals';
 import { filterMeals } from '@/domain/saved-meals/models/savedMeals';
 import { useSavedMeals } from '@/domain/saved-meals/SavedMealsContext';
-import { useLoggedFoods } from '@/food/log-food/hooks/useLoggedFoods';
+import { useLoggedFoods } from '../../hooks/useLoggedFoods';
 import {
   FoodSearch,
   offEnglishSource,
@@ -18,7 +26,7 @@ import {
   useFoodSearch,
   usdaSource,
   type SearchState,
-} from '@/food/log-food/search/hooks/useFoodSearch';
+} from '../../search/hooks/useFoodSearch';
 
 export const FOOD_FILTERS = ['All', 'Meals', 'Recent'] as const;
 export type FoodFilter = (typeof FOOD_FILTERS)[number];
@@ -77,11 +85,15 @@ export function useFoodLookup({
           ),
     [logged.meals, query, pickMode, today, meal],
   );
-  const recent = useMemo(() => filterFoods(logged.recent, query), [logged.recent, query]);
+  const recent = useMemo(
+    () => filterFoods(logged.recent, query),
+    [logged.recent, query],
+  );
 
   // On the phone, so on every keystroke.
   const mine = useMemo(
-    () => (searching ? logged.mine.filter((r) => matchesQuery(r, trimmed)) : []),
+    () =>
+      searching ? logged.mine.filter((r) => matchesQuery(r, trimmed)) : [],
     [logged.mine, trimmed, searching],
   );
   const common = useMemo(
@@ -95,7 +107,11 @@ export function useFoodLookup({
   const usdaOn = isUsdaEnabled() && all && local < LookupRules.USDA_BELOW;
   const everyday = useFoodSearch(query, usdaOn, usdaSource);
   // When the phone already has matches, a foreign-language retry isn't worth a second request.
-  const packaged = useFoodSearch(query, all, local ? offEnglishSource : offSource);
+  const packaged = useFoodSearch(
+    query,
+    all,
+    local ? offEnglishSource : offSource,
+  );
   const sources = [
     ...(usdaOn ? [{ label: 'USDA', ...everyday }] : []),
     { label: 'packaged foods', ...packaged },
@@ -110,17 +126,35 @@ export function useFoodLookup({
         ? rankFoods(trimmed, [
             { from: 'mine', foods: mine },
             { from: 'common', foods: common, aliases: aliasesOf(index) },
-            { from: 'usda', foods: usdaOn ? rowsFor(everyday.state, trimmed) : [] },
+            {
+              from: 'usda',
+              foods: usdaOn ? rowsFor(everyday.state, trimmed) : [],
+            },
             { from: 'off', foods: rowsFor(packaged.state, trimmed) },
           ])
         : [],
-    [searching, trimmed, mine, common, index, usdaOn, everyday.state, packaged.state],
+    [
+      searching,
+      trimmed,
+      mine,
+      common,
+      index,
+      usdaOn,
+      everyday.state,
+      packaged.state,
+    ],
   );
 
   // What's on screen for this query, so a late source slots in without shuffling it.
-  const shown = useRef<{ query: string; ids: string[] }>({ query: '', ids: [] });
+  const shown = useRef<{ query: string; ids: string[] }>({
+    query: '',
+    ids: [],
+  });
   const foods: RankedFood[] = useMemo(
-    () => (shown.current.query === trimmed ? stableMerge(shown.current.ids, ranked) : ranked),
+    () =>
+      shown.current.query === trimmed
+        ? stableMerge(shown.current.ids, ranked)
+        : ranked,
     [ranked, trimmed],
   );
   useEffect(() => {
@@ -129,9 +163,16 @@ export function useFoodLookup({
 
   // "No matches" only once every source has answered this query, not while one is still waiting to ask.
   const settled = sources.every(
-    (x) => x.state.status === 'error' || (x.state.status === 'done' && x.state.query === trimmed),
+    (x) =>
+      x.state.status === 'error' ||
+      (x.state.status === 'done' && x.state.query === trimmed),
   );
-  const nothingFound = searching && settled && !failed.length && !yourMeals.length && !foods.length;
+  const nothingFound =
+    searching &&
+    settled &&
+    !failed.length &&
+    !yourMeals.length &&
+    !foods.length;
 
   return {
     trimmed,

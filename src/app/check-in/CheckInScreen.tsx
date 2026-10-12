@@ -29,8 +29,8 @@ import {
   entriesBetween,
   seriesOf,
 } from '@/domain/mood/models/moodStats';
-import { scoreColor, scoreTint, smile } from '@/check-in/utils/scoreColor';
-import MoodFace from '@/check-in/components/MoodFace/MoodFace';
+import { scoreColor, scoreTint, smile } from './utils/scoreColor';
+import MoodFace from './components/MoodFace/MoodFace';
 import { useMood } from '@/domain/mood/MoodContext';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'CheckIn'>;

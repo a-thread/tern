@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 
 import { FoodApiError } from '@/domain/food/sources/http';
-import { searchProducts } from '@/food/log-food/sources/openFoodFacts';
+import { searchProducts } from '../../sources/openFoodFacts';
 import { searchUsda } from '@/domain/food/sources/usda';
 import type { SearchResult } from '@/domain/food/sources/searchResult';
 
@@ -22,7 +22,12 @@ export type SearchState =
   | { status: 'idle' }
   | { status: 'loading'; results: SearchResult[]; query: string | null }
   | { status: 'done'; results: SearchResult[]; query: string }
-  | { status: 'error'; kind: FoodApiError['kind']; results: SearchResult[]; query: string | null };
+  | {
+      status: 'error';
+      kind: FoodApiError['kind'];
+      results: SearchResult[];
+      query: string | null;
+    };
 
 /** A food database to search: `key` keeps each source's cached queries apart. */
 export type SearchSource = {
@@ -55,8 +60,12 @@ const remember = (k: string, v: SearchResult[]) => {
 /** Clears remembered searches (used by tests). */
 export const clearSearchCache = () => cache.clear();
 
-const lastResults = (s: SearchState): { results: SearchResult[]; query: string | null } =>
-  s.status === 'idle' ? { results: [], query: null } : { results: s.results, query: s.query };
+const lastResults = (
+  s: SearchState,
+): { results: SearchResult[]; query: string | null } =>
+  s.status === 'idle'
+    ? { results: [], query: null }
+    : { results: s.results, query: s.query };
 
 /**
  * Food search as you type: waits for a pause in typing, needs a couple of

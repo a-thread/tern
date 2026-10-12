@@ -6,20 +6,24 @@ import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { colors, font, space } from '@/shared/theme';
 import { SheetNav, FootNote, SegmentedControl } from '@/shared/components/ui';
 import type { SearchResult } from '@/domain/food/sources/searchResult';
-import type { RecentMeal } from '@/food/log-food/models/recentMeals';
+import type { RecentMeal } from '../models/recentMeals';
 import type { SavedMeal } from '@/domain/saved-meals/models/savedMeals';
-import { describeAdditions } from '@/food/log-food/models/sessionAdditions';
+import { describeAdditions } from '../models/sessionAdditions';
 import { useFood } from '@/domain/food/FoodContext';
 import { useSavedMeals } from '@/domain/saved-meals/SavedMealsContext';
-import { useSessionAdditions } from '@/food/log-food/hooks/useSessionAdditions';
-import { FOOD_FILTERS, useFoodLookup, type FoodFilter } from '@/food/log-food/search/hooks/useFoodLookup';
-import AddedBanner from '@/food/log-food/components/AddedBanner/AddedBanner';
-import { FoodGroup } from '@/food/log-food/search/components/FoodGroup/FoodGroup';
-import { FoodSearchBar } from '@/food/log-food/search/components/FoodSearchBar/FoodSearchBar';
-import { ListNote } from '@/food/log-food/components/ListNote/ListNote';
-import { LogFoodAllTab } from '@/food/log-food/search/components/LogFoodAllTab/LogFoodAllTab';
-import { LogFoodMealsTab } from '@/food/log-food/search/components/LogFoodMealsTab/LogFoodMealsTab';
-import type { LogFoodStackParamList } from '@/food/log-food/navigation';
+import { useSessionAdditions } from '../hooks/useSessionAdditions';
+import {
+  FOOD_FILTERS,
+  useFoodLookup,
+  type FoodFilter,
+} from '../search/hooks/useFoodLookup';
+import AddedBanner from '../components/AddedBanner/AddedBanner';
+import { FoodGroup } from '../search/components/FoodGroup/FoodGroup';
+import { FoodSearchBar } from '../search/components/FoodSearchBar/FoodSearchBar';
+import { ListNote } from '../components/ListNote/ListNote';
+import { LogFoodAllTab } from '../search/components/LogFoodAllTab/LogFoodAllTab';
+import { LogFoodMealsTab } from '../search/components/LogFoodMealsTab/LogFoodMealsTab';
+import type { LogFoodStackParamList } from '../navigation';
 
 type Props = NativeStackScreenProps<LogFoodStackParamList, 'Search'>;
 
@@ -36,7 +40,9 @@ export default function LogFoodScreen({ navigation, route }: Props) {
   const added = useSessionAdditions();
   const addedMessage = pickMode ? null : describeAdditions(added);
   const { draft, startDraft } = useSavedMeals();
-  const filters = pickMode ? FOOD_FILTERS.filter((f) => f !== 'Meals') : FOOD_FILTERS;
+  const filters = pickMode
+    ? FOOD_FILTERS.filter((f) => f !== 'Meals')
+    : FOOD_FILTERS;
 
   // Once a food goes in, the search that found it has done its job: the next
   // one is rarely the same words, and a stale query hides your own foods and
@@ -50,28 +56,45 @@ export default function LogFoodScreen({ navigation, route }: Props) {
 
   // Review shows everything in the meal being added to (or the saved meal being built).
   const { foodLog } = useFood();
-  const inMealCount = pickMode ? (draft?.items.length ?? 0) : foodLog.filter((f) => f.meal === meal).length;
-  const reviewMeal = () => (pickMode ? navigation.goBack() : navigation.navigate('MealReview', { meal }));
+  const inMealCount = pickMode
+    ? (draft?.items.length ?? 0)
+    : foodLog.filter((f) => f.meal === meal).length;
+  const reviewMeal = () =>
+    pickMode
+      ? navigation.goBack()
+      : navigation.navigate('MealReview', { meal });
 
-  const lookup = useFoodLookup({ query, filter, pickMode: Boolean(pickMode), meal });
+  const lookup = useFoodLookup({
+    query,
+    filter,
+    pickMode: Boolean(pickMode),
+    meal,
+  });
   const { trimmed, recent } = lookup;
 
   // Every result carries nutrition (results without it are filtered out), so
   // it always goes to the details screen; only a missing food type is asked for there.
-  const pickFood = (result: SearchResult) => navigation.navigate('FoodDetail', { meal, result, pick: pickMode });
-  const openMeal = (m: SavedMeal) => navigation.navigate('SavedMeal', { meal, mealId: m.id });
-  const openPastMeal = (m: RecentMeal) => navigation.navigate('RecentMeal', { meal, recentId: m.id });
+  const pickFood = (result: SearchResult) =>
+    navigation.navigate('FoodDetail', { meal, result, pick: pickMode });
+  const openMeal = (m: SavedMeal) =>
+    navigation.navigate('SavedMeal', { meal, mealId: m.id });
+  const openPastMeal = (m: RecentMeal) =>
+    navigation.navigate('RecentMeal', { meal, recentId: m.id });
   const newMeal = () => {
     startDraft();
     navigation.navigate('MealEditor');
   };
 
   return (
-    <View style={{ flex: 1, backgroundColor: colors.paper, paddingTop: insets.top }}>
+    <View
+      style={{ flex: 1, backgroundColor: colors.paper, paddingTop: insets.top }}
+    >
       <SheetNav
         title={pickMode ? 'Add food to meal' : `Add to ${meal}`}
         leftLabel={addedMessage ? 'Done' : 'Cancel'}
-        onLeftPress={() => (pickMode ? navigation.goBack() : navigation.getParent()?.goBack())}
+        onLeftPress={() =>
+          pickMode ? navigation.goBack() : navigation.getParent()?.goBack()
+        }
         rightLabel={inMealCount ? `Review (${inMealCount})` : undefined}
         onRightPress={reviewMeal}
       />
@@ -79,16 +102,26 @@ export default function LogFoodScreen({ navigation, route }: Props) {
       <FoodSearchBar
         value={query}
         onChange={setQuery}
-        onScan={() => navigation.navigate('BarcodeScan', { meal, pick: pickMode })}
+        onScan={() =>
+          navigation.navigate('BarcodeScan', { meal, pick: pickMode })
+        }
         busy={filter === 'All' && lookup.pending}
       />
 
-      <SegmentedControl options={filters} value={filter} onChange={setFilter} style={s.seg} />
+      <SegmentedControl
+        options={filters}
+        value={filter}
+        onChange={setFilter}
+        style={s.seg}
+      />
 
       {addedMessage ? <AddedBanner message={addedMessage} /> : null}
 
       <ScrollView
-        contentContainerStyle={{ paddingHorizontal: space.lg, paddingBottom: 40 }}
+        contentContainerStyle={{
+          paddingHorizontal: space.lg,
+          paddingBottom: 40,
+        }}
         keyboardShouldPersistTaps='handled'
       >
         {filter === 'All' ? (
@@ -101,27 +134,43 @@ export default function LogFoodScreen({ navigation, route }: Props) {
         ) : null}
 
         {filter === 'Meals' ? (
-          <LogFoodMealsTab lookup={lookup} onNewMeal={newMeal} onOpenMeal={openMeal} onOpenPastMeal={openPastMeal} />
+          <LogFoodMealsTab
+            lookup={lookup}
+            onNewMeal={newMeal}
+            onOpenMeal={openMeal}
+            onOpenPastMeal={openPastMeal}
+          />
         ) : null}
 
         {filter === 'Recent' ? (
           recent.length ? (
-            <FoodGroup label='Logged recently' foods={recent} onPick={pickFood} />
+            <FoodGroup
+              label='Logged recently'
+              foods={recent}
+              onPick={pickFood}
+            />
           ) : (
             <ListNote>
-              {trimmed ? `Nothing recent matches “${trimmed}”.` : 'Nothing logged in the last two weeks.'}
+              {trimmed
+                ? `Nothing recent matches “${trimmed}”.`
+                : 'Nothing logged in the last two weeks.'}
             </ListNote>
           )
         ) : null}
 
         <Pressable
-          onPress={() => navigation.navigate('ManualFoodEntry', { meal, pick: pickMode })}
+          onPress={() =>
+            navigation.navigate('ManualFoodEntry', { meal, pick: pickMode })
+          }
           style={s.ghostBtn}
         >
           <Text style={s.ghostText}>+ Create a food manually</Text>
         </Pressable>
 
-        <FootNote>Nutrition data from USDA FoodData Central (public domain) and Open Food Facts (ODbL).</FootNote>
+        <FootNote>
+          Nutrition data from USDA FoodData Central (public domain) and Open
+          Food Facts (ODbL).
+        </FootNote>
       </ScrollView>
     </View>
   );

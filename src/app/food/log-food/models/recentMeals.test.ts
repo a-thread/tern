@@ -4,7 +4,7 @@ import {
   filterRecentMeals,
   recentMealTitle,
   recentMeals,
-} from '@/food/log-food/models/recentMeals';
+} from '../models/recentMeals';
 
 const TODAY = '2026-09-24'; // a Thursday
 
@@ -39,12 +39,18 @@ describe('dayLabel', () => {
 describe('recentMealTitle', () => {
   it('uses the possessive for a named day', () => {
     expect(recentMealTitle(TODAY, Meal.Lunch, TODAY)).toBe('Today’s lunch');
-    expect(recentMealTitle('2026-09-23', Meal.Dinner, TODAY)).toBe('Yesterday’s dinner');
-    expect(recentMealTitle('2026-09-21', Meal.Snack, TODAY)).toBe('Monday’s snacks');
+    expect(recentMealTitle('2026-09-23', Meal.Dinner, TODAY)).toBe(
+      'Yesterday’s dinner',
+    );
+    expect(recentMealTitle('2026-09-21', Meal.Snack, TODAY)).toBe(
+      'Monday’s snacks',
+    );
   });
 
   it('puts the meal first when the day is a date', () => {
-    expect(recentMealTitle('2026-09-12', Meal.Breakfast, TODAY)).toBe('Breakfast · Sep 12');
+    expect(recentMealTitle('2026-09-12', Meal.Breakfast, TODAY)).toBe(
+      'Breakfast · Sep 12',
+    );
   });
 });
 
@@ -86,7 +92,11 @@ describe('recentMeals', () => {
       },
       { today: TODAY },
     );
-    expect(list[0]).toMatchObject({ id: `${TODAY}-dinner`, day: TODAY, meal: 'dinner' });
+    expect(list[0]).toMatchObject({
+      id: `${TODAY}-dinner`,
+      day: TODAY,
+      meal: 'dinner',
+    });
     expect(list[0].items).toEqual([
       expect.objectContaining({ name: 'Chili', servings: 1.5, tier: 3 }),
       expect.objectContaining({ name: 'Cornbread' }),
@@ -97,10 +107,15 @@ describe('recentMeals', () => {
     const byDay = {
       '2026-08-01': [entry('Old', { meal: Meal.Lunch })],
       '2026-09-23': [entry('Soup', { meal: Meal.Lunch })],
-      [TODAY]: [entry('Toast', { meal: Meal.Breakfast }), entry('Salad', { meal: Meal.Lunch })],
+      [TODAY]: [
+        entry('Toast', { meal: Meal.Breakfast }),
+        entry('Salad', { meal: Meal.Lunch }),
+      ],
     };
     expect(
-      recentMeals(byDay, { today: TODAY, fromDay: '2026-09-11' }).map((m) => m.day),
+      recentMeals(byDay, { today: TODAY, fromDay: '2026-09-11' }).map(
+        (m) => m.day,
+      ),
     ).toEqual([TODAY, TODAY, '2026-09-23']);
     expect(recentMeals(byDay, { today: TODAY, limit: 2 })).toHaveLength(2);
     expect(recentMeals({}, { today: TODAY })).toEqual([]);
@@ -111,7 +126,9 @@ describe('filterRecentMeals', () => {
   const meals = recentMeals(
     {
       '2026-09-23': [entry('Chicken soup', { meal: Meal.Lunch })],
-      [TODAY]: [entry('Rolled oats', { meal: Meal.Breakfast, brand: "Bob's Red Mill" })],
+      [TODAY]: [
+        entry('Rolled oats', { meal: Meal.Breakfast, brand: "Bob's Red Mill" }),
+      ],
     },
     { today: TODAY },
   );
@@ -121,9 +138,15 @@ describe('filterRecentMeals', () => {
   });
 
   it('matches the foods in a meal, and the day or meal it was', () => {
-    expect(filterRecentMeals(meals, 'oats').map((m) => m.meal)).toEqual(['breakfast']);
-    expect(filterRecentMeals(meals, 'bob').map((m) => m.meal)).toEqual(['breakfast']);
-    expect(filterRecentMeals(meals, 'yesterday').map((m) => m.meal)).toEqual(['lunch']);
+    expect(filterRecentMeals(meals, 'oats').map((m) => m.meal)).toEqual([
+      'breakfast',
+    ]);
+    expect(filterRecentMeals(meals, 'bob').map((m) => m.meal)).toEqual([
+      'breakfast',
+    ]);
+    expect(filterRecentMeals(meals, 'yesterday').map((m) => m.meal)).toEqual([
+      'lunch',
+    ]);
     expect(filterRecentMeals(meals, 'pizza')).toEqual([]);
   });
 });

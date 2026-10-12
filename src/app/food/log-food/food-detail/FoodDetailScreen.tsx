@@ -16,9 +16,9 @@ import { Meals } from '@/domain/food/models/meals';
 import type { Tier } from '@/domain/food/models/foodEntry';
 import { useFood } from '@/domain/food/FoodContext';
 import { useSavedMeals } from '@/domain/saved-meals/SavedMealsContext';
-import { TierPicker } from '@/food/components/TierPicker/TierPicker';
-import { MeasurePicker } from '@/food/components/MeasurePicker/MeasurePicker';
-import { MealPicker } from '@/food/components/MealPicker/MealPicker';
+import { TierPicker } from '../../components/TierPicker/TierPicker';
+import { MeasurePicker } from '../../components/MeasurePicker/MeasurePicker';
+import { MealPicker } from '../../components/MealPicker/MealPicker';
 import { useFoodDisplay } from '@/domain/food/hooks/useFoodDisplay';
 import {
   gramsOf,
@@ -32,7 +32,7 @@ import {
   startingMeasure,
   type Measure,
 } from '@/domain/food/models/measure';
-import type { LogFoodStackParamList } from '@/food/log-food/navigation';
+import type { LogFoodStackParamList } from '../../log-food/navigation';
 
 type Props = NativeStackScreenProps<LogFoodStackParamList, 'FoodDetail'>;
 

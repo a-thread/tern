@@ -1,5 +1,12 @@
 import React, { useEffect, useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import {
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
+} from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 
@@ -7,8 +14,8 @@ import { colors, font, space, typography } from '@/shared/theme';
 import { SheetNav } from '@/shared/components/ui';
 import { useSavedMeals } from '@/domain/saved-meals/SavedMealsContext';
 import { SavedMealLimits } from '@/domain/saved-meals/models/savedMeals';
-import type { LogFoodStackParamList } from '@/food/log-food/navigation';
-import { MealAdder, useMealAdder } from '@/food/log-food/components/MealAdder/MealAdder';
+import type { LogFoodStackParamList } from '../navigation';
+import { MealAdder, useMealAdder } from '../components/MealAdder/MealAdder';
 import { confirm } from '@/shared/utils/confirm';
 
 type Props = NativeStackScreenProps<LogFoodStackParamList, 'SavedMeal'>;
@@ -31,8 +38,18 @@ export default function SavedMealScreen({ navigation, route }: Props) {
 
   if (!saved) {
     return (
-      <View style={{ flex: 1, backgroundColor: colors.paper, paddingTop: insets.top }}>
-        <SheetNav title='Saved meal' leftLabel='Back' onLeftPress={() => navigation.goBack()} />
+      <View
+        style={{
+          flex: 1,
+          backgroundColor: colors.paper,
+          paddingTop: insets.top,
+        }}
+      >
+        <SheetNav
+          title='Saved meal'
+          leftLabel='Back'
+          onLeftPress={() => navigation.goBack()}
+        />
         <Text style={s.gone}>This meal is no longer saved.</Text>
       </View>
     );
@@ -61,7 +78,9 @@ export default function SavedMealScreen({ navigation, route }: Props) {
     });
 
   return (
-    <View style={{ flex: 1, backgroundColor: colors.paper, paddingTop: insets.top }}>
+    <View
+      style={{ flex: 1, backgroundColor: colors.paper, paddingTop: insets.top }}
+    >
       <SheetNav
         title='Saved meal'
         leftLabel='Back'
@@ -71,7 +90,10 @@ export default function SavedMealScreen({ navigation, route }: Props) {
       />
 
       <ScrollView
-        contentContainerStyle={{ paddingHorizontal: space.lg, paddingBottom: 40 }}
+        contentContainerStyle={{
+          paddingHorizontal: space.lg,
+          paddingBottom: 40,
+        }}
         keyboardShouldPersistTaps='handled'
       >
         <View style={s.head}>
@@ -92,7 +114,12 @@ export default function SavedMealScreen({ navigation, route }: Props) {
           <Text style={s.sub}>{adder.summary}</Text>
         </View>
 
-        <MealAdder items={items} adder={adder} itemsLabel='In this meal' scaleNoun='saved' />
+        <MealAdder
+          items={items}
+          adder={adder}
+          itemsLabel='In this meal'
+          scaleNoun='saved'
+        />
 
         <Pressable onPress={editMeal} hitSlop={8} style={s.editBtn}>
           <Text style={s.editText}>Edit meal</Text>
@@ -115,12 +142,21 @@ const s = StyleSheet.create({
     letterSpacing: -0.2,
     padding: 0,
   },
-  error: { fontFamily: font.body, fontSize: 12.5, color: colors.danger, marginTop: 4 },
+  error: {
+    fontFamily: font.body,
+    fontSize: 12.5,
+    color: colors.danger,
+    marginTop: 4,
+  },
   sub: { ...typography.meta, marginTop: 4 },
   editBtn: { alignItems: 'center', paddingTop: space.lg },
   editText: { fontFamily: font.semibold, fontSize: 13.5, color: colors.ink },
   deleteBtn: { alignItems: 'center', paddingVertical: space.lg },
-  deleteText: { fontFamily: font.semibold, fontSize: 13.5, color: colors.danger },
+  deleteText: {
+    fontFamily: font.semibold,
+    fontSize: 13.5,
+    color: colors.danger,
+  },
   gone: {
     fontFamily: font.body,
     fontSize: 13.5,

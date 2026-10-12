@@ -4,8 +4,8 @@ import { useDayKey } from '@/shared/hooks/useDayKey';
 import { addDays } from '@/shared/utils/date';
 import { useFood } from '@/domain/food/FoodContext';
 import type { FoodEntry } from '@/domain/food/models/foodEntry';
-import { recentFoods } from '@/food/log-food/models/recentFoods';
-import { recentMeals } from '@/food/log-food/models/recentMeals';
+import { recentFoods } from '../models/recentFoods';
+import { recentMeals } from '../models/recentMeals';
 
 const RECENT_DAYS = 14;
 const MINE_DAYS = 90;
@@ -36,7 +36,9 @@ export function useLoggedFoods() {
   return useMemo(
     () => ({
       loaded,
-      recent: recentFoods(byDay, { fromDay: addDays(today, -(RECENT_DAYS - 1)) }),
+      recent: recentFoods(byDay, {
+        fromDay: addDays(today, -(RECENT_DAYS - 1)),
+      }),
       mine: recentFoods(byDay, { limit: 200 }),
       meals: recentMeals(byDay, {
         today,

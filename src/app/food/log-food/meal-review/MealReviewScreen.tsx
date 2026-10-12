@@ -8,15 +8,15 @@ import type {
 
 import { colors, font, radius, space, typography } from '@/shared/theme';
 import { Group, GroupLabel, SheetNav } from '@/shared/components/ui';
-import { SwipeToRemove } from '@/food/components/SwipeToRemove/SwipeToRemove';
+import { SwipeToRemove } from '../../components/SwipeToRemove/SwipeToRemove';
 import type { RootStackParamList } from '@/navigation/types';
 import { Meals } from '@/domain/food/models/meals';
 import { dayTotals } from '@/domain/food/models/foodEntry';
 import { useFood } from '@/domain/food/FoodContext';
 import { useFoodDisplay } from '@/domain/food/hooks/useFoodDisplay';
-import ItemRow from '@/food/components/ItemRow/ItemRow';
-import { ListNote } from '@/food/log-food/components/ListNote/ListNote';
-import type { LogFoodStackParamList } from '@/food/log-food/navigation';
+import ItemRow from '../../components/ItemRow/ItemRow';
+import { ListNote } from '../components/ListNote/ListNote';
+import type { LogFoodStackParamList } from '../navigation';
 
 type Props = NativeStackScreenProps<LogFoodStackParamList, 'MealReview'>;
 
@@ -27,14 +27,17 @@ export default function MealReviewScreen({ navigation, route }: Props) {
   const { foodLog, removeFoodEntry } = useFood();
   const { showCalories } = useFoodDisplay();
   // Editing and saving live on the root stack, above this one.
-  const root = navigation.getParent<NativeStackNavigationProp<RootStackParamList>>();
+  const root =
+    navigation.getParent<NativeStackNavigationProp<RootStackParamList>>();
 
   const label = Meals.OPTIONS.find((m) => m.key === meal)?.label ?? meal;
   const entries = foodLog.filter((f) => f.meal === meal);
   const totals = dayTotals(entries);
 
   return (
-    <View style={{ flex: 1, backgroundColor: colors.paper, paddingTop: insets.top }}>
+    <View
+      style={{ flex: 1, backgroundColor: colors.paper, paddingTop: insets.top }}
+    >
       <SheetNav
         title='Review'
         leftLabel='Back'
@@ -43,7 +46,12 @@ export default function MealReviewScreen({ navigation, route }: Props) {
         onRightPress={() => navigation.getParent()?.goBack()}
       />
 
-      <ScrollView contentContainerStyle={{ paddingHorizontal: space.lg, paddingBottom: 40 }}>
+      <ScrollView
+        contentContainerStyle={{
+          paddingHorizontal: space.lg,
+          paddingBottom: 40,
+        }}
+      >
         <View style={s.head}>
           <Text style={s.name}>{label}</Text>
           <Text style={s.sub}>
@@ -61,13 +69,23 @@ export default function MealReviewScreen({ navigation, route }: Props) {
         ) : null}
 
         <GroupLabel>
-          {entries.length ? `In ${label.toLowerCase()} · tap a food to change it, swipe to remove` : `In ${label.toLowerCase()}`}
+          {entries.length
+            ? `In ${label.toLowerCase()} · tap a food to change it, swipe to remove`
+            : `In ${label.toLowerCase()}`}
         </GroupLabel>
         {entries.length ? (
           <Group>
             {entries.map((item) => (
-              <SwipeToRemove key={item.id} onRemove={() => removeFoodEntry(item.id)}>
-                <ItemRow item={item} onPress={() => root?.navigate('EditFood', { entryId: item.id })} />
+              <SwipeToRemove
+                key={item.id}
+                onRemove={() => removeFoodEntry(item.id)}
+              >
+                <ItemRow
+                  item={item}
+                  onPress={() =>
+                    root?.navigate('EditFood', { entryId: item.id })
+                  }
+                />
               </SwipeToRemove>
             ))}
           </Group>
@@ -79,7 +97,11 @@ export default function MealReviewScreen({ navigation, route }: Props) {
           <Text style={s.bigBtnText}>Add more food</Text>
         </Pressable>
         {entries.length ? (
-          <Pressable onPress={() => root?.navigate('SaveMeal', { meal })} hitSlop={8} style={s.link}>
+          <Pressable
+            onPress={() => root?.navigate('SaveMeal', { meal })}
+            hitSlop={8}
+            style={s.link}
+          >
             <Text style={s.linkText}>Save as meal</Text>
           </Pressable>
         ) : null}
@@ -99,7 +121,12 @@ function Macro({ value, label }: { value: number; label: string }) {
 
 const s = StyleSheet.create({
   head: { paddingVertical: space.md },
-  name: { fontFamily: font.display, fontSize: 24, color: colors.ink, letterSpacing: -0.2 },
+  name: {
+    fontFamily: font.display,
+    fontSize: 24,
+    color: colors.ink,
+    letterSpacing: -0.2,
+  },
   sub: { ...typography.meta, marginTop: 4 },
   macros: {
     flexDirection: 'row',
@@ -107,7 +134,12 @@ const s = StyleSheet.create({
     borderRadius: radius.lg,
     padding: space.md,
   },
-  macroVal: { fontFamily: font.bold, fontSize: 15, color: colors.ink, textAlign: 'center' },
+  macroVal: {
+    fontFamily: font.bold,
+    fontSize: 15,
+    color: colors.ink,
+    textAlign: 'center',
+  },
   macroLabel: { ...typography.small, textAlign: 'center', marginTop: 1 },
   bigBtn: {
     backgroundColor: colors.coral,

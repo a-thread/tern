@@ -4,13 +4,17 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import { createMemoryBackend } from '@/BackendContext';
 import { ToastProvider } from '@/shared/state/ToastContext';
-import { ViewedDayProvider, useViewedDay, type ViewedDay } from '@/shared/state/ViewedDayContext';
+import {
+  ViewedDayProvider,
+  useViewedDay,
+  type ViewedDay,
+} from '@/shared/state/ViewedDayContext';
 import { addDays, dayKey, formatLongDate } from '@/shared/utils/date';
 import { FoodProvider } from '@/domain/food/FoodContext';
 import { WaypointsProvider } from '@/domain/waypoints/WaypointsContext';
 import { SettingsProvider } from '@/domain/settings/SettingsContext';
 import { WaterProvider } from '@/domain/water/WaterContext';
-import FoodScreen from '@/food/FoodScreen';
+import FoodScreen from './FoodScreen';
 
 jest.mock('@react-navigation/native', () => ({
   ...jest.requireActual('@react-navigation/native'),
@@ -50,7 +54,9 @@ async function open() {
       </ToastProvider>
     </SafeAreaProvider>,
   );
-  await waitFor(() => expect(ui.getAllByText('Add food').length).toBeGreaterThan(0));
+  await waitFor(() =>
+    expect(ui.getAllByText('Add food').length).toBeGreaterThan(0),
+  );
   const view = async (day: string) => {
     await act(async () => viewed.current!.setDay(day));
     await waitFor(() => expect(ui.getByText(formatLongDate(day))).toBeTruthy());
@@ -69,20 +75,26 @@ describe('FoodScreen', () => {
   it('lets yesterday be filled in', async () => {
     const ui = await open();
     await ui.view(addDays(today, -1));
-    await waitFor(() => expect(ui.getAllByText('Add food').length).toBeGreaterThan(0));
+    await waitFor(() =>
+      expect(ui.getAllByText('Add food').length).toBeGreaterThan(0),
+    );
     expect(ui.getByText('Back to today')).toBeTruthy();
   });
 
   it('shows an earlier day read-only, and goes back to today', async () => {
     const ui = await open();
     await ui.view(addDays(today, -3));
-    await waitFor(() => expect(ui.getByText('Greek yogurt with berries')).toBeTruthy());
+    await waitFor(() =>
+      expect(ui.getByText('Greek yogurt with berries')).toBeTruthy(),
+    );
     expect(ui.queryByText('Add food')).toBeNull();
     expect(ui.queryByText('Save as meal')).toBeNull();
     expect(ui.queryByText('Other')).toBeNull(); // water can't be added either
 
     fireEvent.press(ui.getByText('Back to today'));
-    await waitFor(() => expect(ui.getAllByText('Add food').length).toBeGreaterThan(0));
+    await waitFor(() =>
+      expect(ui.getAllByText('Add food').length).toBeGreaterThan(0),
+    );
     expect(ui.getByText(formatLongDate(today))).toBeTruthy();
   });
 });

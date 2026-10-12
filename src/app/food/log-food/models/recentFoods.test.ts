@@ -1,5 +1,9 @@
 import { type FoodEntry, Meal } from '@/domain/food/models/foodEntry';
-import { filterFoods, loggedAsResult, recentFoods } from '@/food/log-food/models/recentFoods';
+import {
+  filterFoods,
+  loggedAsResult,
+  recentFoods,
+} from '../../log-food/models/recentFoods';
 import { amountOf } from '@/domain/food/models/measure';
 
 const eggsAmount = amountOf({
@@ -57,7 +61,9 @@ describe('recentFoods', () => {
       '2026-08-01': [entry('Old')],
       '2026-09-12': [entry('A'), entry('B'), entry('C')],
     };
-    expect(recentFoods(byDay, { fromDay: '2026-09-01' }).map((f) => f.name)).toEqual(['C', 'B', 'A']);
+    expect(
+      recentFoods(byDay, { fromDay: '2026-09-01' }).map((f) => f.name),
+    ).toEqual(['C', 'B', 'A']);
     expect(recentFoods(byDay, { limit: 2 })).toHaveLength(2);
   });
 
@@ -80,15 +86,23 @@ describe('filterFoods', () => {
   });
 
   it('matches every word against name and brand', () => {
-    expect(filterFoods(foods, 'oat').map((f) => f.name).sort()).toEqual(['Oat milk', 'Rolled oats']);
-    expect(filterFoods(foods, 'oatly milk').map((f) => f.name)).toEqual(['Oat milk']);
+    expect(
+      filterFoods(foods, 'oat')
+        .map((f) => f.name)
+        .sort(),
+    ).toEqual(['Oat milk', 'Rolled oats']);
+    expect(filterFoods(foods, 'oatly milk').map((f) => f.name)).toEqual([
+      'Oat milk',
+    ]);
     expect(filterFoods(foods, 'pizza')).toEqual([]);
   });
 });
 
 describe('recentFoods with a measure', () => {
   it('offers a food logged by amount per 100 g again, in the same unit and count', () => {
-    const [eggs] = recentFoods({ '2026-09-12': [entry('Eggs', { ...eggsAmount })] });
+    const [eggs] = recentFoods({
+      '2026-09-12': [entry('Eggs', { ...eggsAmount })],
+    });
     expect(eggs).toMatchObject({
       servingLabel: '100 g',
       calories: 143,
@@ -106,11 +120,16 @@ describe('recentFoods with a measure', () => {
 
 describe('loggedAsResult', () => {
   it('keeps how many servings you had of an unmeasured food, and leaves one serving implied', () => {
-    expect(loggedAsResult(entry('Milk', { servings: 1.5, servingLabel: '240 ml' }))).toMatchObject({ servingLabel: '240 ml', servings: 1.5 });
+    expect(
+      loggedAsResult(entry('Milk', { servings: 1.5, servingLabel: '240 ml' })),
+    ).toMatchObject({ servingLabel: '240 ml', servings: 1.5 });
     expect(loggedAsResult(entry('Chili')).servings).toBeUndefined();
   });
 
   it('brings a measured food back per 100 g, ready to start from what you had', () => {
-    expect(loggedAsResult(entry('Eggs', { ...eggsAmount }))).toMatchObject({ servingLabel: '100 g', last: { unit: 'large egg', quantity: 2 } });
+    expect(loggedAsResult(entry('Eggs', { ...eggsAmount }))).toMatchObject({
+      servingLabel: '100 g',
+      last: { unit: 'large egg', quantity: 2 },
+    });
   });
 });

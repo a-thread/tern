@@ -24,7 +24,7 @@ import {
   Chevron,
   Icon,
 } from '@/shared/components/ui';
-import { SwipeToRemove } from '@/food/components/SwipeToRemove/SwipeToRemove';
+import { SwipeToRemove } from './components/SwipeToRemove/SwipeToRemove';
 import { useViewedDay } from '@/shared/state/ViewedDayContext';
 import { usePullToRefresh } from '@/shared/hooks/usePullToRefresh';
 import { formatLongDate } from '@/shared/utils/date';

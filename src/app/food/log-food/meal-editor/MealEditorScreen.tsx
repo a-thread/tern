@@ -18,7 +18,7 @@ import {
   Stepper,
   Icon,
 } from '@/shared/components/ui';
-import { TextField } from '@/food/components/TextField/TextField';
+import { TextField } from '../../components/TextField/TextField';
 import { useToast } from '@/shared/state/ToastContext';
 import { TierDot } from '@/shared/components/TierDot';
 import { useFoodDisplay } from '@/domain/food/hooks/useFoodDisplay';
@@ -27,7 +27,7 @@ import { isDraftDirty, scaledTotals } from '@/domain/food/models/mealDraft';
 import { SavedMealLimits } from '@/domain/saved-meals/models/savedMeals';
 import { Servings } from '@/domain/food/models/servings';
 import { quantityText } from '@/domain/food/models/measure';
-import type { LogFoodStackParamList } from '@/food/log-food/navigation';
+import type { LogFoodStackParamList } from '../navigation';
 import { Meal } from '@/domain/food/models/foodEntry';
 import { confirm } from '@/shared/utils/confirm';
 

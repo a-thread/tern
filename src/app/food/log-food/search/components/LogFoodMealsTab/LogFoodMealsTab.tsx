@@ -3,13 +3,13 @@ import { Icon } from '@/shared/components/ui';
 import { Pressable, StyleSheet, Text } from 'react-native';
 
 import { colors, font, radius, space } from '@/shared/theme';
-import type { RecentMeal } from '@/food/log-food/models/recentMeals';
+import type { RecentMeal } from '../../../models/recentMeals';
 import type { SavedMeal } from '@/domain/saved-meals/models/savedMeals';
-import type { FoodLookup } from '@/food/log-food/search/hooks/useFoodLookup';
-import { ListNote } from '@/food/log-food/components/ListNote/ListNote';
-import { MealGroup } from '@/food/log-food/search/components/MealGroup/MealGroup';
-import { RecentMealRow } from '@/food/log-food/search/components/RecentMealRow/RecentMealRow';
-import { SavedMealRow } from '@/food/log-food/search/components/SavedMealRow/SavedMealRow';
+import type { FoodLookup } from '../../../search/hooks/useFoodLookup';
+import { ListNote } from '../../../components/ListNote/ListNote';
+import { MealGroup } from '../../../search/components/MealGroup/MealGroup';
+import { RecentMealRow } from '../../../search/components/RecentMealRow/RecentMealRow';
+import { SavedMealRow } from '../../../search/components/SavedMealRow/SavedMealRow';
 
 /** The Meals tab: start a new meal, or pick one of your saved or past meals. */
 export function LogFoodMealsTab({
@@ -30,8 +30,22 @@ export function LogFoodMealsTab({
         <Icon name='plus' size={15} color={colors.coral} />
         <Text style={s.newMealText}>New meal</Text>
       </Pressable>
-      {yourMeals.length ? <MealGroup label='Your meals' meals={yourMeals} onPick={onOpenMeal} Row={SavedMealRow} /> : null}
-      {pastMeals.length ? <MealGroup label='Recent meals' meals={pastMeals} onPick={onOpenPastMeal} Row={RecentMealRow} /> : null}
+      {yourMeals.length ? (
+        <MealGroup
+          label='Your meals'
+          meals={yourMeals}
+          onPick={onOpenMeal}
+          Row={SavedMealRow}
+        />
+      ) : null}
+      {pastMeals.length ? (
+        <MealGroup
+          label='Recent meals'
+          meals={pastMeals}
+          onPick={onOpenPastMeal}
+          Row={RecentMealRow}
+        />
+      ) : null}
       {!yourMeals.length && !pastMeals.length ? (
         <ListNote>
           {trimmed

@@ -15,9 +15,9 @@ import { Group, GroupLabel, SheetNav } from '@/shared/components/ui';
 import type { Tier } from '@/domain/food/models/foodEntry';
 import { useFood } from '@/domain/food/FoodContext';
 import { useSavedMeals } from '@/domain/saved-meals/SavedMealsContext';
-import { TierPicker } from '@/food/components/TierPicker/TierPicker';
+import { TierPicker } from '../../components/TierPicker/TierPicker';
 import { useFoodDisplay } from '@/domain/food/hooks/useFoodDisplay';
-import type { LogFoodStackParamList } from '@/food/log-food/navigation';
+import type { LogFoodStackParamList } from '../navigation';
 
 type Props = NativeStackScreenProps<LogFoodStackParamList, 'ManualFoodEntry'>;
 

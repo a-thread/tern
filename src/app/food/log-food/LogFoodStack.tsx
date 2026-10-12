@@ -1,16 +1,19 @@
 import React from 'react';
-import { createNativeStackNavigator, type NativeStackScreenProps } from '@react-navigation/native-stack';
+import {
+  createNativeStackNavigator,
+  type NativeStackScreenProps,
+} from '@react-navigation/native-stack';
 
 import type { RootStackParamList } from '@/navigation/types';
-import LogFoodScreen from '@/food/log-food/search/LogFoodScreen';
-import BarcodeScanScreen from '@/food/log-food/barcode-scan/BarcodeScanScreen';
-import FoodDetailScreen from '@/food/log-food/food-detail/FoodDetailScreen';
-import ManualFoodEntryScreen from '@/food/log-food/manual-entry/ManualFoodEntryScreen';
-import SavedMealScreen from '@/food/log-food/saved-meal/SavedMealScreen';
-import RecentMealScreen from '@/food/log-food/recent-meal/RecentMealScreen';
-import MealEditorScreen from '@/food/log-food/meal-editor/MealEditorScreen';
-import MealReviewScreen from '@/food/log-food/meal-review/MealReviewScreen';
-import type { LogFoodStackParamList } from '@/food/log-food/navigation';
+import LogFoodScreen from './search/LogFoodScreen';
+import BarcodeScanScreen from './barcode-scan/BarcodeScanScreen';
+import FoodDetailScreen from './food-detail/FoodDetailScreen';
+import ManualFoodEntryScreen from './manual-entry/ManualFoodEntryScreen';
+import SavedMealScreen from './saved-meal/SavedMealScreen';
+import RecentMealScreen from './recent-meal/RecentMealScreen';
+import MealEditorScreen from './meal-editor/MealEditorScreen';
+import MealReviewScreen from './meal-review/MealReviewScreen';
+import type { LogFoodStackParamList } from './navigation';
 
 const Stack = createNativeStackNavigator<LogFoodStackParamList>();
 

@@ -15,11 +15,11 @@ import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { colors, font, space } from '@/shared/theme';
 import LoadingBird from '@/shared/components/LoadingBird/LoadingBird';
 import { FoodApiError } from '@/domain/food/sources/http';
-import { useSessionAdditions } from '@/food/log-food/hooks/useSessionAdditions';
-import { describeAdditions } from '@/food/log-food/models/sessionAdditions';
-import AddedBanner from '@/food/log-food/components/AddedBanner/AddedBanner';
-import { getProductByBarcode, isValidBarcode } from '@/food/log-food/sources/openFoodFacts';
-import type { LogFoodStackParamList } from '@/food/log-food/navigation';
+import { useSessionAdditions } from '../hooks/useSessionAdditions';
+import { describeAdditions } from '../models/sessionAdditions';
+import AddedBanner from '../components/AddedBanner/AddedBanner';
+import { getProductByBarcode, isValidBarcode } from '../sources/openFoodFacts';
+import type { LogFoodStackParamList } from '../navigation';
 
 type Props = NativeStackScreenProps<LogFoodStackParamList, 'BarcodeScan'>;
 
@@ -66,9 +66,15 @@ export default function BarcodeScanScreen({ navigation, route }: Props) {
         navigation.navigate('FoodDetail', { meal, result: res.result, pick });
         return;
       }
-      setPhase({ kind: 'miss', name: res.status === 'no-nutrition' ? res.name : undefined });
+      setPhase({
+        kind: 'miss',
+        name: res.status === 'no-nutrition' ? res.name : undefined,
+      });
     } catch (e) {
-      console.warn('Barcode lookup failed', e instanceof FoodApiError ? e.kind : e);
+      console.warn(
+        'Barcode lookup failed',
+        e instanceof FoodApiError ? e.kind : e,
+      );
       setPhase({ kind: 'error' });
     }
   };
@@ -108,7 +114,9 @@ export default function BarcodeScanScreen({ navigation, route }: Props) {
                 barcodeTypes: ['ean13', 'ean8', 'upc_a', 'upc_e'],
               }}
               onBarcodeScanned={
-                phase.kind === 'scanning' ? ({ data }) => lookup(data) : undefined
+                phase.kind === 'scanning'
+                  ? ({ data }) => lookup(data)
+                  : undefined
               }
             />
           ) : null}
@@ -118,7 +126,11 @@ export default function BarcodeScanScreen({ navigation, route }: Props) {
           <View style={[s.corner, s.br]} />
           {phase.kind === 'looking' ? (
             <View style={s.overlay}>
-              <LoadingBird size={48} color='#F2F6F7' label='Looking up the barcode' />
+              <LoadingBird
+                size={48}
+                color='#F2F6F7'
+                label='Looking up the barcode'
+              />
             </View>
           ) : null}
         </View>
@@ -126,17 +138,23 @@ export default function BarcodeScanScreen({ navigation, route }: Props) {
         {addedMessage ? <AddedBanner message={addedMessage} dark /> : null}
 
         {!permission ? (
-          <LoadingBird size={44} color='#C9D4D9' style={{ alignSelf: 'center', marginTop: 22 }} />
+          <LoadingBird
+            size={44}
+            color='#C9D4D9'
+            style={{ alignSelf: 'center', marginTop: 22 }}
+          />
         ) : !granted ? (
           <View style={s.card}>
             <Text style={s.cardTitle}>Camera access needed</Text>
             <Text style={s.cardBody}>
-              Tern only uses the camera to read a barcode. Nothing is recorded or
-              saved.
+              Tern only uses the camera to read a barcode. Nothing is recorded
+              or saved.
             </Text>
             <Pressable
               onPress={() =>
-                permission.canAskAgain ? requestPermission() : Linking.openSettings()
+                permission.canAskAgain
+                  ? requestPermission()
+                  : Linking.openSettings()
               }
               hitSlop={8}
             >
@@ -148,11 +166,13 @@ export default function BarcodeScanScreen({ navigation, route }: Props) {
         ) : phase.kind === 'miss' ? (
           <View style={s.card}>
             <Text style={s.cardTitle}>
-              {phase.name ? `${phase.name} has no nutrition info` : "We couldn't find that product"}
+              {phase.name
+                ? `${phase.name} has no nutrition info`
+                : "We couldn't find that product"}
             </Text>
             <Text style={s.cardBody}>
-              Not every product is in Open Food Facts. You can add it yourself in a
-              few taps.
+              Not every product is in Open Food Facts. You can add it yourself
+              in a few taps.
             </Text>
             <View style={s.cardActions}>
               <Pressable onPress={() => addByHand(phase.name)} hitSlop={8}>
@@ -255,10 +275,34 @@ const s = StyleSheet.create({
     borderColor: colors.coral,
     borderWidth: 3,
   },
-  tl: { top: 0, left: 0, borderRightWidth: 0, borderBottomWidth: 0, borderTopLeftRadius: 14 },
-  tr: { top: 0, right: 0, borderLeftWidth: 0, borderBottomWidth: 0, borderTopRightRadius: 14 },
-  bl: { bottom: 0, left: 0, borderRightWidth: 0, borderTopWidth: 0, borderBottomLeftRadius: 14 },
-  br: { bottom: 0, right: 0, borderLeftWidth: 0, borderTopWidth: 0, borderBottomRightRadius: 14 },
+  tl: {
+    top: 0,
+    left: 0,
+    borderRightWidth: 0,
+    borderBottomWidth: 0,
+    borderTopLeftRadius: 14,
+  },
+  tr: {
+    top: 0,
+    right: 0,
+    borderLeftWidth: 0,
+    borderBottomWidth: 0,
+    borderTopRightRadius: 14,
+  },
+  bl: {
+    bottom: 0,
+    left: 0,
+    borderRightWidth: 0,
+    borderTopWidth: 0,
+    borderBottomLeftRadius: 14,
+  },
+  br: {
+    bottom: 0,
+    right: 0,
+    borderLeftWidth: 0,
+    borderTopWidth: 0,
+    borderBottomRightRadius: 14,
+  },
   hint: {
     color: '#C9D4D9',
     fontFamily: font.body,
@@ -275,13 +319,43 @@ const s = StyleSheet.create({
     gap: 6,
   },
   cardTitle: { color: '#F2F6F7', fontFamily: font.semibold, fontSize: 14 },
-  cardBody: { color: '#C9D4D9', fontFamily: font.body, fontSize: 12.5, lineHeight: 18 },
+  cardBody: {
+    color: '#C9D4D9',
+    fontFamily: font.body,
+    fontSize: 12.5,
+    lineHeight: 18,
+  },
   cardActions: { flexDirection: 'row', gap: 22, marginTop: 4 },
-  action: { color: colors.coral, fontFamily: font.semibold, fontSize: 13.5, marginTop: 4 },
-  altAction: { color: '#C9D4D9', fontFamily: font.semibold, fontSize: 13.5, marginTop: 4 },
-  alt: { color: colors.coral, fontFamily: font.semibold, fontSize: 13, marginTop: 16 },
-  altPlain: { color: '#C9D4D9', fontFamily: font.body, fontSize: 12.5, marginTop: 14 },
-  typeRow: { flexDirection: 'row', gap: 10, marginTop: 16, alignSelf: 'stretch' },
+  action: {
+    color: colors.coral,
+    fontFamily: font.semibold,
+    fontSize: 13.5,
+    marginTop: 4,
+  },
+  altAction: {
+    color: '#C9D4D9',
+    fontFamily: font.semibold,
+    fontSize: 13.5,
+    marginTop: 4,
+  },
+  alt: {
+    color: colors.coral,
+    fontFamily: font.semibold,
+    fontSize: 13,
+    marginTop: 16,
+  },
+  altPlain: {
+    color: '#C9D4D9',
+    fontFamily: font.body,
+    fontSize: 12.5,
+    marginTop: 14,
+  },
+  typeRow: {
+    flexDirection: 'row',
+    gap: 10,
+    marginTop: 16,
+    alignSelf: 'stretch',
+  },
   input: {
     flex: 1,
     color: '#F2F6F7',

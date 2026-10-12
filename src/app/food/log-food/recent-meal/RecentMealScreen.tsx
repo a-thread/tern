@@ -6,9 +6,9 @@ import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { colors, font, space, typography } from '@/shared/theme';
 import LoadingBird from '@/shared/components/LoadingBird/LoadingBird';
 import { SheetNav } from '@/shared/components/ui';
-import { useLoggedFoods } from '@/food/log-food/hooks/useLoggedFoods';
-import type { LogFoodStackParamList } from '@/food/log-food/navigation';
-import { MealAdder, useMealAdder } from '@/food/log-food/components/MealAdder/MealAdder';
+import { useLoggedFoods } from '../hooks/useLoggedFoods';
+import type { LogFoodStackParamList } from '../navigation';
+import { MealAdder, useMealAdder } from '../components/MealAdder/MealAdder';
 
 type Props = NativeStackScreenProps<LogFoodStackParamList, 'RecentMeal'>;
 
@@ -23,19 +23,35 @@ export default function RecentMealScreen({ navigation, route }: Props) {
 
   if (!recent) {
     return (
-      <View style={{ flex: 1, backgroundColor: colors.paper, paddingTop: insets.top }}>
-        <SheetNav title='Recent meal' leftLabel='Back' onLeftPress={() => navigation.goBack()} />
+      <View
+        style={{
+          flex: 1,
+          backgroundColor: colors.paper,
+          paddingTop: insets.top,
+        }}
+      >
+        <SheetNav
+          title='Recent meal'
+          leftLabel='Back'
+          onLeftPress={() => navigation.goBack()}
+        />
         {loaded ? (
           <Text style={s.gone}>This meal isn’t in your log any more.</Text>
         ) : (
-          <LoadingBird size={48} color={colors.ink3} style={{ alignSelf: 'center', marginTop: space.xl }} />
+          <LoadingBird
+            size={48}
+            color={colors.ink3}
+            style={{ alignSelf: 'center', marginTop: space.xl }}
+          />
         )}
       </View>
     );
   }
 
   return (
-    <View style={{ flex: 1, backgroundColor: colors.paper, paddingTop: insets.top }}>
+    <View
+      style={{ flex: 1, backgroundColor: colors.paper, paddingTop: insets.top }}
+    >
       <SheetNav
         title='Recent meal'
         leftLabel='Back'
@@ -45,7 +61,10 @@ export default function RecentMealScreen({ navigation, route }: Props) {
       />
 
       <ScrollView
-        contentContainerStyle={{ paddingHorizontal: space.lg, paddingBottom: 40 }}
+        contentContainerStyle={{
+          paddingHorizontal: space.lg,
+          paddingBottom: 40,
+        }}
         keyboardShouldPersistTaps='handled'
       >
         <View style={s.head}>
@@ -53,7 +72,12 @@ export default function RecentMealScreen({ navigation, route }: Props) {
           <Text style={s.sub}>{adder.summary}</Text>
         </View>
 
-        <MealAdder items={items} adder={adder} itemsLabel='What you had' scaleNoun='logged' />
+        <MealAdder
+          items={items}
+          adder={adder}
+          itemsLabel='What you had'
+          scaleNoun='logged'
+        />
 
         <Text style={s.note}>
           Adding this doesn’t change the day it came from.

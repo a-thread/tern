@@ -1,13 +1,21 @@
 import { colors } from '@/shared/theme';
-import { scoreColor, scoreTint, smile } from '@/check-in/utils/scoreColor';
+import { scoreColor, scoreTint, smile } from '../utils/scoreColor';
 import { MoodMetric } from '@/domain/mood/models/moodEntry';
 
 describe('scoreColor', () => {
   it('runs each scale from its low colour to its high colour', () => {
-    expect(scoreColor(MoodMetric.Mood, 1).toLowerCase()).toBe(colors.violet.toLowerCase());
-    expect(scoreColor(MoodMetric.Mood, 10).toLowerCase()).toBe(colors.sun.toLowerCase());
-    expect(scoreColor(MoodMetric.Stress, 1).toLowerCase()).toBe(colors.glacier.toLowerCase());
-    expect(scoreColor(MoodMetric.Stress, 10).toLowerCase()).toBe(colors.driftwood.toLowerCase());
+    expect(scoreColor(MoodMetric.Mood, 1).toLowerCase()).toBe(
+      colors.violet.toLowerCase(),
+    );
+    expect(scoreColor(MoodMetric.Mood, 10).toLowerCase()).toBe(
+      colors.sun.toLowerCase(),
+    );
+    expect(scoreColor(MoodMetric.Stress, 1).toLowerCase()).toBe(
+      colors.glacier.toLowerCase(),
+    );
+    expect(scoreColor(MoodMetric.Stress, 10).toLowerCase()).toBe(
+      colors.driftwood.toLowerCase(),
+    );
   });
 
   it('gives every score a valid colour, and never the coral reserved for actions', () => {
@@ -25,7 +33,9 @@ describe('scoreColor', () => {
 
   it('tints are pale', () => {
     expect(scoreTint(MoodMetric.Mood, 5)).toMatch(/^#[0-9a-f]{6}$/);
-    expect(parseInt(scoreTint(MoodMetric.Stress, 10).slice(1, 3), 16)).toBeGreaterThan(200);
+    expect(
+      parseInt(scoreTint(MoodMetric.Stress, 10).slice(1, 3), 16),
+    ).toBeGreaterThan(200);
   });
 });
 

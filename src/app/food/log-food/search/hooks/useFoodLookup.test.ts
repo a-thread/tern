@@ -1,16 +1,16 @@
 import { act, renderHook } from '@testing-library/react-native';
 
-import { searchProducts } from '@/food/log-food/sources/openFoodFacts';
+import { searchProducts } from '../../sources/openFoodFacts';
 import { isUsdaEnabled, searchUsda } from '@/domain/food/sources/usda';
 import { FoodApiError } from '@/domain/food/sources/http';
 import type { SearchResult } from '@/domain/food/sources/searchResult';
 import { commonFoodsSeed } from '@/domain/common-foods/commonFoods.seed';
 import { buildCommonIndex } from '@/domain/common-foods/models/commonFoods';
-import { clearSearchCache, FoodSearch } from '@/food/log-food/search/hooks/useFoodSearch';
-import { useFoodLookup } from '@/food/log-food/search/hooks/useFoodLookup';
+import { clearSearchCache, FoodSearch } from '../../search/hooks/useFoodSearch';
+import { useFoodLookup } from '../../search/hooks/useFoodLookup';
 
-jest.mock('@/food/log-food/sources/openFoodFacts', () => ({
-  ...jest.requireActual('@/food/log-food/sources/openFoodFacts'),
+jest.mock('../../sources/openFoodFacts', () => ({
+  ...jest.requireActual('../../sources/openFoodFacts'),
   searchProducts: jest.fn(),
 }));
 jest.mock('@/domain/food/sources/usda', () => ({
@@ -18,18 +18,29 @@ jest.mock('@/domain/food/sources/usda', () => ({
   searchUsda: jest.fn(),
   isUsdaEnabled: jest.fn(),
 }));
-jest.mock('@/shared/hooks/useDayKey', () => ({ useDayKey: () => '2026-10-07' }));
-jest.mock('@/domain/saved-meals/SavedMealsContext', () => ({ useSavedMeals: () => ({ meals: [] }) }));
-jest.mock('@/food/log-food/hooks/useLoggedFoods', () => ({ useLoggedFoods: () => mockLogged }));
+jest.mock('@/shared/hooks/useDayKey', () => ({
+  useDayKey: () => '2026-10-07',
+}));
+jest.mock('@/domain/saved-meals/SavedMealsContext', () => ({
+  useSavedMeals: () => ({ meals: [] }),
+}));
+jest.mock('../../hooks/useLoggedFoods', () => ({
+  useLoggedFoods: () => mockLogged,
+}));
 // Read lazily inside the mock, so it is set by the time the hook runs.
 const mockIndex = buildCommonIndex(commonFoodsSeed);
-jest.mock('@/domain/common-foods/CommonFoodsContext', () => ({ useCommonFoods: () => ({ index: mockIndex, version: 'seed' }) }));
+jest.mock('@/domain/common-foods/CommonFoodsContext', () => ({
+  useCommonFoods: () => ({ index: mockIndex, version: 'seed' }),
+}));
 
 const off = searchProducts as jest.MockedFunction<typeof searchProducts>;
 const usda = searchUsda as jest.MockedFunction<typeof searchUsda>;
 const usdaOn = isUsdaEnabled as jest.MockedFunction<typeof isUsdaEnabled>;
 
-const food = (name: string, extra: Partial<SearchResult> = {}): SearchResult => ({
+const food = (
+  name: string,
+  extra: Partial<SearchResult> = {},
+): SearchResult => ({
   id: extra.id ?? name,
   name,
   servingLabel: '100 g',
@@ -41,7 +52,11 @@ const food = (name: string, extra: Partial<SearchResult> = {}): SearchResult => 
   ...extra,
 });
 
-let mockLogged: { mine: SearchResult[]; recent: SearchResult[]; meals: [] } = { mine: [], recent: [], meals: [] };
+let mockLogged: { mine: SearchResult[]; recent: SearchResult[]; meals: [] } = {
+  mine: [],
+  recent: [],
+  meals: [],
+};
 
 const deferred = () => {
   let resolve: (r: SearchResult[]) => void = () => {};
@@ -54,9 +69,18 @@ const deferred = () => {
 };
 
 const lookup = (initial: string) =>
-  renderHook(({ q }: { q: string }) => useFoodLookup({ query: q, filter: 'All', pickMode: false, meal: 'lunch' }), {
-    initialProps: { q: initial },
-  });
+  renderHook(
+    ({ q }: { q: string }) =>
+      useFoodLookup({
+        query: q,
+        filter: 'All',
+        pickMode: false,
+        meal: 'lunch',
+      }),
+    {
+      initialProps: { q: initial },
+    },
+  );
 
 const pause = async () => {
   await act(async () => {
@@ -96,18 +120,24 @@ describe('useFoodLookup', () => {
 
     await pause();
     expect(result.current.pending).toBe(true);
-    await act(async () => pending.resolve([food('Egg bites', { id: 'off-1', brand: 'Starbucks' })]));
+    await act(async () =>
+      pending.resolve([food('Egg bites', { id: 'off-1', brand: 'Starbucks' })]),
+    );
 
     const after = result.current.foods.map((f) => f.id);
     expect(result.current.pending).toBe(false);
     expect(after.slice(0, before.length)).toEqual(before);
     expect(after).toContain('off-1');
-    expect(result.current.foods.find((f) => f.id === 'off-1')?.from).toBe('off');
+    expect(result.current.foods.find((f) => f.id === 'off-1')?.from).toBe(
+      'off',
+    );
   });
 
   it('only asks USDA when the phone has fewer than three matches', async () => {
     off.mockResolvedValue([]);
-    usda.mockResolvedValue([food('Quinoa, cooked', { id: 'usda-1', source: 'usda' })]);
+    usda.mockResolvedValue([
+      food('Quinoa, cooked', { id: 'usda-1', source: 'usda' }),
+    ]);
 
     lookup('egg'); // several common matches
     await pause();
@@ -120,7 +150,10 @@ describe('useFoodLookup', () => {
   });
 
   it('keeps the last packaged results, narrowed, while the next search runs', async () => {
-    off.mockResolvedValueOnce([food('Oat milk', { id: 'off-oat-milk', brand: 'Oatly' }), food('Oat bar', { id: 'off-oat-bar', brand: 'X' })]);
+    off.mockResolvedValueOnce([
+      food('Oat milk', { id: 'off-oat-milk', brand: 'Oatly' }),
+      food('Oat bar', { id: 'off-oat-bar', brand: 'X' }),
+    ]);
     const { result, rerender } = lookup('oat');
     await pause();
     expect(result.current.foods.map((f) => f.id)).toContain('off-oat-milk');
@@ -151,4 +184,3 @@ describe('useFoodLookup', () => {
     expect(result.current.nothingFound).toBe(false);
   });
 });
-

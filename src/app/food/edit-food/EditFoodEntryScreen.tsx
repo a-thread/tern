@@ -1,5 +1,12 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, ScrollView, StyleSheet, Pressable } from 'react-native';
+import {
+  View,
+  Text,
+  TextInput,
+  ScrollView,
+  StyleSheet,
+  Pressable,
+} from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 
@@ -10,9 +17,9 @@ import { Meals } from '@/domain/food/models/meals';
 import { Meal, type Tier } from '@/domain/food/models/foodEntry';
 import { useFood } from '@/domain/food/FoodContext';
 import { useViewedDay } from '@/shared/state/ViewedDayContext';
-import { TierPicker } from '@/food/components/TierPicker/TierPicker';
-import { MealPicker } from '@/food/components/MealPicker/MealPicker';
-import { MeasurePicker } from '@/food/components/MeasurePicker/MeasurePicker';
+import { TierPicker } from '../components/TierPicker/TierPicker';
+import { MealPicker } from '../components/MealPicker/MealPicker';
+import { MeasurePicker } from '../components/MeasurePicker/MeasurePicker';
 import { useFoodDisplay } from '@/domain/food/hooks/useFoodDisplay';
 import { stepServings, Servings } from '@/domain/food/models/servings';
 import { amountOf, type Measure } from '@/domain/food/models/measure';
@@ -239,5 +246,9 @@ const s = StyleSheet.create({
   },
   bigBtnText: { fontFamily: font.bold, fontSize: 14.5, color: '#fff' },
   deleteBtn: { alignItems: 'center', paddingVertical: 13, marginTop: 4 },
-  deleteText: { fontFamily: font.semibold, fontSize: 13.5, color: colors.danger },
+  deleteText: {
+    fontFamily: font.semibold,
+    fontSize: 13.5,
+    color: colors.danger,
+  },
 });

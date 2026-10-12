@@ -2,7 +2,7 @@ import React from 'react';
 import { Text } from 'react-native';
 import { fireEvent, render } from '@testing-library/react-native';
 
-import { SwipeToRemove } from '@/food/components/SwipeToRemove/SwipeToRemove';
+import { SwipeToRemove } from './SwipeToRemove';
 
 describe('SwipeToRemove', () => {
   it('shows its row and removes it from the Remove button', () => {

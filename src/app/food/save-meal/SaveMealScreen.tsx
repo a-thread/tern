@@ -5,15 +5,19 @@ import { NativeStackScreenProps } from '@react-navigation/native-stack';
 
 import { colors, font, radius, space, typography } from '@/shared/theme';
 import { Group, GroupLabel, SheetNav } from '@/shared/components/ui';
-import { TextField } from '@/food/components/TextField/TextField';
+import { TextField } from '../components/TextField/TextField';
 import type { RootStackParamList } from '@/navigation/types';
 import { useToast } from '@/shared/state/ToastContext';
 import { Meals } from '@/domain/food/models/meals';
 import { useFood } from '@/domain/food/FoodContext';
 import { useSavedMeals } from '@/domain/saved-meals/SavedMealsContext';
-import { findMealByName, validateMealName, SavedMealLimits } from '@/domain/saved-meals/models/savedMeals';
+import {
+  findMealByName,
+  validateMealName,
+  SavedMealLimits,
+} from '@/domain/saved-meals/models/savedMeals';
 import { useFoodDisplay } from '@/domain/food/hooks/useFoodDisplay';
-import ItemRow from '@/food/components/ItemRow/ItemRow';
+import ItemRow from '../components/ItemRow/ItemRow';
 import { confirm } from '@/shared/utils/confirm';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'SaveMeal'>;
@@ -31,7 +35,9 @@ export default function SaveMealScreen({ navigation, route }: Props) {
 
   const items = foodLog.filter((f) => f.meal === meal);
   const mealLabel = Meals.OPTIONS.find((m) => m.key === meal)?.label ?? meal;
-  const calories = Math.round(items.reduce((sum, f) => sum + f.calories * f.servings, 0));
+  const calories = Math.round(
+    items.reduce((sum, f) => sum + f.calories * f.servings, 0),
+  );
 
   const submit = () => {
     const problem = validateMealName(name);
@@ -41,7 +47,9 @@ export default function SaveMealScreen({ navigation, route }: Props) {
       const result = saveMeal(name, items);
       if (!result.ok) return setError(result.error);
       toast.show(
-        result.replaced ? `Updated “${result.meal.name}”` : `Saved “${result.meal.name}”`,
+        result.replaced
+          ? `Updated “${result.meal.name}”`
+          : `Saved “${result.meal.name}”`,
       );
       navigation.goBack();
     };
@@ -61,7 +69,9 @@ export default function SaveMealScreen({ navigation, route }: Props) {
   };
 
   return (
-    <View style={{ flex: 1, backgroundColor: colors.paper, paddingTop: insets.top }}>
+    <View
+      style={{ flex: 1, backgroundColor: colors.paper, paddingTop: insets.top }}
+    >
       <SheetNav
         title='Save as meal'
         leftLabel='Cancel'
@@ -71,7 +81,10 @@ export default function SaveMealScreen({ navigation, route }: Props) {
       />
 
       <ScrollView
-        contentContainerStyle={{ paddingHorizontal: space.lg, paddingBottom: 40 }}
+        contentContainerStyle={{
+          paddingHorizontal: space.lg,
+          paddingBottom: 40,
+        }}
         keyboardShouldPersistTaps='handled'
       >
         <GroupLabel>Name</GroupLabel>
@@ -99,11 +112,13 @@ export default function SaveMealScreen({ navigation, route }: Props) {
             ))}
           </Group>
         ) : (
-          <Text style={s.empty}>Nothing is logged in {mealLabel.toLowerCase()} yet.</Text>
+          <Text style={s.empty}>
+            Nothing is logged in {mealLabel.toLowerCase()} yet.
+          </Text>
         )}
         <Text style={s.note}>
-          The foods are saved with the portions you logged. Later changes to this day's
-          log won't change the saved meal.
+          The foods are saved with the portions you logged. Later changes to
+          this day's log won't change the saved meal.
         </Text>
 
         <Pressable
@@ -119,8 +134,18 @@ export default function SaveMealScreen({ navigation, route }: Props) {
 }
 
 const s = StyleSheet.create({
-  empty: { fontFamily: font.body, fontSize: 13, color: colors.ink2, padding: space.md },
-  note: { ...typography.caption, lineHeight: 17, marginTop: space.sm, marginHorizontal: 4 },
+  empty: {
+    fontFamily: font.body,
+    fontSize: 13,
+    color: colors.ink2,
+    padding: space.md,
+  },
+  note: {
+    ...typography.caption,
+    lineHeight: 17,
+    marginTop: space.sm,
+    marginHorizontal: 4,
+  },
   bigBtn: {
     backgroundColor: colors.coral,
     borderRadius: radius.lg,
