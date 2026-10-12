@@ -1,11 +1,11 @@
-import React, { useCallback, useState } from 'react';
-import { StyleSheet, Text, View } from 'react-native';
-import { useFocusEffect } from '@react-navigation/native';
+import React, { useState } from 'react';
+import { Text } from 'react-native';
 
 import { space, typography } from '@shared/theme';
-import { Card } from '@shared/components/ui';
+import { TrendCard, TrendFigure } from '@shared/components/TrendCard';
 import { StepBars } from '@shared/components/charts/StepBars';
 import { useDayKey } from '@shared/hooks/useDayKey';
+import { useFocusLoad } from '@shared/hooks/useFocusLoad';
 import { addDays } from '@shared/utils/date';
 import { TrendRanges, TrendRange } from '@shared/models/trendRange';
 import { useSettings } from '@settings/SettingsContext';
@@ -36,18 +36,11 @@ export function MovementTrendCard({
   const today = useDayKey();
   const [entries, setEntries] = useState<MovementEntry[]>([]);
 
-  useFocusEffect(
-    useCallback(() => {
-      let cancelled = false;
-      loadRange(addDays(today, -(TrendRanges.DAYS[range] - 1)), today)
-        .then((e) => !cancelled && setEntries(e))
-        .catch((e) => console.warn('Could not load movement history', e));
-      return () => {
-        cancelled = true;
-      };
-      // todayMinutes and refreshKey are triggers, not inputs.
-      // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [loadRange, today, range, todayMinutes, refreshKey]),
+  useFocusLoad(
+    () => loadRange(addDays(today, -(TrendRanges.DAYS[range] - 1)), today),
+    setEntries,
+    [loadRange, today, range, todayMinutes, refreshKey],
+    'Could not load movement history',
   );
 
   const byDay = minutesByDay(entries);
@@ -61,29 +54,23 @@ export function MovementTrendCard({
   const extras = [share, distanceM > 0 ? `${formatDistance(distanceM, units)} in all` : null].filter(Boolean).join(' · ');
 
   return (
-    <Card style={{ marginBottom: space.md }}>
-      <Text style={s.name}>Active minutes</Text>
-      <View style={{ flexShrink: 1 }}>
-        <Text style={s.value}>{average === null ? '—' : `${average} min`}</Text>
-        <Text style={s.sub}>
-          {average === null
+    <TrendCard title='Active minutes'>
+      <TrendFigure
+        value={average === null ? '—' : `${average} min`}
+        sub={
+          average === null
             ? 'no movement logged yet'
-            : `a day on average ${TrendRanges.LABEL[range]} · goal day at ${settings.movementGoalMinutes} min`}
-        </Text>
-      </View>
+            : `a day on average ${TrendRanges.LABEL[range]} · goal day at ${settings.movementGoalMinutes} min`
+        }
+      />
       <StepBars
         days={bars}
         goal={range === TrendRange.Week || range === TrendRange.Month ? settings.movementGoalMinutes : settings.movementGoalMinutes * 7}
         showLegend={false}
         showLabels={range !== TrendRange.Month}
       />
-      {extras ? <Text style={[s.sub, { marginTop: space.sm }]}>{extras}</Text> : null}
-    </Card>
+      {extras ? <Text style={{ ...typography.small, marginTop: space.sm }}>{extras}</Text> : null}
+    </TrendCard>
   );
 }
 
-const s = StyleSheet.create({
-  name: typography.label,
-  value: typography.stat,
-  sub: typography.small,
-});

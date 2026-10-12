@@ -1,10 +1,10 @@
-import React, { useCallback, useState } from 'react';
+import React, { useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
-import { useFocusEffect } from '@react-navigation/native';
 import Svg, { Line, Polyline } from 'react-native-svg';
 
 import { colors, space, typography } from '@shared/theme';
-import { Card } from '@shared/components/ui';
+import { TrendCard, TrendFigure } from '@shared/components/TrendCard';
+import { useFocusLoad } from '@shared/hooks/useFocusLoad';
 import { useDayKey } from '@shared/hooks/useDayKey';
 import { addDays } from '@shared/utils/date';
 import { useFood } from '@food/FoodContext';
@@ -30,22 +30,14 @@ export function EnergyTrendCard({
   const today = useDayKey();
   const [weeks, setWeeks] = useState<EnergyWeek[]>([]);
 
-  useFocusEffect(
-    useCallback(() => {
-      let cancelled = false;
-      const from = addDays(today, -(WEEKS * 7 + AdaptiveTarget.WINDOW_DAYS + 1));
-      const to = addDays(today, -1);
-      Promise.all([loadHistory(from, to), loadSkippedHistory(from, to)])
-        .then(([foodByDay, skippedByDay]) => {
-          if (!cancelled) setWeeks(weeklyEnergy({ foodByDay, skippedByDay, weighs: weightEntries, today, weeks: WEEKS }));
-        })
-        .catch((e) => console.warn('Could not load intake and burn', e));
-      return () => {
-        cancelled = true;
-      };
-      // foodLog and refreshKey are triggers, not inputs.
-      // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [loadHistory, loadSkippedHistory, weightEntries, today, foodLog.length, refreshKey]),
+  const from = addDays(today, -(WEEKS * 7 + AdaptiveTarget.WINDOW_DAYS + 1));
+  const to = addDays(today, -1);
+  useFocusLoad(
+    () => Promise.all([loadHistory(from, to), loadSkippedHistory(from, to)]),
+    ([foodByDay, skippedByDay]) =>
+      setWeeks(weeklyEnergy({ foodByDay, skippedByDay, weighs: weightEntries, today, weeks: WEEKS })),
+    [loadHistory, loadSkippedHistory, weightEntries, today, foodLog.length, refreshKey], // foodLog.length: read again after logging
+    'Could not load intake and burn',
   );
 
   const values = weeks.flatMap((w) => [w.burn, w.intake]).filter((v): v is number => v !== null);
@@ -61,12 +53,11 @@ export function EnergyTrendCard({
       .join(' ');
 
   return (
-    <Card style={{ marginBottom: space.md }}>
-      <Text style={s.name}>Intake and burn</Text>
-      <Text style={s.value}>{latest?.burn ? `${latest.burn.toLocaleString()} a day` : '—'}</Text>
-      <Text style={s.sub}>
-        {latest?.burn ? `estimated burn · last ${WEEKS} weeks` : 'still learning your burn'}
-      </Text>
+    <TrendCard title='Intake and burn'>
+      <TrendFigure
+        value={latest?.burn ? `${latest.burn.toLocaleString()} a day` : '—'}
+        sub={latest?.burn ? `estimated burn · last ${WEEKS} weeks` : 'still learning your burn'}
+      />
       {values.length ? (
         <View style={{ marginTop: space.sm }}>
           <Svg viewBox={`0 0 ${W} ${H}`} width='100%' height={H} accessibilityLabel='Estimated burn and logged intake by week'>
@@ -82,13 +73,10 @@ export function EnergyTrendCard({
           </Text>
         </View>
       ) : null}
-    </Card>
+    </TrendCard>
   );
 }
 
 const s = StyleSheet.create({
-  name: typography.label,
-  value: typography.stat,
-  sub: typography.small,
   legend: { ...typography.small, marginTop: 6 },
 });
