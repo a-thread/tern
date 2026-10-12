@@ -5,7 +5,7 @@ preview the app shows sample steps. With an account and no step source, steps st
 zero and no step waypoints are awarded — sample data would earn a real account waypoints
 it didn't earn.
 
-The adapter is [`src/today/data/steps.healthconnect.ts`](../src/today/data/steps.healthconnect.ts).
+The adapter is [`src/app/domain/activity/steps.healthconnect.ts`](../src/app/domain/activity/steps.healthconnect.ts).
 It stays off unless `EXPO_PUBLIC_HEALTH_CONNECT=1`, and has been verified by manual
 testing on an Android device.
 
@@ -38,7 +38,7 @@ app targets API 36, as Google Play requires.
 With movement tracked, Tern can also read exercise sessions (Settings → Health data →
 Workouts, which asks for the `ExerciseSession` read permission). Each session becomes
 read-only movement on the day it started: its length in minutes and an activity mapped from
-the exercise type (`src/movement/data/movement.healthconnect.ts`). Sessions are read live
+the exercise type (`src/app/domain/movement/movement.healthconnect.ts`). Sessions are read live
 and never stored, so nothing is duplicated. Logging movement by hand always works too.
 
 ## Rules of thumb

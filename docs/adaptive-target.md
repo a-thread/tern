@@ -2,8 +2,8 @@
 
 An opt-in way for the calorie target to follow what someone actually burns. It uses
 their own log and weight trend instead of formulas or per-workout estimates. The code is
-in [`energyBalance.ts`](../src/food/models/energyBalance.ts) (pure, tested) and
-[`useAdaptiveTarget.ts`](../src/food/hooks/useAdaptiveTarget.ts).
+in [`energyBalance.ts`](../src/app/domain/food/models/energyBalance.ts) (pure, tested) and
+[`useAdaptiveTarget.ts`](../src/app/domain/food/hooks/useAdaptiveTarget.ts).
 
 ## The estimate
 
