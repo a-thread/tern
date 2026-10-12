@@ -3,7 +3,7 @@ import { View, Text, ScrollView, StyleSheet } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 
-import { colors, font, radius, space, tierColors } from '@shared/theme';
+import { colors, font, radius, space, tierColors, typography } from '@shared/theme';
 import {
   Group,
   GroupLabel,
@@ -158,5 +158,5 @@ const s = StyleSheet.create({
     fontSize: 13.5,
     color: colors.ink,
   },
-  previewCals: { fontFamily: font.body, fontSize: 11.5, color: colors.ink2 },
+  previewCals: typography.caption,
 });

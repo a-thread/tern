@@ -1,4 +1,5 @@
 import type { TernClient } from '@shared/backend/supabase';
+import { ok, rows } from '@shared/backend/query';
 import type { RestDaysRepository } from './restDays.repository';
 
 export function createSupabaseRestDaysRepository(
@@ -6,23 +7,24 @@ export function createSupabaseRestDaysRepository(
 ): RestDaysRepository {
   return {
     async load(from, to) {
-      const { data, error } = await db
-        .from('rest_days')
-        .select('day')
-        .gte('day', from)
-        .lte('day', to);
-      if (error) throw error;
-      return (data ?? []).map((r: { day: string }) => r.day);
+      return (
+        await rows<{ day: string }>(
+          db.from('rest_days').select('day').gte('day', from).lte('day', to),
+        )
+      ).map((r) => r.day);
     },
     async add(day) {
-      const { error } = await db
-        .from('rest_days')
-        .upsert({ day }, { onConflict: 'user_id,day', ignoreDuplicates: true });
-      if (error) throw error;
+      await ok(
+        db
+          .from('rest_days')
+          .upsert(
+            { day },
+            { onConflict: 'user_id,day', ignoreDuplicates: true },
+          ),
+      );
     },
     async remove(day) {
-      const { error } = await db.from('rest_days').delete().eq('day', day);
-      if (error) throw error;
+      await ok(db.from('rest_days').delete().eq('day', day));
     },
   };
 }

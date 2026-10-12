@@ -3,7 +3,7 @@ import { View, Text, ScrollView, StyleSheet } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 
-import { colors, font, radius, space } from '@shared/theme';
+import { colors, radius, space, typography } from '@shared/theme';
 import { Group, GroupLabel, PushHeader, ToggleRow, IconBadge, Stepper, Icon } from '@shared/components/ui';
 import { useSettings } from '@settings/SettingsContext';
 import { useActivity } from '@today/ActivityContext';
@@ -138,12 +138,7 @@ const s = StyleSheet.create({
     padding: space.md + 1,
     marginTop: 6,
   },
-  intro: {
-    fontFamily: font.body,
-    fontSize: 12.5,
-    color: colors.ink2,
-    lineHeight: 19,
-  },
+  intro: { ...typography.meta, lineHeight: 19 },
   row: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -151,11 +146,6 @@ const s = StyleSheet.create({
     paddingHorizontal: 13,
     paddingVertical: 12,
   },
-  rowTitle: { fontFamily: font.medium, fontSize: 14, color: colors.ink },
-  rowSub: {
-    fontFamily: font.body,
-    fontSize: 11.5,
-    color: colors.ink2,
-    marginTop: 2,
-  },
+  rowTitle: typography.rowTitle,
+  rowSub: { ...typography.caption, marginTop: 2 },
 });

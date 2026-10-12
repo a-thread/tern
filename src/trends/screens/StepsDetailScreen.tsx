@@ -3,7 +3,7 @@ import { View, Text, ScrollView, StyleSheet } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 
-import { colors, font, radius, space } from '@shared/theme';
+import { colors, font, radius, space, typography } from '@shared/theme';
 import { TrendRanges, TrendRange } from '@shared/models/trendRange';
 import { Card, GroupLabel, PushHeader, Row, FootNote, LegendDot, SegmentedControl } from '@shared/components/ui';
 import { StepBars } from '@shared/components/charts/StepBars';
@@ -146,7 +146,7 @@ const s = StyleSheet.create({
     fontSize: 30,
     color: colors.ink,
   },
-  metricSub: { fontFamily: font.body, fontSize: 11.5, color: colors.ink2 },
+  metricSub: typography.caption,
   statGrid: { flexDirection: 'row', gap: 8, marginTop: space.md },
   statBox: {
     flex: 1,

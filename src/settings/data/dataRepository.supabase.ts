@@ -1,4 +1,5 @@
 import type { TernClient } from '@shared/backend/supabase';
+import { ok, rows } from '@shared/backend/query';
 import type { DataRepository, TernExport } from './dataRepository';
 
 const TABLES = {
@@ -15,11 +16,8 @@ const TABLES = {
 } as const;
 
 export function createSupabaseDataRepository(db: TernClient): DataRepository {
-  const all = async (table: string) => {
-    const { data, error } = await db.from(table).select('*');
-    if (error) throw error;
-    return data ?? [];
-  };
+  const all = (table: string) =>
+    rows<Record<string, unknown>>(db.from(table).select('*'));
 
   return {
     async exportAll(): Promise<TernExport> {
@@ -68,19 +66,14 @@ export function createSupabaseDataRepository(db: TernClient): DataRepository {
 
     async deleteAll() {
       for (const table of [...Object.values(TABLES), 'settings']) {
-        const { error } = await db
-          .from(table)
-          .delete()
-          .not('user_id', 'is', null);
-        if (error) throw error;
+        await ok(db.from(table).delete().not('user_id', 'is', null));
       }
     },
 
     async deleteAccount() {
       // Server-side function (supabase/migrations/20260922000000_delete_account.sql):
       // removing the login cascades to every row of the account.
-      const { error } = await db.rpc('delete_my_account');
-      if (error) throw error;
+      await ok(db.rpc('delete_my_account'));
     },
   };
 }

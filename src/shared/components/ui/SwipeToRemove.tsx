@@ -88,7 +88,7 @@ export function SwipeToRemove({
 const s = StyleSheet.create({
   wrap: { overflow: 'hidden' },
   front: { backgroundColor: colors.card },
-  action: { ...StyleSheet.absoluteFillObject, alignItems: 'flex-end', backgroundColor: '#B3261E' },
+  action: { ...StyleSheet.absoluteFillObject, alignItems: 'flex-end', backgroundColor: colors.danger },
   actionBtn: { width: ACTION_WIDTH, flex: 1, alignItems: 'center', justifyContent: 'center' },
   actionText: { fontFamily: font.semibold, fontSize: 13.5, color: '#fff' },
 });

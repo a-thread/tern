@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet, Pressable } from 'react-native';
-import { colors, font, radius, tierColors } from '@shared/theme';
+import { colors, font, radius, tierColors, typography } from '@shared/theme';
 import type { Tier } from '@food/models/foodEntry';
 import type { SearchResult } from '@food/data/sources/searchResult';
 import { TierDot } from './TierDot';
@@ -84,7 +84,7 @@ const s = StyleSheet.create({
     backgroundColor: '#fff',
   },
   tierOptSel: { borderColor: colors.coral, backgroundColor: colors.coralTint },
-  tierOptLabel: { fontFamily: font.body, fontSize: 11, color: colors.ink2 },
+  tierOptLabel: typography.small,
   tierOptLabelSel: { fontFamily: font.bold, color: colors.ink },
   suggestNote: {
     fontFamily: font.body,

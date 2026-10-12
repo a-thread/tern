@@ -1,4 +1,5 @@
 import type { TernClient } from '@shared/backend/supabase';
+import { ok } from '@shared/backend/query';
 import type { AppSettings } from '@settings/models/appSettings';
 import type { SettingsRepository } from './settings.repository';
 
@@ -16,13 +17,14 @@ export function createSupabaseSettingsRepository(
     },
     async save(settings) {
       // user_id defaults to auth.uid(); it's the primary key, so this upserts.
-      const { error } = await db
-        .from('settings')
-        .upsert(
-          { data: settings, updated_at: new Date().toISOString() },
-          { onConflict: 'user_id' },
-        );
-      if (error) throw error;
+      await ok(
+        db
+          .from('settings')
+          .upsert(
+            { data: settings, updated_at: new Date().toISOString() },
+            { onConflict: 'user_id' },
+          ),
+      );
     },
   };
 }

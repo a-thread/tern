@@ -1,28 +1,15 @@
 import React, { useEffect, useState } from 'react';
-import {
-  Alert,
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TextInput,
-  View,
-} from 'react-native';
+import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 
-import { colors, font, radius, space } from '@shared/theme';
-import { Group, GroupLabel, SheetNav, Stepper } from '@shared/components/ui';
-import { Meals } from '@food/models/meals';
-import { useFood } from '@food/FoodContext';
+import { colors, font, space, typography } from '@shared/theme';
+import { SheetNav } from '@shared/components/ui';
 import { useSavedMeals } from '@food/SavedMealsContext';
-import { MealPicker } from '@food/components/MealPicker';
-import { useFoodDisplay } from '@food/hooks/useFoodDisplay';
-import { itemsToEntries, scaleServings, SavedMealLimits } from '@food/models/savedMeals';
-import { loggedAsResult } from '@food/models/recentFoods';
-import { scaledTotals, stepScale } from '@food/models/mealDraft';
+import { SavedMealLimits } from '@food/models/savedMeals';
 import type { LogFoodStackParamList } from '@food/navigation';
-import ItemRow from '@food/components/ItemRow';
+import { MealAdder, useMealAdder } from '@food/components/MealAdder';
+import { confirm } from '@shared/utils/confirm';
 
 type Props = NativeStackScreenProps<LogFoodStackParamList, 'SavedMeal'>;
 
@@ -30,14 +17,11 @@ type Props = NativeStackScreenProps<LogFoodStackParamList, 'SavedMeal'>;
 export default function SavedMealScreen({ navigation, route }: Props) {
   const { meal: initialMeal, mealId } = route.params;
   const insets = useSafeAreaInsets();
-  const { addFoodEntries } = useFood();
   const { meals, renameMeal, deleteMeal, startDraft } = useSavedMeals();
-  const { showCalories } = useFoodDisplay();
   const saved = meals.find((m) => m.id === mealId);
+  const items = saved?.items ?? [];
+  const adder = useMealAdder(items, initialMeal, navigation);
 
-  const [target, setTarget] = useState(initialMeal);
-  // Scales every food when adding (0.5 = half portions); the saved meal is unchanged.
-  const [scale, setScale] = useState(1);
   const [name, setName] = useState(saved?.name ?? '');
   const [nameError, setNameError] = useState<string | null>(null);
   // Follow the stored name when it changes from elsewhere (e.g. after a refresh).
@@ -54,24 +38,10 @@ export default function SavedMealScreen({ navigation, route }: Props) {
     );
   }
 
-  const totals = scaledTotals(saved.items, scale);
-  const targetLabel = Meals.OPTIONS.find((m) => m.key === target)?.label ?? target;
-
   const saveName = () => {
     const error = renameMeal(saved.id, name);
     setNameError(error);
     if (error) setName(saved.name);
-  };
-
-  const add = () => {
-    addFoodEntries(itemsToEntries(saved.items, target, scale));
-    navigation.goBack();
-  };
-
-  // Just this food: the Details screen, starting from the amount saved here, so it can be changed first.
-  const addOne = (index: number) => {
-    const [entry] = itemsToEntries([saved.items[index]], target, scale);
-    navigation.navigate('FoodDetail', { meal: target, result: loggedAsResult(entry) });
   };
 
   const editMeal = () => {
@@ -80,17 +50,15 @@ export default function SavedMealScreen({ navigation, route }: Props) {
   };
 
   const confirmDelete = () =>
-    Alert.alert('Delete saved meal?', `“${saved.name}” will be removed. Foods already logged stay.`, [
-      { text: 'Cancel', style: 'cancel' },
-      {
-        text: 'Delete',
-        style: 'destructive',
-        onPress: () => {
-          deleteMeal(saved.id);
-          navigation.goBack();
-        },
+    confirm({
+      title: 'Delete saved meal?',
+      message: `“${saved.name}” will be removed. Foods already logged stay.`,
+      action: 'Delete',
+      onConfirm: () => {
+        deleteMeal(saved.id);
+        navigation.goBack();
       },
-    ]);
+    });
 
   return (
     <View style={{ flex: 1, backgroundColor: colors.paper, paddingTop: insets.top }}>
@@ -99,7 +67,7 @@ export default function SavedMealScreen({ navigation, route }: Props) {
         leftLabel='Back'
         onLeftPress={() => navigation.goBack()}
         rightLabel='Add'
-        onRightPress={add}
+        onRightPress={adder.add}
       />
 
       <ScrollView
@@ -121,43 +89,10 @@ export default function SavedMealScreen({ navigation, route }: Props) {
             style={s.name}
           />
           {nameError ? <Text style={s.error}>{nameError}</Text> : null}
-          <Text style={s.sub}>
-            {saved.items.length} {saved.items.length === 1 ? 'food' : 'foods'}
-            {showCalories ? ` · ${Math.round(totals.calories)} cal` : ''}
-            {` · ${Math.round(totals.protein)}g protein`}
-          </Text>
+          <Text style={s.sub}>{adder.summary}</Text>
         </View>
 
-        <GroupLabel>In this meal · tap a food to add just that</GroupLabel>
-        <Group>
-          {saved.items.map((item, i) => (
-            <ItemRow
-              key={`${item.name}-${i}`}
-              item={{ ...item, servings: scaleServings(item.servings, scale) }}
-              onPress={() => addOne(i)}
-            />
-          ))}
-        </Group>
-
-        <GroupLabel>Portion</GroupLabel>
-        <View style={[s.card, s.scaleRow]}>
-          <View style={{ flex: 1 }}>
-            <Text style={s.scaleTitle}>
-              {scale === 1 ? 'As saved' : `${scale}× as saved`}
-            </Text>
-            <Text style={s.scaleSub}>Scales every food in this meal</Text>
-          </View>
-          <Stepper value={`${scale}×`} onDecrement={() => setScale((v) => stepScale(v, -1))} onIncrement={() => setScale((v) => stepScale(v, 1))} decrementLabel='Smaller portion' incrementLabel='Larger portion' valueMinWidth={44} />
-        </View>
-
-        <GroupLabel>Add to</GroupLabel>
-        <View style={s.card}>
-          <MealPicker value={target} onChange={setTarget} options={Meals.OPTIONS} />
-        </View>
-
-        <Pressable style={s.bigBtn} onPress={add}>
-          <Text style={s.bigBtnText}>Add all to {targetLabel.toLowerCase()}</Text>
-        </Pressable>
+        <MealAdder items={items} adder={adder} itemsLabel='In this meal' scaleNoun='saved' />
 
         <Pressable onPress={editMeal} hitSlop={8} style={s.editBtn}>
           <Text style={s.editText}>Edit meal</Text>
@@ -180,28 +115,12 @@ const s = StyleSheet.create({
     letterSpacing: -0.2,
     padding: 0,
   },
-  error: { fontFamily: font.body, fontSize: 12.5, color: '#B3261E', marginTop: 4 },
-  sub: { fontFamily: font.body, fontSize: 12.5, color: colors.ink2, marginTop: 4 },
-  card: {
-    backgroundColor: colors.card,
-    borderRadius: radius.lg,
-    padding: space.md,
-  },
-  bigBtn: {
-    backgroundColor: colors.coral,
-    borderRadius: radius.lg,
-    paddingVertical: 14,
-    alignItems: 'center',
-    marginTop: space.lg,
-  },
-  bigBtnText: { fontFamily: font.bold, fontSize: 15, color: '#fff' },
-  scaleRow: { flexDirection: 'row', alignItems: 'center' },
-  scaleTitle: { fontFamily: font.medium, fontSize: 14, color: colors.ink },
-  scaleSub: { fontFamily: font.body, fontSize: 11.5, color: colors.ink2, marginTop: 1 },
+  error: { fontFamily: font.body, fontSize: 12.5, color: colors.danger, marginTop: 4 },
+  sub: { ...typography.meta, marginTop: 4 },
   editBtn: { alignItems: 'center', paddingTop: space.lg },
   editText: { fontFamily: font.semibold, fontSize: 13.5, color: colors.ink },
   deleteBtn: { alignItems: 'center', paddingVertical: space.lg },
-  deleteText: { fontFamily: font.semibold, fontSize: 13.5, color: '#B3261E' },
+  deleteText: { fontFamily: font.semibold, fontSize: 13.5, color: colors.danger },
   gone: {
     fontFamily: font.body,
     fontSize: 13.5,

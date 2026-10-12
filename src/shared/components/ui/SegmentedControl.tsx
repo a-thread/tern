@@ -1,6 +1,6 @@
 import React from 'react';
 import { Pressable, StyleSheet, Text, View, type StyleProp, type ViewStyle } from 'react-native';
-import { colors, font } from '@shared/theme';
+import { colors, font, typography } from '@shared/theme';
 
 /** A row of equal pills where exactly one is chosen, e.g. a date range or a meal. */
 export function SegmentedControl<T extends string>({
@@ -47,6 +47,6 @@ const s = StyleSheet.create({
   },
   item: { flex: 1, alignItems: 'center', paddingVertical: 6, borderRadius: 8 },
   itemOn: { backgroundColor: colors.card },
-  text: { fontFamily: font.body, fontSize: 12.5, color: colors.ink2 },
+  text: typography.meta,
   textOn: { fontFamily: font.semibold, color: colors.ink },
 });

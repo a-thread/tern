@@ -1,7 +1,7 @@
 import React from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
-import { colors, font, tierColors } from '@shared/theme';
+import { colors, tierColors, typography } from '@shared/theme';
 import type { FoodEntry } from '@food/models/foodEntry';
 import { TierDot } from './TierDot';
 import { useFoodDisplay } from '@food/hooks/useFoodDisplay';
@@ -67,12 +67,7 @@ const s = StyleSheet.create({
     paddingHorizontal: 13,
     paddingVertical: 11,
   },
-  name: { fontFamily: font.medium, fontSize: 14, color: colors.ink },
-  sub: {
-    fontFamily: font.body,
-    fontSize: 11,
-    color: colors.ink2,
-    marginTop: 1,
-  },
-  cals: { fontFamily: font.body, fontSize: 11.5, color: colors.ink2 },
+  name: typography.rowTitle,
+  sub: { ...typography.small, marginTop: 1 },
+  cals: typography.caption,
 });

@@ -1,11 +1,8 @@
 import React, { useState } from 'react';
 import { Pressable, StyleSheet, Text } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
-import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
 import { colors, font, radius } from '@shared/theme';
 import { Group, GroupLabel, IconBadge, Row, Icon } from '@shared/components/ui';
-import type { RootStackParamList } from '@shared/navigation/types';
 import { useUnits } from '@settings/hooks/useUnits';
 import { formatMinutes } from '@settings/models/reminderPlan';
 import { useMedication } from '@medication/MedicationContext';
@@ -13,13 +10,14 @@ import { useWater } from '@water/WaterContext';
 import WaterSheet from '@water/components/WaterSheet';
 import { formatLoggedAt } from '@weight/models/weightEntry';
 import { useDayItems } from '@today/hooks/useDayItems';
+import { useRootNavigation } from '@shared/navigation/useAppNavigation';
 
 /**
  * What is still open on the viewed day: meals, a weigh-in, water, a check-in and (today only)
  * medication. Yesterday can still be filled in; earlier days have nothing open. Empty hides it.
  */
 export function LeftToDoList() {
-  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+  const navigation = useRootNavigation();
   const { openItems, lastWeight, isToday } = useDayItems();
   const { formatWeight, formatVolume, quickWaterOz } = useUnits();
   const water = useWater();

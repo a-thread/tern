@@ -1,6 +1,4 @@
 import React, { useState } from 'react';
-import { useNavigation } from '@react-navigation/native';
-import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import {
   View,
   Text,
@@ -12,9 +10,8 @@ import {
   type NativeSyntheticEvent,
 } from 'react-native';
 
-import { colors, font, radius, space, tierColors } from '@shared/theme';
+import { colors, font, radius, space, tierColors, typography } from '@shared/theme';
 import { ProgressBar } from '@shared/components/ui';
-import type { RootStackParamList } from '@shared/navigation/types';
 import { useSettings } from '@settings/SettingsContext';
 import { useFoodDisplay } from '@food/hooks/useFoodDisplay';
 import {
@@ -30,6 +27,7 @@ import type { FoodEntry } from '@food/models/foodEntry';
 import { tierShares } from '@food/models/tierShares';
 import { NovaInfoSheet } from '@food/components/NovaInfoSheet';
 import { IntakeInfoSheet } from '@food/components/IntakeInfoSheet';
+import { useRootNavigation } from '@shared/navigation/useAppNavigation';
 
 type Totals = { calories: number; protein: number; carbs: number; fat: number };
 
@@ -71,7 +69,7 @@ export function IntakeBarometer({
   const [width, setWidth] = useState(0);
   const [page, setPage] = useState(0);
   const [info, setInfo] = useState<'nova' | 'calories' | 'macros' | null>(null);
-  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+  const navigation = useRootNavigation();
   // Each page's own height, so the card is only as tall as the page showing.
   const [heights, setHeights] = useState<Record<string, number>>({});
 
@@ -252,7 +250,7 @@ const s = StyleSheet.create({
     marginTop: space.xs,
   },
   title: { fontFamily: font.semibold, fontSize: 13.5, color: colors.ink },
-  status: { fontFamily: font.body, fontSize: 11.5, color: colors.ink2, marginTop: 6 },
+  status: { ...typography.caption, marginTop: 6 },
   pct: { fontFamily: font.body, fontSize: 11.5, color: colors.ink3 },
   mark: { position: 'absolute', top: -3, width: 2, height: 11, borderRadius: 1, backgroundColor: colors.ink2 },
   titleRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
@@ -300,7 +298,7 @@ const s = StyleSheet.create({
   end: { fontFamily: font.body, fontSize: 11.5, color: colors.ink3 },
   macroTop: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 6 },
   macroLabel: { fontFamily: font.body, fontSize: 12.5, color: colors.ink },
-  macroSub: { fontFamily: font.body, fontSize: 11.5, color: colors.ink2 },
+  macroSub: typography.caption,
   dots: { flexDirection: 'row', justifyContent: 'center', gap: 5, marginTop: space.md },
   dot: { width: 5, height: 5, borderRadius: 3, backgroundColor: colors.track },
   dotOn: { backgroundColor: colors.ink },

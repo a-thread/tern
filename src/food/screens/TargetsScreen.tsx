@@ -9,7 +9,7 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 
-import { colors, font, radius, space } from '@shared/theme';
+import { colors, font, radius, space, typography } from '@shared/theme';
 import {
   Group,
   GroupLabel,
@@ -460,20 +460,15 @@ const s = StyleSheet.create({
     marginTop: 1,
   },
   radioOn: { borderWidth: 5, borderColor: colors.coral },
-  rowTitle: { fontFamily: font.medium, fontSize: 14, color: colors.ink },
-  rowSub: {
-    fontFamily: font.body,
-    fontSize: 11.5,
-    color: colors.ink2,
-    marginTop: 2,
-  },
+  rowTitle: typography.rowTitle,
+  rowSub: { ...typography.caption, marginTop: 2 },
   sheetTop: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     marginBottom: space.md,
   },
-  sheetTitle: { fontFamily: font.semibold, fontSize: 15, color: colors.ink },
+  sheetTitle: typography.heading,
   close: { fontFamily: font.body, fontSize: 24, color: colors.ink3 },
   cols: { flexDirection: 'row', gap: 8 },
   col: { flex: 1, alignItems: 'center' },
@@ -486,12 +481,7 @@ const s = StyleSheet.create({
     borderTopColor: colors.border,
   },
   total: { fontFamily: font.semibold, fontSize: 15, color: colors.ink2 },
-  hint: {
-    fontFamily: font.body,
-    fontSize: 11.5,
-    color: colors.ink2,
-    marginTop: 4,
-  },
+  hint: { ...typography.caption, marginTop: 4 },
   update: {
     backgroundColor: colors.coral,
     borderRadius: radius.md,

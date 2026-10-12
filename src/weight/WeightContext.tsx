@@ -1,8 +1,7 @@
-import React, { useCallback, useMemo, useState } from 'react';
+import React, { useCallback, useMemo } from 'react';
 import type { WeightRepository } from '@weight/data/weight.repository';
 import { createRequiredContext } from '@shared/state/createRequiredContext';
-import { useLoader } from '@shared/hooks/useLoader';
-import { usePersist } from '@shared/hooks/usePersist';
+import { useSyncedList } from '@shared/hooks/useSyncedList';
 import { newId } from '@shared/utils/id';
 import { computeTrend } from '@weight/models/weightTrend';
 import { isLoggedToday, type WeightEntry } from '@weight/models/weightEntry';
@@ -38,13 +37,15 @@ export function WeightProvider({
   repo: WeightRepository;
   children: React.ReactNode;
 }) {
-  const [weightEntries, setWeightEntries] = useState<WeightEntry[]>([]);
-  const { ready, reload } = useLoader(
+  const {
+    entries: weightEntries,
+    ready,
+    reload,
+    change,
+  } = useSyncedList(
     useCallback(() => weight.load(), [weight]),
-    setWeightEntries,
     'Could not load weight entries',
   );
-  const persist = usePersist(reload);
 
   // A weigh-in earns its waypoint for being logged, whatever it says. Taken back if today's is
   // removed; nothing happens while weight tracking is off.
@@ -60,26 +61,26 @@ export function WeightProvider({
     (lb: number, loggedAt: string = new Date().toISOString()) => {
       const entry: WeightEntry = { id: newId(), lb, loggedAt };
       // Newest first, wherever a back-dated one lands.
-      setWeightEntries((prev) =>
-        [entry, ...prev].sort((a, b) => b.loggedAt.localeCompare(a.loggedAt)),
+      change(
+        (prev) => [entry, ...prev].sort((a, b) => b.loggedAt.localeCompare(a.loggedAt)),
+        weight.add(entry),
+        {
+          log: 'Could not save weight entry',
+          toast: "Couldn't save that weigh-in — please try again.",
+        },
       );
-      persist(weight.add(entry), {
-        log: 'Could not save weight entry',
-        toast: "Couldn't save that weigh-in — please try again.",
-      });
     },
-    [weight, persist],
+    [weight, change],
   );
 
   const updateWeightEntry = useCallback(
     (id: string, lb: number) => {
-      setWeightEntries((prev) => prev.map((e) => (e.id === id ? { ...e, lb } : e)));
-      persist(weight.update(id, lb), {
+      change((prev) => prev.map((e) => (e.id === id ? { ...e, lb } : e)), weight.update(id, lb), {
         log: 'Could not update weight entry',
         toast: "Couldn't save that change — please try again.",
       });
     },
-    [weight, persist],
+    [weight, change],
   );
 
   const weightTrend = useMemo(() => computeTrend(weightEntries), [weightEntries]);

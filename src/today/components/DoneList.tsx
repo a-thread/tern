@@ -1,11 +1,8 @@
 import React, { useState } from 'react';
 import { StyleSheet, Text } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
-import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
 import { colors, font } from '@shared/theme';
 import { FootNote, Group, GroupLabel, Row } from '@shared/components/ui';
-import type { RootStackParamList } from '@shared/navigation/types';
 import { useUnits } from '@settings/hooks/useUnits';
 import { useFoodDisplay } from '@food/hooks/useFoodDisplay';
 import { useMedication } from '@medication/MedicationContext';
@@ -18,6 +15,7 @@ import { useViewedDay } from '@shared/state/ViewedDayContext';
 import { dayWord } from '@shared/utils/date';
 import { useDayItems } from '@today/hooks/useDayItems';
 import { DoneBadge } from './DoneBadge';
+import { useRootNavigation } from '@shared/navigation/useAppNavigation';
 
 /**
  * What has been done on the viewed day ("Today so far", "Yesterday", "Tuesday"), with a way
@@ -25,7 +23,7 @@ import { DoneBadge } from './DoneBadge';
  * "Meals logged" still opens that day in the Food tab.
  */
 export function DoneList({ quietWhenEmpty = false }: { quietWhenEmpty?: boolean } = {}) {
-  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+  const navigation = useRootNavigation();
   const { summary, mealsDone, waterDone, anythingDone, takenMedications, movementOnDay, movedToGoal, steps, day, isToday, editable } =
     useDayItems();
   const { today } = useViewedDay();

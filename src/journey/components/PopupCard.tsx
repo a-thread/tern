@@ -1,11 +1,9 @@
 import React, { useEffect, useRef } from 'react';
 import { Animated, Pressable, StyleSheet, Text, View } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import { useNavigation } from '@react-navigation/native';
-import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
 import { font } from '@shared/theme';
-import type { RootStackParamList } from '@shared/navigation/types';
+import { useRootNavigation } from '@shared/navigation/useAppNavigation';
 
 /** Gold for points, the route and links on the dark cards. */
 export const GOLD = '#F2C888';
@@ -27,7 +25,7 @@ export function PopupCard({
   children: React.ReactNode;
   overlay?: React.ReactNode;
 }) {
-  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+  const navigation = useRootNavigation();
   const scale = useRef(new Animated.Value(0.85)).current;
   const opacity = useRef(new Animated.Value(0)).current;
 

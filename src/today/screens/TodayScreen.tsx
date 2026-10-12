@@ -12,6 +12,7 @@ import WaypointBurst from '@journey/components/WaypointBurst';
 import { useActivity } from '@today/ActivityContext';
 import { useViewedDay } from '@shared/state/ViewedDayContext';
 import { useFood } from '@food/FoodContext';
+import { useSettings } from '@settings/SettingsContext';
 import { useWeight } from '@weight/WeightContext';
 import { useWater } from '@water/WaterContext';
 import { useMood } from '@mood/MoodContext';
@@ -26,7 +27,7 @@ import { useRestDay } from '@today/hooks/useRestDay';
 import { WeekStrip } from '@today/components/WeekStrip';
 import { LeftToDoList } from '@today/components/LeftToDoList';
 import { DoneList } from '@today/components/DoneList';
-import { NutritionCard } from '@today/components/NutritionCard';
+import { FoodSummary } from '@food/components/FoodSummary';
 import { TargetSuggestionCard } from '@food/components/TargetSuggestionCard';
 
 /**
@@ -50,6 +51,7 @@ export default function TodayScreen() {
   const calm = (rest.isRest || rest.leaving) && !reveal;
   const { completeCelebration, reload: reloadWaypoints } = useWaypoints();
   const { foodLog, reload: reloadFood } = useFood();
+  const { settings } = useSettings();
   const { reload: reloadWeight } = useWeight();
   const { reload: reloadWater } = useWater();
   const { reload: reloadMood } = useMood();
@@ -128,13 +130,13 @@ export default function TodayScreen() {
               </Pressable>
             ) : null}
             <DoneList quietWhenEmpty />
-            {foodLog.length ? <NutritionCard /> : null}
+            {foodLog.length > 0 && settings.trackCalories ? <FoodSummary /> : null}
           </>
         ) : (
           <>
             <LeftToDoList />
             <DoneList />
-            <NutritionCard />
+            {settings.trackCalories ? <FoodSummary /> : null}
             {isToday && !rest.isRest ? <TargetSuggestionCard /> : null}
           </>
         )}

@@ -6,7 +6,7 @@ import type {
   NativeStackScreenProps,
 } from '@react-navigation/native-stack';
 
-import { colors, font, radius, space } from '@shared/theme';
+import { colors, font, radius, space, typography } from '@shared/theme';
 import { Group, GroupLabel, SheetNav, SwipeToRemove } from '@shared/components/ui';
 import type { RootStackParamList } from '@shared/navigation/types';
 import { Meals } from '@food/models/meals';
@@ -99,7 +99,7 @@ function Macro({ value, label }: { value: number; label: string }) {
 const s = StyleSheet.create({
   head: { paddingVertical: space.md },
   name: { fontFamily: font.display, fontSize: 24, color: colors.ink, letterSpacing: -0.2 },
-  sub: { fontFamily: font.body, fontSize: 12.5, color: colors.ink2, marginTop: 4 },
+  sub: { ...typography.meta, marginTop: 4 },
   macros: {
     flexDirection: 'row',
     backgroundColor: colors.card,
@@ -107,7 +107,7 @@ const s = StyleSheet.create({
     padding: space.md,
   },
   macroVal: { fontFamily: font.bold, fontSize: 15, color: colors.ink, textAlign: 'center' },
-  macroLabel: { fontFamily: font.body, fontSize: 11, color: colors.ink2, textAlign: 'center', marginTop: 1 },
+  macroLabel: { ...typography.small, textAlign: 'center', marginTop: 1 },
   bigBtn: {
     backgroundColor: colors.coral,
     borderRadius: radius.lg,

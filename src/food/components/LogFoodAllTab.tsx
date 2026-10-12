@@ -7,8 +7,9 @@ import type { SavedMeal } from '@food/models/savedMeals';
 import type { FoodLookup } from '@food/hooks/useFoodLookup';
 import { FoodGroup } from './FoodGroup';
 import { ListNote } from './ListNote';
-import { RecentMealGroup } from './RecentMealGroup';
-import { SavedMealGroup } from './SavedMealGroup';
+import { MealGroup } from './MealGroup';
+import { RecentMealRow } from './RecentMealRow';
+import { SavedMealRow } from './SavedMealRow';
 import { SearchStatus } from './SearchStatus';
 
 /** The All tab: your meals and recent foods before a search, one ranked list of foods once there is one. */
@@ -39,9 +40,9 @@ export function LogFoodAllTab({
   if (!l.searching) {
     return (
       <>
-        {l.yourMeals.length ? <SavedMealGroup label='Your meals' meals={l.yourMeals} onPick={onOpenMeal} /> : null}
+        {l.yourMeals.length ? <MealGroup label='Your meals' meals={l.yourMeals} onPick={onOpenMeal} Row={SavedMealRow} /> : null}
         {l.pastMeals.length ? (
-          <RecentMealGroup label='Recent meals' meals={l.pastMeals.slice(0, 5)} onPick={onOpenPastMeal} />
+          <MealGroup label='Recent meals' meals={l.pastMeals.slice(0, 5)} onPick={onOpenPastMeal} Row={RecentMealRow} />
         ) : null}
         {l.recent.length ? <FoodGroup label='Logged recently' foods={l.recent} onPick={onPickFood} /> : null}
         {!l.yourMeals.length && !l.pastMeals.length && !l.recent.length ? (
@@ -56,7 +57,7 @@ export function LogFoodAllTab({
   return (
     <>
       {l.yourMeals.length ? (
-        <SavedMealGroup label='Your meals' meals={l.yourMeals.slice(0, 5)} onPick={onOpenMeal} />
+        <MealGroup label='Your meals' meals={l.yourMeals.slice(0, 5)} onPick={onOpenMeal} Row={SavedMealRow} />
       ) : null}
       {l.foods.length ? <FoodGroup label='Foods' foods={l.foods} onPick={onPickFood} /> : null}
       <SearchStatus

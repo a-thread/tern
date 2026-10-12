@@ -12,7 +12,7 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 
-import { colors, font, radius, space } from '@shared/theme';
+import { colors, font, radius, space, typography } from '@shared/theme';
 import { Group, GroupLabel, SheetNav } from '@shared/components/ui';
 import { WeightTrend } from '@shared/components/charts/WeightTrend';
 import type { RootStackParamList } from '@shared/navigation/types';
@@ -267,14 +267,7 @@ const s = StyleSheet.create({
     backgroundColor: colors.coral,
     borderRadius: 2,
   },
-  hint: {
-    fontFamily: font.body,
-    fontSize: 11.5,
-    color: colors.ink2,
-    textAlign: 'center',
-    lineHeight: 17,
-    paddingHorizontal: 12,
-  },
+  hint: { ...typography.caption, textAlign: 'center', lineHeight: 17, paddingHorizontal: 12 },
   weekCard: {
     backgroundColor: colors.card,
     borderRadius: radius.lg,
@@ -287,7 +280,7 @@ const s = StyleSheet.create({
     marginBottom: 8,
   },
   weekVal: { fontFamily: font.displayMedium, fontSize: 19, color: colors.ink },
-  weekSub: { fontFamily: font.body, fontSize: 11.5, color: colors.ink2 },
+  weekSub: typography.caption,
   row: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -295,6 +288,6 @@ const s = StyleSheet.create({
     paddingHorizontal: 13,
     paddingVertical: 12,
   },
-  rowTitle: { fontFamily: font.medium, fontSize: 14, color: colors.ink },
+  rowTitle: typography.rowTitle,
   rowSub: { fontFamily: font.body, fontSize: 12, color: colors.ink2 },
 });

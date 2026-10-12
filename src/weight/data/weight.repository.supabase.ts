@@ -1,4 +1,5 @@
 import type { TernClient } from '@shared/backend/supabase';
+import { ok, rows } from '@shared/backend/query';
 import type { WeightEntry } from '@weight/models/weightEntry';
 import type { WeightRepository } from './weight.repository';
 
@@ -13,23 +14,25 @@ export function createSupabaseWeightRepository(
 ): WeightRepository {
   return {
     async load() {
-      const { data, error } = await db
-        .from('weight_entries')
-        .select('id, lb, logged_at')
-        .order('logged_at', { ascending: false })
-        .limit(180);
-      if (error) throw error;
-      return (data as WeightRow[]).map(rowToWeight);
+      return (
+        await rows<WeightRow>(
+          db
+            .from('weight_entries')
+            .select('id, lb, logged_at')
+            .order('logged_at', { ascending: false })
+            .limit(180),
+        )
+      ).map(rowToWeight);
     },
     async add(entry) {
-      const { error } = await db
-        .from('weight_entries')
-        .insert({ id: entry.id, lb: entry.lb, logged_at: entry.loggedAt });
-      if (error) throw error;
+      await ok(
+        db
+          .from('weight_entries')
+          .insert({ id: entry.id, lb: entry.lb, logged_at: entry.loggedAt }),
+      );
     },
     async update(id, lb) {
-      const { error } = await db.from('weight_entries').update({ lb }).eq('id', id);
-      if (error) throw error;
+      await ok(db.from('weight_entries').update({ lb }).eq('id', id));
     },
   };
 }

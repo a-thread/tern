@@ -1,10 +1,8 @@
 import React from 'react';
 import { ActivityIndicator, View, Text, ScrollView, StyleSheet, Pressable } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useNavigation } from '@react-navigation/native';
-import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
-import { colors, font, radius, space, tierColors } from '@shared/theme';
+import { colors, font, radius, space, tierColors, typography } from '@shared/theme';
 import {
   Group,
   GroupLabel,
@@ -13,27 +11,26 @@ import {
   SwipeToRemove,
   Icon,
 } from '@shared/components/ui';
-import type { RootStackParamList } from '@shared/navigation/types';
 import { useViewedDay } from '@shared/state/ViewedDayContext';
 import { usePullToRefresh } from '@shared/hooks/usePullToRefresh';
 import { formatLongDate } from '@shared/utils/date';
 import { useSettings } from '@settings/SettingsContext';
 import { mealTotals, Meals } from '@food/models/meals';
-import { dayTotals, type FoodEntry } from '@food/models/foodEntry';
+import { type FoodEntry } from '@food/models/foodEntry';
 import { useFood } from '@food/FoodContext';
 import { useFoodDisplay } from '@food/hooks/useFoodDisplay';
 import WaterCard from '@water/components/WaterCard';
 import { useWater } from '@water/WaterContext';
 import { TierDot } from '@food/components/TierDot';
-import { IntakeBarometer } from '@food/components/IntakeBarometer';
+import { FoodSummary } from '@food/components/FoodSummary';
+import { useRootNavigation } from '@shared/navigation/useAppNavigation';
 
 export default function FoodScreen() {
   // Today unless a past day was picked on Home; yesterday can still be filled in.
   const { day, isToday, editable, showToday } = useViewedDay();
   const when = isToday ? 'today' : 'yesterday';
   const insets = useSafeAreaInsets();
-  const navigation =
-    useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+  const navigation = useRootNavigation();
   const { foodLog, skippedMeals, loadedDay, setMealSkipped, removeFoodEntry, reload: reloadFood } =
     useFood();
   const dayLoaded = loadedDay === day;
@@ -41,11 +38,6 @@ export default function FoodScreen() {
   const { showCalories } = useFoodDisplay();
   const water = useWater();
   const refreshControl = usePullToRefresh([reloadFood, water.reload]);
-  const totals = dayTotals(foodLog);
-  const remainingCalories = Math.max(
-    settings.calorieTarget - totals.calories,
-    0,
-  );
 
   return (
     <View
@@ -70,34 +62,7 @@ export default function FoodScreen() {
           paddingBottom: 100,
         }}
       >
-        {settings.showIntakeBars && settings.trackCalories ? (
-          <IntakeBarometer totals={totals} entries={foodLog} />
-        ) : (
-        <View style={s.statRow}>
-          {/* With calorie tracking (or calorie numbers) off there is no calorie chip at all. */}
-          {!showCalories ? null : settings.showRemainingVsTarget ? (
-            <Stat
-              value={Math.round(remainingCalories).toLocaleString()}
-              label={isToday ? 'left today' : 'left'}
-            />
-          ) : (
-            <Stat
-              value={Math.round(totals.calories).toLocaleString()}
-              label='calories'
-            />
-          )}
-          <Stat
-            value={`${Math.round(totals.protein)}g`}
-            label='protein'
-            color={colors.kelp}
-          />
-          <Stat
-            value={`${Math.round(totals.fat)}g`}
-            label='fat'
-            color={colors.sunDeep}
-          />
-        </View>
-        )}
+        <FoodSummary />
 
         {water.enabled ? <WaterCard /> : null}
 
@@ -319,25 +284,8 @@ function SkippedRow({ text, onUndo }: { text: string; onUndo?: () => void }) {
   );
 }
 
-function Stat({
-  value,
-  label,
-  color,
-}: {
-  value: string;
-  label: string;
-  color?: string;
-}) {
-  return (
-    <View style={s.stat}>
-      <Text style={[s.statValue, color ? { color } : null]}>{value}</Text>
-      <Text style={s.statLabel}>{label}</Text>
-    </View>
-  );
-}
-
 const s = StyleSheet.create({
-  eyebrow: { fontFamily: font.body, fontSize: 12.5, color: colors.ink2 },
+  eyebrow: typography.meta,
   titleRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
   backChip: {
     backgroundColor: colors.coralTint,
@@ -352,21 +300,6 @@ const s = StyleSheet.create({
     color: colors.ink,
     letterSpacing: -0.3,
   },
-  statRow: { flexDirection: 'row', gap: 7, marginTop: space.xs },
-  stat: {
-    flex: 1,
-    backgroundColor: colors.card,
-    borderRadius: radius.md,
-    padding: 10,
-    alignItems: 'center',
-  },
-  statValue: { fontFamily: font.bold, fontSize: 15, color: colors.ink },
-  statLabel: {
-    fontFamily: font.body,
-    fontSize: 9.5,
-    color: colors.ink2,
-    marginTop: 1,
-  },
   foodRow: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -374,12 +307,7 @@ const s = StyleSheet.create({
     paddingHorizontal: 13,
     paddingVertical: 11,
   },
-  foodName: { fontFamily: font.medium, fontSize: 14, color: colors.ink },
-  foodSub: {
-    fontFamily: font.body,
-    fontSize: 11,
-    color: colors.ink2,
-    marginTop: 1,
-  },
-  foodCals: { fontFamily: font.body, fontSize: 11.5, color: colors.ink2 },
+  foodName: typography.rowTitle,
+  foodSub: { ...typography.small, marginTop: 1 },
+  foodCals: typography.caption,
 });

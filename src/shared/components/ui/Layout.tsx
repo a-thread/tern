@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet, Pressable, ViewStyle } from 'react-native';
-import { colors, font, radius, space } from '@shared/theme';
+import { colors, font, radius, space, typography } from '@shared/theme';
 import { Chevron } from './Chevron';
 
 /* ---------- typography ---------- */
@@ -71,6 +71,8 @@ export function Card({
 type RowProps = {
   title: string;
   sub?: string;
+  /** Cap the sub line (it ellipsizes); unset lets it wrap. */
+  subLines?: number;
   icon?: React.ReactNode;
   value?: string;
   right?: React.ReactNode;
@@ -81,6 +83,7 @@ type RowProps = {
 export function Row({
   title,
   sub,
+  subLines,
   icon,
   value,
   right,
@@ -92,7 +95,11 @@ export function Row({
       {icon ? <View style={s.iconSlot}>{icon}</View> : null}
       <View style={{ flex: 1 }}>
         <Text style={s.rowTitle}>{title}</Text>
-        {sub ? <Text style={s.rowSub}>{sub}</Text> : null}
+        {sub ? (
+          <Text style={s.rowSub} numberOfLines={subLines}>
+            {sub}
+          </Text>
+        ) : null}
       </View>
       {value ? <Text style={s.rowValue}>{value}</Text> : null}
       {right}
@@ -110,12 +117,24 @@ export function Row({
 
 export function IconBadge({
   bg,
+  size = 28,
   children,
 }: {
   bg: string;
+  /** Side of the square; the corners scale down for the small tiles beside a row's text. */
+  size?: number;
   children: React.ReactNode;
 }) {
-  return <View style={[s.iconBadge, { backgroundColor: bg }]}>{children}</View>;
+  return (
+    <View
+      style={[
+        s.iconBadge,
+        { backgroundColor: bg, width: size, height: size, borderRadius: size < 24 ? 6 : radius.sm },
+      ]}
+    >
+      {children}
+    </View>
+  );
 }
 
 /* ---------- bits ---------- */
@@ -158,7 +177,7 @@ export function Insight({
 }
 
 const s = StyleSheet.create({
-  eyebrow: { fontFamily: font.body, fontSize: 12.5, color: colors.ink2 },
+  eyebrow: typography.meta,
   largeTitle: {
     fontFamily: font.display,
     fontSize: 28,
@@ -206,14 +225,8 @@ const s = StyleSheet.create({
     gap: 11,
   },
   iconSlot: {},
-  rowTitle: { fontFamily: font.medium, fontSize: 14, color: colors.ink },
-  rowSub: {
-    fontFamily: font.body,
-    fontSize: 11.5,
-    color: colors.ink2,
-    marginTop: 2,
-    lineHeight: 16,
-  },
+  rowTitle: typography.rowTitle,
+  rowSub: { ...typography.caption, marginTop: 2, lineHeight: 16 },
   rowValue: { fontFamily: font.body, fontSize: 13.5, color: colors.ink2 },
   iconBadge: {
     width: 28,

@@ -3,7 +3,7 @@ import { View, Text, ScrollView, StyleSheet } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 
-import { colors, font, space } from '@shared/theme';
+import { colors, font, space, typography } from '@shared/theme';
 import { Card, GroupLabel, PushHeader, Row, Insight, FootNote, LegendDot, SegmentedControl, Icon } from '@shared/components/ui';
 import { WeightTrend } from '@shared/components/charts/WeightTrend';
 import { useWeight } from '@weight/WeightContext';
@@ -147,12 +147,7 @@ const s = StyleSheet.create({
     fontSize: 30,
     color: colors.ink,
   },
-  metricSub: {
-    fontFamily: font.body,
-    fontSize: 11.5,
-    color: colors.ink2,
-    marginTop: 2,
-  },
+  metricSub: { ...typography.caption, marginTop: 2 },
   delta: {
     backgroundColor: colors.waterTint,
     borderRadius: 8,

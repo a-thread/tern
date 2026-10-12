@@ -2,7 +2,7 @@ import React from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { BottomSheet } from '@shared/components/ui';
-import { colors, font, space, tierColors } from '@shared/theme';
+import { colors, font, space, tierColors, typography } from '@shared/theme';
 
 const LEVELS = [
   { tiers: '1–2', color: tierColors[1], name: 'Whole', body: 'Fruit, vegetables, eggs, plain meat and dairy, and basic ingredients like oil, flour and butter.' },
@@ -63,7 +63,7 @@ const s = StyleSheet.create({
     alignItems: 'center',
     marginBottom: space.sm,
   },
-  title: { fontFamily: font.semibold, fontSize: 15, color: colors.ink },
+  title: typography.heading,
   close: { fontFamily: font.body, fontSize: 24, color: colors.ink3 },
   lead: {
     fontFamily: font.body,

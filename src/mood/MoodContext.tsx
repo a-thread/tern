@@ -1,11 +1,10 @@
-import React, { useCallback, useMemo, useState } from 'react';
+import React, { useCallback, useMemo } from 'react';
 
 import type { MoodRepository } from '@mood/data/mood.repository';
 import { createRequiredContext } from '@shared/state/createRequiredContext';
 import { useDayKey } from '@shared/hooks/useDayKey';
 import { useViewedDay } from '@shared/state/ViewedDayContext';
-import { useLoader } from '@shared/hooks/useLoader';
-import { usePersist } from '@shared/hooks/usePersist';
+import { useSyncedList } from '@shared/hooks/useSyncedList';
 import { addDays } from '@shared/utils/date';
 import { useSettings } from '@settings/SettingsContext';
 import { useAward } from '@journey/hooks/useAward';
@@ -53,13 +52,10 @@ export function MoodProvider({
   const today = useDayKey();
   const { day, editable } = useViewedDay();
 
-  const [entries, setEntries] = useState<MoodEntry[]>([]);
-  const { ready, reload } = useLoader(
+  const { entries, ready, reload, change } = useSyncedList(
     useCallback(() => repo.load(addDays(today, -(HISTORY_DAYS - 1)), today), [repo, today]),
-    setEntries,
     'Could not load check-ins',
   );
-  const persist = usePersist(reload);
 
   const enabled = settings.trackMood;
   const todays = entryFor(entries, today);
@@ -74,24 +70,22 @@ export function MoodProvider({
     (mood: number, stress: number) => {
       if (!editable || !isValidScore(mood) || !isValidScore(stress)) return false;
       const entry: MoodEntry = { day, mood, stress };
-      setEntries((prev) => [...prev.filter((e) => e.day !== day), entry]);
-      persist(repo.save(entry), {
+      change((prev) => [...prev.filter((e) => e.day !== day), entry], repo.save(entry), {
         log: 'Could not save check-in',
         toast: "Couldn't save your check-in — please try again.",
       });
       return true;
     },
-    [repo, day, editable, persist],
+    [repo, day, editable, change],
   );
 
   const clearDay = useCallback(() => {
     if (!editable) return;
-    setEntries((prev) => prev.filter((e) => e.day !== day));
-    persist(repo.remove(day), {
+    change((prev) => prev.filter((e) => e.day !== day), repo.remove(day), {
       log: 'Could not remove check-in',
       toast: "Couldn't undo that — please try again.",
     });
-  }, [repo, day, editable, persist]);
+  }, [repo, day, editable, change]);
 
   const value = useMemo<MoodContextValue>(
     () => ({ ready, reload, enabled, entries, today: todays, onDay, checkIn, clearDay }),

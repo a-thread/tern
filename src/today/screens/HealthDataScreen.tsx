@@ -3,7 +3,7 @@ import { View, Text, ScrollView, StyleSheet, Pressable } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 
-import { colors, font, radius, space } from '@shared/theme';
+import { colors, font, radius, space, typography } from '@shared/theme';
 import { useToast } from '@shared/state/ToastContext';
 import {
   Group,
@@ -189,14 +189,9 @@ const s = StyleSheet.create({
     paddingHorizontal: 13,
     paddingVertical: 12,
   },
-  rowTitle: { fontFamily: font.medium, fontSize: 14, color: colors.ink },
-  rowSub: {
-    fontFamily: font.body,
-    fontSize: 11.5,
-    color: colors.ink2,
-    marginTop: 2,
-  },
+  rowTitle: typography.rowTitle,
+  rowSub: { ...typography.caption, marginTop: 2 },
   link: { color: colors.coral },
   dangerBtn: { alignItems: 'center', paddingVertical: 11, marginTop: 8 },
-  dangerText: { fontFamily: font.semibold, fontSize: 13.5, color: '#B3261E' },
+  dangerText: { fontFamily: font.semibold, fontSize: 13.5, color: colors.danger },
 });

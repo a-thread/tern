@@ -1,25 +1,23 @@
 import React from 'react';
 import { Animated, Pressable, StyleSheet, Text, View } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
-import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
-import { colors, font, space } from '@shared/theme';
+import { colors, font, space, typography } from '@shared/theme';
 import { Chip, Icon } from '@shared/components/ui';
 import TernMark from '@shared/components/TernMark';
 import { AnimatedNumber } from '@shared/components/AnimatedNumber';
 import { useDayKey } from '@shared/hooks/useDayKey';
 import { usePulseOnIncrease } from '@shared/hooks/useAnimatedNumber';
 import { formatLongDate } from '@shared/utils/date';
-import type { RootStackParamList } from '@shared/navigation/types';
 import { useWaypoints } from '@journey/WaypointsContext';
 import { useActivity } from '@today/ActivityContext';
+import { useRootNavigation } from '@shared/navigation/useAppNavigation';
 
 /**
  * The date and title, the waypoint chip and the settings gear. The chip holds back awards that
  * haven't been celebrated yet, so its number ticks up (and pulses) as the feathers land on it.
  */
 export function TodayHeader({ chipRef }: { chipRef: React.RefObject<View | null> }) {
-  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+  const navigation = useRootNavigation();
   const todayKey = useDayKey();
   const { streak } = useActivity();
   const { waypoints, pendingPoints } = useWaypoints();
@@ -61,7 +59,7 @@ const s = StyleSheet.create({
     paddingHorizontal: space.lg,
     paddingBottom: space.sm,
   },
-  eyebrow: { fontFamily: font.body, fontSize: 12.5, color: colors.ink2 },
+  eyebrow: typography.meta,
   title: { fontFamily: font.display, fontSize: 28, color: colors.ink, letterSpacing: -0.3 },
   actions: { flexDirection: 'row', alignItems: 'center', gap: 12 },
   gear: { padding: 2 },

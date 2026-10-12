@@ -1,17 +1,9 @@
 import React, { useState } from 'react';
-import {
-  View,
-  Text,
-  TextInput,
-  ScrollView,
-  StyleSheet,
-  Pressable,
-  Alert,
-} from 'react-native';
+import { View, Text, TextInput, ScrollView, StyleSheet, Pressable } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 
-import { colors, font, radius, space } from '@shared/theme';
+import { colors, font, radius, space, typography } from '@shared/theme';
 import { Group, GroupLabel, SheetNav, Stepper } from '@shared/components/ui';
 import type { RootStackParamList } from '@shared/navigation/types';
 import { Meals } from '@food/models/meals';
@@ -24,6 +16,7 @@ import { MeasurePicker } from '@food/components/MeasurePicker';
 import { useFoodDisplay } from '@food/hooks/useFoodDisplay';
 import { stepServings, Servings } from '@food/models/servings';
 import { amountOf, type Measure } from '@food/models/measure';
+import { confirm } from '@shared/utils/confirm';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'EditFood'>;
 
@@ -82,17 +75,15 @@ export default function EditFoodEntryScreen({ navigation, route }: Props) {
   };
 
   const confirmDelete = () => {
-    Alert.alert('Remove food?', `Remove "${entry.name}" from ${isToday ? "today's" : "yesterday's"} log.`, [
-      { text: 'Cancel', style: 'cancel' },
-      {
-        text: 'Remove',
-        style: 'destructive',
-        onPress: () => {
-          removeFoodEntry(entry.id);
-          navigation.goBack();
-        },
+    confirm({
+      title: 'Remove food?',
+      message: `Remove "${entry.name}" from ${isToday ? "today's" : "yesterday's"} log.`,
+      action: 'Remove',
+      onConfirm: () => {
+        removeFoodEntry(entry.id);
+        navigation.goBack();
       },
-    ]);
+    });
   };
 
   return (
@@ -210,24 +201,14 @@ const s = StyleSheet.create({
     color: colors.ink,
     lineHeight: 26,
   },
-  brand: {
-    fontFamily: font.body,
-    fontSize: 12.5,
-    color: colors.ink2,
-    marginTop: 3,
-  },
+  brand: { ...typography.meta, marginTop: 3 },
   calCard: {
     backgroundColor: colors.card,
     borderRadius: radius.lg,
     padding: space.md + 1,
   },
   calBig: { fontFamily: font.displayMedium, fontSize: 32, color: colors.ink },
-  calLabel: {
-    fontFamily: font.body,
-    fontSize: 11.5,
-    color: colors.ink2,
-    marginTop: 2,
-  },
+  calLabel: { ...typography.caption, marginTop: 2 },
   row: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -235,7 +216,7 @@ const s = StyleSheet.create({
     paddingVertical: 12,
     gap: 8,
   },
-  rowTitle: { fontFamily: font.medium, fontSize: 14, color: colors.ink },
+  rowTitle: typography.rowTitle,
   rowInput: {
     flex: 1,
     fontFamily: font.body,
@@ -258,5 +239,5 @@ const s = StyleSheet.create({
   },
   bigBtnText: { fontFamily: font.bold, fontSize: 14.5, color: '#fff' },
   deleteBtn: { alignItems: 'center', paddingVertical: 13, marginTop: 4 },
-  deleteText: { fontFamily: font.semibold, fontSize: 13.5, color: '#B3261E' },
+  deleteText: { fontFamily: font.semibold, fontSize: 13.5, color: colors.danger },
 });

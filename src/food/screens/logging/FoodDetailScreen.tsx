@@ -10,7 +10,7 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 
-import { colors, font, radius, space } from '@shared/theme';
+import { colors, font, radius, space, typography } from '@shared/theme';
 import { Group, GroupLabel, SheetNav, Stepper } from '@shared/components/ui';
 import { Meals } from '@food/models/meals';
 import type { Tier } from '@food/models/foodEntry';
@@ -235,12 +235,7 @@ const s = StyleSheet.create({
     color: colors.ink,
     lineHeight: 26,
   },
-  brand: {
-    fontFamily: font.body,
-    fontSize: 12.5,
-    color: colors.ink2,
-    marginTop: 3,
-  },
+  brand: { ...typography.meta, marginTop: 3 },
   calCard: {
     backgroundColor: colors.card,
     borderRadius: radius.lg,
@@ -250,7 +245,7 @@ const s = StyleSheet.create({
     alignItems: 'flex-end',
   },
   calBig: { fontFamily: font.displayMedium, fontSize: 32, color: colors.ink },
-  calLabel: { fontFamily: font.body, fontSize: 11.5, color: colors.ink2 },
+  calLabel: typography.caption,
   macroMini: { flexDirection: 'row', gap: 16 },
   macroVal: {
     fontFamily: font.bold,
@@ -258,12 +253,7 @@ const s = StyleSheet.create({
     color: colors.ink,
     textAlign: 'center',
   },
-  macroLabel: {
-    fontFamily: font.body,
-    fontSize: 11,
-    color: colors.ink2,
-    textAlign: 'center',
-  },
+  macroLabel: { ...typography.small, textAlign: 'center' },
   row: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -271,7 +261,7 @@ const s = StyleSheet.create({
     paddingVertical: 12,
     gap: 8,
   },
-  rowTitle: { fontFamily: font.medium, fontSize: 14, color: colors.ink },
+  rowTitle: typography.rowTitle,
   rowInput: {
     flex: 1,
     fontFamily: font.body,

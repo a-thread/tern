@@ -1,10 +1,9 @@
 import { useEffect } from 'react';
-import { useIsFocused, useNavigation } from '@react-navigation/native';
-import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { useIsFocused } from '@react-navigation/native';
 
-import type { RootStackParamList } from '@shared/navigation/types';
 import { useWaypoints } from '@journey/WaypointsContext';
 import { usePendingMilestone } from '@journey/hooks/usePendingMilestone';
+import { useRootNavigation } from '@shared/navigation/useAppNavigation';
 
 /**
  * Opens the reward screen for a milestone that was just passed. It is marked once the feathers
@@ -12,7 +11,7 @@ import { usePendingMilestone } from '@journey/hooks/usePendingMilestone';
  * milestone earned elsewhere (logging a meal, say) waits until Today is back on screen.
  */
 export function useMilestoneReward(animating: boolean) {
-  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+  const navigation = useRootNavigation();
   const isFocused = useIsFocused();
   const { celebrations } = useWaypoints();
   const { pending: pendingMilestone, markCelebrated } = usePendingMilestone();

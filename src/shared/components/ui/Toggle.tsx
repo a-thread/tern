@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet, Pressable } from 'react-native';
-import { colors, font } from '@shared/theme';
+import { colors, typography } from '@shared/theme';
 
 export function Toggle({ on, onPress }: { on: boolean; onPress?: () => void }) {
   const body = (
@@ -48,14 +48,8 @@ const s = StyleSheet.create({
     paddingVertical: 12,
     gap: 11,
   },
-  rowTitle: { fontFamily: font.medium, fontSize: 14, color: colors.ink },
-  rowSub: {
-    fontFamily: font.body,
-    fontSize: 11.5,
-    color: colors.ink2,
-    marginTop: 2,
-    lineHeight: 16,
-  },
+  rowTitle: typography.rowTitle,
+  rowSub: { ...typography.caption, marginTop: 2, lineHeight: 16 },
   toggle: {
     width: 44,
     height: 26,

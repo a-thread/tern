@@ -1,4 +1,5 @@
 import type { TernClient } from '@shared/backend/supabase';
+import { ok, rows } from '@shared/backend/query';
 import type { SavedMeal, SavedMealItem } from '@food/models/savedMeals';
 import { parseMeasure } from '@food/models/measure';
 import type { SavedMealsRepository } from './savedMeals.repository';
@@ -15,12 +16,14 @@ export function createSupabaseSavedMealsRepository(
 ): SavedMealsRepository {
   return {
     async list() {
-      const { data, error } = await db
-        .from('saved_meals')
-        .select('id, name, items, created_at')
-        .order('name');
-      if (error) throw error;
-      return (data as Row[]).map((r) => ({
+      return (
+        await rows<Row>(
+          db
+            .from('saved_meals')
+            .select('id, name, items, created_at')
+            .order('name'),
+        )
+      ).map((r) => ({
         id: r.id,
         name: r.name,
         // Items are stored as json, so a measure is checked on the way back in.
@@ -30,20 +33,22 @@ export function createSupabaseSavedMealsRepository(
     },
     async save(meal: SavedMeal) {
       // user_id defaults to auth.uid() on insert; the id is chosen by the client.
-      const { error } = await db.from('saved_meals').upsert(
-        {
-          id: meal.id,
-          name: meal.name,
-          items: meal.items,
-          updated_at: new Date().toISOString(),
-        },
-        { onConflict: 'id' },
+      await ok(
+        db
+          .from('saved_meals')
+          .upsert(
+            {
+              id: meal.id,
+              name: meal.name,
+              items: meal.items,
+              updated_at: new Date().toISOString(),
+            },
+            { onConflict: 'id' },
+          ),
       );
-      if (error) throw error;
     },
     async remove(id) {
-      const { error } = await db.from('saved_meals').delete().eq('id', id);
-      if (error) throw error;
+      await ok(db.from('saved_meals').delete().eq('id', id));
     },
   };
 }

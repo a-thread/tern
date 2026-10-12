@@ -1,18 +1,16 @@
 import React from 'react';
-import { useNavigation } from '@react-navigation/native';
-import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
 import { Group, GroupLabel } from '@shared/components/ui';
-import type { SettingsStackParamList } from '@shared/navigation/types';
 import { SettingsPage } from '@settings/components/SettingsPage';
 import { StepGoalRow } from '@today/components/StepGoalRow';
 import { RestDaysRow } from '@today/components/RestDaysRow';
 import { StreakReminderRows } from '@today/components/StreakReminderRows';
 import { MovementSettingsRows } from '@movement/components/MovementSettingsRows';
+import { useSettingsNavigation } from '@shared/navigation/useAppNavigation';
 
 /** Settings › Steps and activity: the step goal, rest days, movement, and the streak alert. */
 export default function ActivitySettingsScreen() {
-  const navigation = useNavigation<NativeStackNavigationProp<SettingsStackParamList>>();
+  const navigation = useSettingsNavigation();
   return (
     <SettingsPage title='Steps and activity'>
       <GroupLabel>Steps</GroupLabel>

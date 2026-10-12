@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet, Pressable } from 'react-native';
 import { Icon } from './Icon';
-import { colors, font, space } from '@shared/theme';
+import { colors, font, space, typography } from '@shared/theme';
 
 /** Nav bar for logging sheets: Cancel/Back on the left, an optional bold action on the right. */
 export function SheetNav({
@@ -73,7 +73,7 @@ const s = StyleSheet.create({
     paddingBottom: space.sm,
   },
   sheetCancel: { fontFamily: font.body, fontSize: 14, color: colors.ink2 },
-  sheetTitle: { fontFamily: font.semibold, fontSize: 15, color: colors.ink },
+  sheetTitle: typography.heading,
   sheetSave: { fontFamily: font.bold, fontSize: 14, color: colors.coral },
   pushHeader: {
     flexDirection: 'row',
@@ -94,5 +94,5 @@ const s = StyleSheet.create({
     fontSize: 14,
     color: colors.coral,
   },
-  pushTitle: { fontFamily: font.semibold, fontSize: 15, color: colors.ink },
+  pushTitle: typography.heading,
 });

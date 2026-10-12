@@ -20,4 +20,5 @@ export { BottomSheet } from './BottomSheet';
 export { SwipeToRemove } from './SwipeToRemove';
 export { SegmentedControl } from './SegmentedControl';
 export { LegendDot } from './LegendDot';
+export { TextField } from './TextField';
 export { PillToggle } from './PillToggle';

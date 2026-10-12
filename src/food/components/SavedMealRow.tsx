@@ -1,8 +1,7 @@
 import React from 'react';
-import { StyleSheet, View } from 'react-native';
 
 import { colors } from '@shared/theme';
-import { Row, Icon } from '@shared/components/ui';
+import { IconBadge, Icon, Row } from '@shared/components/ui';
 import { savedMealTotals, type SavedMeal } from '@food/models/savedMeals';
 import { useFoodDisplay } from '@food/hooks/useFoodDisplay';
 
@@ -14,9 +13,9 @@ export function SavedMealRow({ meal, onPress }: { meal: SavedMeal; onPress: () =
   return (
     <Row
       icon={
-        <View style={s.icon}>
+        <IconBadge bg={colors.doveTint} size={19}>
           <Icon name='bookmark-outline' size={15} color={colors.ink2} />
-        </View>
+        </IconBadge>
       }
       title={meal.name}
       sub={`${n} ${n === 1 ? 'food' : 'foods'}${showCalories ? ` · ${cals} cal` : ''}`}
@@ -25,14 +24,3 @@ export function SavedMealRow({ meal, onPress }: { meal: SavedMeal; onPress: () =
     />
   );
 }
-
-const s = StyleSheet.create({
-  icon: {
-    width: 19,
-    height: 19,
-    borderRadius: 6,
-    backgroundColor: colors.doveTint,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-});

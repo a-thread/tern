@@ -7,8 +7,9 @@ import type { RecentMeal } from '@food/models/recentMeals';
 import type { SavedMeal } from '@food/models/savedMeals';
 import type { FoodLookup } from '@food/hooks/useFoodLookup';
 import { ListNote } from './ListNote';
-import { RecentMealGroup } from './RecentMealGroup';
-import { SavedMealGroup } from './SavedMealGroup';
+import { MealGroup } from './MealGroup';
+import { RecentMealRow } from './RecentMealRow';
+import { SavedMealRow } from './SavedMealRow';
 
 /** The Meals tab: start a new meal, or pick one of your saved or past meals. */
 export function LogFoodMealsTab({
@@ -29,8 +30,8 @@ export function LogFoodMealsTab({
         <Icon name='plus' size={15} color={colors.coral} />
         <Text style={s.newMealText}>New meal</Text>
       </Pressable>
-      {yourMeals.length ? <SavedMealGroup label='Your meals' meals={yourMeals} onPick={onOpenMeal} /> : null}
-      {pastMeals.length ? <RecentMealGroup label='Recent meals' meals={pastMeals} onPick={onOpenPastMeal} /> : null}
+      {yourMeals.length ? <MealGroup label='Your meals' meals={yourMeals} onPick={onOpenMeal} Row={SavedMealRow} /> : null}
+      {pastMeals.length ? <MealGroup label='Recent meals' meals={pastMeals} onPick={onOpenPastMeal} Row={RecentMealRow} /> : null}
       {!yourMeals.length && !pastMeals.length ? (
         <ListNote>
           {trimmed

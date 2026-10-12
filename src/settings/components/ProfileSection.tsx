@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { StyleSheet, Text, TextInput, View } from 'react-native';
 
-import { colors, font } from '@shared/theme';
+import { colors, font, typography } from '@shared/theme';
 import { Group } from '@shared/components/ui';
 import { useAuth } from '@shared/auth/AuthContext';
 import { AccountLimits } from '@shared/auth/validation';
@@ -71,6 +71,6 @@ const s = StyleSheet.create({
     justifyContent: 'center',
   },
   avatarText: { fontFamily: font.semibold, fontSize: 15, color: '#EAF2F4' },
-  nameInput: { fontFamily: font.medium, fontSize: 14, color: colors.ink, padding: 0 },
-  sub: { fontFamily: font.body, fontSize: 11.5, color: colors.ink2, marginTop: 2, lineHeight: 16 },
+  nameInput: { ...typography.rowTitle, padding: 0 },
+  sub: { ...typography.caption, marginTop: 2, lineHeight: 16 },
 });

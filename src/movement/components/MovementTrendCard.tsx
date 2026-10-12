@@ -2,7 +2,7 @@ import React, { useCallback, useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 
-import { colors, font, space } from '@shared/theme';
+import { space, typography } from '@shared/theme';
 import { Card } from '@shared/components/ui';
 import { StepBars } from '@shared/components/charts/StepBars';
 import { useDayKey } from '@shared/hooks/useDayKey';
@@ -83,7 +83,7 @@ export function MovementTrendCard({
 }
 
 const s = StyleSheet.create({
-  name: { fontFamily: font.semibold, fontSize: 11.5, color: colors.ink2 },
-  value: { fontFamily: font.displayMedium, fontSize: 24, color: colors.ink },
-  sub: { fontFamily: font.body, fontSize: 11, color: colors.ink2 },
+  name: typography.label,
+  value: typography.stat,
+  sub: typography.small,
 });

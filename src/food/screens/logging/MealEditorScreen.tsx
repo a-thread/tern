@@ -1,18 +1,10 @@
 import React from 'react';
-import {
-  Alert,
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TextInput,
-  View,
-} from 'react-native';
+import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 
-import { colors, font, radius, space, tierColors } from '@shared/theme';
-import { Group, GroupLabel, SheetNav, Stepper, Icon } from '@shared/components/ui';
+import { colors, font, radius, space, tierColors, typography } from '@shared/theme';
+import { Group, GroupLabel, SheetNav, Stepper, Icon, TextField } from '@shared/components/ui';
 import { useToast } from '@shared/state/ToastContext';
 import { TierDot } from '@food/components/TierDot';
 import { useFoodDisplay } from '@food/hooks/useFoodDisplay';
@@ -23,6 +15,7 @@ import { Servings } from '@food/models/servings';
 import { quantityText } from '@food/models/measure';
 import type { LogFoodStackParamList } from '@food/navigation';
 import { Meal } from '@food/models/foodEntry';
+import { confirm } from '@shared/utils/confirm';
 
 type Props = NativeStackScreenProps<LogFoodStackParamList, 'MealEditor'>;
 
@@ -64,10 +57,13 @@ export default function MealEditorScreen({ navigation }: Props) {
       navigation.goBack();
     };
     if (!isDraftDirty(draft)) return close();
-    Alert.alert('Discard changes?', isNew ? 'This meal has not been saved.' : 'Your changes to this meal will be lost.', [
-      { text: 'Keep editing', style: 'cancel' },
-      { text: 'Discard', style: 'destructive', onPress: close },
-    ]);
+    confirm({
+      title: 'Discard changes?',
+      message: isNew ? 'This meal has not been saved.' : 'Your changes to this meal will be lost.',
+      action: 'Discard',
+      cancel: 'Keep editing',
+      onConfirm: close,
+    });
   };
 
   const save = () => {
@@ -97,23 +93,18 @@ export default function MealEditorScreen({ navigation }: Props) {
         keyboardShouldPersistTaps='handled'
       >
         <GroupLabel>Name</GroupLabel>
-        <View style={s.card}>
-          <TextInput
-            value={draft.name}
-            onChangeText={(v) => {
-              setDraftName(v);
-              setError(null);
-            }}
-            placeholder='e.g. Post-run snack'
-            placeholderTextColor={colors.ink3}
-            maxLength={SavedMealLimits.MAX_NAME_LENGTH}
-            autoFocus={isNew}
-            returnKeyType='done'
-            accessibilityLabel='Meal name'
-            style={s.input}
-          />
-        </View>
-        {error ? <Text style={s.error}>{error}</Text> : null}
+        <TextField
+          value={draft.name}
+          onChangeText={(v) => {
+            setDraftName(v);
+            setError(null);
+          }}
+          placeholder='e.g. Post-run snack'
+          maxLength={SavedMealLimits.MAX_NAME_LENGTH}
+          autoFocus={isNew}
+          accessibilityLabel='Meal name'
+          error={error}
+        />
 
         <GroupLabel>
           {`${draft.items.length} ${draft.items.length === 1 ? 'food' : 'foods'}${showCalories ? ` · ${Math.round(totals.calories)} cal` : ''}`}
@@ -171,19 +162,6 @@ export default function MealEditorScreen({ navigation }: Props) {
 }
 
 const s = StyleSheet.create({
-  card: {
-    backgroundColor: colors.card,
-    borderRadius: radius.lg,
-    paddingHorizontal: 13,
-    paddingVertical: 4,
-  },
-  input: {
-    fontFamily: font.medium,
-    fontSize: 15,
-    color: colors.ink,
-    paddingVertical: 11,
-  },
-  error: { fontFamily: font.body, fontSize: 12.5, color: '#B3261E', marginTop: 6, marginLeft: 4 },
   row: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -191,8 +169,8 @@ const s = StyleSheet.create({
     paddingHorizontal: 13,
     paddingVertical: 11,
   },
-  name: { fontFamily: font.medium, fontSize: 14, color: colors.ink },
-  sub: { fontFamily: font.body, fontSize: 11, color: colors.ink2, marginTop: 1 },
+  name: typography.rowTitle,
+  sub: { ...typography.small, marginTop: 1 },
   remove: { fontSize: 13, color: colors.ink3, paddingHorizontal: 2 },
   bigBtn: {
     backgroundColor: colors.coral,

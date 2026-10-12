@@ -1,9 +1,8 @@
-import React, { useCallback, useMemo, useState } from 'react';
+import React, { useCallback, useMemo } from 'react';
 
 import { createRequiredContext } from '@shared/state/createRequiredContext';
 import { useDayKey } from '@shared/hooks/useDayKey';
-import { useLoader } from '@shared/hooks/useLoader';
-import { usePersist } from '@shared/hooks/usePersist';
+import { useSyncedList } from '@shared/hooks/useSyncedList';
 import { newId } from '@shared/utils/id';
 import { addDays } from '@shared/utils/date';
 import { useSettings } from '@settings/SettingsContext';
@@ -96,13 +95,10 @@ export function MovementProvider({
     [repo, workouts, readWorkouts],
   );
 
-  const [entries, setEntries] = useState<MovementEntry[]>([]);
-  const { ready, reload } = useLoader(
+  const { entries, ready, reload, change } = useSyncedList(
     useCallback(() => load(addDays(today, -(HISTORY_DAYS - 1)), today), [load, today]),
-    setEntries,
     'Could not load movement',
   );
-  const persist = usePersist(reload);
 
   const byDay = useMemo(() => (enabled ? minutesByDay(entries) : {}), [entries, enabled]);
   const todayMinutes = enabled ? dayMinutes(entries, today) : 0;
@@ -125,27 +121,25 @@ export function MovementProvider({
         source: 'manual',
         loggedAt: new Date().toISOString(),
       };
-      setEntries((prev) => [...prev, entry]);
-      persist(repo.add(entry), {
+      change((prev) => [...prev, entry], repo.add(entry), {
         log: 'Could not save movement',
         toast: "Couldn't save that movement — please try again.",
       });
       return true;
     },
-    [repo, today, persist],
+    [repo, today, change],
   );
 
   const remove = useCallback(
     (id: string) => {
       const target = entries.find((e) => e.id === id);
       if (!target || target.source !== 'manual') return;
-      setEntries((prev) => prev.filter((e) => e.id !== id));
-      persist(repo.remove(id), {
+      change((prev) => prev.filter((e) => e.id !== id), repo.remove(id), {
         log: 'Could not remove movement',
         toast: "Couldn't remove that — please try again.",
       });
     },
-    [entries, repo, persist],
+    [entries, repo, change],
   );
 
   const connectWorkouts = useCallback(async () => {

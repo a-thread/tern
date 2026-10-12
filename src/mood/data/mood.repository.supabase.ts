@@ -1,4 +1,5 @@
 import type { TernClient } from '@shared/backend/supabase';
+import { ok, rows } from '@shared/backend/query';
 import type { MoodEntry } from '@mood/models/moodEntry';
 import type { MoodRepository } from './mood.repository';
 
@@ -13,32 +14,36 @@ export const rowToMood = (row: MoodRow): MoodEntry => ({
 export function createSupabaseMoodRepository(db: TernClient): MoodRepository {
   return {
     async load(from, to) {
-      const { data, error } = await db
-        .from('mood_checkins')
-        .select('day, mood, stress')
-        .gte('day', from)
-        .lte('day', to)
-        .order('day', { ascending: true })
-        .limit(1000);
-      if (error) throw error;
-      return (data as MoodRow[]).map(rowToMood);
+      return (
+        await rows<MoodRow>(
+          db
+            .from('mood_checkins')
+            .select('day, mood, stress')
+            .gte('day', from)
+            .lte('day', to)
+            .order('day', { ascending: true })
+            .limit(1000),
+        )
+      ).map(rowToMood);
     },
     async save(entry) {
       // One row per day: checking in again replaces it.
-      const { error } = await db.from('mood_checkins').upsert(
-        {
-          day: entry.day,
-          mood: entry.mood,
-          stress: entry.stress,
-          updated_at: new Date().toISOString(),
-        },
-        { onConflict: 'user_id,day' },
+      await ok(
+        db
+          .from('mood_checkins')
+          .upsert(
+            {
+              day: entry.day,
+              mood: entry.mood,
+              stress: entry.stress,
+              updated_at: new Date().toISOString(),
+            },
+            { onConflict: 'user_id,day' },
+          ),
       );
-      if (error) throw error;
     },
     async remove(day) {
-      const { error } = await db.from('mood_checkins').delete().eq('day', day);
-      if (error) throw error;
+      await ok(db.from('mood_checkins').delete().eq('day', day));
     },
   };
 }

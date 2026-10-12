@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
-import { colors, font, radius, space } from '@shared/theme';
+import { colors, font, radius, space, typography } from '@shared/theme';
 import { BottomSheet, FootNote, Group, GroupLabel, ProgressBar, SegmentedControl, ToggleRow } from '@shared/components/ui';
 import { useSettings } from '@settings/SettingsContext';
 import { useAdaptiveTarget } from '@food/hooks/useAdaptiveTarget';
@@ -131,7 +131,7 @@ const s = StyleSheet.create({
   notNow: { fontFamily: font.medium, fontSize: 13, color: colors.ink2 },
   how: { fontFamily: font.semibold, fontSize: 12.5, color: colors.coral, marginTop: space.md },
   sheetTop: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: space.sm },
-  sheetTitle: { fontFamily: font.semibold, fontSize: 15, color: colors.ink },
+  sheetTitle: typography.heading,
   close: { fontFamily: font.body, fontSize: 24, color: colors.ink3 },
   point: { fontFamily: font.body, fontSize: 12.5, lineHeight: 18, color: colors.ink2, marginTop: space.sm },
 });

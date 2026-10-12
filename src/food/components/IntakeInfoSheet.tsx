@@ -2,7 +2,7 @@ import React from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { BottomSheet } from '@shared/components/ui';
-import { colors, font, space } from '@shared/theme';
+import { colors, font, space, typography } from '@shared/theme';
 
 export type IntakeInfoKind = 'calories' | 'macros';
 
@@ -81,7 +81,7 @@ const s = StyleSheet.create({
     alignItems: 'center',
     marginBottom: space.sm,
   },
-  title: { fontFamily: font.semibold, fontSize: 15, color: colors.ink },
+  title: typography.heading,
   close: { fontFamily: font.body, fontSize: 24, color: colors.ink3 },
   lead: {
     fontFamily: font.medium,

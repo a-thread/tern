@@ -3,7 +3,7 @@ import { View, Text, ScrollView, StyleSheet } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { colors, font, space, gradients } from '@shared/theme';
+import { colors, font, space, gradients, typography } from '@shared/theme';
 import {
   Group,
   GroupLabel,
@@ -239,13 +239,8 @@ const s = StyleSheet.create({
     alignItems: 'baseline',
   },
   nextName: { fontFamily: font.semibold, fontSize: 14, color: colors.ink },
-  nextCount: { fontFamily: font.body, fontSize: 11.5, color: colors.ink2 },
-  nextSub: {
-    fontFamily: font.body,
-    fontSize: 11.5,
-    color: colors.ink2,
-    marginTop: 7,
-  },
+  nextCount: typography.caption,
+  nextSub: { ...typography.caption, marginTop: 7 },
   msDot: {
     width: 26,
     height: 26,

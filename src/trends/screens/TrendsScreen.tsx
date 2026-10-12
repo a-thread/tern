@@ -1,12 +1,13 @@
 import React, { useCallback, useState } from 'react';
-import { View, Text, ScrollView, StyleSheet, Pressable } from 'react-native';
+import { View, Text, ScrollView, StyleSheet } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useFocusEffect } from '@react-navigation/native';
 
-import { colors, font, space } from '@shared/theme';
+import { colors, font, space, typography } from '@shared/theme';
 import { TrendRanges, TrendRange } from '@shared/models/trendRange';
 import { Card, GroupLabel, Insight, FootNote, SegmentedControl, Icon } from '@shared/components/ui';
+import { TrendCard, TrendFigure, TrendHeader } from '@shared/components/TrendCard';
 import { StepBars } from '@shared/components/charts/StepBars';
 import { WeightTrend } from '@shared/components/charts/WeightTrend';
 import { ConsistencyGrid } from '@shared/components/charts/ConsistencyGrid';
@@ -114,73 +115,43 @@ export default function TrendsScreen({ navigation }: Props) {
         <SegmentedControl options={TrendRanges.ALL} value={range} onChange={setRange} style={s.seg} />
 
         {/* steps */}
-        <Pressable onPress={() => navigation.navigate('StepsDetail')}>
-          <Card style={{ marginBottom: space.md }}>
-            <View style={s.metricTop}>
-              <View style={s.metricText}>
-                <Text style={s.metricName}>Steps</Text>
-                <Text style={s.metricValue}>
-                  {rangeSteps.average === null
-                    ? '—'
-                    : rangeSteps.average.toLocaleString()}
-                </Text>
-                <Text
-                  style={s.metricSub}
-                >{`daily average ${TrendRanges.LABEL[range]}`}</Text>
-              </View>
-              {rangeSteps.changePct !== null ? (
-                <View
-                  style={[s.delta, { backgroundColor: colors.glacierTint }]}
-                >
-                  <Text style={[s.deltaText, { color: colors.glacierDeep }]}>
-                    {rangeSteps.changePct > 0
-                      ? '+'
-                      : rangeSteps.changePct < 0
-                        ? '−'
-                        : ''}
-                    {Math.abs(rangeSteps.changePct)}%
-                  </Text>
-                </View>
-              ) : null}
-            </View>
-            {stepsConnected ? (
-              <StepBars
-                days={bars}
-                goal={settings.stepGoal}
-                showLabels={range !== TrendRange.Month}
-              />
-            ) : (
-              <Text style={s.metricSub}>
-                Connect step data in Settings → Health data to see this.
-              </Text>
-            )}
-          </Card>
-        </Pressable>
+        <TrendCard onPress={() => navigation.navigate('StepsDetail')}>
+          <TrendHeader
+            title='Steps'
+            value={rangeSteps.average === null ? '—' : rangeSteps.average.toLocaleString()}
+            sub={`daily average ${TrendRanges.LABEL[range]}`}
+            delta={
+              rangeSteps.changePct === null
+                ? null
+                : {
+                    text: `${rangeSteps.changePct > 0 ? '+' : rangeSteps.changePct < 0 ? '−' : ''}${Math.abs(rangeSteps.changePct)}%`,
+                    bg: colors.glacierTint,
+                    color: colors.glacierDeep,
+                  }
+            }
+          />
+          {stepsConnected ? (
+            <StepBars days={bars} goal={settings.stepGoal} showLabels={range !== TrendRange.Month} />
+          ) : (
+            <Text style={s.note}>Connect step data in Settings → Health data to see this.</Text>
+          )}
+        </TrendCard>
 
         {/* weight: gone when weight isn't tracked */}
         {settings.trackWeight ? (
-        <Pressable onPress={() => navigation.navigate('WeightDetail')}>
-          <Card style={{ marginBottom: space.md }}>
+        <TrendCard onPress={() => navigation.navigate('WeightDetail')}>
             {hasWeightTrend ? (
               <>
-                <View style={s.metricTop}>
-                  <View style={s.metricText}>
-                    <Text style={s.metricName}>Weight</Text>
-                    <Text style={s.metricValue}>{formatWeight(latest)}</Text>
-                    <Text style={s.metricSub}>
-                      {settings.weightGoalLb === null
-                        ? '7-day average'
-                        : `7-day average · ${Math.abs(toDisplay(latest - settings.weightGoalLb)).toFixed(1)} ${weightLabel} from goal`}
-                    </Text>
-                  </View>
-                  <View
-                    style={[s.delta, { backgroundColor: colors.waterTint }]}
-                  >
-                    <Text style={[s.deltaText, { color: colors.water }]}>
-                      {signedChange(toDisplay(delta))}
-                    </Text>
-                  </View>
-                </View>
+                <TrendHeader
+                  title='Weight'
+                  value={formatWeight(latest)}
+                  sub={
+                    settings.weightGoalLb === null
+                      ? '7-day average'
+                      : `7-day average · ${Math.abs(toDisplay(latest - settings.weightGoalLb)).toFixed(1)} ${weightLabel} from goal`
+                  }
+                  delta={{ text: signedChange(toDisplay(delta)), bg: colors.waterTint, color: colors.water }}
+                />
                 <WeightTrend
                   trend={rangeTrend.map(toDisplay)}
                   spread={toDisplay(1.3)}
@@ -207,23 +178,16 @@ export default function TrendsScreen({ navigation }: Props) {
                 </Text>
               </View>
             )}
-          </Card>
-        </Pressable>
+        </TrendCard>
         ) : null}
 
         {/* nutrition: part of "Track calories & macros", so gone when that is off */}
         {settings.trackCalories ? (
-        <Card style={{ marginBottom: space.md }}>
-          <Text style={s.metricName}>Calories</Text>
-          <Text style={s.metricValue}>
-            {intake ? intake.calories.toLocaleString() : '—'}
-          </Text>
-          <Text style={s.metricSub}>
-            {intake
-              ? `daily average · last ${foodDays} days`
-              : 'no food logged yet'}
-            {` · target ${settings.calorieTarget.toLocaleString()}`}
-          </Text>
+        <TrendCard title='Calories'>
+          <TrendFigure
+            value={intake ? intake.calories.toLocaleString() : '—'}
+            sub={`${intake ? `daily average · last ${foodDays} days` : 'no food logged yet'} · target ${settings.calorieTarget.toLocaleString()}`}
+          />
           <View style={s.macroRow}>
             <MacroBox
               value={intake ? `${intake.protein}g` : '—'}
@@ -244,7 +208,7 @@ export default function TrendsScreen({ navigation }: Props) {
               color={colors.sunDeep}
             />
           </View>
-        </Card>
+        </TrendCard>
         ) : null}
 
         {settings.adaptTarget && settings.trackCalories && settings.trackWeight ? <EnergyTrendCard refreshKey={refreshKey} /> : null}
@@ -255,7 +219,7 @@ export default function TrendsScreen({ navigation }: Props) {
 
         <GroupLabel>Consistency</GroupLabel>
         <Card>
-          <Text style={s.metricSub}>
+          <Text style={s.note}>
             {range === TrendRange.SixMonths
               ? 'Last 6 months'
               : `Last ${TrendRanges.DAYS[range]} days`}
@@ -302,7 +266,7 @@ function MacroBox({
 }
 
 const s = StyleSheet.create({
-  eyebrow: { fontFamily: font.body, fontSize: 12.5, color: colors.ink2 },
+  eyebrow: typography.meta,
   title: {
     fontFamily: font.display,
     fontSize: 28,
@@ -312,21 +276,7 @@ const s = StyleSheet.create({
   seg: {
     marginVertical: space.md,
   },
-  metricTop: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
-  },
-  metricName: { fontFamily: font.semibold, fontSize: 11.5, color: colors.ink2 },
-  metricText: { flexShrink: 1 },
-  metricValue: {
-    fontFamily: font.displayMedium,
-    fontSize: 24,
-    color: colors.ink,
-  },
-  metricSub: { fontFamily: font.body, fontSize: 11, color: colors.ink2 },
-  delta: { borderRadius: 8, paddingHorizontal: 8, paddingVertical: 2 },
-  deltaText: { fontFamily: font.semibold, fontSize: 11 },
+  note: typography.small,
   legendNote: {
     fontFamily: font.body,
     fontSize: 10.5,

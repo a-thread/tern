@@ -1,4 +1,5 @@
 import type { TernClient } from '@shared/backend/supabase';
+import { ok, rows } from '@shared/backend/query';
 import type { FoodEntry, Tier } from '@food/models/foodEntry';
 import { parseMeasure } from '@food/models/measure';
 import type { FoodRepository, NewFoodEntry } from './food.repository';
@@ -60,83 +61,77 @@ export function patchToRow(patch: Partial<NewFoodEntry>) {
 export function createSupabaseFoodRepository(db: TernClient): FoodRepository {
   return {
     async load(day) {
-      const { data, error } = await db
-        .from('food_entries')
-        .select('*')
-        .eq('logged_on', day)
-        .order('created_at');
-      if (error) throw error;
-      return (data as FoodRow[]).map(rowToFood);
+      const data = await rows<FoodRow>(
+        db
+          .from('food_entries')
+          .select('*')
+          .eq('logged_on', day)
+          .order('created_at'),
+      );
+      return data.map(rowToFood);
     },
     async history(from, to) {
-      const { data, error } = await db
-        .from('food_entries')
-        .select('*')
-        .gte('logged_on', from)
-        .lte('logged_on', to)
-        .order('logged_on')
-        .order('created_at');
-      if (error) throw error;
+      const data = await rows<FoodRow>(
+        db
+          .from('food_entries')
+          .select('*')
+          .gte('logged_on', from)
+          .lte('logged_on', to)
+          .order('logged_on')
+          .order('created_at'),
+      );
       const byDay: Record<string, FoodEntry[]> = {};
-      for (const row of data as FoodRow[]) {
+      for (const row of data) {
         (byDay[row.logged_on] ??= []).push(rowToFood(row));
       }
       return byDay;
     },
     async add(day, entry) {
       const { id, ...rest } = entry;
-      const { error } = await db
-        .from('food_entries')
-        .insert({ id, logged_on: day, ...patchToRow(rest) });
-      if (error) throw error;
+      await ok(
+        db
+          .from('food_entries')
+          .insert({ id, logged_on: day, ...patchToRow(rest) }),
+      );
     },
     async update(id, patch) {
-      const { error } = await db
-        .from('food_entries')
-        .update(patchToRow(patch))
-        .eq('id', id);
-      if (error) throw error;
+      await ok(db.from('food_entries').update(patchToRow(patch)).eq('id', id));
     },
     async remove(id) {
-      const { error } = await db.from('food_entries').delete().eq('id', id);
-      if (error) throw error;
+      await ok(db.from('food_entries').delete().eq('id', id));
     },
     async loadSkipped(day) {
-      const { data, error } = await db
-        .from('skipped_meals')
-        .select('meal')
-        .eq('day', day);
-      if (error) throw error;
-      return (data ?? []).map((r: { meal: FoodEntry['meal'] }) => r.meal);
+      const data = await rows<{ meal: FoodEntry['meal'] }>(
+        db.from('skipped_meals').select('meal').eq('day', day),
+      );
+      return data.map((r) => r.meal);
     },
     async skippedHistory(from, to) {
-      const { data, error } = await db
-        .from('skipped_meals')
-        .select('day, meal')
-        .gte('day', from)
-        .lte('day', to);
-      if (error) throw error;
+      const data = await rows<{ day: string; meal: FoodEntry['meal'] }>(
+        db
+          .from('skipped_meals')
+          .select('day, meal')
+          .gte('day', from)
+          .lte('day', to),
+      );
       const out: Record<string, FoodEntry['meal'][]> = {};
-      for (const r of (data ?? []) as { day: string; meal: FoodEntry['meal'] }[]) {
+      for (const r of data) {
         (out[r.day] ??= []).push(r.meal);
       }
       return out;
     },
     async setSkipped(day, meal, skipped) {
       // Primary key (user, day, meal): marking twice is harmless.
-      const { error } = skipped
-        ? await db
-            .from('skipped_meals')
-            .upsert(
-              { day, meal },
-              { onConflict: 'user_id,day,meal', ignoreDuplicates: true },
-            )
-        : await db
-            .from('skipped_meals')
-            .delete()
-            .eq('day', day)
-            .eq('meal', meal);
-      if (error) throw error;
+      await ok(
+        skipped
+          ? db
+              .from('skipped_meals')
+              .upsert(
+                { day, meal },
+                { onConflict: 'user_id,day,meal', ignoreDuplicates: true },
+              )
+          : db.from('skipped_meals').delete().eq('day', day).eq('meal', meal),
+      );
     },
   };
 }

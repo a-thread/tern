@@ -1,6 +1,4 @@
 import React from 'react';
-import { useNavigation } from '@react-navigation/native';
-import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
 import { Group, GroupLabel, Row } from '@shared/components/ui';
 import type { SettingsStackParamList } from '@shared/navigation/types';
@@ -11,6 +9,7 @@ import { MealReminderRows } from '@food/components/MealReminderRows';
 import { WeightReminderRows } from '@weight/components/WeightReminderRows';
 import { WaterReminderRows } from '@water/components/WaterReminderRows';
 import { MoodReminderRows } from '@mood/components/MoodReminderRows';
+import { useSettingsNavigation } from '@shared/navigation/useAppNavigation';
 
 type Section = keyof Pick<SettingsStackParamList, 'WeightSettings' | 'WaterSettings' | 'MoodSettings'>;
 
@@ -20,7 +19,7 @@ type Section = keyof Pick<SettingsStackParamList, 'WeightSettings' | 'WaterSetti
  * tracked says so, and leads to where it's turned on.
  */
 export default function RemindersSettingsScreen() {
-  const navigation = useNavigation<NativeStackNavigationProp<SettingsStackParamList>>();
+  const navigation = useSettingsNavigation();
   const { settings } = useSettings();
 
   const off = (what: string, section: Section) => (

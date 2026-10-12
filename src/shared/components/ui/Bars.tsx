@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-import { colors, font, space } from '@shared/theme';
+import { colors, font, space, typography } from '@shared/theme';
 
 export function ProgressBar({
   value,
@@ -67,5 +67,5 @@ const s = StyleSheet.create({
     marginBottom: 6,
   },
   macroLabel: { fontFamily: font.body, fontSize: 13, color: colors.ink },
-  macroSub: { fontFamily: font.body, fontSize: 11.5, color: colors.ink2 },
+  macroSub: typography.caption,
 });

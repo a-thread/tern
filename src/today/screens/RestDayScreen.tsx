@@ -3,7 +3,7 @@ import { Icon } from '@shared/components/ui';
 import { View, Text, StyleSheet, Pressable } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 
-import { colors, font, radius, space } from '@shared/theme';
+import { colors, font, radius, space, typography } from '@shared/theme';
 import type { RootStackParamList } from '@shared/navigation/types';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'RestDay'>;
@@ -82,7 +82,7 @@ const s = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  title: { fontFamily: font.semibold, fontSize: 15, color: colors.ink },
+  title: typography.heading,
   sub: {
     fontFamily: font.body,
     fontSize: 12,

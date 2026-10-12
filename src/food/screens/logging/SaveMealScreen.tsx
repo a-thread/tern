@@ -1,18 +1,10 @@
 import React, { useState } from 'react';
-import {
-  Alert,
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TextInput,
-  View,
-} from 'react-native';
+import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 
-import { colors, font, radius, space } from '@shared/theme';
-import { Group, GroupLabel, SheetNav } from '@shared/components/ui';
+import { colors, font, radius, space, typography } from '@shared/theme';
+import { Group, GroupLabel, SheetNav, TextField } from '@shared/components/ui';
 import type { RootStackParamList } from '@shared/navigation/types';
 import { useToast } from '@shared/state/ToastContext';
 import { Meals } from '@food/models/meals';
@@ -21,6 +13,7 @@ import { useSavedMeals } from '@food/SavedMealsContext';
 import { findMealByName, validateMealName, SavedMealLimits } from '@food/models/savedMeals';
 import { useFoodDisplay } from '@food/hooks/useFoodDisplay';
 import ItemRow from '@food/components/ItemRow';
+import { confirm } from '@shared/utils/confirm';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'SaveMeal'>;
 
@@ -54,14 +47,13 @@ export default function SaveMealScreen({ navigation, route }: Props) {
 
     const existing = findMealByName(meals, name);
     if (existing) {
-      Alert.alert(
-        `Replace “${existing.name}”?`,
-        'The saved meal will be updated with the foods shown here.',
-        [
-          { text: 'Cancel', style: 'cancel' },
-          { text: 'Replace', onPress: save },
-        ],
-      );
+      confirm({
+        title: `Replace “${existing.name}”?`,
+        message: 'The saved meal will be updated with the foods shown here.',
+        action: 'Replace',
+        destructive: false,
+        onConfirm: save,
+      });
     } else {
       save();
     }
@@ -82,24 +74,19 @@ export default function SaveMealScreen({ navigation, route }: Props) {
         keyboardShouldPersistTaps='handled'
       >
         <GroupLabel>Name</GroupLabel>
-        <View style={s.card}>
-          <TextInput
-            value={name}
-            onChangeText={(v) => {
-              setName(v);
-              setError(null);
-            }}
-            placeholder={`e.g. Usual ${mealLabel.toLowerCase()}`}
-            placeholderTextColor={colors.ink3}
-            maxLength={SavedMealLimits.MAX_NAME_LENGTH}
-            autoFocus
-            returnKeyType='done'
-            onSubmitEditing={submit}
-            accessibilityLabel='Meal name'
-            style={s.input}
-          />
-        </View>
-        {error ? <Text style={s.error}>{error}</Text> : null}
+        <TextField
+          value={name}
+          onChangeText={(v) => {
+            setName(v);
+            setError(null);
+          }}
+          placeholder={`e.g. Usual ${mealLabel.toLowerCase()}`}
+          maxLength={SavedMealLimits.MAX_NAME_LENGTH}
+          autoFocus
+          onSubmitEditing={submit}
+          accessibilityLabel='Meal name'
+          error={error}
+        />
 
         <GroupLabel>
           {`${items.length} ${items.length === 1 ? 'food' : 'foods'} from ${mealLabel}${showCalories ? ` · ${calories} cal` : ''}`}
@@ -131,34 +118,8 @@ export default function SaveMealScreen({ navigation, route }: Props) {
 }
 
 const s = StyleSheet.create({
-  card: {
-    backgroundColor: colors.card,
-    borderRadius: radius.lg,
-    paddingHorizontal: 13,
-    paddingVertical: 4,
-  },
-  input: {
-    fontFamily: font.medium,
-    fontSize: 15,
-    color: colors.ink,
-    paddingVertical: 11,
-  },
-  error: {
-    fontFamily: font.body,
-    fontSize: 12.5,
-    color: '#B3261E',
-    marginTop: 6,
-    marginLeft: 4,
-  },
   empty: { fontFamily: font.body, fontSize: 13, color: colors.ink2, padding: space.md },
-  note: {
-    fontFamily: font.body,
-    fontSize: 11.5,
-    color: colors.ink2,
-    lineHeight: 17,
-    marginTop: space.sm,
-    marginHorizontal: 4,
-  },
+  note: { ...typography.caption, lineHeight: 17, marginTop: space.sm, marginHorizontal: 4 },
   bigBtn: {
     backgroundColor: colors.coral,
     borderRadius: radius.lg,

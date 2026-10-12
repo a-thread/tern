@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 
-import { colors, font, radius } from '@shared/theme';
+import { colors, font, radius, typography } from '@shared/theme';
 import { Group, Stepper } from '@shared/components/ui';
 import { formatCount } from '@food/models/servings';
 import { useFoodDisplay } from '@food/hooks/useFoodDisplay';
@@ -146,13 +146,8 @@ const s = StyleSheet.create({
     paddingVertical: 12,
     gap: 8,
   },
-  rowTitle: { fontFamily: font.medium, fontSize: 14, color: colors.ink },
-  weightNote: {
-    fontFamily: font.body,
-    fontSize: 11.5,
-    color: colors.ink2,
-    marginTop: 1,
-  },
+  rowTitle: typography.rowTitle,
+  weightNote: { ...typography.caption, marginTop: 1 },
   rowInput: {
     flex: 1,
     fontFamily: font.body,

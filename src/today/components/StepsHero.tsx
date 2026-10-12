@@ -1,13 +1,10 @@
 import React from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import { useNavigation } from '@react-navigation/native';
-import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
 import { font, radius, skyFor, space } from '@shared/theme';
 import { FlightPath } from '@shared/components/charts/FlightPath';
 import { CountUp } from '@shared/components/AnimatedNumber';
-import type { RootStackParamList } from '@shared/navigation/types';
 import { useSettings } from '@settings/SettingsContext';
 import { useActivity } from '@today/ActivityContext';
 import { greetingFor } from '@today/models/greeting';
@@ -17,6 +14,7 @@ import { addDays, formatLongDate } from '@shared/utils/date';
 import { DayState } from '@shared/models/dayState';
 import { useMovement } from '@movement/MovementContext';
 import { entriesOn, movementSummary } from '@movement/models/movementEntry';
+import { useRootNavigation } from '@shared/navigation/useAppNavigation';
 
 /**
  * The sky card: greeting, streak, the bird's flight toward the step goal, and the steps, for the
@@ -29,7 +27,7 @@ export function StepsHero({
   heroRef: React.RefObject<View | null>;
   replayKey: number;
 }) {
-  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+  const navigation = useRootNavigation();
   const { settings } = useSettings();
   const { todaySteps, streak, freezes, status, week } = useActivity();
   const greeting = greetingFor();

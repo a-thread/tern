@@ -22,6 +22,8 @@ export const colors = {
   // primary action — use sparingly
   coral: '#D8431F',
   coralTint: '#F7DCD3',
+  /** Errors and destructive actions (Delete, Remove). */
+  danger: '#B3261E',
 
   // steps + movement
   glacier: '#5FA8B8',
@@ -90,3 +92,24 @@ export function skyFor(progress: number): readonly string[] {
   if (progress >= 0.7) return gradients.dawn;
   return gradients.midday;
 }
+
+/**
+ * Text styles that recur across screens. Spread one and add layout (`{ ...typography.caption,
+ * marginTop: 1 }`) rather than re-declaring the font, size and colour.
+ */
+export const typography = {
+  /** A row's main line. */
+  rowTitle: { fontFamily: font.medium, fontSize: 14, color: colors.ink },
+  /** A card or section heading. */
+  heading: { fontFamily: font.semibold, fontSize: 15, color: colors.ink },
+  /** A big figure on a card. */
+  stat: { fontFamily: font.displayMedium, fontSize: 24, color: colors.ink },
+  /** A card's small title. */
+  label: { fontFamily: font.semibold, fontSize: 11.5, color: colors.ink2 },
+  /** The secondary line under a row's title. */
+  caption: { fontFamily: font.body, fontSize: 11.5, color: colors.ink2 },
+  /** Fine print under a figure. */
+  small: { fontFamily: font.body, fontSize: 11, color: colors.ink2 },
+  /** Supporting copy, a step up from a caption. */
+  meta: { fontFamily: font.body, fontSize: 12.5, color: colors.ink2 },
+} as const;

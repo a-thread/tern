@@ -1,17 +1,9 @@
 import React, { useEffect, useState } from 'react';
-import {
-  Alert,
-  View,
-  Text,
-  TextInput,
-  ScrollView,
-  StyleSheet,
-  Pressable,
-} from 'react-native';
+import { View, Text, TextInput, ScrollView, StyleSheet, Pressable } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 
-import { colors, font, radius, space } from '@shared/theme';
+import { colors, font, radius, space, typography } from '@shared/theme';
 import { Frequency } from '@shared/models/frequency';
 import {
   Group,
@@ -27,6 +19,7 @@ import { cleanMedName, newMedication, validateMedName, type Medication, Medicati
 import { useSettings } from '@settings/SettingsContext';
 import TimeStepperRow from '@settings/components/TimeStepperRow';
 import { formatMinutes, stepMinutes, stepWeekday, weekdayPlural, Reminders } from '@settings/models/reminderPlan';
+import { confirm } from '@shared/utils/confirm';
 
 export default function MedicationScreen() {
   const navigation = useNavigation();
@@ -51,14 +44,12 @@ export default function MedicationScreen() {
   };
 
   const confirmRemove = (m: Medication) =>
-    Alert.alert(
-      `Stop tracking ${m.name}?`,
-      'Its history is removed too. This can’t be undone.',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        { text: 'Remove', style: 'destructive', onPress: () => removeMedication(m.id) },
-      ],
-    );
+    confirm({
+      title: `Stop tracking ${m.name}?`,
+      message: 'Its history is removed too. This can’t be undone.',
+      action: 'Remove',
+      onConfirm: () => removeMedication(m.id),
+    });
 
   return (
     <View style={{ flex: 1, backgroundColor: colors.paper, paddingTop: insets.top }}>
@@ -228,7 +219,7 @@ const s = StyleSheet.create({
     paddingHorizontal: 13,
     paddingVertical: 10,
   },
-  freqLabel: { fontFamily: font.medium, fontSize: 14, color: colors.ink },
+  freqLabel: typography.rowTitle,
   freqSeg: {
     flexDirection: 'row',
     backgroundColor: colors.track,
@@ -237,10 +228,10 @@ const s = StyleSheet.create({
   },
   freqItem: { paddingHorizontal: 12, paddingVertical: 5, borderRadius: 7 },
   freqItemOn: { backgroundColor: '#fff' },
-  freqText: { fontFamily: font.body, fontSize: 12.5, color: colors.ink2 },
+  freqText: typography.meta,
   freqTextOn: { fontFamily: font.semibold, color: colors.ink },
   removeRow: { paddingHorizontal: 13, paddingVertical: 12 },
-  removeText: { fontFamily: font.semibold, fontSize: 13.5, color: '#B3261E' },
+  removeText: { fontFamily: font.semibold, fontSize: 13.5, color: colors.danger },
   addRow: { flexDirection: 'row', alignItems: 'center', gap: space.sm },
   input: {
     flex: 1,

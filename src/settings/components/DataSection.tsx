@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
-import { Alert, Pressable, Share, StyleSheet, Text, View } from 'react-native';
+import { Pressable, Share, StyleSheet, Text, View } from 'react-native';
 
-import { colors, font } from '@shared/theme';
+import { colors, typography } from '@shared/theme';
 import { Group } from '@shared/components/ui';
 import { useAuth } from '@shared/auth/AuthContext';
 import { useToast } from '@shared/state/ToastContext';
 import type { DataRepository } from '@settings/data/dataRepository';
+import { confirm } from '@shared/utils/confirm';
 
 /** Export everything Tern holds, or erase it. Only offered for a signed-in account. */
 export function DataSection({ repo }: { repo: DataRepository }) {
@@ -29,60 +30,50 @@ export function DataSection({ repo }: { repo: DataRepository }) {
 
   const deleteData = () => {
     if (busy) return;
-    Alert.alert(
-      'Delete all your data?',
-      "This erases your food log, saved meals, weigh-ins, water, movement, medication and mood history, waypoints, rest days and settings from Tern. It can't be undone. You'll be signed out, and your login stays so you can start fresh.",
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Delete',
-          style: 'destructive',
-          onPress: async () => {
-            setBusy(true);
-            try {
-              await repo.deleteAll();
-              await auth?.signOut();
-            } catch (e) {
-              console.warn('Could not delete data', e);
-              toast.show("Couldn't delete your data — please try again.");
-              setBusy(false);
-            }
-          },
-        },
-      ],
-    );
+    confirm({
+      title: 'Delete all your data?',
+      message:
+        "This erases your food log, saved meals, weigh-ins, water, movement, medication and mood history, waypoints, rest days and settings from Tern. It can't be undone. You'll be signed out, and your login stays so you can start fresh.",
+      action: 'Delete',
+      onConfirm: async () => {
+        setBusy(true);
+        try {
+          await repo.deleteAll();
+          await auth?.signOut();
+        } catch (e) {
+          console.warn('Could not delete data', e);
+          toast.show("Couldn't delete your data — please try again.");
+          setBusy(false);
+        }
+      },
+    });
   };
 
   const deleteAccount = () => {
     if (busy) return;
-    Alert.alert(
-      'Delete your account?',
-      "This permanently deletes your account and everything in it: your food log, saved meals, weigh-ins, water, movement, medication and mood history, waypoints, rest days and settings. It can't be undone.",
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Delete account',
-          style: 'destructive',
-          onPress: async () => {
-            setBusy(true);
-            try {
-              await repo.deleteAccount();
-            } catch (e) {
-              console.warn('Could not delete account', e);
-              toast.show("Couldn't delete your account — please try again.");
-              setBusy(false);
-              return;
-            }
-            // The login is gone, so ending the session is best effort.
-            try {
-              await auth?.signOut();
-            } catch (e) {
-              console.warn('Could not sign out after deleting the account', e);
-            }
-          },
-        },
-      ],
-    );
+    confirm({
+      title: 'Delete your account?',
+      message:
+        "This permanently deletes your account and everything in it: your food log, saved meals, weigh-ins, water, movement, medication and mood history, waypoints, rest days and settings. It can't be undone.",
+      action: 'Delete account',
+      onConfirm: async () => {
+        setBusy(true);
+        try {
+          await repo.deleteAccount();
+        } catch (e) {
+          console.warn('Could not delete account', e);
+          toast.show("Couldn't delete your account — please try again.");
+          setBusy(false);
+          return;
+        }
+        // The login is gone, so ending the session is best effort.
+        try {
+          await auth?.signOut();
+        } catch (e) {
+          console.warn('Could not sign out after deleting the account', e);
+        }
+      },
+    });
   };
 
   return (
@@ -117,7 +108,7 @@ const s = StyleSheet.create({
     paddingHorizontal: 13,
     paddingVertical: 12,
   },
-  title: { fontFamily: font.medium, fontSize: 14, color: colors.ink },
-  danger: { color: '#B3261E' },
-  sub: { fontFamily: font.body, fontSize: 11.5, color: colors.ink2, marginTop: 2, lineHeight: 16 },
+  title: typography.rowTitle,
+  danger: { color: colors.danger },
+  sub: { ...typography.caption, marginTop: 2, lineHeight: 16 },
 });

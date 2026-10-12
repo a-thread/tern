@@ -3,7 +3,7 @@ import { View, Text, ScrollView, StyleSheet } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 
-import { colors, font, radius, space } from '@shared/theme';
+import { colors, font, radius, space, typography } from '@shared/theme';
 import {
   Group,
   GroupLabel,
@@ -218,12 +218,7 @@ const s = StyleSheet.create({
     borderRadius: radius.lg,
     padding: space.md + 1,
   },
-  historyText: {
-    fontFamily: font.body,
-    fontSize: 12.5,
-    color: colors.ink2,
-    lineHeight: 19,
-  },
+  historyText: { ...typography.meta, lineHeight: 19 },
   bold: { fontFamily: font.semibold, color: colors.ink },
   footNote: {
     fontFamily: font.body,

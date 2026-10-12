@@ -10,7 +10,7 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 
-import { colors, font, radius, space } from '@shared/theme';
+import { colors, font, radius, space, typography } from '@shared/theme';
 import { Group, GroupLabel, SheetNav } from '@shared/components/ui';
 import type { Tier } from '@food/models/foodEntry';
 import { useFood } from '@food/FoodContext';
@@ -199,13 +199,7 @@ function FieldRow({
 }
 
 const s = StyleSheet.create({
-  intro: {
-    fontFamily: font.body,
-    fontSize: 12.5,
-    color: colors.ink2,
-    lineHeight: 18,
-    marginTop: space.sm,
-  },
+  intro: { ...typography.meta, lineHeight: 18, marginTop: space.sm },
   row: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -213,12 +207,7 @@ const s = StyleSheet.create({
     paddingVertical: 11,
     gap: 8,
   },
-  rowLabel: {
-    fontFamily: font.medium,
-    fontSize: 14,
-    color: colors.ink,
-    width: 78,
-  },
+  rowLabel: { ...typography.rowTitle, width: 78 },
   rowInput: {
     flex: 1,
     fontFamily: font.body,
