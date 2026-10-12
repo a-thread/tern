@@ -1,6 +1,6 @@
 import { addDays } from '@/shared/utils/date';
 import { DayState } from '@/shared/models/dayState';
-import { buildDays, computeStreak, withFreezes } from '@/domain/activity/models/dayRecord';
+import { buildDays, computeStreak, withFreezes } from './dayRecord';
 
 const TODAY = '2026-10-08'; // a Thursday
 

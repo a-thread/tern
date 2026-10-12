@@ -1,7 +1,7 @@
-import type { TernClient } from '@/shared/backend/supabase';
-import { ok, rows } from '@/shared/backend/query';
-import type { WaterEntry } from '@/domain/water/models/waterEntry';
-import type { WaterRepository } from '@/domain/water/water.repository';
+import type { TernClient } from '../../shared/backend/supabase';
+import { ok, rows } from '../../shared/backend/query';
+import type { WaterEntry } from './models/waterEntry';
+import type { WaterRepository } from './water.repository';
 
 type WaterRow = {
   id: string;

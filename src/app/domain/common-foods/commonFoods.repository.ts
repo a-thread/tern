@@ -1,5 +1,5 @@
-import type { CommonFood } from '@/domain/common-foods/models/commonFoods';
-import { commonFoodsSeed } from '@/domain/common-foods/commonFoods.seed';
+import type { CommonFood } from './models/commonFoods';
+import { commonFoodsSeed } from './commonFoods.seed';
 
 /**
  * The shared common-foods list. It is the same for everyone and changes rarely,

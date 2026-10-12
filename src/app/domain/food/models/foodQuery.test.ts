@@ -1,4 +1,4 @@
-import { allWordsPrefix, normalizeText, wordsOf } from '@/domain/food/models/foodQuery';
+import { allWordsPrefix, normalizeText, wordsOf } from './foodQuery';
 
 describe('foodQuery', () => {
   it('normalizes case, accents and punctuation', () => {

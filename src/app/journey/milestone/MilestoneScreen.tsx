@@ -2,25 +2,25 @@ import React, { useEffect, useRef, useState } from 'react';
 import { Animated, Text, View } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 
-import TernMark from '@/shared/components/TernMark';
-import { useReduceMotion } from '@/shared/hooks/useReduceMotion';
-import type { RootStackParamList } from '@/navigation/types';
-import { useWaypoints } from '@/domain/waypoints/WaypointsContext';
+import TernMark from '../../shared/components/TernMark';
+import { useReduceMotion } from '../../shared/hooks/useReduceMotion';
+import type { RootStackParamList } from '../../navigation/types';
+import { useWaypoints } from '../../domain/waypoints/WaypointsContext';
 import {
   latestMilestone,
   Milestones,
-} from '@/domain/waypoints/models/milestone';
-import { daysWithWaypoints } from '@/domain/waypoints/models/waypoint';
-import { legFor, routeFraction } from '@/journey/models/waypointSummary';
-import WaypointBurst from '@/shared/components/WaypointBurst';
-import { RouteStrip } from '@/journey/milestone/components/RouteStrip/RouteStrip';
-import { FadeIn } from '@/journey/components/FadeIn/FadeIn';
+} from '../../domain/waypoints/models/milestone';
+import { daysWithWaypoints } from '../../domain/waypoints/models/waypoint';
+import { legFor, routeFraction } from '../models/waypointSummary';
+import WaypointBurst from '../../shared/components/WaypointBurst';
+import { RouteStrip } from './components/RouteStrip/RouteStrip';
+import { FadeIn } from '../components/FadeIn/FadeIn';
 import {
   CARD_WIDTH,
   GOLD,
   PopupCard,
   popup,
-} from '@/journey/components/PopupCard/PopupCard';
+} from '../components/PopupCard/PopupCard';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Milestone'>;
 

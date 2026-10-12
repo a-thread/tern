@@ -1,6 +1,6 @@
-import type { AppSettings } from '@/domain/settings/models/appSettings';
-import { Frequency } from '@/shared/models/frequency';
-import { formatWeight } from '@/shared/utils/units';
+import type { AppSettings } from '../../domain/settings/models/appSettings';
+import { Frequency } from '../../shared/models/frequency';
+import { formatWeight } from '../../shared/utils/units';
 
 /** The Settings index line for weight: "Daily · goal 150 lb", or "Off". */
 export function weightSummary(s: AppSettings): string {

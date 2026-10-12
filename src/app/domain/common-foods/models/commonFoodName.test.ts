@@ -1,4 +1,4 @@
-import { cleanPortionLabel, plainness, portionOrder, splitUsdaName } from '@/domain/common-foods/models/commonFoodName';
+import { cleanPortionLabel, plainness, portionOrder, splitUsdaName } from './commonFoodName';
 
 describe('splitUsdaName', () => {
   it('pulls the cut into the name and drops data-set noise', () => {

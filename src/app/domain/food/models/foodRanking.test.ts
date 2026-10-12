@@ -1,5 +1,5 @@
-import type { SearchResult } from '@/domain/food/sources/searchResult';
-import { dedupeFoods, matchesQuery, rankFoods, scoreResult, stableMerge, type RankedFood } from '@/domain/food/models/foodRanking';
+import type { SearchResult } from '../sources/searchResult';
+import { dedupeFoods, matchesQuery, rankFoods, scoreResult, stableMerge, type RankedFood } from './foodRanking';
 
 const food = (name: string, extra: Partial<SearchResult> = {}): SearchResult => ({
   id: extra.id ?? name,

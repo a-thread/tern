@@ -1,6 +1,6 @@
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
-import { colors, font } from '@/shared/theme';
+import { colors, font } from '../../shared/theme';
 
 /** One entry in a chart legend: a small swatch and what it means. `border` outlines a pale swatch. */
 export function LegendDot({

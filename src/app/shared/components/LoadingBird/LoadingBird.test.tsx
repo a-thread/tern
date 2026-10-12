@@ -1,7 +1,7 @@
 import React from 'react';
 import { render } from '@testing-library/react-native';
 
-import LoadingBird from '@/shared/components/LoadingBird/LoadingBird';
+import LoadingBird from './LoadingBird';
 
 afterEach(() => jest.restoreAllMocks());
 

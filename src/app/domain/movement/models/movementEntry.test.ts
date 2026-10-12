@@ -15,7 +15,7 @@ import {
   minutesByDay,
   movementSummary,
   type MovementEntry,
-} from '@/domain/movement/models/movementEntry';
+} from './movementEntry';
 import { Units } from '@/shared/utils/units';
 
 const entry = (day: string, activity: Activity, minutes: number, at = `${day}T08:00:00Z`): MovementEntry => ({

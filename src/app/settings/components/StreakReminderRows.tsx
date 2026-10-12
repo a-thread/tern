@@ -1,7 +1,7 @@
 import React from 'react';
 
-import { ToggleRow } from '@/shared/components/ui';
-import { useReminders } from '@/settings/hooks/useReminders';
+import { ToggleRow } from '../../shared/components/ui';
+import { useReminders } from '../hooks/useReminders';
 
 /** Streak notifications: an evening heads-up, and a note the morning after a streak ends or a freeze is used. */
 export function StreakReminderRows() {

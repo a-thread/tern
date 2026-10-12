@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet, Pressable, ViewStyle } from 'react-native';
-import { colors, font, radius, space, typography } from '@/shared/theme';
-import { Chevron } from '@/shared/components/ui/Chevron';
+import { colors, font, radius, space, typography } from '../../theme';
+import { Chevron } from './Chevron';
 
 export function GroupLabel({ children }: { children: string }) {
   return <Text style={s.groupLabel}>{children}</Text>;

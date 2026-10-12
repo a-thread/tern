@@ -1,6 +1,6 @@
 import React from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
-import { colors, font } from '@/shared/theme';
+import { colors, font } from '../../shared/theme';
 
 /** A compact either/or switch with the chosen option filled in, e.g. lb / kg or Daily / Weekly. */
 export function PillToggle<T extends string>({

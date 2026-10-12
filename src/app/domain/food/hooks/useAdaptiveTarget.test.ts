@@ -1,16 +1,16 @@
 import { act, renderHook, waitFor } from '@testing-library/react-native';
 
 import { addDays, weekStartKey } from '@/shared/utils/date';
-import { Meal } from '@/domain/food/models/foodEntry';
-import { Aim } from '@/domain/food/models/energyBalance';
-import { useAdaptiveTarget } from '@/domain/food/hooks/useAdaptiveTarget';
+import { Meal } from '../models/foodEntry';
+import { Aim } from '../models/energyBalance';
+import { useAdaptiveTarget } from './useAdaptiveTarget';
 
 const TODAY = '2026-10-29';
 
 const mockUpdate = jest.fn();
 let mockSettings: Record<string, unknown>;
 jest.mock('@/shared/hooks/useDayKey', () => ({ useDayKey: () => '2026-10-29' }));
-jest.mock('@/domain/settings/SettingsContext', () => ({
+jest.mock('../../settings/SettingsContext', () => ({
   useSettings: () => ({ settings: mockSettings, updateSettings: mockUpdate }),
 }));
 
@@ -33,8 +33,8 @@ const mockFoodContext = {
   loadHistory: async () => mockFood,
   loadSkippedHistory: async () => ({}),
 };
-jest.mock('@/domain/food/FoodContext', () => ({ useFood: () => mockFoodContext }));
-jest.mock('@/domain/weight/WeightContext', () => ({ useWeight: () => ({ weightEntries: mockWeights }) }));
+jest.mock('../FoodContext', () => ({ useFood: () => mockFoodContext }));
+jest.mock('../../weight/WeightContext', () => ({ useWeight: () => ({ weightEntries: mockWeights }) }));
 
 beforeEach(() => {
   mockUpdate.mockReset();

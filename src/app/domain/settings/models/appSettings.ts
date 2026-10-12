@@ -1,12 +1,12 @@
 import type { Units } from '@/shared/utils/units';
-import type { GoalChange } from '@/domain/activity/models/stepGoal';
-import type { Medication } from '@/domain/medication/models/medication';
-import { WaterLimits } from '@/domain/water/models/waterEntry';
-import { MovementLimits } from '@/domain/movement/models/movementEntry';
-import { Aim } from '@/domain/food/models/energyBalance';
-import { settingsSeed } from '@/domain/settings/settings.mock';
+import type { GoalChange } from '../../activity/models/stepGoal';
+import type { Medication } from '../../medication/models/medication';
+import { WaterLimits } from '../../water/models/waterEntry';
+import { MovementLimits } from '../../movement/models/movementEntry';
+import { Aim } from '../../food/models/energyBalance';
+import { settingsSeed } from '../settings.mock';
 import { Frequency } from '@/shared/models/frequency';
-import { type ReminderConfig, Reminders } from '@/domain/settings/models/reminderPlan';
+import { type ReminderConfig, Reminders } from './reminderPlan';
 
 export type ReminderSettings = ReminderConfig;
 

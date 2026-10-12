@@ -4,15 +4,15 @@ import { renderHook, act, waitFor } from '@testing-library/react-native';
 import {
   createMemoryBackend,
   type Backend,
-} from '@/BackendContext';
-import { SettingsProvider, useSettings } from '@/domain/settings/SettingsContext';
-import { FoodProvider } from '@/domain/food/FoodContext';
-import { createMemoryFoodRepository } from '@/domain/food/food.repository';
-import { createMemoryWaypointsRepository } from '@/domain/waypoints/waypoints.repository';
-import { WaypointsProvider, useWaypoints } from '@/domain/waypoints/WaypointsContext';
-import { Milestones } from '@/domain/waypoints/models/milestone';
-import { usePendingMilestone } from '@/today/hooks/usePendingMilestone';
-import { WaypointSource } from '@/domain/waypoints/models/waypoint';
+} from '../../BackendContext';
+import { SettingsProvider, useSettings } from '../../domain/settings/SettingsContext';
+import { FoodProvider } from '../../domain/food/FoodContext';
+import { createMemoryFoodRepository } from '../../domain/food/food.repository';
+import { createMemoryWaypointsRepository } from '../../domain/waypoints/waypoints.repository';
+import { WaypointsProvider, useWaypoints } from '../../domain/waypoints/WaypointsContext';
+import { Milestones } from '../../domain/waypoints/models/milestone';
+import { usePendingMilestone } from './usePendingMilestone';
+import { WaypointSource } from '../../domain/waypoints/models/waypoint';
 
 const FIRST_STOP = Milestones.STOPS[0];
 const SECOND_STOP = Milestones.STOPS[1];

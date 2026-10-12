@@ -1,5 +1,5 @@
-import { latestMilestone, migrationProgress, milestonesFor, Milestones } from '@/domain/waypoints/models/milestone';
-import { daysWithWaypoints, type LedgerEvent, WaypointSource } from '@/domain/waypoints/models/waypoint';
+import { latestMilestone, migrationProgress, milestonesFor, Milestones } from './milestone';
+import { daysWithWaypoints, type LedgerEvent, WaypointSource } from './waypoint';
 
 const ev = (day: string, points: number, source: LedgerEvent['source'] = WaypointSource.Steps): LedgerEvent => ({
   day,

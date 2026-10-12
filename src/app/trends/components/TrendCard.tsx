@@ -1,8 +1,8 @@
 import React from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
-import { font, space, typography } from '@/shared/theme';
-import { Card } from '@/shared/components/ui';
+import { font, space, typography } from '../../shared/theme';
+import { Card } from '../../shared/components/ui';
 
 /** A Trends card: a small title over whatever the card shows. Tappable when `onPress` is given. */
 export function TrendCard({

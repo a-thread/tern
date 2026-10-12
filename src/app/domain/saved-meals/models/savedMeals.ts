@@ -1,7 +1,7 @@
 import { cleanSpaces, sameName } from '@/shared/utils/text';
-import { dayTotals, type FoodEntry } from '@/domain/food/models/foodEntry';
-import type { NewFoodEntry } from '@/domain/food/food.repository';
-import { amountOf, scaleMeasure } from '@/domain/food/models/measure';
+import { dayTotals, type FoodEntry } from '../../food/models/foodEntry';
+import type { NewFoodEntry } from '../../food/food.repository';
+import { amountOf, scaleMeasure } from '../../food/models/measure';
 
 /** One food in a saved meal: a log entry without its id or which meal it was in. */
 export type SavedMealItem = Omit<FoodEntry, 'id' | 'meal'>;

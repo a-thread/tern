@@ -6,7 +6,7 @@ import { colors, font, radius, space, typography } from '@/shared/theme';
 import { Group, GroupLabel, Stepper } from '@/shared/components/ui';
 import { Meals } from '@/domain/food/models/meals';
 import { useFood } from '@/domain/food/FoodContext';
-import { MealPicker } from '../../../components/MealPicker/MealPicker';
+import { MealPicker } from '@/food/components/MealPicker/MealPicker';
 import { useFoodDisplay } from '@/domain/food/hooks/useFoodDisplay';
 import {
   itemsToEntries,
@@ -16,7 +16,7 @@ import {
 import { loggedAsResult } from '../../models/recentFoods';
 import { scaledTotals, stepScale } from '@/domain/food/models/mealDraft';
 import type { LogFoodStackParamList } from '../../navigation';
-import ItemRow from '../../../components/ItemRow/ItemRow';
+import ItemRow from '@/food/components/ItemRow/ItemRow';
 
 type Nav = NativeStackNavigationProp<LogFoodStackParamList>;
 

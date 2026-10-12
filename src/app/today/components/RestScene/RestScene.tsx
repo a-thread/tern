@@ -21,7 +21,7 @@ import { useIsFocused } from '@react-navigation/native';
 import { colors, font, radius, space } from '@/shared/theme';
 import { Icon } from '@/shared/components/ui';
 import { useReduceMotion } from '@/shared/hooks/useReduceMotion';
-import { Driftwood, DriftwoodDefs } from '@/today/components/RestScene/components/Driftwood/Driftwood';
+import { Driftwood, DriftwoodDefs } from './components/Driftwood/Driftwood';
 import {
   birdBox,
   poseAt,
@@ -29,7 +29,7 @@ import {
   Sprite,
   type SceneMotion,
   type ScenePose,
-} from '@/today/models/restScene';
+} from '../../models/restScene';
 
 const SPRITE = require('../../../../../assets/tern-landing.png');
 

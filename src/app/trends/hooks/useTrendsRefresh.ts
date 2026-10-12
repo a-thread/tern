@@ -1,12 +1,12 @@
 import { useState } from 'react';
 
-import { usePullToRefresh } from '@/shared/hooks/usePullToRefresh';
-import { useActivity } from '@/domain/activity/ActivityContext';
-import { useFood } from '@/domain/food/FoodContext';
-import { useMood } from '@/domain/mood/MoodContext';
-import { useMovement } from '@/domain/movement/MovementContext';
-import { useWater } from '@/domain/water/WaterContext';
-import { useWeight } from '@/domain/weight/WeightContext';
+import { usePullToRefresh } from '../../shared/hooks/usePullToRefresh';
+import { useActivity } from '../../domain/activity/ActivityContext';
+import { useFood } from '../../domain/food/FoodContext';
+import { useMood } from '../../domain/mood/MoodContext';
+import { useMovement } from '../../domain/movement/MovementContext';
+import { useWater } from '../../domain/water/WaterContext';
+import { useWeight } from '../../domain/weight/WeightContext';
 
 /**
  * Pull to refresh for Trends. `refreshKey` goes up after each pull, so the history each card

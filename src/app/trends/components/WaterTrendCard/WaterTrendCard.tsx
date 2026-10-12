@@ -1,18 +1,18 @@
 import React, { useState } from 'react';
 
-import { StepBars } from '@/trends/components/StepBars';
-import { TrendCard, TrendFigure } from '@/trends/components/TrendCard';
+import { StepBars } from '../StepBars';
+import { TrendCard, TrendFigure } from '../TrendCard';
 import { useDayKey } from '@/shared/hooks/useDayKey';
-import { useFocusLoad } from '@/trends/hooks/useFocusLoad';
+import { useFocusLoad } from '../../hooks/useFocusLoad';
 import { addDays } from '@/shared/utils/date';
 import { useSettings } from '@/domain/settings/SettingsContext';
 import { useUnits } from '@/domain/settings/hooks/useUnits';
 import {
   averageDaily,
   bucketWater,
-} from '@/trends/components/WaterTrendCard/models/waterBars';
+} from './models/waterBars';
 import { totalsByDay } from '@/domain/water/models/waterEntry';
-import { TrendRanges, TrendRange } from '@/trends/models/trendRange';
+import { TrendRanges, TrendRange } from '../../models/trendRange';
 import { useWater } from '@/domain/water/WaterContext';
 
 /** Average water per day, and a bar per day (or week), for the Trends range. */

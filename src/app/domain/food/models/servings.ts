@@ -1,5 +1,5 @@
 import { round1 } from '@/shared/utils/number';
-import type { Portion } from '@/domain/food/sources/searchResult';
+import type { Portion } from '../sources/searchResult';
 
 /**
  * The grams in a serving label: "100 g", or a portion label that ends in its

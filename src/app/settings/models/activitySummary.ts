@@ -1,4 +1,4 @@
-import type { AppSettings } from '@/domain/settings/models/appSettings';
+import type { AppSettings } from '../../domain/settings/models/appSettings';
 
 /** The Settings index line for steps and activity: "8,000 steps · 2 rest days · movement on". */
 export function activitySummary(s: AppSettings): string {

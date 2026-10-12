@@ -3,8 +3,8 @@ import { Dimensions, Image, StyleSheet } from 'react-native';
 import { fireEvent, render } from '@testing-library/react-native';
 
 import { space } from '@/shared/theme';
-import { Sprite } from '@/today/models/restScene';
-import { RestScene } from '@/today/components/RestScene/RestScene';
+import { Sprite } from '../../models/restScene';
+import { RestScene } from './RestScene';
 
 // Reduce motion: no flight and no animation loop, so the scene is exactly as it settles.
 jest.mock('@/shared/hooks/useReduceMotion', () => ({ useReduceMotion: () => true }));

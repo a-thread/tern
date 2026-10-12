@@ -2,8 +2,8 @@ import React from 'react';
 import { AppState, type AppStateStatus } from 'react-native';
 import { act, renderHook } from '@testing-library/react-native';
 
-import { addDays, dayKey } from '@/shared/utils/date';
-import { ViewedDayProvider, useViewedDay } from '@/shared/state/ViewedDayContext';
+import { addDays, dayKey } from '../utils/date';
+import { ViewedDayProvider, useViewedDay } from './ViewedDayContext';
 
 const today = dayKey();
 

@@ -1,7 +1,7 @@
-import { colors } from '@/shared/theme';
-import { clampScore, MoodScale, MoodMetric } from '@/domain/mood/models/moodEntry';
+import { colors } from '../../shared/theme';
+import { clampScore, MoodScale, MoodMetric } from '../../domain/mood/models/moodEntry';
 
-import { mix } from '@/shared/utils/color';
+import { mix } from '../../shared/utils/color';
 
 /**
  * Where a score sits on its colour scale. Nothing here is alarming or red: mood runs

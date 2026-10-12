@@ -1,14 +1,14 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-import { createRequiredContext } from '@/shared/state/createRequiredContext';
-import type { CommonFoodsRepository } from '@/domain/common-foods/commonFoods.repository';
+import { createRequiredContext } from '../../shared/state/createRequiredContext';
+import type { CommonFoodsRepository } from './commonFoods.repository';
 import {
   buildCommonIndex,
   emptyCommonIndex,
   type CommonFood,
   type CommonFoodIndex,
-} from '@/domain/common-foods/models/commonFoods';
+} from './models/commonFoods';
 
 type CommonFoodsContextValue = {
   /** The list, ready to search. Empty until a copy is loaded. */

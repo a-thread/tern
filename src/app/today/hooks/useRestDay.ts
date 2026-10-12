@@ -1,10 +1,10 @@
 import { useCallback, useEffect, useState } from 'react';
 
-import { DayState } from '@/shared/models/dayState';
-import { useViewedDay } from '@/shared/state/ViewedDayContext';
-import { useActivity } from '@/domain/activity/ActivityContext';
-import type { DayRecord } from '@/domain/activity/models/dayRecord';
-import { RestScenes } from '@/today/models/restScene';
+import { DayState } from '../../shared/models/dayState';
+import { useViewedDay } from '../../shared/state/ViewedDayContext';
+import { useActivity } from '../../domain/activity/ActivityContext';
+import type { DayRecord } from '../../domain/activity/models/dayRecord';
+import { RestScenes } from '../models/restScene';
 
 /**
  * Whether the viewed day is a rest day, and how the rest scene should come and go.

@@ -1,6 +1,6 @@
 import React from 'react';
 import Svg, { Circle, Polyline, Polygon, Line, Defs, LinearGradient, Stop, Text as SvgText } from 'react-native-svg';
-import { colors } from '@/shared/theme';
+import { colors } from '../theme';
 
 /* ------------------------------------------------------------------ */
 /* Weight trend — the band is the point: it makes daily noise visible   */

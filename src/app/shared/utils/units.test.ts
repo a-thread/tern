@@ -13,7 +13,7 @@ import {
   toDisplayVolume,
   toDisplayWeight,
   Units,
-} from '@/shared/utils/units';
+} from './units';
 
 describe('units', () => {
   it('converts between kg and lb', () => {

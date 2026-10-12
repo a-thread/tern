@@ -1,8 +1,8 @@
-import type { TernClient } from '@/shared/backend/supabase';
-import { ok, rows } from '@/shared/backend/query';
-import type { SavedMeal, SavedMealItem } from '@/domain/saved-meals/models/savedMeals';
-import { parseMeasure } from '@/domain/food/models/measure';
-import type { SavedMealsRepository } from '@/domain/saved-meals/savedMeals.repository';
+import type { TernClient } from '../../shared/backend/supabase';
+import { ok, rows } from '../../shared/backend/query';
+import type { SavedMeal, SavedMealItem } from './models/savedMeals';
+import { parseMeasure } from '../food/models/measure';
+import type { SavedMealsRepository } from './savedMeals.repository';
 
 type Row = {
   id: string;

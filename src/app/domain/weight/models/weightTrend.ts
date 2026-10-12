@@ -1,4 +1,4 @@
-import type { WeightEntry } from '@/domain/weight/models/weightEntry';
+import type { WeightEntry } from './weightEntry';
 
 /** How the weight trend line is smoothed. */
 export class TrendSmoothing {

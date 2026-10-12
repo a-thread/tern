@@ -3,7 +3,7 @@ import {
   filterFoods,
   loggedAsResult,
   recentFoods,
-} from '../../log-food/models/recentFoods';
+} from './recentFoods';
 import { amountOf } from '@/domain/food/models/measure';
 
 const eggsAmount = amountOf({

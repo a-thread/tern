@@ -1,5 +1,5 @@
 import React, { useMemo, useRef, useState } from 'react';
-import { round1 } from '@/shared/utils/number';
+import { round1 } from '../shared/utils/number';
 import {
   View,
   Text,
@@ -12,16 +12,16 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 
-import { colors, font, radius, space, typography } from '@/shared/theme';
-import { Group, GroupLabel, SheetNav } from '@/shared/components/ui';
-import { WeightTrend } from '@/shared/components/WeightTrend';
-import type { RootStackParamList } from '@/navigation/types';
-import { useUnits } from '@/domain/settings/hooks/useUnits';
-import { useWeight } from '@/domain/weight/WeightContext';
-import { isLoggedOn } from '@/domain/weight/models/weightEntry';
-import { useViewedDay } from '@/shared/state/ViewedDayContext';
-import { atTimeOn, dayWord } from '@/shared/utils/date';
-import { Units } from '@/shared/utils/units';
+import { colors, font, radius, space, typography } from '../shared/theme';
+import { Group, GroupLabel, SheetNav } from '../shared/components/ui';
+import { WeightTrend } from '../shared/components/WeightTrend';
+import type { RootStackParamList } from '../navigation/types';
+import { useUnits } from '../domain/settings/hooks/useUnits';
+import { useWeight } from '../domain/weight/WeightContext';
+import { isLoggedOn } from '../domain/weight/models/weightEntry';
+import { useViewedDay } from '../shared/state/ViewedDayContext';
+import { atTimeOn, dayWord } from '../shared/utils/date';
+import { Units } from '../shared/utils/units';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'LogWeight'>;
 

@@ -2,18 +2,18 @@ import React, { useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import Svg, { Line, Polyline } from 'react-native-svg';
 
-import { colors, space, typography } from '@/shared/theme';
-import { TrendCard, TrendFigure } from '@/trends/components/TrendCard';
-import { useFocusLoad } from '@/trends/hooks/useFocusLoad';
-import { useDayKey } from '@/shared/hooks/useDayKey';
-import { addDays } from '@/shared/utils/date';
-import { useFood } from '@/domain/food/FoodContext';
-import { useWeight } from '@/domain/weight/WeightContext';
+import { colors, space, typography } from '../../shared/theme';
+import { TrendCard, TrendFigure } from './TrendCard';
+import { useFocusLoad } from '../hooks/useFocusLoad';
+import { useDayKey } from '../../shared/hooks/useDayKey';
+import { addDays } from '../../shared/utils/date';
+import { useFood } from '../../domain/food/FoodContext';
+import { useWeight } from '../../domain/weight/WeightContext';
 import {
   AdaptiveTarget,
   weeklyEnergy,
   type EnergyWeek,
-} from '@/domain/food/models/energyBalance';
+} from '../../domain/food/models/energyBalance';
 
 const WEEKS = 8;
 const W = 300;

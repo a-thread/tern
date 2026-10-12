@@ -8,7 +8,7 @@ import {
   resolveZone,
   sanitizeCalorieZone,
   zoneScale,
-} from '@/domain/food/models/intakeZone';
+} from './intakeZone';
 
 describe('intakeZone', () => {
   it('derives a snapped zone around the target', () => {

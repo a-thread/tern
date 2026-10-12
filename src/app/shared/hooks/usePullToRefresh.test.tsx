@@ -1,7 +1,7 @@
 import React from 'react';
 import { ScrollView } from 'react-native';
 import { act, render, screen } from '@testing-library/react-native';
-import { usePullToRefresh } from '@/shared/hooks/usePullToRefresh';
+import { usePullToRefresh } from './usePullToRefresh';
 
 function List({ refreshers }: { refreshers: (() => Promise<unknown>)[] }) {
   const refreshControl = usePullToRefresh(refreshers);

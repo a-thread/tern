@@ -1,6 +1,6 @@
-import { colors } from '@/shared/theme';
-import { scoreColor, scoreTint, smile } from '../utils/scoreColor';
-import { MoodMetric } from '@/domain/mood/models/moodEntry';
+import { colors } from '../../shared/theme';
+import { scoreColor, scoreTint, smile } from './scoreColor';
+import { MoodMetric } from '../../domain/mood/models/moodEntry';
 
 describe('scoreColor', () => {
   it('runs each scale from its low colour to its high colour', () => {

@@ -1,10 +1,10 @@
 import React from 'react';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
-import TrendsScreen from '@/trends/TrendsScreen';
-import StepsDetailScreen from '@/trends/steps-detail/StepsDetailScreen';
-import WeightDetailScreen from '@/trends/weight-detail/WeightDetailScreen';
-import type { TrendsStackParamList } from '@/trends/navigation';
+import TrendsScreen from './TrendsScreen';
+import StepsDetailScreen from './steps-detail/StepsDetailScreen';
+import WeightDetailScreen from './weight-detail/WeightDetailScreen';
+import type { TrendsStackParamList } from './navigation';
 
 const Stack = createNativeStackNavigator<TrendsStackParamList>();
 

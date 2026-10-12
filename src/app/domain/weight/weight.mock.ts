@@ -1,5 +1,5 @@
 /** Seed data for the local (no-backend) mode. */
-import type { WeightEntry } from '@/domain/weight/models/weightEntry';
+import type { WeightEntry } from './models/weightEntry';
 
 // Oldest to newest: a gentle downward drift with normal day-to-day noise.
 const LB = [

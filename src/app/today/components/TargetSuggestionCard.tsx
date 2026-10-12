@@ -1,10 +1,10 @@
 import React from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
-import { colors, font, radius, space } from '@/shared/theme';
-import { GroupLabel } from '@/shared/components/ui';
-import { useSettings } from '@/domain/settings/SettingsContext';
-import { useAdaptiveTarget } from '@/domain/food/hooks/useAdaptiveTarget';
+import { colors, font, radius, space } from '../../shared/theme';
+import { GroupLabel } from '../../shared/components/ui';
+import { useSettings } from '../../domain/settings/SettingsContext';
+import { useAdaptiveTarget } from '../../domain/food/hooks/useAdaptiveTarget';
 
 /**
  * The adaptive target's weekly suggestion, on Today. Shows only when there is

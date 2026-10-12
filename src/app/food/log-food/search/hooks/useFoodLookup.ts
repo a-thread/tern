@@ -26,7 +26,7 @@ import {
   useFoodSearch,
   usdaSource,
   type SearchState,
-} from '../../search/hooks/useFoodSearch';
+} from './useFoodSearch';
 
 export const FOOD_FILTERS = ['All', 'Meals', 'Recent'] as const;
 export type FoodFilter = (typeof FOOD_FILTERS)[number];

@@ -2,12 +2,12 @@ import React, { useState } from 'react';
 import { Text } from 'react-native';
 
 import { space, typography } from '@/shared/theme';
-import { TrendCard, TrendFigure } from '@/trends/components/TrendCard';
-import { StepBars } from '@/trends/components/StepBars';
+import { TrendCard, TrendFigure } from '../TrendCard';
+import { StepBars } from '../StepBars';
 import { useDayKey } from '@/shared/hooks/useDayKey';
-import { useFocusLoad } from '@/trends/hooks/useFocusLoad';
+import { useFocusLoad } from '../../hooks/useFocusLoad';
 import { addDays } from '@/shared/utils/date';
-import { TrendRanges, TrendRange } from '@/trends/models/trendRange';
+import { TrendRanges, TrendRange } from '../../models/trendRange';
 import { useSettings } from '@/domain/settings/SettingsContext';
 import { useUnits } from '@/domain/settings/hooks/useUnits';
 import { useMovement } from '@/domain/movement/MovementContext';
@@ -22,7 +22,7 @@ import {
 import {
   averageMinutes,
   bucketMinutes,
-} from '@/trends/components/MovementTrendCard/models/movementBars';
+} from './models/movementBars';
 
 /** Active minutes over the Trends range: the daily average, a bar per day (or week), and what kinds. */
 export function MovementTrendCard({

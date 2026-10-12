@@ -4,7 +4,7 @@ import {
   filterRecentMeals,
   recentMealTitle,
   recentMeals,
-} from '../models/recentMeals';
+} from './recentMeals';
 
 const TODAY = '2026-09-24'; // a Thursday
 

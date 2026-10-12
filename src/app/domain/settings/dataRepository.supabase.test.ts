@@ -1,5 +1,5 @@
-import type { TernClient } from '@/shared/backend/supabase';
-import { createSupabaseDataRepository } from '@/domain/settings/dataRepository.supabase';
+import type { TernClient } from '../../shared/backend/supabase';
+import { createSupabaseDataRepository } from './dataRepository.supabase';
 
 const dbWithRpc = (rpc: jest.Mock) => ({ rpc }) as unknown as TernClient;
 

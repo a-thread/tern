@@ -1,4 +1,4 @@
-import { suggestTier } from '@/domain/common-foods/models/commonFoodTier';
+import { suggestTier } from './commonFoodTier';
 
 describe('suggestTier', () => {
   it('suggests whole for plain fruit, meat, eggs and grains', () => {

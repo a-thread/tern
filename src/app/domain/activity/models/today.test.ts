@@ -1,7 +1,7 @@
-import { type FoodEntry, Meal } from '@/domain/food/models/foodEntry';
-import type { WeightEntry } from '@/domain/weight/models/weightEntry';
-import { buildDays, computeStreak, type DayRecord, restDaysLeft, weekOf, type BuildDaysInput } from '@/domain/activity/models/dayRecord';
-import { goalFor, recordGoalChange, suggestGoal } from '@/domain/activity/models/stepGoal';
+import { type FoodEntry, Meal } from '../../food/models/foodEntry';
+import type { WeightEntry } from '../../weight/models/weightEntry';
+import { buildDays, computeStreak, type DayRecord, restDaysLeft, weekOf, type BuildDaysInput } from './dayRecord';
+import { goalFor, recordGoalChange, suggestGoal } from './stepGoal';
 import { greetingFor } from '@/today/components/StepsHero/models/greeting';
 import { leftToDo, mealForTime, weighInDue } from '@/today/models/leftToDo';
 import { todaySummary } from '@/today/models/todaySummary';

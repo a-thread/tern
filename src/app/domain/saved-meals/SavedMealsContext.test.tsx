@@ -4,14 +4,14 @@ import { renderHook, act, waitFor } from '@testing-library/react-native';
 import {
   createMemoryBackend,
   type Backend,
-} from '@/BackendContext';
-import { dayKey } from '@/shared/utils/date';
-import { WaypointsProvider, useWaypoints } from '@/domain/waypoints/WaypointsContext';
-import { FoodProvider, useFood } from '@/domain/food/FoodContext';
-import { SavedMealsProvider, useSavedMeals } from '@/domain/saved-meals/SavedMealsContext';
-import { itemsToEntries, snapshotItems } from '@/domain/saved-meals/models/savedMeals';
-import { type FoodEntry, Meal } from '@/domain/food/models/foodEntry';
-import { WaypointSource } from '@/domain/waypoints/models/waypoint';
+} from '../../BackendContext';
+import { dayKey } from '../../shared/utils/date';
+import { WaypointsProvider, useWaypoints } from '../waypoints/WaypointsContext';
+import { FoodProvider, useFood } from '../food/FoodContext';
+import { SavedMealsProvider, useSavedMeals } from './SavedMealsContext';
+import { itemsToEntries, snapshotItems } from './models/savedMeals';
+import { type FoodEntry, Meal } from '../food/models/foodEntry';
+import { WaypointSource } from '../waypoints/models/waypoint';
 
 const entry = (name: string, over: Partial<FoodEntry> = {}): FoodEntry => ({
   id: `id-${name}`,

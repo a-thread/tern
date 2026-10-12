@@ -1,14 +1,14 @@
 import React, { useCallback, useMemo } from 'react';
-import type { WeightRepository } from '@/domain/weight/weight.repository';
-import { createRequiredContext } from '@/shared/state/createRequiredContext';
-import { useSyncedList } from '@/shared/hooks/useSyncedList';
-import { newId } from '@/shared/utils/id';
-import { computeTrend } from '@/domain/weight/models/weightTrend';
-import { isLoggedToday, type WeightEntry } from '@/domain/weight/models/weightEntry';
-import { useSettings } from '@/domain/settings/SettingsContext';
-import { useAward } from '@/domain/waypoints/hooks/useAward';
-import { WaypointSource } from '@/domain/waypoints/models/waypoint';
-import { useDayKey } from '@/shared/hooks/useDayKey';
+import type { WeightRepository } from './weight.repository';
+import { createRequiredContext } from '../../shared/state/createRequiredContext';
+import { useSyncedList } from '../../shared/hooks/useSyncedList';
+import { newId } from '../../shared/utils/id';
+import { computeTrend } from './models/weightTrend';
+import { isLoggedToday, type WeightEntry } from './models/weightEntry';
+import { useSettings } from '../settings/SettingsContext';
+import { useAward } from '../waypoints/hooks/useAward';
+import { WaypointSource } from '../waypoints/models/waypoint';
+import { useDayKey } from '../../shared/hooks/useDayKey';
 
 type WeightContextValue = {
   /** Newest first. */

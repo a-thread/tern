@@ -1,21 +1,21 @@
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { AppState } from 'react-native';
 
-import { createRequiredContext } from '@/shared/state/createRequiredContext';
-import { useDayKey } from '@/shared/hooks/useDayKey';
-import { useLoader } from '@/shared/hooks/useLoader';
-import { usePersist } from '@/shared/hooks/usePersist';
-import { addDays } from '@/shared/utils/date';
-import { useSettings } from '@/domain/settings/SettingsContext';
-import { useAward } from '@/domain/waypoints/hooks/useAward';
-import { buildDays, restDaysLeft, weekOf, withFreezes, type DayRecord } from '@/domain/activity/models/dayRecord';
-import { goalFor } from '@/domain/activity/models/stepGoal';
-import { StepsRepository, StepsStatus } from '@/domain/activity/steps.repository';
-import type { RestDaysRepository } from '@/domain/activity/restDays.repository';
-import { sameDays, sameSteps } from '@/domain/activity/utils/sameData';
-import { streakBonus, WaypointSource } from '@/domain/waypoints/models/waypoint';
-import { DayState } from '@/shared/models/dayState';
-import { useMovement } from '@/domain/movement/MovementContext';
+import { createRequiredContext } from '../../shared/state/createRequiredContext';
+import { useDayKey } from '../../shared/hooks/useDayKey';
+import { useLoader } from '../../shared/hooks/useLoader';
+import { usePersist } from '../../shared/hooks/usePersist';
+import { addDays } from '../../shared/utils/date';
+import { useSettings } from '../settings/SettingsContext';
+import { useAward } from '../waypoints/hooks/useAward';
+import { buildDays, restDaysLeft, weekOf, withFreezes, type DayRecord } from './models/dayRecord';
+import { goalFor } from './models/stepGoal';
+import { StepsRepository, StepsStatus } from './steps.repository';
+import type { RestDaysRepository } from './restDays.repository';
+import { sameDays, sameSteps } from './utils/sameData';
+import { streakBonus, WaypointSource } from '../waypoints/models/waypoint';
+import { DayState } from '../../shared/models/dayState';
+import { useMovement } from '../movement/MovementContext';
 
 /** How much history is read: enough for the 6-month views. */
 export const HISTORY_DAYS = 180;

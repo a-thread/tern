@@ -4,14 +4,14 @@ import { renderHook, act, waitFor } from '@testing-library/react-native';
 import {
   createMemoryBackend,
   type Backend,
-} from '@/BackendContext';
-import { ToastProvider } from '@/shared/state/ToastContext';
-import { dayKey, parseDayKey } from '@/shared/utils/date';
-import { SettingsProvider, useSettings } from '@/domain/settings/SettingsContext';
-import { WaypointsProvider, useWaypoints } from '@/domain/waypoints/WaypointsContext';
-import { MedicationProvider, useMedication } from '@/domain/medication/MedicationContext';
-import { Frequency } from '@/shared/models/frequency';
-import { newMedication } from '@/domain/medication/models/medication';
+} from '../../BackendContext';
+import { ToastProvider } from '../../shared/state/ToastContext';
+import { dayKey, parseDayKey } from '../../shared/utils/date';
+import { SettingsProvider, useSettings } from '../settings/SettingsContext';
+import { WaypointsProvider, useWaypoints } from '../waypoints/WaypointsContext';
+import { MedicationProvider, useMedication } from './MedicationContext';
+import { Frequency } from '../../shared/models/frequency';
+import { newMedication } from './models/medication';
 
 const today = dayKey();
 const vitaminD = newMedication('Vitamin D', 'med-d');

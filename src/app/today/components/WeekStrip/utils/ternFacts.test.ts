@@ -1,4 +1,4 @@
-import { TERN_FACTS, factForDay } from '@/today/components/WeekStrip/utils/ternFacts';
+import { TERN_FACTS, factForDay } from './ternFacts';
 import { addDays } from '@/shared/utils/date';
 
 describe('TERN_FACTS', () => {

@@ -1,4 +1,4 @@
-import { round1, toFiniteNumber } from '@/shared/utils/number';
+import { round1, toFiniteNumber } from './number';
 
 describe('round1', () => {
   it('rounds to a tenth', () => {

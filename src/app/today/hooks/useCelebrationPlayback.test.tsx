@@ -1,8 +1,8 @@
 import { act, renderHook, waitFor } from '@testing-library/react-native';
 
-import { useCelebrationPlayback } from '@/today/hooks/useCelebrationPlayback';
+import { useCelebrationPlayback } from './useCelebrationPlayback';
 
-jest.mock('@/domain/waypoints/WaypointsContext', () => ({
+jest.mock('../../domain/waypoints/WaypointsContext', () => ({
   useWaypoints: () => ({ celebrations: [{ id: 1, points: 10, source: 'rest' }] }),
 }));
 jest.mock('@react-navigation/native', () => ({ useIsFocused: () => true }));

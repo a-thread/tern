@@ -3,7 +3,7 @@ import { ScrollView, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 
-import { colors, space } from '@/shared/theme';
+import { colors, space } from '../shared/theme';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 
 import {
@@ -12,24 +12,24 @@ import {
   GroupLabel,
   IconBadge,
   PushHeader,
-} from '@/shared/components/ui';
-import type { SettingsStackParamList } from '@/navigation/types';
-import { useBackend } from '@/BackendContext';
-import { useSettings } from '@/domain/settings/SettingsContext';
-import { ProfileSection } from '@/settings/components/ProfileSection';
-import { SectionRow } from '@/settings/components/SectionRow';
-import { UnitsRow } from '@/settings/components/UnitsRow';
-import { AccountSection } from '@/settings/components/AccountSection';
+} from '../shared/components/ui';
+import type { SettingsStackParamList } from '../navigation/types';
+import { useBackend } from '../BackendContext';
+import { useSettings } from '../domain/settings/SettingsContext';
+import { ProfileSection } from './components/ProfileSection';
+import { SectionRow } from './components/SectionRow';
+import { UnitsRow } from './components/UnitsRow';
+import { AccountSection } from './components/AccountSection';
 import {
   healthDataSummary,
   remindersSummary,
-} from '@/settings/models/settingsSummary';
-import { activitySummary } from '@/settings/models/activitySummary';
-import { foodSummary } from '@/settings/models/foodSummary';
-import { weightSummary } from '@/settings/models/weightSummary';
-import { waterSummary } from '@/settings/models/waterSummary';
-import { moodSummary } from '@/settings/models/moodSummary';
-import { medicationSummary } from '@/settings/models/medicationSummary';
+} from './models/settingsSummary';
+import { activitySummary } from './models/activitySummary';
+import { foodSummary } from './models/foodSummary';
+import { weightSummary } from './models/weightSummary';
+import { waterSummary } from './models/waterSummary';
+import { moodSummary } from './models/moodSummary';
+import { medicationSummary } from './models/medicationSummary';
 
 type Props = NativeStackScreenProps<SettingsStackParamList, 'SettingsRoot'>;
 

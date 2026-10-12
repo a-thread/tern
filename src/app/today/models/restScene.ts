@@ -1,4 +1,4 @@
-import { mix } from '@/shared/utils/color';
+import { mix } from '../../shared/utils/color';
 
 /**
  * The tern's landing sheet (assets/tern-landing.png): 18 frames side by side, 2416 x 130, the

@@ -1,11 +1,11 @@
 import React from 'react';
 
-import { Group, GroupLabel } from '@/shared/components/ui';
-import { useSettings } from '@/domain/settings/SettingsContext';
-import { SettingsPage } from '@/settings/components/SettingsPage';
-import { WeightSettingsRows } from '@/settings/weight/components/WeightSettingsRows';
-import { WeighInFrequencyRow } from '@/settings/weight/components/WeighInFrequencyRow';
-import { WeightReminderRows } from '@/settings/components/WeightReminderRows';
+import { Group, GroupLabel } from '../../shared/components/ui';
+import { useSettings } from '../../domain/settings/SettingsContext';
+import { SettingsPage } from '../components/SettingsPage';
+import { WeightSettingsRows } from './components/WeightSettingsRows';
+import { WeighInFrequencyRow } from './components/WeighInFrequencyRow';
+import { WeightReminderRows } from '../components/WeightReminderRows';
 
 /** Settings › Weight: tracking, the goal, how often to weigh in, and the reminder. */
 export default function WeightSettingsScreen() {

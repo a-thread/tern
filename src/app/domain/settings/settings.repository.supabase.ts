@@ -1,7 +1,7 @@
-import type { TernClient } from '@/shared/backend/supabase';
-import { ok } from '@/shared/backend/query';
-import type { AppSettings } from '@/domain/settings/models/appSettings';
-import type { SettingsRepository } from '@/domain/settings/settings.repository';
+import type { TernClient } from '../../shared/backend/supabase';
+import { ok } from '../../shared/backend/query';
+import type { AppSettings } from './models/appSettings';
+import type { SettingsRepository } from './settings.repository';
 
 export function createSupabaseSettingsRepository(
   db: TernClient,

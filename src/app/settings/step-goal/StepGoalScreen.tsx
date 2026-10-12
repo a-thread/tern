@@ -3,12 +3,12 @@ import { View, Text, ScrollView, StyleSheet } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 
-import { colors, font, radius, space, typography } from '@/shared/theme';
-import { Group, GroupLabel, PushHeader, ToggleRow } from '@/shared/components/ui';
-import { useActivity } from '@/domain/activity/ActivityContext';
-import { suggestGoal, StepGoal } from '@/domain/activity/models/stepGoal';
-import { useSettings } from '@/domain/settings/SettingsContext';
-import { useSliderValue } from '@/settings/hooks/useSliderValue';
+import { colors, font, radius, space, typography } from '../../shared/theme';
+import { Group, GroupLabel, PushHeader, ToggleRow } from '../../shared/components/ui';
+import { useActivity } from '../../domain/activity/ActivityContext';
+import { suggestGoal, StepGoal } from '../../domain/activity/models/stepGoal';
+import { useSettings } from '../../domain/settings/SettingsContext';
+import { useSliderValue } from '../hooks/useSliderValue';
 
 const MIN = StepGoal.MIN;
 const MAX = StepGoal.MAX;

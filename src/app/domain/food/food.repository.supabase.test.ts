@@ -1,5 +1,5 @@
-import { patchToRow, rowToFood } from '@/domain/food/food.repository.supabase';
-import { Meal } from '@/domain/food/models/foodEntry';
+import { patchToRow, rowToFood } from './food.repository.supabase';
+import { Meal } from './models/foodEntry';
 
 describe('food row mapping', () => {
   it('maps a database row (numerics may arrive as strings) to a FoodEntry', () => {

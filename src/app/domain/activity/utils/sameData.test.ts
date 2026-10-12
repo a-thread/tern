@@ -1,4 +1,4 @@
-import { sameDays, sameSteps } from '@/domain/activity/utils/sameData';
+import { sameDays, sameSteps } from './sameData';
 
 describe('sameSteps', () => {
   it('is true for equal contents, even as different objects', () => {

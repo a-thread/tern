@@ -1,4 +1,4 @@
-import type { DayRecord } from '@/domain/activity/models/dayRecord';
+import type { DayRecord } from './dayRecord';
 
 /** One step-goal change: `goal` applies from `from` (a day key) until the next entry. */
 export type GoalChange = { from: string; goal: number };

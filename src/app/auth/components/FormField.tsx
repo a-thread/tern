@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { StyleSheet, Text, TextInput, View } from 'react-native';
 
-import { colors, font, radius, space } from '@/shared/theme';
+import { colors, font, radius, space } from '../../shared/theme';
 
 /**
  * Text field that only shows its error once it has been touched (blurred),

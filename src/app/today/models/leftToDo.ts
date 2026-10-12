@@ -1,7 +1,7 @@
-import { Meals } from '@/domain/food/models/meals';
-import { type FoodEntry, Meal } from '@/domain/food/models/foodEntry';
-import { Frequency } from '@/shared/models/frequency';
-import { isLoggedToday, type WeightEntry } from '@/domain/weight/models/weightEntry';
+import { Meals } from '../../domain/food/models/meals';
+import { type FoodEntry, Meal } from '../../domain/food/models/foodEntry';
+import { Frequency } from '../../shared/models/frequency';
+import { isLoggedToday, type WeightEntry } from '../../domain/weight/models/weightEntry';
 
 export type LeftToDoItem =
   | { kind: 'meal'; meal: FoodEntry['meal']; title: string; sub: string }

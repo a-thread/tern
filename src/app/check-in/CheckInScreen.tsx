@@ -12,26 +12,26 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 
-import { colors, font, radius, space, typography } from '@/shared/theme';
-import { Group, GroupLabel, SheetNav } from '@/shared/components/ui';
-import { WeightTrend } from '@/shared/components/WeightTrend';
-import type { RootStackParamList } from '@/navigation/types';
-import { useViewedDay } from '@/shared/state/ViewedDayContext';
-import { addDays, dayWord } from '@/shared/utils/date';
+import { colors, font, radius, space, typography } from '../shared/theme';
+import { Group, GroupLabel, SheetNav } from '../shared/components/ui';
+import { WeightTrend } from '../shared/components/WeightTrend';
+import type { RootStackParamList } from '../navigation/types';
+import { useViewedDay } from '../shared/state/ViewedDayContext';
+import { addDays, dayWord } from '../shared/utils/date';
 import {
   clampScore,
   scoreWord,
   MoodScale,
   MoodMetric,
-} from '@/domain/mood/models/moodEntry';
+} from '../domain/mood/models/moodEntry';
 import {
   average,
   entriesBetween,
   seriesOf,
-} from '@/domain/mood/models/moodStats';
+} from '../domain/mood/models/moodStats';
 import { scoreColor, scoreTint, smile } from './utils/scoreColor';
 import MoodFace from './components/MoodFace/MoodFace';
-import { useMood } from '@/domain/mood/MoodContext';
+import { useMood } from '../domain/mood/MoodContext';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'CheckIn'>;
 

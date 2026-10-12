@@ -1,9 +1,9 @@
-import type { TernClient } from '@/shared/backend/supabase';
-import { rows } from '@/shared/backend/query';
-import type { Portion } from '@/domain/food/sources/searchResult';
-import type { CommonFood } from '@/domain/common-foods/models/commonFoods';
-import type { Tier } from '@/domain/food/models/foodEntry';
-import type { CommonFoodsRepository } from '@/domain/common-foods/commonFoods.repository';
+import type { TernClient } from '../../shared/backend/supabase';
+import { rows } from '../../shared/backend/query';
+import type { Portion } from '../food/sources/searchResult';
+import type { CommonFood } from './models/commonFoods';
+import type { Tier } from '../food/models/foodEntry';
+import type { CommonFoodsRepository } from './commonFoods.repository';
 
 type Row = {
   id: string;

@@ -1,17 +1,17 @@
 import React from 'react';
 import { act, renderHook, waitFor } from '@testing-library/react-native';
 
-import { createMemoryBackend, type Backend } from '@/BackendContext';
-import { ToastProvider } from '@/shared/state/ToastContext';
-import { addDays, dayKey } from '@/shared/utils/date';
-import { SettingsProvider, useSettings } from '@/domain/settings/SettingsContext';
-import { WaypointsProvider, useWaypoints } from '@/domain/waypoints/WaypointsContext';
-import { FoodProvider } from '@/domain/food/FoodContext';
-import { ActivityProvider, useActivity } from '@/domain/activity/ActivityContext';
-import { createUnavailableStepsRepository } from '@/domain/activity/steps.repository';
-import { DayState } from '@/shared/models/dayState';
-import { Activity, Effort } from '@/domain/movement/models/movementEntry';
-import { MovementProvider, useMovement } from '@/domain/movement/MovementContext';
+import { createMemoryBackend, type Backend } from '../../BackendContext';
+import { ToastProvider } from '../../shared/state/ToastContext';
+import { addDays, dayKey } from '../../shared/utils/date';
+import { SettingsProvider, useSettings } from '../settings/SettingsContext';
+import { WaypointsProvider, useWaypoints } from '../waypoints/WaypointsContext';
+import { FoodProvider } from '../food/FoodContext';
+import { ActivityProvider, useActivity } from '../activity/ActivityContext';
+import { createUnavailableStepsRepository } from '../activity/steps.repository';
+import { DayState } from '../../shared/models/dayState';
+import { Activity, Effort } from './models/movementEntry';
+import { MovementProvider, useMovement } from './MovementContext';
 
 async function setup() {
   // No steps at all, so only movement can make today a goal day.

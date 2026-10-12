@@ -6,7 +6,7 @@ import {
   clearSearchCache,
   useFoodSearch,
   FoodSearch,
-} from '../../search/hooks/useFoodSearch';
+} from './useFoodSearch';
 import type { SearchResult } from '@/domain/food/sources/searchResult';
 
 jest.mock('../../sources/openFoodFacts', () => {

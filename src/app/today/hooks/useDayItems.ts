@@ -1,19 +1,19 @@
 import { useEffect, useState } from 'react';
 
-import { useFood } from '@/domain/food/FoodContext';
-import { useWeight } from '@/domain/weight/WeightContext';
-import { useSettings } from '@/domain/settings/SettingsContext';
-import { useMedication } from '@/domain/medication/MedicationContext';
-import type { Medication } from '@/domain/medication/models/medication';
-import { useWater } from '@/domain/water/WaterContext';
-import { useMood } from '@/domain/mood/MoodContext';
-import { leftToDo } from '@/today/models/leftToDo';
-import { todaySummary } from '@/today/models/todaySummary';
-import { useActivity } from '@/domain/activity/ActivityContext';
-import { useMovement } from '@/domain/movement/MovementContext';
-import { entriesOn } from '@/domain/movement/models/movementEntry';
-import { useViewedDay } from '@/shared/state/ViewedDayContext';
-import { dayKey, parseDayKey } from '@/shared/utils/date';
+import { useFood } from '../../domain/food/FoodContext';
+import { useWeight } from '../../domain/weight/WeightContext';
+import { useSettings } from '../../domain/settings/SettingsContext';
+import { useMedication } from '../../domain/medication/MedicationContext';
+import type { Medication } from '../../domain/medication/models/medication';
+import { useWater } from '../../domain/water/WaterContext';
+import { useMood } from '../../domain/mood/MoodContext';
+import { leftToDo } from '../models/leftToDo';
+import { todaySummary } from '../models/todaySummary';
+import { useActivity } from '../../domain/activity/ActivityContext';
+import { useMovement } from '../../domain/movement/MovementContext';
+import { entriesOn } from '../../domain/movement/models/movementEntry';
+import { useViewedDay } from '../../shared/state/ViewedDayContext';
+import { dayKey, parseDayKey } from '../../shared/utils/date';
 
 const capitalize = (word: string) => word.charAt(0).toUpperCase() + word.slice(1);
 

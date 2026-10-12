@@ -2,8 +2,8 @@ import React from 'react';
 import { AccessibilityInfo } from 'react-native';
 import { act, render } from '@testing-library/react-native';
 
-import LoadingBird from '@/shared/components/LoadingBird/LoadingBird';
-import LoadingScreen from '@/shared/components/LoadingScreen/LoadingScreen';
+import LoadingBird from '../LoadingBird/LoadingBird';
+import LoadingScreen from './LoadingScreen';
 
 afterEach(() => jest.restoreAllMocks());
 

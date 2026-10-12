@@ -1,8 +1,8 @@
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { AppState } from 'react-native';
 
-import { useDayKey } from '@/shared/hooks/useDayKey';
-import { isTodayOrYesterday } from '@/shared/utils/date';
+import { useDayKey } from '../hooks/useDayKey';
+import { isTodayOrYesterday } from '../utils/date';
 
 export type ViewedDay = {
   /** The day Home and Food are showing (YYYY-MM-DD). */

@@ -1,9 +1,9 @@
-import { TrendRanges, TrendRange } from '@/trends/models/trendRange';
-import { bucketSteps } from '@/trends/models/stepBars';
-import { longestProtectedRun, summarizeSteps } from '@/trends/models/stepsSummary';
-import { weightTrendFor } from '@/trends/models/weightTrend';
-import { DayRecord } from '@/domain/activity/models/dayRecord';
-import { DayState } from '@/shared/models/dayState';
+import { TrendRanges, TrendRange } from './trendRange';
+import { bucketSteps } from './stepBars';
+import { longestProtectedRun, summarizeSteps } from './stepsSummary';
+import { weightTrendFor } from './weightTrend';
+import { DayRecord } from '../../domain/activity/models/dayRecord';
+import { DayState } from '../../shared/models/dayState';
 
 describe('longestProtectedRun', () => {
   it('returns 0 for an empty array', () => {

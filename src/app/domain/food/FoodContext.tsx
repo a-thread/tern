@@ -1,15 +1,15 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { createRequiredContext } from '@/shared/state/createRequiredContext';
-import { useDayKey } from '@/shared/hooks/useDayKey';
-import { useViewedDay } from '@/shared/state/ViewedDayContext';
-import { useLoader } from '@/shared/hooks/useLoader';
-import { usePersist } from '@/shared/hooks/usePersist';
-import { useAward } from '@/domain/waypoints/hooks/useAward';
-import { allMealsLogged } from '@/domain/food/models/meals';
-import { newId } from '@/shared/utils/id';
-import { Meal, type FoodEntry } from '@/domain/food/models/foodEntry';
-import type { FoodRepository, NewFoodEntry } from '@/domain/food/food.repository';
-import { WaypointSource } from '@/domain/waypoints/models/waypoint';
+import { createRequiredContext } from '../../shared/state/createRequiredContext';
+import { useDayKey } from '../../shared/hooks/useDayKey';
+import { useViewedDay } from '../../shared/state/ViewedDayContext';
+import { useLoader } from '../../shared/hooks/useLoader';
+import { usePersist } from '../../shared/hooks/usePersist';
+import { useAward } from '../waypoints/hooks/useAward';
+import { allMealsLogged } from './models/meals';
+import { newId } from '../../shared/utils/id';
+import { Meal, type FoodEntry } from './models/foodEntry';
+import type { FoodRepository, NewFoodEntry } from './food.repository';
+import { WaypointSource } from '../waypoints/models/waypoint';
 
 type FoodContextValue = {
   /**

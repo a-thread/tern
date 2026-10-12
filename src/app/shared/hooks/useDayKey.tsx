@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { AppState } from 'react-native';
 
-import { dayKey, msUntilMidnight } from '@/shared/utils/date';
+import { dayKey, msUntilMidnight } from '../utils/date';
 
 const DayKeyContext = createContext<string | null>(null);
 

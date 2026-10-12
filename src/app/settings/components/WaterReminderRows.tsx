@@ -1,13 +1,13 @@
 import React from 'react';
 
-import { useReminders } from '@/settings/hooks/useReminders';
-import TimeStepperRow from '@/settings/components/TimeStepperRow';
-import { ReminderBlock } from '@/settings/components/ReminderBlock';
+import { useReminders } from '../hooks/useReminders';
+import TimeStepperRow from './TimeStepperRow';
+import { ReminderBlock } from './ReminderBlock';
 import {
   formatMinutes,
   Reminders,
   ReminderKey,
-} from '@/domain/settings/models/reminderPlan';
+} from '../../domain/settings/models/reminderPlan';
 
 const LAST_HOUR = 23 * 60;
 const clampMinutes = (minutes: number) =>

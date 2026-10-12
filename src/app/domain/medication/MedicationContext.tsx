@@ -1,16 +1,16 @@
 import React, { useCallback, useMemo, useState } from 'react';
 
-import type { MedicationRepository } from '@/domain/medication/medication.repository';
-import { createRequiredContext } from '@/shared/state/createRequiredContext';
-import { useDayKey } from '@/shared/hooks/useDayKey';
-import { useLoader } from '@/shared/hooks/useLoader';
-import { usePersist } from '@/shared/hooks/usePersist';
-import { parseDayKey } from '@/shared/utils/date';
-import { useSettings } from '@/domain/settings/SettingsContext';
-import { useAward } from '@/domain/waypoints/hooks/useAward';
-import { WaypointSource } from '@/domain/waypoints/models/waypoint';
-import { dueMeds, takenMeds } from '@/domain/medication/models/schedule';
-import type { Medication } from '@/domain/medication/models/medication';
+import type { MedicationRepository } from './medication.repository';
+import { createRequiredContext } from '../../shared/state/createRequiredContext';
+import { useDayKey } from '../../shared/hooks/useDayKey';
+import { useLoader } from '../../shared/hooks/useLoader';
+import { usePersist } from '../../shared/hooks/usePersist';
+import { parseDayKey } from '../../shared/utils/date';
+import { useSettings } from '../settings/SettingsContext';
+import { useAward } from '../waypoints/hooks/useAward';
+import { WaypointSource } from '../waypoints/models/waypoint';
+import { dueMeds, takenMeds } from './models/schedule';
+import type { Medication } from './models/medication';
 
 type MedicationContextValue = {
   /** False until today's doses have loaded once. */

@@ -32,7 +32,7 @@ import {
   startingMeasure,
   type Measure,
 } from '@/domain/food/models/measure';
-import type { LogFoodStackParamList } from '../../log-food/navigation';
+import type { LogFoodStackParamList } from '../navigation';
 
 type Props = NativeStackScreenProps<LogFoodStackParamList, 'FoodDetail'>;
 

@@ -1,4 +1,4 @@
-import { portionKind, tidyPortionLabel, typicalPortions } from '@/domain/common-foods/models/commonFoodPortions';
+import { portionKind, tidyPortionLabel, typicalPortions } from './commonFoodPortions';
 
 const labels = (ps: { label: string }[]) => ps.map((p) => p.label);
 

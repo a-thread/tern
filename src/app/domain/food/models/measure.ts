@@ -1,5 +1,5 @@
 import { round1 } from '@/shared/utils/number';
-import type { Portion, SearchResult } from '@/domain/food/sources/searchResult';
+import type { Portion, SearchResult } from '../sources/searchResult';
 import {
   formatCount,
   parseGrams,
@@ -8,7 +8,7 @@ import {
   stepServings,
   Servings,
   type Macros,
-} from '@/domain/food/models/servings';
+} from './servings';
 
 /**
  * How a logged amount was measured, kept with the entry so it can be changed

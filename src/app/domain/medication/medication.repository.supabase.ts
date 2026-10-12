@@ -1,6 +1,6 @@
-import type { TernClient } from '@/shared/backend/supabase';
-import { ok, rows } from '@/shared/backend/query';
-import type { MedicationRepository } from '@/domain/medication/medication.repository';
+import type { TernClient } from '../../shared/backend/supabase';
+import { ok, rows } from '../../shared/backend/query';
+import type { MedicationRepository } from './medication.repository';
 
 export function createSupabaseMedicationRepository(
   db: TernClient,

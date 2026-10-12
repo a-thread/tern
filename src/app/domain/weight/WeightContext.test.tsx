@@ -1,12 +1,12 @@
 import React from 'react';
 import { act, renderHook, waitFor } from '@testing-library/react-native';
 
-import { createMemoryBackend, type Backend } from '@/BackendContext';
-import { createMemoryWeightRepository } from '@/domain/weight/weight.repository';
-import { ToastProvider } from '@/shared/state/ToastContext';
-import { SettingsProvider, useSettings } from '@/domain/settings/SettingsContext';
-import { WaypointsProvider, useWaypoints } from '@/domain/waypoints/WaypointsContext';
-import { WeightProvider, useWeight } from '@/domain/weight/WeightContext';
+import { createMemoryBackend, type Backend } from '../../BackendContext';
+import { createMemoryWeightRepository } from './weight.repository';
+import { ToastProvider } from '../../shared/state/ToastContext';
+import { SettingsProvider, useSettings } from '../settings/SettingsContext';
+import { WaypointsProvider, useWaypoints } from '../waypoints/WaypointsContext';
+import { WeightProvider, useWeight } from './WeightContext';
 
 /** A backend where nothing has been weighed today (the local seed has a weigh-in every day). */
 const unweighed = (): Backend => ({ ...createMemoryBackend(), weight: createMemoryWeightRepository([]) });

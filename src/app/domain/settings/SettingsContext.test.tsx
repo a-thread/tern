@@ -3,9 +3,9 @@ import { renderHook, act, waitFor } from '@testing-library/react-native';
 
 import {
   createMemoryBackend,
-} from '@/BackendContext';
-import { SettingsProvider, useSettings } from '@/domain/settings/SettingsContext';
-import { changesAnything } from '@/domain/settings/models/appSettings';
+} from '../../BackendContext';
+import { SettingsProvider, useSettings } from './SettingsContext';
+import { changesAnything } from './models/appSettings';
 
 async function setup() {
   const backend = createMemoryBackend();

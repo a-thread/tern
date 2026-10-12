@@ -1,5 +1,5 @@
-import { addDays, dayKey, parseDayKey } from '@/shared/utils/date';
-import { Activity, isValidMinutes, type MovementEntry } from '@/domain/movement/models/movementEntry';
+import { addDays, dayKey, parseDayKey } from '../../shared/utils/date';
+import { Activity, isValidMinutes, type MovementEntry } from './models/movementEntry';
 
 /** Workouts read from somewhere outside Tern (Health Connect). Read-only: never stored. */
 export interface WorkoutsSource {

@@ -3,22 +3,22 @@ import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 
-import { colors, font, radius, space, typography } from '@/shared/theme';
-import { Group, GroupLabel, SheetNav } from '@/shared/components/ui';
+import { colors, font, radius, space, typography } from '../../shared/theme';
+import { Group, GroupLabel, SheetNav } from '../../shared/components/ui';
 import { TextField } from '../components/TextField/TextField';
-import type { RootStackParamList } from '@/navigation/types';
-import { useToast } from '@/shared/state/ToastContext';
-import { Meals } from '@/domain/food/models/meals';
-import { useFood } from '@/domain/food/FoodContext';
-import { useSavedMeals } from '@/domain/saved-meals/SavedMealsContext';
+import type { RootStackParamList } from '../../navigation/types';
+import { useToast } from '../../shared/state/ToastContext';
+import { Meals } from '../../domain/food/models/meals';
+import { useFood } from '../../domain/food/FoodContext';
+import { useSavedMeals } from '../../domain/saved-meals/SavedMealsContext';
 import {
   findMealByName,
   validateMealName,
   SavedMealLimits,
-} from '@/domain/saved-meals/models/savedMeals';
-import { useFoodDisplay } from '@/domain/food/hooks/useFoodDisplay';
+} from '../../domain/saved-meals/models/savedMeals';
+import { useFoodDisplay } from '../../domain/food/hooks/useFoodDisplay';
 import ItemRow from '../components/ItemRow/ItemRow';
-import { confirm } from '@/shared/utils/confirm';
+import { confirm } from '../../shared/utils/confirm';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'SaveMeal'>;
 

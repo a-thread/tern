@@ -3,7 +3,7 @@ import { View, Text, ScrollView, StyleSheet, Pressable } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 
-import { colors, font, radius, space, typography } from '@/shared/theme';
+import { colors, font, radius, space, typography } from '../../shared/theme';
 import {
   Group,
   GroupLabel,
@@ -14,15 +14,15 @@ import {
   SegmentedControl,
   Stepper,
   BottomSheet,
-} from '@/shared/components/ui';
-import { useSettings } from '@/domain/settings/SettingsContext';
-import { AdaptiveTargetCard } from '@/settings/targets/components/AdaptiveTargetCard';
-import { useSliderValue } from '@/settings/hooks/useSliderValue';
+} from '../../shared/components/ui';
+import { useSettings } from '../../domain/settings/SettingsContext';
+import { AdaptiveTargetCard } from './components/AdaptiveTargetCard';
+import { useSliderValue } from '../hooks/useSliderValue';
 import {
   nudgeZone,
   resolveZone,
   type CalorieZone,
-} from '@/domain/food/models/intakeZone';
+} from '../../domain/food/models/intakeZone';
 import {
   gramRange,
   isValidSplit,
@@ -34,7 +34,7 @@ import {
   MacroSplits,
   type MacroKey,
   type MacroSplit,
-} from '@/domain/food/models/macroSplit';
+} from '../../domain/food/models/macroSplit';
 
 const MIN = 1200;
 const MAX = 3500;

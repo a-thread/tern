@@ -1,4 +1,4 @@
-import type { MovementEntry } from '@/domain/movement/models/movementEntry';
+import type { MovementEntry } from './models/movementEntry';
 
 /** Movement logged by hand, by local day. Health Connect workouts are read separately and never stored. */
 export interface MovementRepository {

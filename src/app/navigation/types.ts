@@ -1,5 +1,5 @@
 import type { NavigatorScreenParams } from '@react-navigation/native';
-import type { FoodEntry } from '@/domain/food/models/foodEntry';
+import type { FoodEntry } from '../domain/food/models/foodEntry';
 
 export type SettingsStackParamList = {
   SettingsRoot: undefined;

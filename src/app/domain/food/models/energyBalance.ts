@@ -1,6 +1,6 @@
 import { addDays, dayKey } from '@/shared/utils/date';
-import { allMealsLogged } from '@/domain/food/models/meals';
-import type { FoodEntry } from '@/domain/food/models/foodEntry';
+import { allMealsLogged } from './meals';
+import type { FoodEntry } from './foodEntry';
 
 /** Which way someone wants their weight to go, for the adaptive target. */
 export enum Aim {

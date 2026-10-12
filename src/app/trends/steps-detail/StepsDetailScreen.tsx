@@ -3,7 +3,7 @@ import { View, Text, ScrollView, StyleSheet } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 
-import { colors, font, radius, space, typography } from '@/shared/theme';
+import { colors, font, radius, space, typography } from '../../shared/theme';
 import { TrendRanges, TrendRange } from '../models/trendRange';
 import {
   Card,
@@ -12,18 +12,18 @@ import {
   FootNote,
   PushHeader,
   SegmentedControl,
-} from '@/shared/components/ui';
+} from '../../shared/components/ui';
 import { LegendDot } from '../components/LegendDot';
 import { StepBars } from '../components/StepBars';
 import { ConsistencyGrid } from '../components/ConsistencyGrid';
-import { useActivity } from '@/domain/activity/ActivityContext';
-import { weekdayName } from '@/shared/utils/date';
-import { useSettings } from '@/domain/settings/SettingsContext';
+import { useActivity } from '../../domain/activity/ActivityContext';
+import { weekdayName } from '../../shared/utils/date';
+import { useSettings } from '../../domain/settings/SettingsContext';
 import { bucketSteps } from '../models/stepBars';
 import { longestProtectedRun, summarizeSteps } from '../models/stepsSummary';
 import type { TrendsStackParamList } from '../navigation';
-import { StepsStatus } from '@/domain/activity/steps.repository';
-import { DayState } from '@/shared/models/dayState';
+import { StepsStatus } from '../../domain/activity/steps.repository';
+import { DayState } from '../../shared/models/dayState';
 
 type Props = NativeStackScreenProps<TrendsStackParamList, 'StepsDetail'>;
 

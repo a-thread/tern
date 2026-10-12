@@ -1,7 +1,7 @@
-import type { TernClient } from '@/shared/backend/supabase';
-import { ok, rows } from '@/shared/backend/query';
-import type { WaypointSource } from '@/domain/waypoints/models/waypoint';
-import type { WaypointsRepository } from '@/domain/waypoints/waypoints.repository';
+import type { TernClient } from '../../shared/backend/supabase';
+import { ok, rows } from '../../shared/backend/query';
+import type { WaypointSource } from './models/waypoint';
+import type { WaypointsRepository } from './waypoints.repository';
 
 export function createSupabaseWaypointsRepository(
   db: TernClient,

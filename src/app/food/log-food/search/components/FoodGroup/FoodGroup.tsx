@@ -3,7 +3,7 @@ import React from 'react';
 import { Group, GroupLabel } from '@/shared/components/ui';
 import type { SearchResult } from '@/domain/food/sources/searchResult';
 import type { FoodSource } from '@/domain/food/models/foodRanking';
-import { FoodResultRow } from '../../../search/components/FoodGroup/components/FoodResultRow/FoodResultRow';
+import { FoodResultRow } from './components/FoodResultRow/FoodResultRow';
 
 /** A labelled list of foods to pick from. Foods that carry a source (`from`) show it as a tag. */
 export function FoodGroup({

@@ -1,22 +1,22 @@
 import React, { useState } from 'react';
 import { Pressable, StyleSheet, Text } from 'react-native';
 
-import { colors, font, radius } from '@/shared/theme';
+import { colors, font, radius } from '../../shared/theme';
 import {
   Group,
   GroupLabel,
   IconBadge,
   Row,
   Icon,
-} from '@/shared/components/ui';
-import { useUnits } from '@/domain/settings/hooks/useUnits';
-import { formatMinutes } from '@/domain/settings/models/reminderPlan';
-import { useMedication } from '@/domain/medication/MedicationContext';
-import { useWater } from '@/domain/water/WaterContext';
-import WaterSheet from '@/today/components/WaterSheet';
-import { formatLoggedAt } from '@/domain/weight/models/weightEntry';
-import { useDayItems } from '@/today/hooks/useDayItems';
-import { useRootNavigation } from '@/navigation/useAppNavigation';
+} from '../../shared/components/ui';
+import { useUnits } from '../../domain/settings/hooks/useUnits';
+import { formatMinutes } from '../../domain/settings/models/reminderPlan';
+import { useMedication } from '../../domain/medication/MedicationContext';
+import { useWater } from '../../domain/water/WaterContext';
+import WaterSheet from './WaterSheet';
+import { formatLoggedAt } from '../../domain/weight/models/weightEntry';
+import { useDayItems } from '../hooks/useDayItems';
+import { useRootNavigation } from '../../navigation/useAppNavigation';
 
 /**
  * What is still open on the viewed day: meals, a weigh-in, water, a check-in and (today only)

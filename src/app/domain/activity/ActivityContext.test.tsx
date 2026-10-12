@@ -4,15 +4,15 @@ import { renderHook, act, waitFor } from '@testing-library/react-native';
 import {
   createMemoryBackend,
   type Backend,
-} from '@/BackendContext';
-import { dayKey } from '@/shared/utils/date';
-import { SettingsProvider, useSettings } from '@/domain/settings/SettingsContext';
-import { FoodProvider } from '@/domain/food/FoodContext';
-import { WaypointsProvider, useWaypoints } from '@/domain/waypoints/WaypointsContext';
-import { ActivityProvider, useActivity } from '@/domain/activity/ActivityContext';
-import { MovementProvider } from '@/domain/movement/MovementContext';
-import { type StepsRepository, StepsStatus } from '@/domain/activity/steps.repository';
-import { WaypointSource } from '@/domain/waypoints/models/waypoint';
+} from '../../BackendContext';
+import { dayKey } from '../../shared/utils/date';
+import { SettingsProvider, useSettings } from '../settings/SettingsContext';
+import { FoodProvider } from '../food/FoodContext';
+import { WaypointsProvider, useWaypoints } from '../waypoints/WaypointsContext';
+import { ActivityProvider, useActivity } from './ActivityContext';
+import { MovementProvider } from '../movement/MovementContext';
+import { type StepsRepository, StepsStatus } from './steps.repository';
+import { WaypointSource } from '../waypoints/models/waypoint';
 
 const todayKey = dayKey();
 

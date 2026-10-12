@@ -1,16 +1,16 @@
 import React from 'react';
 import { Animated, Pressable, StyleSheet, Text, View } from 'react-native';
 
-import { colors, font, space, typography } from '@/shared/theme';
-import { Chip, Icon } from '@/shared/components/ui';
-import TernMark from '@/shared/components/TernMark';
-import { AnimatedNumber } from '@/shared/components/AnimatedNumber/AnimatedNumber';
-import { useDayKey } from '@/shared/hooks/useDayKey';
-import { usePulseOnIncrease } from '@/shared/hooks/useAnimatedNumber';
-import { formatLongDate } from '@/shared/utils/date';
-import { useWaypoints } from '@/domain/waypoints/WaypointsContext';
-import { useActivity } from '@/domain/activity/ActivityContext';
-import { useRootNavigation } from '@/navigation/useAppNavigation';
+import { colors, font, space, typography } from '../../shared/theme';
+import { Chip, Icon } from '../../shared/components/ui';
+import TernMark from '../../shared/components/TernMark';
+import { AnimatedNumber } from '../../shared/components/AnimatedNumber/AnimatedNumber';
+import { useDayKey } from '../../shared/hooks/useDayKey';
+import { usePulseOnIncrease } from '../../shared/hooks/useAnimatedNumber';
+import { formatLongDate } from '../../shared/utils/date';
+import { useWaypoints } from '../../domain/waypoints/WaypointsContext';
+import { useActivity } from '../../domain/activity/ActivityContext';
+import { useRootNavigation } from '../../navigation/useAppNavigation';
 
 /**
  * The date and title, the waypoint chip and the settings gear. The chip holds back awards that

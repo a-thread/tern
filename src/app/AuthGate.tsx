@@ -1,15 +1,15 @@
 import React, { useMemo, useState } from 'react';
-import LoadingScreen from '@/shared/components/LoadingScreen/LoadingScreen';
+import LoadingScreen from './shared/components/LoadingScreen/LoadingScreen';
 
-import { isBackendConfigured } from '@/shared/backend/supabase';
+import { isBackendConfigured } from './shared/backend/supabase';
 import {
   BackendProvider,
   createMemoryBackend,
   createRemoteBackend,
-} from '@/BackendContext';
-import { AuthProvider, useAuth } from '@/domain/auth/AuthContext';
-import AuthFlow from '@/auth/AuthFlow';
-import ResetPasswordScreen from '@/auth/reset-password/ResetPasswordScreen';
+} from './BackendContext';
+import { AuthProvider, useAuth } from './domain/auth/AuthContext';
+import AuthFlow from './auth/AuthFlow';
+import ResetPasswordScreen from './auth/reset-password/ResetPasswordScreen';
 
 /**
  * Decides where the app's data comes from. With Supabase keys configured,

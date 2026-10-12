@@ -10,35 +10,35 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 
-import { colors, font, radius, space, typography } from '@/shared/theme';
-import { Frequency } from '@/shared/models/frequency';
+import { colors, font, radius, space, typography } from '../../shared/theme';
+import { Frequency } from '../../shared/models/frequency';
 import {
   Group,
   GroupLabel,
   FootNote,
   PushHeader,
   ToggleRow,
-} from '@/shared/components/ui';
-import { useToast } from '@/shared/state/ToastContext';
-import { newId } from '@/shared/utils/id';
-import { useMedication } from '@/domain/medication/MedicationContext';
+} from '../../shared/components/ui';
+import { useToast } from '../../shared/state/ToastContext';
+import { newId } from '../../shared/utils/id';
+import { useMedication } from '../../domain/medication/MedicationContext';
 import {
   cleanMedName,
   newMedication,
   validateMedName,
   type Medication,
   MedicationLimits,
-} from '@/domain/medication/models/medication';
-import { useSettings } from '@/domain/settings/SettingsContext';
-import TimeStepperRow from '@/settings/components/TimeStepperRow';
+} from '../../domain/medication/models/medication';
+import { useSettings } from '../../domain/settings/SettingsContext';
+import TimeStepperRow from '../components/TimeStepperRow';
 import {
   formatMinutes,
   stepMinutes,
   stepWeekday,
   weekdayPlural,
   Reminders,
-} from '@/domain/settings/models/reminderPlan';
-import { confirm } from '@/shared/utils/confirm';
+} from '../../domain/settings/models/reminderPlan';
+import { confirm } from '../../shared/utils/confirm';
 
 export default function MedicationScreen() {
   const navigation = useNavigation();

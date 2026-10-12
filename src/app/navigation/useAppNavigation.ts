@@ -1,7 +1,7 @@
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
-import type { RootStackParamList, SettingsStackParamList } from '@/navigation/types';
+import type { RootStackParamList, SettingsStackParamList } from './types';
 
 /** Navigation typed for the root stack: the logging flows, Settings and the Today detail screens. */
 export const useRootNavigation = () =>

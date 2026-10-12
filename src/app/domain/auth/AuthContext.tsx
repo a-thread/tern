@@ -8,8 +8,8 @@ import React, {
 } from 'react';
 import * as Linking from 'expo-linking';
 import type { Session } from '@supabase/supabase-js';
-import { supabase } from '@/shared/backend/supabase';
-import { parseAuthLink } from '@/domain/auth/authUrl';
+import { supabase } from '../../shared/backend/supabase';
+import { parseAuthLink } from './authUrl';
 
 type AuthContextValue = {
   /** True while the stored session is being restored on launch. */

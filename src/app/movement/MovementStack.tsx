@@ -1,10 +1,10 @@
 import React from 'react';
 import { createNativeStackNavigator, type NativeStackScreenProps } from '@react-navigation/native-stack';
 
-import type { RootStackParamList } from '@/navigation/types';
-import type { MovementStackParamList } from '@/movement/navigation';
-import ExercisesScreen from '@/movement/exercises/ExercisesScreen';
-import ExerciseDetailScreen from '@/movement/exercise-detail/ExerciseDetailScreen';
+import type { RootStackParamList } from '../navigation/types';
+import type { MovementStackParamList } from './navigation';
+import ExercisesScreen from './exercises/ExercisesScreen';
+import ExerciseDetailScreen from './exercise-detail/ExerciseDetailScreen';
 
 const Stack = createNativeStackNavigator<MovementStackParamList>();
 

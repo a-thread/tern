@@ -1,5 +1,5 @@
-import { cleanMedName, mergeMedications, newMedication, validateMedName, type Medication, MedicationLimits } from '@/domain/medication/models/medication';
-import { dueMeds, isScheduledOn, takenMeds } from '@/domain/medication/models/schedule';
+import { cleanMedName, mergeMedications, newMedication, validateMedName, type Medication, MedicationLimits } from './medication';
+import { dueMeds, isScheduledOn, takenMeds } from './schedule';
 import { Frequency } from '@/shared/models/frequency';
 
 const med = (

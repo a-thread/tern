@@ -1,4 +1,4 @@
-import { parseAuthLink } from '@/domain/auth/authUrl';
+import { parseAuthLink } from './authUrl';
 
 describe('parseAuthLink', () => {
   it('reads tokens and type from the fragment', () => {

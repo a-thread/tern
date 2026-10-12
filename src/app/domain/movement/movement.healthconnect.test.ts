@@ -1,5 +1,5 @@
-import { Activity } from '@/domain/movement/models/movementEntry';
-import { activityForExercise, sessionToEntry } from '@/domain/movement/movement.healthconnect';
+import { Activity } from './models/movementEntry';
+import { activityForExercise, sessionToEntry } from './movement.healthconnect';
 
 describe('Health Connect workouts', () => {
   it('reads exercise types as Tern activities', () => {

@@ -1,7 +1,7 @@
 import React from 'react';
 import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native';
 
-import { colors, font, radius, space } from '@/shared/theme';
+import { colors, font, radius, space } from '../../shared/theme';
 
 /** Coral primary action; disabled until the form is valid, and shows `busyLabel` while working. */
 export function SubmitButton({

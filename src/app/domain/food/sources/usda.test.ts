@@ -1,4 +1,4 @@
-import { measureToPortion, searchUsdaWithKey, usdaFoodToResult, type UsdaFood } from '@/domain/food/sources/usda';
+import { measureToPortion, searchUsdaWithKey, usdaFoodToResult, type UsdaFood } from './usda';
 
 // Portion values are real USDA "food details" data (apples, white rice, pita).
 // The search-result shape is written from USDA's documentation; confirm it

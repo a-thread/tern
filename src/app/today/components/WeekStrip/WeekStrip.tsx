@@ -2,13 +2,13 @@ import React from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { colors, font, space } from '@/shared/theme';
-import { DayRing } from '@/today/components/WeekStrip/components/DayRing';
+import { DayRing } from './components/DayRing';
 import { useViewedDay } from '@/shared/state/ViewedDayContext';
-import { easeLayout } from '@/today/utils/easeLayout';
+import { easeLayout } from '../../utils/easeLayout';
 import { weekdayLetter } from '@/shared/utils/date';
 import { useSettings } from '@/domain/settings/SettingsContext';
 import { useActivity } from '@/domain/activity/ActivityContext';
-import { factForDay } from '@/today/components/WeekStrip/utils/ternFacts';
+import { factForDay } from './utils/ternFacts';
 import { DayState } from '@/shared/models/dayState';
 import { StepsStatus } from '@/domain/activity/steps.repository';
 

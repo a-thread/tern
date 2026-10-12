@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 
-import { useAuth } from '@/domain/auth/AuthContext';
+import { useAuth } from '../../domain/auth/AuthContext';
 import { AuthBanner } from '../components/AuthBanner';
 import { AuthLayout } from '../components/AuthLayout';
 import { FormField } from '../components/FormField';
@@ -8,7 +8,7 @@ import { LinkButton } from '../components/LinkButton';
 import { LinkColumn } from '../components/LinkColumn';
 import { SubmitButton } from '../components/SubmitButton';
 import { useSubmit } from '../hooks/useSubmit';
-import { isValidEmail, isValidPassword } from '@/domain/auth/validation';
+import { isValidEmail, isValidPassword } from '../../domain/auth/validation';
 
 export default function LoginScreen({
   infoMessage,

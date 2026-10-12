@@ -1,7 +1,7 @@
-import { type FoodEntry, Meal } from '@/domain/food/models/foodEntry';
-import { addItem, draftFromMeal, emptyDraft, isDraftDirty, removeItemAt, scaledTotals, stepItemServings, stepScale, validateDraft, MealScale } from '@/domain/food/models/mealDraft';
-import { itemsToEntries, scaleServings, snapshotItems, type SavedMeal, SavedMealLimits } from '@/domain/saved-meals/models/savedMeals';
-import { amountOf } from '@/domain/food/models/measure';
+import { type FoodEntry, Meal } from './foodEntry';
+import { addItem, draftFromMeal, emptyDraft, isDraftDirty, removeItemAt, scaledTotals, stepItemServings, stepScale, validateDraft, MealScale } from './mealDraft';
+import { itemsToEntries, scaleServings, snapshotItems, type SavedMeal, SavedMealLimits } from '../../saved-meals/models/savedMeals';
+import { amountOf } from './measure';
 
 const item = (name: string, servings = 1, calories = 100) => {
   const entry: FoodEntry = {

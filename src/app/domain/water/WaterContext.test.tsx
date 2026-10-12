@@ -4,14 +4,14 @@ import { renderHook, act, waitFor } from '@testing-library/react-native';
 import {
   createMemoryBackend,
   type Backend,
-} from '@/BackendContext';
-import { ToastProvider } from '@/shared/state/ToastContext';
-import { dayKey } from '@/shared/utils/date';
-import { FoodProvider } from '@/domain/food/FoodContext';
-import { SettingsProvider, useSettings } from '@/domain/settings/SettingsContext';
-import { WaypointsProvider, useWaypoints } from '@/domain/waypoints/WaypointsContext';
-import { WaterProvider, useWater } from '@/domain/water/WaterContext';
-import { WaypointSource } from '@/domain/waypoints/models/waypoint';
+} from '../../BackendContext';
+import { ToastProvider } from '../../shared/state/ToastContext';
+import { dayKey } from '../../shared/utils/date';
+import { FoodProvider } from '../food/FoodContext';
+import { SettingsProvider, useSettings } from '../settings/SettingsContext';
+import { WaypointsProvider, useWaypoints } from '../waypoints/WaypointsContext';
+import { WaterProvider, useWater } from './WaterContext';
+import { WaypointSource } from '../waypoints/models/waypoint';
 
 const today = dayKey();
 

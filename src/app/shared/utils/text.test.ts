@@ -1,4 +1,4 @@
-import { cleanSpaces, sameName } from '@/shared/utils/text';
+import { cleanSpaces, sameName } from './text';
 
 describe('names', () => {
   it('cleans spacing and compares ignoring case', () => {

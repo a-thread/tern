@@ -7,9 +7,9 @@ import {
   useWindowDimensions,
 } from 'react-native';
 
-import { colors } from '@/shared/theme';
-import { useReduceMotion } from '@/shared/hooks/useReduceMotion';
-import LoadingBird from '@/shared/components/LoadingBird/LoadingBird';
+import { colors } from '../../theme';
+import { useReduceMotion } from '../../hooks/useReduceMotion';
+import LoadingBird from '../LoadingBird/LoadingBird';
 
 /**
  * A progress value that runs 0 → 1 over `ms` and starts again, beginning

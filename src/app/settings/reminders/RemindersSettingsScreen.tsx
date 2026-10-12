@@ -1,15 +1,15 @@
 import React from 'react';
 
-import { Group, GroupLabel, Row } from '@/shared/components/ui';
-import type { SettingsStackParamList } from '@/navigation/types';
-import { useSettings } from '@/domain/settings/SettingsContext';
-import { SettingsPage } from '@/settings/components/SettingsPage';
-import { StreakReminderRows } from '@/settings/components/StreakReminderRows';
-import { MealReminderRows } from '@/settings/components/MealReminderRows';
-import { WeightReminderRows } from '@/settings/components/WeightReminderRows';
-import { WaterReminderRows } from '@/settings/components/WaterReminderRows';
-import { MoodReminderRows } from '@/settings/components/MoodReminderRows';
-import { useSettingsNavigation } from '@/navigation/useAppNavigation';
+import { Group, GroupLabel, Row } from '../../shared/components/ui';
+import type { SettingsStackParamList } from '../../navigation/types';
+import { useSettings } from '../../domain/settings/SettingsContext';
+import { SettingsPage } from '../components/SettingsPage';
+import { StreakReminderRows } from '../components/StreakReminderRows';
+import { MealReminderRows } from '../components/MealReminderRows';
+import { WeightReminderRows } from '../components/WeightReminderRows';
+import { WaterReminderRows } from '../components/WaterReminderRows';
+import { MoodReminderRows } from '../components/MoodReminderRows';
+import { useSettingsNavigation } from '../../navigation/useAppNavigation';
 
 type Section = keyof Pick<
   SettingsStackParamList,

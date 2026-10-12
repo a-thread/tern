@@ -1,6 +1,6 @@
-import { WaypointSource, type LedgerEvent } from '@/domain/waypoints/models/waypoint';
-import { Milestones } from '@/domain/waypoints/models/milestone';
-import { earnedOn, legFor, legProgress, routeFraction, stillOpen } from '@/journey/models/waypointSummary';
+import { WaypointSource, type LedgerEvent } from '../../domain/waypoints/models/waypoint';
+import { Milestones } from '../../domain/waypoints/models/milestone';
+import { earnedOn, legFor, legProgress, routeFraction, stillOpen } from './waypointSummary';
 
 const DAY = '2026-10-09';
 const ev = (source: WaypointSource, points: number, day = DAY): LedgerEvent => ({ source, points, day });

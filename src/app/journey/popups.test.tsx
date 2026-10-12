@@ -2,12 +2,12 @@ import React from 'react';
 import { render, waitFor } from '@testing-library/react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
-import { createMemoryBackend } from '@/BackendContext';
-import { ToastProvider } from '@/shared/state/ToastContext';
-import { SettingsProvider } from '@/domain/settings/SettingsContext';
-import { WaypointsProvider } from '@/domain/waypoints/WaypointsContext';
-import WaypointsScreen from '@/journey/waypoints/WaypointsScreen';
-import MilestoneScreen from '@/journey/milestone/MilestoneScreen';
+import { createMemoryBackend } from '../BackendContext';
+import { ToastProvider } from '../shared/state/ToastContext';
+import { SettingsProvider } from '../domain/settings/SettingsContext';
+import { WaypointsProvider } from '../domain/waypoints/WaypointsContext';
+import WaypointsScreen from './waypoints/WaypointsScreen';
+import MilestoneScreen from './milestone/MilestoneScreen';
 
 jest.mock('@react-navigation/native', () => ({
   ...jest.requireActual('@react-navigation/native'),

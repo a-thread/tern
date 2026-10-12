@@ -1,8 +1,8 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Animated, Easing } from 'react-native';
 import Svg, { Path, Circle, G } from 'react-native-svg';
-import { colors } from '@/shared/theme';
-import { TERN_PATH } from '@/shared/components/TernMark';
+import { colors } from '../theme';
+import { TERN_PATH } from './TernMark';
 
 export const AnimatedPath = Animated.createAnimatedComponent(Path);
 

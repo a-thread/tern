@@ -1,4 +1,4 @@
-import { dayTotals, type FoodEntry } from '@/domain/food/models/foodEntry';
+import { dayTotals, type FoodEntry } from '../../domain/food/models/foodEntry';
 
 export type IntakeAverage = {
   /** How many days with anything logged the averages are over. */

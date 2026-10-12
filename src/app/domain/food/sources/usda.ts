@@ -1,7 +1,7 @@
 import { round1, toFiniteNumber } from '@/shared/utils/number';
-import { getJson } from '@/domain/food/sources/http';
-import { nounFor } from '@/domain/food/models/measure';
-import type { Portion, SearchResult } from '@/domain/food/sources/searchResult';
+import { getJson } from './http';
+import { nounFor } from '../models/measure';
+import type { Portion, SearchResult } from './searchResult';
 
 /**
  * USDA FoodData Central (public domain): everyday foods with household

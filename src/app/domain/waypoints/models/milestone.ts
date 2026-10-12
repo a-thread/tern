@@ -1,4 +1,4 @@
-import type { LedgerEvent } from '@/domain/waypoints/models/waypoint';
+import type { LedgerEvent } from './waypoint';
 
 export type Milestone = {
   id: string;

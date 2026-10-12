@@ -1,5 +1,5 @@
-import { computeTrend } from '@/domain/weight/models/weightTrend';
-import { formatLoggedAt, signedChange, isLoggedToday, type WeightEntry } from '@/domain/weight/models/weightEntry';
+import { computeTrend } from './weightTrend';
+import { formatLoggedAt, signedChange, isLoggedToday, type WeightEntry } from './weightEntry';
 
 const entry = (lb: number, loggedAt = '2026-09-01T07:00:00'): WeightEntry => ({
   id: String(lb),

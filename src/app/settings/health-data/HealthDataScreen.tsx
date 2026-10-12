@@ -3,14 +3,14 @@ import { View, Text, ScrollView, StyleSheet, Pressable } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 
-import { colors, font, radius, space, typography } from '@/shared/theme';
-import { useToast } from '@/shared/state/ToastContext';
-import { Group, GroupLabel, IconBadge, Chip, FootNote, PushHeader, ToggleRow, Icon } from '@/shared/components/ui';
-import { formatLoggedAt } from '@/domain/weight/models/weightEntry';
-import { useActivity, useLastSynced } from '@/domain/activity/ActivityContext';
-import { useSettings } from '@/domain/settings/SettingsContext';
-import { StepsStatus } from '@/domain/activity/steps.repository';
-import { useMovement } from '@/domain/movement/MovementContext';
+import { colors, font, radius, space, typography } from '../../shared/theme';
+import { useToast } from '../../shared/state/ToastContext';
+import { Group, GroupLabel, IconBadge, Chip, FootNote, PushHeader, ToggleRow, Icon } from '../../shared/components/ui';
+import { formatLoggedAt } from '../../domain/weight/models/weightEntry';
+import { useActivity, useLastSynced } from '../../domain/activity/ActivityContext';
+import { useSettings } from '../../domain/settings/SettingsContext';
+import { StepsStatus } from '../../domain/activity/steps.repository';
+import { useMovement } from '../../domain/movement/MovementContext';
 
 export default function HealthDataScreen() {
   const navigation = useNavigation();

@@ -3,7 +3,7 @@ import Svg, { Ellipse, G, Path } from 'react-native-svg';
 import { render } from '@testing-library/react-native';
 
 import { RestScenes } from '@/today/models/restScene';
-import { Driftwood, DriftwoodDefs } from '@/today/components/RestScene/components/Driftwood/Driftwood';
+import { Driftwood, DriftwoodDefs } from './Driftwood';
 
 const draw = (lap = 0) =>
   render(

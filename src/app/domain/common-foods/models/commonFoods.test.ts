@@ -1,5 +1,5 @@
-import { commonFoodsSeed } from '@/domain/common-foods/commonFoods.seed';
-import { buildCommonIndex, searchCommonFoods } from '@/domain/common-foods/models/commonFoods';
+import { commonFoodsSeed } from '../commonFoods.seed';
+import { buildCommonIndex, searchCommonFoods } from './commonFoods';
 
 const index = buildCommonIndex(commonFoodsSeed);
 const names = (q: string) => searchCommonFoods(index, q).map((r) => r.name);

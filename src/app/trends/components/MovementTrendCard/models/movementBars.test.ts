@@ -1,6 +1,6 @@
 import { TrendRange } from '@/trends/models/trendRange';
 import { DayState } from '@/shared/models/dayState';
-import { averageMinutes, bucketMinutes } from '@/trends/components/MovementTrendCard/models/movementBars';
+import { averageMinutes, bucketMinutes } from './movementBars';
 
 const TODAY = '2026-10-08';
 

@@ -1,10 +1,10 @@
 import React from 'react';
 
-import { Group, GroupLabel } from '@/shared/components/ui';
-import { useSettings } from '@/domain/settings/SettingsContext';
-import { SettingsPage } from '@/settings/components/SettingsPage';
-import { MoodSettingsRows } from '@/settings/mood/components/MoodSettingsRows';
-import { MoodReminderRows } from '@/settings/components/MoodReminderRows';
+import { Group, GroupLabel } from '../../shared/components/ui';
+import { useSettings } from '../../domain/settings/SettingsContext';
+import { SettingsPage } from '../components/SettingsPage';
+import { MoodSettingsRows } from './components/MoodSettingsRows';
+import { MoodReminderRows } from '../components/MoodReminderRows';
 
 /** Settings › Mood and stress: the daily check-in, and its reminder. */
 export default function MoodSettingsScreen() {

@@ -2,17 +2,17 @@ import { useCallback, useEffect, useState } from 'react';
 
 import { useDayKey } from '@/shared/hooks/useDayKey';
 import { addDays, weekStartKey } from '@/shared/utils/date';
-import { useSettings } from '@/domain/settings/SettingsContext';
-import { useWeight } from '@/domain/weight/WeightContext';
-import { useFood } from '@/domain/food/FoodContext';
-import { rescaleMacros } from '@/domain/food/models/macroSplit';
+import { useSettings } from '../../settings/SettingsContext';
+import { useWeight } from '../../weight/WeightContext';
+import { useFood } from '../FoodContext';
+import { rescaleMacros } from '../models/macroSplit';
 import {
   AdaptiveTarget,
   estimateBurn,
   suggestTarget,
   worthSuggesting,
   type BurnEstimate,
-} from '@/domain/food/models/energyBalance';
+} from '../models/energyBalance';
 
 /** The calorie targets the Targets screen allows. */
 const TARGET_MIN = 1200;

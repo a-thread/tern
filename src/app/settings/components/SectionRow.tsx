@@ -1,7 +1,7 @@
 import React from 'react';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 
-import { IconBadge, Row } from '@/shared/components/ui';
+import { IconBadge, Row } from '../../shared/components/ui';
 
 type IconName = React.ComponentProps<typeof MaterialCommunityIcons>['name'];
 

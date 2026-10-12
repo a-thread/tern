@@ -4,11 +4,11 @@ import { StyleSheet, View } from 'react-native';
 import { colors, space } from '@/shared/theme';
 import { useDayKey } from '@/shared/hooks/useDayKey';
 import { addDays } from '@/shared/utils/date';
-import { TrendRange } from '@/trends/models/trendRange';
-import { TrendCard, TrendFigure } from '@/trends/components/TrendCard';
-import { MacroBox } from '@/trends/components/CaloriesTrendCard/components/MacroBox/MacroBox';
-import { useFocusLoad } from '@/trends/hooks/useFocusLoad';
-import { averageIntake, type IntakeAverage } from '@/trends/models/intake';
+import { TrendRange } from '../../models/trendRange';
+import { TrendCard, TrendFigure } from '../TrendCard';
+import { MacroBox } from './components/MacroBox/MacroBox';
+import { useFocusLoad } from '../../hooks/useFocusLoad';
+import { averageIntake, type IntakeAverage } from '../../models/intake';
 import { useFood } from '@/domain/food/FoodContext';
 import { useSettings } from '@/domain/settings/SettingsContext';
 

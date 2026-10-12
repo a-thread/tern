@@ -1,7 +1,7 @@
-import type { Portion, SearchResult } from '@/domain/food/sources/searchResult';
-import type { Tier } from '@/domain/food/models/foodEntry';
-import { allWordsPrefix, wordsOf } from '@/domain/food/models/foodQuery';
-import { scoreResult } from '@/domain/food/models/foodRanking';
+import type { Portion, SearchResult } from '../../food/sources/searchResult';
+import type { Tier } from '../../food/models/foodEntry';
+import { allWordsPrefix, wordsOf } from '../../food/models/foodQuery';
+import { scoreResult } from '../../food/models/foodRanking';
 
 /**
  * One food from the common-foods list: everyday foods with clean names,

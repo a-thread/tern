@@ -2,15 +2,15 @@ import React, { useLayoutEffect, useRef } from 'react';
 import { LayoutAnimation } from 'react-native';
 
 import type { SearchResult } from '@/domain/food/sources/searchResult';
-import type { RecentMeal } from '../../../models/recentMeals';
+import type { RecentMeal } from '@/food/log-food/models/recentMeals';
 import type { SavedMeal } from '@/domain/saved-meals/models/savedMeals';
-import type { FoodLookup } from '../../../search/hooks/useFoodLookup';
-import { FoodGroup } from '../../../search/components/FoodGroup/FoodGroup';
-import { ListNote } from '../../../components/ListNote/ListNote';
-import { MealGroup } from '../../../search/components/MealGroup/MealGroup';
-import { RecentMealRow } from '../../../search/components/RecentMealRow/RecentMealRow';
-import { SavedMealRow } from '../../../search/components/SavedMealRow/SavedMealRow';
-import { SearchStatus } from '../../../search/components/LogFoodAllTab/components/SearchStatus/SearchStatus';
+import type { FoodLookup } from '../../hooks/useFoodLookup';
+import { FoodGroup } from '../FoodGroup/FoodGroup';
+import { ListNote } from '@/food/log-food/components/ListNote/ListNote';
+import { MealGroup } from '../MealGroup/MealGroup';
+import { RecentMealRow } from '../RecentMealRow/RecentMealRow';
+import { SavedMealRow } from '../SavedMealRow/SavedMealRow';
+import { SearchStatus } from './components/SearchStatus/SearchStatus';
 
 /** The All tab: your meals and recent foods before a search, one ranked list of foods once there is one. */
 export function LogFoodAllTab({

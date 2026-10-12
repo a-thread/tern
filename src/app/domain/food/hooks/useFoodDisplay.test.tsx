@@ -2,8 +2,8 @@ import React from 'react';
 import { renderHook, act, waitFor } from '@testing-library/react-native';
 
 import { createMemoryBackend } from '@/BackendContext';
-import { SettingsProvider, useSettings } from '@/domain/settings/SettingsContext';
-import { useFoodDisplay } from '@/domain/food/hooks/useFoodDisplay';
+import { SettingsProvider, useSettings } from '../../settings/SettingsContext';
+import { useFoodDisplay } from './useFoodDisplay';
 
 async function setup() {
   const backend = createMemoryBackend();

@@ -2,9 +2,9 @@ import React from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { renderHook, waitFor } from '@testing-library/react-native';
 
-import { commonFoodsSeed } from '@/domain/common-foods/commonFoods.seed';
-import type { CommonFoodsRepository } from '@/domain/common-foods/commonFoods.repository';
-import { COMMON_FOODS_KEY, CommonFoodsProvider, useCommonFoods } from '@/domain/common-foods/CommonFoodsContext';
+import { commonFoodsSeed } from './commonFoods.seed';
+import type { CommonFoodsRepository } from './commonFoods.repository';
+import { COMMON_FOODS_KEY, CommonFoodsProvider, useCommonFoods } from './CommonFoodsContext';
 
 const repo = (version: string | null): jest.Mocked<CommonFoodsRepository> => ({
   version: jest.fn(async () => version),

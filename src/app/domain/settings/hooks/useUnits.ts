@@ -12,7 +12,7 @@ import {
   volumeUnitLabel,
   weightUnitLabel,
 } from '@/shared/utils/units';
-import { useSettings } from '@/domain/settings/SettingsContext';
+import { useSettings } from '../SettingsContext';
 
 /** Weight helpers bound to the user's unit setting. Stored weight is always pounds. */
 export function useUnits() {

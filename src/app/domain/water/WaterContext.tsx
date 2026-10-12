@@ -1,17 +1,17 @@
 import React, { useCallback, useMemo, useState } from 'react';
 
-import type { WaterRepository } from '@/domain/water/water.repository';
-import { createRequiredContext } from '@/shared/state/createRequiredContext';
-import { useDayKey } from '@/shared/hooks/useDayKey';
-import { useViewedDay } from '@/shared/state/ViewedDayContext';
-import { atTimeOn } from '@/shared/utils/date';
-import { useLoader } from '@/shared/hooks/useLoader';
-import { usePersist } from '@/shared/hooks/usePersist';
-import { newId } from '@/shared/utils/id';
-import { useSettings } from '@/domain/settings/SettingsContext';
-import { useAward } from '@/domain/waypoints/hooks/useAward';
-import { dayTotal, isValidDrink, lastDrink, waterProgress, type WaterEntry } from '@/domain/water/models/waterEntry';
-import { WaypointSource } from '@/domain/waypoints/models/waypoint';
+import type { WaterRepository } from './water.repository';
+import { createRequiredContext } from '../../shared/state/createRequiredContext';
+import { useDayKey } from '../../shared/hooks/useDayKey';
+import { useViewedDay } from '../../shared/state/ViewedDayContext';
+import { atTimeOn } from '../../shared/utils/date';
+import { useLoader } from '../../shared/hooks/useLoader';
+import { usePersist } from '../../shared/hooks/usePersist';
+import { newId } from '../../shared/utils/id';
+import { useSettings } from '../settings/SettingsContext';
+import { useAward } from '../waypoints/hooks/useAward';
+import { dayTotal, isValidDrink, lastDrink, waterProgress, type WaterEntry } from './models/waterEntry';
+import { WaypointSource } from '../waypoints/models/waypoint';
 
 type WaterContextValue = {
   /** False until the drinks have loaded once. */

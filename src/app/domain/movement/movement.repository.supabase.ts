@@ -1,11 +1,11 @@
-import type { TernClient } from '@/shared/backend/supabase';
-import { ok, rows } from '@/shared/backend/query';
+import type { TernClient } from '../../shared/backend/supabase';
+import { ok, rows } from '../../shared/backend/query';
 import {
   Activity,
   Effort,
   type MovementEntry,
-} from '@/domain/movement/models/movementEntry';
-import type { MovementRepository } from '@/domain/movement/movement.repository';
+} from './models/movementEntry';
+import type { MovementRepository } from './movement.repository';
 
 type MovementRow = {
   id: string;

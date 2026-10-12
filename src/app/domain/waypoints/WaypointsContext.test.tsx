@@ -1,15 +1,15 @@
 import React from 'react';
 import { renderHook, act, waitFor } from '@testing-library/react-native';
-import { FoodProvider, useFood } from '@/domain/food/FoodContext';
+import { FoodProvider, useFood } from '../food/FoodContext';
 import {
   createMemoryBackend,
   type Backend,
-} from '@/BackendContext';
-import { dayKey } from '@/shared/utils/date';
-import { WaypointsProvider, useWaypoints } from '@/domain/waypoints/WaypointsContext';
-import { INITIAL_WAYPOINTS } from '@/domain/waypoints/waypoints.mock';
-import { Meal } from '@/domain/food/models/foodEntry';
-import { WaypointSource } from '@/domain/waypoints/models/waypoint';
+} from '../../BackendContext';
+import { dayKey } from '../../shared/utils/date';
+import { WaypointsProvider, useWaypoints } from './WaypointsContext';
+import { INITIAL_WAYPOINTS } from './waypoints.mock';
+import { Meal } from '../food/models/foodEntry';
+import { WaypointSource } from './models/waypoint';
 
 function useHarness() {
   const food = useFood();

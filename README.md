@@ -94,7 +94,7 @@ a project and apply the migrations in [supabase/migrations/](supabase/migrations
 
 Code is organised by screen: each tab or flow has a folder holding its screens, and each
 component holds the pieces only it uses. Data and rules shared across tabs are in `domain/`,
-generic UI and helpers in `shared/`. Everything under [src/app](src/app) is imported with `@/`. The rules are in
+generic UI and helpers in `shared/`. Imports are relative up to two levels (`../../x`); further away they use the `@/` alias for `src/app`. The rules are in
 [CLAUDE.md](CLAUDE.md) and [docs/architecture.md](docs/architecture.md#layout).
 
 ```text

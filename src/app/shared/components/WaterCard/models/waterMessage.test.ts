@@ -1,4 +1,4 @@
-import { waterMessage } from '@/shared/components/WaterCard/models/waterMessage';
+import { waterMessage } from './waterMessage';
 
 describe('waterMessage', () => {
   it('invites before the first drink', () => {

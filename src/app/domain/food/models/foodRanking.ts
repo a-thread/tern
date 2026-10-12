@@ -1,5 +1,5 @@
-import type { SearchResult } from '@/domain/food/sources/searchResult';
-import { allWordsPrefix, normalizeText, wordsOf } from '@/domain/food/models/foodQuery';
+import type { SearchResult } from '../sources/searchResult';
+import { allWordsPrefix, normalizeText, wordsOf } from './foodQuery';
 
 /** A food in the one search list, with where it came from. `mine` is your own history. */
 export type FoodSource = 'mine' | 'common' | 'usda' | 'off';

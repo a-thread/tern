@@ -16,28 +16,28 @@ import {
   space,
   tierColors,
   typography,
-} from '@/shared/theme';
+} from '../shared/theme';
 import {
   Group,
   GroupLabel,
   FootNote,
   Chevron,
   Icon,
-} from '@/shared/components/ui';
+} from '../shared/components/ui';
 import { SwipeToRemove } from './components/SwipeToRemove/SwipeToRemove';
-import { useViewedDay } from '@/shared/state/ViewedDayContext';
-import { usePullToRefresh } from '@/shared/hooks/usePullToRefresh';
-import { formatLongDate } from '@/shared/utils/date';
-import { useSettings } from '@/domain/settings/SettingsContext';
-import { mealTotals, Meals } from '@/domain/food/models/meals';
-import { type FoodEntry } from '@/domain/food/models/foodEntry';
-import { useFood } from '@/domain/food/FoodContext';
-import { useFoodDisplay } from '@/domain/food/hooks/useFoodDisplay';
-import WaterCard from '@/shared/components/WaterCard/WaterCard';
-import { useWater } from '@/domain/water/WaterContext';
-import { TierDot } from '@/shared/components/TierDot';
-import { FoodSummary } from '@/shared/components/FoodSummary/FoodSummary';
-import { useRootNavigation } from '@/navigation/useAppNavigation';
+import { useViewedDay } from '../shared/state/ViewedDayContext';
+import { usePullToRefresh } from '../shared/hooks/usePullToRefresh';
+import { formatLongDate } from '../shared/utils/date';
+import { useSettings } from '../domain/settings/SettingsContext';
+import { mealTotals, Meals } from '../domain/food/models/meals';
+import { type FoodEntry } from '../domain/food/models/foodEntry';
+import { useFood } from '../domain/food/FoodContext';
+import { useFoodDisplay } from '../domain/food/hooks/useFoodDisplay';
+import WaterCard from '../shared/components/WaterCard/WaterCard';
+import { useWater } from '../domain/water/WaterContext';
+import { TierDot } from '../shared/components/TierDot';
+import { FoodSummary } from '../shared/components/FoodSummary/FoodSummary';
+import { useRootNavigation } from '../navigation/useAppNavigation';
 
 export default function FoodScreen() {
   // Today unless a past day was picked on Home; yesterday can still be filled in.

@@ -1,11 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { StyleSheet, Text, TextInput, View } from 'react-native';
 
-import { colors, font, typography } from '@/shared/theme';
-import { Group } from '@/shared/components/ui';
-import { useAuth } from '@/domain/auth/AuthContext';
-import { AccountLimits } from '@/domain/auth/validation';
-import { useSettings } from '@/domain/settings/SettingsContext';
+import { colors, font, typography } from '../../shared/theme';
+import { Group } from '../../shared/components/ui';
+import { useAuth } from '../../domain/auth/AuthContext';
+import { AccountLimits } from '../../domain/auth/validation';
+import { useSettings } from '../../domain/settings/SettingsContext';
 
 /** Who is signed in: an avatar, the first name (editable) and the account line. */
 export function ProfileSection() {

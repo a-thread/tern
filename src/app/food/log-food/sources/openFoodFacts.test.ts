@@ -4,7 +4,7 @@ import {
   searchProducts,
   servingPortion,
   type OffProduct,
-} from '../sources/openFoodFacts';
+} from './openFoodFacts';
 
 // Trimmed copies of real Open Food Facts responses.
 const rolledOats: OffProduct = {

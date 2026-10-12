@@ -1,7 +1,7 @@
 import { Platform } from 'react-native';
 import * as Notifications from 'expo-notifications';
 
-import { dayNumber, variantFor } from '@/domain/settings/models/mealMessages';
+import { dayNumber, variantFor } from './models/mealMessages';
 import {
   planReminders,
   restDayTriggers,
@@ -9,12 +9,12 @@ import {
   type PlanExtras,
   type PlannedReminder,
   type ReminderConfig,
-} from '@/domain/settings/models/reminderPlan';
+} from './models/reminderPlan';
 import {
   planStreakAlerts,
   StreakAlerts,
   type StreakAlertInput,
-} from '@/domain/settings/models/streakAlerts';
+} from './models/streakAlerts';
 
 const CHANNEL_ID = 'reminders';
 

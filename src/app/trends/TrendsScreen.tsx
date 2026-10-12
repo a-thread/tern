@@ -2,21 +2,21 @@ import React, { useState } from 'react';
 import { View, Text, ScrollView, StyleSheet } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { colors, font, space, typography } from '@/shared/theme';
-import { FootNote, SegmentedControl } from '@/shared/components/ui';
-import { useDayKey } from '@/shared/hooks/useDayKey';
-import { monthName } from '@/shared/utils/date';
-import { TrendRanges, TrendRange } from '@/trends/models/trendRange';
-import { StepsTrendCard } from '@/trends/components/StepsTrendCard';
-import { WeightTrendCard } from '@/trends/components/WeightTrendCard';
-import { CaloriesTrendCard } from '@/trends/components/CaloriesTrendCard/CaloriesTrendCard';
-import { EnergyTrendCard } from '@/trends/components/EnergyTrendCard';
-import { MovementTrendCard } from '@/trends/components/MovementTrendCard/MovementTrendCard';
-import WaterTrendCard from '@/trends/components/WaterTrendCard/WaterTrendCard';
-import MoodTrendCard from '@/trends/components/MoodTrendCard';
-import { ConsistencyCard } from '@/trends/components/ConsistencyCard';
-import { useSettings } from '@/domain/settings/SettingsContext';
-import { useTrendsRefresh } from '@/trends/hooks/useTrendsRefresh';
+import { colors, font, space, typography } from '../shared/theme';
+import { FootNote, SegmentedControl } from '../shared/components/ui';
+import { useDayKey } from '../shared/hooks/useDayKey';
+import { monthName } from '../shared/utils/date';
+import { TrendRanges, TrendRange } from './models/trendRange';
+import { StepsTrendCard } from './components/StepsTrendCard';
+import { WeightTrendCard } from './components/WeightTrendCard';
+import { CaloriesTrendCard } from './components/CaloriesTrendCard/CaloriesTrendCard';
+import { EnergyTrendCard } from './components/EnergyTrendCard';
+import { MovementTrendCard } from './components/MovementTrendCard/MovementTrendCard';
+import WaterTrendCard from './components/WaterTrendCard/WaterTrendCard';
+import MoodTrendCard from './components/MoodTrendCard';
+import { ConsistencyCard } from './components/ConsistencyCard';
+import { useSettings } from '../domain/settings/SettingsContext';
+import { useTrendsRefresh } from './hooks/useTrendsRefresh';
 
 /** The Trends tab: a range picker over one card per thing being tracked. */
 export default function TrendsScreen() {

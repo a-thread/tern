@@ -6,8 +6,8 @@ import { FoodApiError } from '@/domain/food/sources/http';
 import type { SearchResult } from '@/domain/food/sources/searchResult';
 import { commonFoodsSeed } from '@/domain/common-foods/commonFoods.seed';
 import { buildCommonIndex } from '@/domain/common-foods/models/commonFoods';
-import { clearSearchCache, FoodSearch } from '../../search/hooks/useFoodSearch';
-import { useFoodLookup } from '../../search/hooks/useFoodLookup';
+import { clearSearchCache, FoodSearch } from './useFoodSearch';
+import { useFoodLookup } from './useFoodLookup';
 
 jest.mock('../../sources/openFoodFacts', () => ({
   ...jest.requireActual('../../sources/openFoodFacts'),

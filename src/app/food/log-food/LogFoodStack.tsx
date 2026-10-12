@@ -4,7 +4,7 @@ import {
   type NativeStackScreenProps,
 } from '@react-navigation/native-stack';
 
-import type { RootStackParamList } from '@/navigation/types';
+import type { RootStackParamList } from '../../navigation/types';
 import LogFoodScreen from './search/LogFoodScreen';
 import BarcodeScanScreen from './barcode-scan/BarcodeScanScreen';
 import FoodDetailScreen from './food-detail/FoodDetailScreen';

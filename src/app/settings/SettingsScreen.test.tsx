@@ -2,11 +2,11 @@ import React from 'react';
 import { render, fireEvent, waitFor, act } from '@testing-library/react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
-import { BackendProvider, createMemoryBackend } from '@/BackendContext';
-import { ToastProvider } from '@/shared/state/ToastContext';
-import { SettingsProvider, useSettings } from '@/domain/settings/SettingsContext';
-import WaterSettingsScreen from '@/settings/water/WaterSettingsScreen';
-import SettingsScreen from '@/settings/SettingsScreen';
+import { BackendProvider, createMemoryBackend } from '../BackendContext';
+import { ToastProvider } from '../shared/state/ToastContext';
+import { SettingsProvider, useSettings } from '../domain/settings/SettingsContext';
+import WaterSettingsScreen from './water/WaterSettingsScreen';
+import SettingsScreen from './SettingsScreen';
 
 const mockNavigate = jest.fn();
 jest.mock('@react-navigation/native', () => ({

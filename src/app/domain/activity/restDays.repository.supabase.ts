@@ -1,6 +1,6 @@
-import type { TernClient } from '@/shared/backend/supabase';
-import { ok, rows } from '@/shared/backend/query';
-import type { RestDaysRepository } from '@/domain/activity/restDays.repository';
+import type { TernClient } from '../../shared/backend/supabase';
+import { ok, rows } from '../../shared/backend/query';
+import type { RestDaysRepository } from './restDays.repository';
 
 export function createSupabaseRestDaysRepository(
   db: TernClient,

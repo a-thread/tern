@@ -1,5 +1,5 @@
-import { clampScore, isValidScore, scoreWord, type MoodEntry, MoodScale, MoodMetric } from '@/domain/mood/models/moodEntry';
-import { average, entriesBetween, entryFor, seriesOf } from '@/domain/mood/models/moodStats';
+import { clampScore, isValidScore, scoreWord, type MoodEntry, MoodScale, MoodMetric } from './moodEntry';
+import { average, entriesBetween, entryFor, seriesOf } from './moodStats';
 
 const e = (day: string, mood: number, stress: number): MoodEntry => ({ day, mood, stress });
 

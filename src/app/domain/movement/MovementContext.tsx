@@ -1,15 +1,15 @@
 import React, { useCallback, useMemo } from 'react';
 
-import { createRequiredContext } from '@/shared/state/createRequiredContext';
-import { useDayKey } from '@/shared/hooks/useDayKey';
-import { useSyncedList } from '@/shared/hooks/useSyncedList';
-import { newId } from '@/shared/utils/id';
-import { addDays } from '@/shared/utils/date';
-import { useSettings } from '@/domain/settings/SettingsContext';
-import { useAward } from '@/domain/waypoints/hooks/useAward';
-import { WaypointSource } from '@/domain/waypoints/models/waypoint';
-import type { MovementRepository } from '@/domain/movement/movement.repository';
-import type { WorkoutsSource } from '@/domain/movement/movement.healthconnect';
+import { createRequiredContext } from '../../shared/state/createRequiredContext';
+import { useDayKey } from '../../shared/hooks/useDayKey';
+import { useSyncedList } from '../../shared/hooks/useSyncedList';
+import { newId } from '../../shared/utils/id';
+import { addDays } from '../../shared/utils/date';
+import { useSettings } from '../settings/SettingsContext';
+import { useAward } from '../waypoints/hooks/useAward';
+import { WaypointSource } from '../waypoints/models/waypoint';
+import type { MovementRepository } from './movement.repository';
+import type { WorkoutsSource } from './movement.healthconnect';
 import {
   dayMinutes,
   goalMinutesByDay,
@@ -20,7 +20,7 @@ import {
   type Activity,
   type Effort,
   type MovementEntry,
-} from '@/domain/movement/models/movementEntry';
+} from './models/movementEntry';
 
 /** How far back movement is loaded: the same history the week rings and streak use. */
 const HISTORY_DAYS = 180;

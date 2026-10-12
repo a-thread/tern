@@ -1,4 +1,4 @@
-import type { SavedMeal } from '@/domain/saved-meals/models/savedMeals';
+import type { SavedMeal } from './models/savedMeals';
 
 /** Where saved meals are stored. `save` inserts or updates by id. */
 export interface SavedMealsRepository {

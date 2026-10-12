@@ -10,7 +10,7 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { colors, font, space } from '@/shared/theme';
+import { colors, font, space } from '../../shared/theme';
 
 /** Shared frame for every auth screen: logo, title, subtitle, then the form. */
 export function AuthLayout({

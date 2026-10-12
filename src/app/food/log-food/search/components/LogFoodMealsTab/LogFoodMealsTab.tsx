@@ -3,13 +3,13 @@ import { Icon } from '@/shared/components/ui';
 import { Pressable, StyleSheet, Text } from 'react-native';
 
 import { colors, font, radius, space } from '@/shared/theme';
-import type { RecentMeal } from '../../../models/recentMeals';
+import type { RecentMeal } from '@/food/log-food/models/recentMeals';
 import type { SavedMeal } from '@/domain/saved-meals/models/savedMeals';
-import type { FoodLookup } from '../../../search/hooks/useFoodLookup';
-import { ListNote } from '../../../components/ListNote/ListNote';
-import { MealGroup } from '../../../search/components/MealGroup/MealGroup';
-import { RecentMealRow } from '../../../search/components/RecentMealRow/RecentMealRow';
-import { SavedMealRow } from '../../../search/components/SavedMealRow/SavedMealRow';
+import type { FoodLookup } from '../../hooks/useFoodLookup';
+import { ListNote } from '@/food/log-food/components/ListNote/ListNote';
+import { MealGroup } from '../MealGroup/MealGroup';
+import { RecentMealRow } from '../RecentMealRow/RecentMealRow';
+import { SavedMealRow } from '../SavedMealRow/SavedMealRow';
 
 /** The Meals tab: start a new meal, or pick one of your saved or past meals. */
 export function LogFoodMealsTab({

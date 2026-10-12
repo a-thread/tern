@@ -8,7 +8,7 @@ import {
   streakBonus,
   WaypointRules,
   WaypointSource,
-} from '@/domain/waypoints/models/waypoint';
+} from './waypoint';
 
 describe('waypoint rules', () => {
   it('has one rule for every source', () => {

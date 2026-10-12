@@ -1,4 +1,4 @@
-import type { SearchResult } from '@/domain/food/sources/searchResult';
+import type { SearchResult } from '../sources/searchResult';
 import {
   amountOf,
   measureGrams,
@@ -14,7 +14,7 @@ import {
   switchUnit,
   typedGrams,
   type Measure,
-} from '@/domain/food/models/measure';
+} from './measure';
 
 // Whole raw egg, per 100 g (USDA), and a large one weighs 50 g.
 const egg: Measure = {

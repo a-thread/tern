@@ -5,11 +5,11 @@ import React, {
   useRef,
   useState,
 } from 'react';
-import type { WaypointsRepository } from '@/domain/waypoints/waypoints.repository';
-import { createRequiredContext } from '@/shared/state/createRequiredContext';
-import { useDayKey } from '@/shared/hooks/useDayKey';
-import { useToast } from '@/shared/state/ToastContext';
-import type { LedgerEvent, WaypointSource } from '@/domain/waypoints/models/waypoint';
+import type { WaypointsRepository } from './waypoints.repository';
+import { createRequiredContext } from '../../shared/state/createRequiredContext';
+import { useDayKey } from '../../shared/hooks/useDayKey';
+import { useToast } from '../../shared/state/ToastContext';
+import type { LedgerEvent, WaypointSource } from './models/waypoint';
 
 export type { WaypointSource };
 

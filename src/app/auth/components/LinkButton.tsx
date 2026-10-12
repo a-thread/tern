@@ -1,7 +1,7 @@
 import React from 'react';
 import { Pressable, StyleSheet, Text } from 'react-native';
 
-import { colors, font } from '@/shared/theme';
+import { colors, font } from '../../shared/theme';
 
 export function LinkButton({
   label,

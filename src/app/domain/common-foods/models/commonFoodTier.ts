@@ -1,4 +1,4 @@
-import type { Tier } from '@/domain/food/models/foodEntry';
+import type { Tier } from '../../food/models/foodEntry';
 
 /**
  * A suggested NOVA tier for a common food, from its name, detail and USDA

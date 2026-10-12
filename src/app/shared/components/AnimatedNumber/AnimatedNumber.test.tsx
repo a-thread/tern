@@ -2,8 +2,8 @@ import React from 'react';
 import { Text } from 'react-native';
 import { render, act } from '@testing-library/react-native';
 
-import { useCountUp } from '@/shared/hooks/useAnimatedNumber';
-import { AnimatedNumber, CountUp } from '@/shared/components/AnimatedNumber/AnimatedNumber';
+import { useCountUp } from '../../hooks/useAnimatedNumber';
+import { AnimatedNumber, CountUp } from './AnimatedNumber';
 
 beforeEach(() => jest.useFakeTimers());
 afterEach(() => jest.useRealTimers());

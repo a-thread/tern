@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useMemo } from 'react';
 
-import { useSettings } from '@/domain/settings/SettingsContext';
-import { useWaypoints } from '@/domain/waypoints/WaypointsContext';
-import { latestMilestone, type Milestone } from '@/domain/waypoints/models/milestone';
+import { useSettings } from '../../domain/settings/SettingsContext';
+import { useWaypoints } from '../../domain/waypoints/WaypointsContext';
+import { latestMilestone, type Milestone } from '../../domain/waypoints/models/milestone';
 
 type PendingMilestone = {
   /** A milestone reached but not yet marked, or null when there's nothing to celebrate. */

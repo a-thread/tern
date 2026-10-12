@@ -1,5 +1,5 @@
 import { addDays, dayKey, parseDayKey } from '@/shared/utils/date';
-import { dayNumber, variantFor, type ReminderText } from '@/domain/settings/models/mealMessages';
+import { dayNumber, variantFor, type ReminderText } from './mealMessages';
 
 /** When streak notifications fire, and the ids they're scheduled under. */
 export class StreakAlerts {

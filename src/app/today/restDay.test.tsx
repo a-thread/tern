@@ -2,28 +2,28 @@ import React from 'react';
 import { act, fireEvent, render, renderHook, waitFor } from '@testing-library/react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
-import { createMemoryBackend } from '@/BackendContext';
-import { ToastProvider } from '@/shared/state/ToastContext';
-import { ViewedDayProvider, useViewedDay } from '@/shared/state/ViewedDayContext';
-import { addDays, dayKey } from '@/shared/utils/date';
-import { FoodProvider } from '@/domain/food/FoodContext';
-import { createMemoryFoodRepository } from '@/domain/food/food.repository';
-import { WaypointsProvider } from '@/domain/waypoints/WaypointsContext';
-import { SettingsProvider } from '@/domain/settings/SettingsContext';
-import { WeightProvider } from '@/domain/weight/WeightContext';
-import { MedicationProvider } from '@/domain/medication/MedicationContext';
-import { WaterProvider } from '@/domain/water/WaterContext';
-import { MoodProvider } from '@/domain/mood/MoodContext';
-import { MovementProvider } from '@/domain/movement/MovementContext';
-import { ActivityProvider, useActivity } from '@/domain/activity/ActivityContext';
-import { StepsStatus, type StepsRepository } from '@/domain/activity/steps.repository';
-import { useRestDay } from '@/today/hooks/useRestDay';
-import { RestScenes } from '@/today/models/restScene';
-import TodayScreen from '@/today/TodayScreen';
+import { createMemoryBackend } from '../BackendContext';
+import { ToastProvider } from '../shared/state/ToastContext';
+import { ViewedDayProvider, useViewedDay } from '../shared/state/ViewedDayContext';
+import { addDays, dayKey } from '../shared/utils/date';
+import { FoodProvider } from '../domain/food/FoodContext';
+import { createMemoryFoodRepository } from '../domain/food/food.repository';
+import { WaypointsProvider } from '../domain/waypoints/WaypointsContext';
+import { SettingsProvider } from '../domain/settings/SettingsContext';
+import { WeightProvider } from '../domain/weight/WeightContext';
+import { MedicationProvider } from '../domain/medication/MedicationContext';
+import { WaterProvider } from '../domain/water/WaterContext';
+import { MoodProvider } from '../domain/mood/MoodContext';
+import { MovementProvider } from '../domain/movement/MovementContext';
+import { ActivityProvider, useActivity } from '../domain/activity/ActivityContext';
+import { StepsStatus, type StepsRepository } from '../domain/activity/steps.repository';
+import { useRestDay } from './hooks/useRestDay';
+import { RestScenes } from './models/restScene';
+import TodayScreen from './TodayScreen';
 
 // With reduce motion on nothing flies or loops, so the scene is easy to test: it is just
 // there, or not.
-jest.mock('@/shared/hooks/useReduceMotion', () => ({ useReduceMotion: () => true }));
+jest.mock('../shared/hooks/useReduceMotion', () => ({ useReduceMotion: () => true }));
 jest.mock('@react-navigation/native', () => ({
   ...jest.requireActual('@react-navigation/native'),
   useNavigation: () => ({ navigate: jest.fn(), goBack: jest.fn() }),

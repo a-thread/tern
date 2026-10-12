@@ -10,20 +10,20 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 
-import { colors, font, radius, space, typography } from '@/shared/theme';
-import { Group, GroupLabel, SheetNav, Stepper } from '@/shared/components/ui';
-import type { RootStackParamList } from '@/navigation/types';
-import { Meals } from '@/domain/food/models/meals';
-import { Meal, type Tier } from '@/domain/food/models/foodEntry';
-import { useFood } from '@/domain/food/FoodContext';
-import { useViewedDay } from '@/shared/state/ViewedDayContext';
+import { colors, font, radius, space, typography } from '../../shared/theme';
+import { Group, GroupLabel, SheetNav, Stepper } from '../../shared/components/ui';
+import type { RootStackParamList } from '../../navigation/types';
+import { Meals } from '../../domain/food/models/meals';
+import { Meal, type Tier } from '../../domain/food/models/foodEntry';
+import { useFood } from '../../domain/food/FoodContext';
+import { useViewedDay } from '../../shared/state/ViewedDayContext';
 import { TierPicker } from '../components/TierPicker/TierPicker';
 import { MealPicker } from '../components/MealPicker/MealPicker';
 import { MeasurePicker } from '../components/MeasurePicker/MeasurePicker';
-import { useFoodDisplay } from '@/domain/food/hooks/useFoodDisplay';
-import { stepServings, Servings } from '@/domain/food/models/servings';
-import { amountOf, type Measure } from '@/domain/food/models/measure';
-import { confirm } from '@/shared/utils/confirm';
+import { useFoodDisplay } from '../../domain/food/hooks/useFoodDisplay';
+import { stepServings, Servings } from '../../domain/food/models/servings';
+import { amountOf, type Measure } from '../../domain/food/models/measure';
+import { confirm } from '../../shared/utils/confirm';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'EditFood'>;
 

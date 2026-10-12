@@ -1,5 +1,5 @@
 import { addDays } from '@/shared/utils/date';
-import { Meal } from '@/domain/food/models/foodEntry';
+import { Meal } from './foodEntry';
 import {
   AdaptiveTarget,
   Aim,
@@ -9,7 +9,7 @@ import {
   suggestTarget,
   weeklyEnergy,
   worthSuggesting,
-} from '@/domain/food/models/energyBalance';
+} from './energyBalance';
 
 const TODAY = '2026-10-29';
 const at = (day: string) => `${day}T12:00:00`;

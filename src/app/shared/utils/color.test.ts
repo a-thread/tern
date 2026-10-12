@@ -1,4 +1,4 @@
-import { mix } from '@/shared/utils/color';
+import { mix } from './color';
 
 describe('mix', () => {
   it('blends two colours and stays within the ends', () => {

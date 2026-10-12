@@ -1,4 +1,4 @@
-import { useSettings } from '@/domain/settings/SettingsContext';
+import { useSettings } from '../../settings/SettingsContext';
 
 /** The Settings → Food display preferences, in one place so every food screen honors them the same way. */
 export function useFoodDisplay() {

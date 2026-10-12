@@ -1,4 +1,4 @@
-import { clampWaterGoal, dayTotal, isValidDrink, lastDrink, totalsByDay, waterProgress, type WaterEntry, WaterLimits } from '@/domain/water/models/waterEntry';
+import { clampWaterGoal, dayTotal, isValidDrink, lastDrink, totalsByDay, waterProgress, type WaterEntry, WaterLimits } from './waterEntry';
 import { averageDaily, bucketWater } from '@/trends/components/WaterTrendCard/models/waterBars';
 import { TrendRange } from '@/trends/models/trendRange';
 

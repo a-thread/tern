@@ -1,8 +1,10 @@
 # Tern — React Native Standards
 
-Expo / React Native / TypeScript. Everything lives under `src/app/` and is imported with the single
-alias `@/` (`@/shared/theme` is `src/app/shared/theme`). Never use `../` imports, except for assets
-and files outside `src/`; use `./` only for a file in the same folder.
+Expo / React Native / TypeScript. Everything lives under `src/app/`.
+
+**Imports**: use a relative path when the target is at most two levels up (`./x`, `../x`,
+`../../x`). Anything further away uses the `@/` alias, which is `src/app/` (`@/shared/theme` is
+`src/app/shared/theme`), rather than a `../../../` chain.
 
 ## Folder Structure
 
@@ -89,7 +91,7 @@ src/app/
 - Prop-drilling inside a screen instead of reading the Context.
 - A repository imported outside `BackendContext` and tests.
 - A string-literal union for a value compared more than once.
-- A new `../` import.
+- A `../../../` chain (three or more levels up) instead of `@/`.
 
 ## Verification
 

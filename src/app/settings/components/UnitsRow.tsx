@@ -1,10 +1,10 @@
 import React from 'react';
 
-import { PillToggle } from '@/settings/components/PillToggle';
-import { Row } from '@/shared/components/ui';
-import { Units } from '@/shared/utils/units';
-import { useSettings } from '@/domain/settings/SettingsContext';
-import { useUnits } from '@/domain/settings/hooks/useUnits';
+import { PillToggle } from './PillToggle';
+import { Row } from '../../shared/components/ui';
+import { Units } from '../../shared/utils/units';
+import { useSettings } from '../../domain/settings/SettingsContext';
+import { useUnits } from '../../domain/settings/hooks/useUnits';
 
 const UNITS: readonly Units[] = [Units.Imperial, Units.Metric];
 

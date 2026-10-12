@@ -1,13 +1,13 @@
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 
-import { colors, font, radius, space } from '@/shared/theme';
-import { useViewedDay } from '@/shared/state/ViewedDayContext';
+import { colors, font, radius, space } from '../../theme';
+import { useViewedDay } from '../../state/ViewedDayContext';
 import { useSettings } from '@/domain/settings/SettingsContext';
 import { dayTotals } from '@/domain/food/models/foodEntry';
 import { useFood } from '@/domain/food/FoodContext';
 import { useFoodDisplay } from '@/domain/food/hooks/useFoodDisplay';
-import { IntakeBarometer } from '@/shared/components/FoodSummary/components/IntakeBarometer/IntakeBarometer';
+import { IntakeBarometer } from './components/IntakeBarometer/IntakeBarometer';
 
 /**
  * The viewed day's intake at a glance: the swipeable intake card, or, with that switched off in

@@ -3,16 +3,16 @@ import { Text } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
-import { colors, typography } from '@/shared/theme';
-import { TrendRanges, TrendRange } from '@/trends/models/trendRange';
-import { TrendCard, TrendHeader } from '@/trends/components/TrendCard';
-import { StepBars } from '@/trends/components/StepBars';
-import { useActivity } from '@/domain/activity/ActivityContext';
-import { useSettings } from '@/domain/settings/SettingsContext';
-import { StepsStatus } from '@/domain/activity/steps.repository';
-import { bucketSteps } from '@/trends/models/stepBars';
-import { summarizeSteps } from '@/trends/models/stepsSummary';
-import type { TrendsStackParamList } from '@/trends/navigation';
+import { colors, typography } from '../../shared/theme';
+import { TrendRanges, TrendRange } from '../models/trendRange';
+import { TrendCard, TrendHeader } from './TrendCard';
+import { StepBars } from './StepBars';
+import { useActivity } from '../../domain/activity/ActivityContext';
+import { useSettings } from '../../domain/settings/SettingsContext';
+import { StepsStatus } from '../../domain/activity/steps.repository';
+import { bucketSteps } from '../models/stepBars';
+import { summarizeSteps } from '../models/stepsSummary';
+import type { TrendsStackParamList } from '../navigation';
 
 /** Average steps for the range with the change since the range before, and a bar per day (or week). */
 export function StepsTrendCard({ range }: { range: TrendRange }) {

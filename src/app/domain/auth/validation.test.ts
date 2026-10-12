@@ -3,7 +3,7 @@ import {
   isValidName,
   isValidPassword,
   passwordsMatch,
-} from '@/domain/auth/validation';
+} from './validation';
 
 describe('auth validation', () => {
   it('accepts plausible emails and rejects malformed ones', () => {

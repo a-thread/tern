@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 
-import { useAuth } from '@/domain/auth/AuthContext';
+import { useAuth } from '../../domain/auth/AuthContext';
 import { AuthBanner } from '../components/AuthBanner';
 import { AuthLayout } from '../components/AuthLayout';
 import { FormField } from '../components/FormField';
@@ -14,7 +14,7 @@ import {
   isValidPassword,
   passwordsMatch,
   AccountLimits,
-} from '@/domain/auth/validation';
+} from '../../domain/auth/validation';
 
 export default function CreateAccountScreen({
   onCreated,

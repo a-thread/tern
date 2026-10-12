@@ -7,14 +7,14 @@ import { useUnits } from '@/domain/settings/hooks/useUnits';
 import { useFoodDisplay } from '@/domain/food/hooks/useFoodDisplay';
 import { useMedication } from '@/domain/medication/MedicationContext';
 import { useWater } from '@/domain/water/WaterContext';
-import WaterSheet from '@/today/components/WaterSheet';
+import WaterSheet from '../WaterSheet';
 import { movementSummary } from '@/domain/movement/models/movementEntry';
 import { scoreWord, MoodMetric } from '@/domain/mood/models/moodEntry';
 import { formatLoggedAt } from '@/domain/weight/models/weightEntry';
 import { useViewedDay } from '@/shared/state/ViewedDayContext';
 import { dayWord } from '@/shared/utils/date';
-import { useDayItems } from '@/today/hooks/useDayItems';
-import { DoneBadge } from '@/today/components/DoneList/components/DoneBadge';
+import { useDayItems } from '../../hooks/useDayItems';
+import { DoneBadge } from './components/DoneBadge';
 import { useRootNavigation } from '@/navigation/useAppNavigation';
 
 /**

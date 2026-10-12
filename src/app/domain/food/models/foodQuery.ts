@@ -1,4 +1,4 @@
-import { singular } from '@/domain/food/models/measure';
+import { singular } from './measure';
 
 /** Lowercase, accents removed, punctuation turned to spaces: "Crème brûlée!" → "creme brulee". */
 export function normalizeText(text: string): string {

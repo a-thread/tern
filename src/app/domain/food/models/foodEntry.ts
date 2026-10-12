@@ -3,7 +3,7 @@
  * still apply once real data replaces the mock log (see mock.ts).
  */
 
-import type { Measure } from '@/domain/food/models/measure';
+import type { Measure } from './measure';
 
 export type Tier = 1 | 2 | 3 | 4;
 

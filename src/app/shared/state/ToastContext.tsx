@@ -9,7 +9,7 @@ import React, {
 } from 'react';
 import { Text, View, StyleSheet } from 'react-native';
 
-import { colors, font, radius, space } from '@/shared/theme';
+import { colors, font, radius, space } from '../theme';
 
 type ToastContextValue = { show: (message: string) => void };
 

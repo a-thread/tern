@@ -6,7 +6,7 @@ import {
   percentsFromMacros,
   rescaleMacros,
   MacroSplits,
-} from '@/domain/food/models/macroSplit';
+} from './macroSplit';
 
 describe('macroSplit', () => {
   it('turns percents into grams at 4/4/9 kcal per gram', () => {

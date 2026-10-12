@@ -1,21 +1,21 @@
 import React from 'react';
-import LoadingScreen from '@/shared/components/LoadingScreen/LoadingScreen';
-import { DayKeyProvider } from '@/shared/hooks/useDayKey';
-import { ViewedDayProvider } from '@/shared/state/ViewedDayContext';
-import { SettingsProvider, useSettings } from '@/domain/settings/SettingsContext';
-import { RemindersSync } from '@/RemindersSync';
-import { FoodProvider, useFood } from '@/domain/food/FoodContext';
-import { SavedMealsProvider } from '@/domain/saved-meals/SavedMealsContext';
-import { CommonFoodsProvider } from '@/domain/common-foods/CommonFoodsContext';
-import { WeightProvider, useWeight } from '@/domain/weight/WeightContext';
-import { WaypointsProvider, useWaypoints } from '@/domain/waypoints/WaypointsContext';
-import { ActivityProvider, useActivity } from '@/domain/activity/ActivityContext';
-import { MedicationProvider, useMedication } from '@/domain/medication/MedicationContext';
-import { WaterProvider, useWater } from '@/domain/water/WaterContext';
-import { MoodProvider, useMood } from '@/domain/mood/MoodContext';
-import { MovementProvider, useMovement } from '@/domain/movement/MovementContext';
-import { useBackend, type Backend } from '@/BackendContext';
-import { assertProviderOrder, type ProviderSpec } from '@/providerOrder';
+import LoadingScreen from './shared/components/LoadingScreen/LoadingScreen';
+import { DayKeyProvider } from './shared/hooks/useDayKey';
+import { ViewedDayProvider } from './shared/state/ViewedDayContext';
+import { SettingsProvider, useSettings } from './domain/settings/SettingsContext';
+import { RemindersSync } from './RemindersSync';
+import { FoodProvider, useFood } from './domain/food/FoodContext';
+import { SavedMealsProvider } from './domain/saved-meals/SavedMealsContext';
+import { CommonFoodsProvider } from './domain/common-foods/CommonFoodsContext';
+import { WeightProvider, useWeight } from './domain/weight/WeightContext';
+import { WaypointsProvider, useWaypoints } from './domain/waypoints/WaypointsContext';
+import { ActivityProvider, useActivity } from './domain/activity/ActivityContext';
+import { MedicationProvider, useMedication } from './domain/medication/MedicationContext';
+import { WaterProvider, useWater } from './domain/water/WaterContext';
+import { MoodProvider, useMood } from './domain/mood/MoodContext';
+import { MovementProvider, useMovement } from './domain/movement/MovementContext';
+import { useBackend, type Backend } from './BackendContext';
+import { assertProviderOrder, type ProviderSpec } from './providerOrder';
 
 type Entry = ProviderSpec & {
   wrap: (children: React.ReactNode, backend: Backend) => React.ReactNode;

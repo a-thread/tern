@@ -1,5 +1,5 @@
-import type { AppSettings } from '@/domain/settings/models/appSettings';
-import { formatVolume } from '@/shared/utils/units';
+import type { AppSettings } from '../../domain/settings/models/appSettings';
+import { formatVolume } from '../../shared/utils/units';
 
 /** The Settings index line for water: "64 oz a day", or "Off". */
 export function waterSummary(s: AppSettings): string {

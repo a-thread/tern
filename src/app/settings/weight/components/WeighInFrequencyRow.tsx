@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { PillToggle } from '@/settings/components/PillToggle';
+import { PillToggle } from '../../components/PillToggle';
 import { Row } from '@/shared/components/ui';
 import { Frequency } from '@/shared/models/frequency';
 import { useSettings } from '@/domain/settings/SettingsContext';

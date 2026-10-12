@@ -3,7 +3,7 @@ import { View, Text, ScrollView, StyleSheet } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 
-import { colors, font, space, typography } from '@/shared/theme';
+import { colors, font, space, typography } from '../../shared/theme';
 import {
   Card,
   GroupLabel,
@@ -12,19 +12,19 @@ import {
   PushHeader,
   SegmentedControl,
   Icon,
-} from '@/shared/components/ui';
-import { Insight } from '@/trends/components/Insight';
-import { LegendDot } from '@/trends/components/LegendDot';
-import { WeightTrend } from '@/shared/components/WeightTrend';
-import { useWeight } from '@/domain/weight/WeightContext';
-import { useSettings } from '@/domain/settings/SettingsContext';
-import { useUnits } from '@/domain/settings/hooks/useUnits';
+} from '../../shared/components/ui';
+import { Insight } from '../components/Insight';
+import { LegendDot } from '../components/LegendDot';
+import { WeightTrend } from '../../shared/components/WeightTrend';
+import { useWeight } from '../../domain/weight/WeightContext';
+import { useSettings } from '../../domain/settings/SettingsContext';
+import { useUnits } from '../../domain/settings/hooks/useUnits';
 import {
   formatLoggedAt,
   signedChange,
-} from '@/domain/weight/models/weightEntry';
-import { weightTrendFor } from '@/trends/models/weightTrend';
-import type { TrendsStackParamList } from '@/trends/navigation';
+} from '../../domain/weight/models/weightEntry';
+import { weightTrendFor } from '../models/weightTrend';
+import type { TrendsStackParamList } from '../navigation';
 
 type Props = NativeStackScreenProps<TrendsStackParamList, 'WeightDetail'>;
 

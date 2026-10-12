@@ -2,16 +2,16 @@ import React, { useEffect, useRef, useState } from 'react';
 import { Animated, Easing, StyleSheet, Text, View } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 
-import { useDayKey } from '@/shared/hooks/useDayKey';
-import { useReduceMotion } from '@/shared/hooks/useReduceMotion';
-import { useAnimatedNumber } from '@/shared/hooks/useAnimatedNumber';
-import type { RootStackParamList } from '@/navigation/types';
-import { useSettings } from '@/domain/settings/SettingsContext';
-import { useWaypoints } from '@/domain/waypoints/WaypointsContext';
-import { useLastSeenTotal } from '@/journey/waypoints/hooks/useLastSeenTotal';
-import { earnedOn, legFor, legProgress, stillOpen } from '@/journey/models/waypointSummary';
-import { PopupCard, GOLD, popup } from '@/journey/components/PopupCard/PopupCard';
-import { FadeIn } from '@/journey/components/FadeIn/FadeIn';
+import { useDayKey } from '../../shared/hooks/useDayKey';
+import { useReduceMotion } from '../../shared/hooks/useReduceMotion';
+import { useAnimatedNumber } from '../../shared/hooks/useAnimatedNumber';
+import type { RootStackParamList } from '../../navigation/types';
+import { useSettings } from '../../domain/settings/SettingsContext';
+import { useWaypoints } from '../../domain/waypoints/WaypointsContext';
+import { useLastSeenTotal } from './hooks/useLastSeenTotal';
+import { earnedOn, legFor, legProgress, stillOpen } from '../models/waypointSummary';
+import { PopupCard, GOLD, popup } from '../components/PopupCard/PopupCard';
+import { FadeIn } from '../components/FadeIn/FadeIn';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Waypoints'>;
 

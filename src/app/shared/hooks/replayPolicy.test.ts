@@ -1,4 +1,4 @@
-import { REPLAY_AFTER_MS, shouldReplay } from '@/shared/hooks/replayPolicy';
+import { REPLAY_AFTER_MS, shouldReplay } from './replayPolicy';
 
 describe('shouldReplay', () => {
   const played = { at: 1_000_000, value: 6842 };

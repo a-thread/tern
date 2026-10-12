@@ -1,20 +1,20 @@
 import React from 'react';
 import { Text, View, StyleSheet } from 'react-native';
 
-import { space, typography } from '@/shared/theme';
-import { WeightTrend } from '@/shared/components/WeightTrend';
-import { TrendCard, TrendFigure } from '@/trends/components/TrendCard';
-import { useRootNavigation } from '@/navigation/useAppNavigation';
-import { useDayKey } from '@/shared/hooks/useDayKey';
-import { addDays } from '@/shared/utils/date';
-import { TrendRanges, type TrendRange } from '@/trends/models/trendRange';
+import { space, typography } from '../../shared/theme';
+import { WeightTrend } from '../../shared/components/WeightTrend';
+import { TrendCard, TrendFigure } from './TrendCard';
+import { useRootNavigation } from '../../navigation/useAppNavigation';
+import { useDayKey } from '../../shared/hooks/useDayKey';
+import { addDays } from '../../shared/utils/date';
+import { TrendRanges, type TrendRange } from '../models/trendRange';
 import {
   average,
   entriesBetween,
   seriesOf,
-} from '@/domain/mood/models/moodStats';
-import { MoodMetric } from '@/domain/mood/models/moodEntry';
-import { useMood } from '@/domain/mood/MoodContext';
+} from '../../domain/mood/models/moodStats';
+import { MoodMetric } from '../../domain/mood/models/moodEntry';
+import { useMood } from '../../domain/mood/MoodContext';
 
 const METRICS: { id: MoodMetric; label: string }[] = [
   { id: MoodMetric.Mood, label: 'Mood' },

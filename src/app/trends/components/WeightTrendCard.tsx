@@ -3,17 +3,17 @@ import { StyleSheet, Text, View } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
-import { colors, font } from '@/shared/theme';
-import { Icon } from '@/shared/components/ui';
-import { WeightTrend } from '@/shared/components/WeightTrend';
-import { TrendRanges, TrendRange } from '@/trends/models/trendRange';
-import { TrendCard, TrendHeader } from '@/trends/components/TrendCard';
-import { weightTrendFor } from '@/trends/models/weightTrend';
-import type { TrendsStackParamList } from '@/trends/navigation';
-import { useWeight } from '@/domain/weight/WeightContext';
-import { signedChange } from '@/domain/weight/models/weightEntry';
-import { useSettings } from '@/domain/settings/SettingsContext';
-import { useUnits } from '@/domain/settings/hooks/useUnits';
+import { colors, font } from '../../shared/theme';
+import { Icon } from '../../shared/components/ui';
+import { WeightTrend } from '../../shared/components/WeightTrend';
+import { TrendRanges, TrendRange } from '../models/trendRange';
+import { TrendCard, TrendHeader } from './TrendCard';
+import { weightTrendFor } from '../models/weightTrend';
+import type { TrendsStackParamList } from '../navigation';
+import { useWeight } from '../../domain/weight/WeightContext';
+import { signedChange } from '../../domain/weight/models/weightEntry';
+import { useSettings } from '../../domain/settings/SettingsContext';
+import { useUnits } from '../../domain/settings/hooks/useUnits';
 
 /** The smoothed weight line for the range and how far it moved. Tapping opens the weight detail. */
 export function WeightTrendCard({ range }: { range: TrendRange }) {

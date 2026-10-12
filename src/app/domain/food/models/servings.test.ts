@@ -1,4 +1,4 @@
-import { stepServings, formatCount, gramsOf, parseGrams, portionGrams, portionServingLabel, scaleForGrams, Servings } from '@/domain/food/models/servings';
+import { stepServings, formatCount, gramsOf, parseGrams, portionGrams, portionServingLabel, scaleForGrams, Servings } from './servings';
 
 describe('gramsOf', () => {
   it('reads gram-based serving labels', () => {

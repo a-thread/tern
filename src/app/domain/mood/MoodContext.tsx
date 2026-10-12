@@ -1,16 +1,16 @@
 import React, { useCallback, useMemo } from 'react';
 
-import type { MoodRepository } from '@/domain/mood/mood.repository';
-import { createRequiredContext } from '@/shared/state/createRequiredContext';
-import { useDayKey } from '@/shared/hooks/useDayKey';
-import { useViewedDay } from '@/shared/state/ViewedDayContext';
-import { useSyncedList } from '@/shared/hooks/useSyncedList';
-import { addDays } from '@/shared/utils/date';
-import { useSettings } from '@/domain/settings/SettingsContext';
-import { useAward } from '@/domain/waypoints/hooks/useAward';
-import { entryFor } from '@/domain/mood/models/moodStats';
-import { isValidScore, type MoodEntry } from '@/domain/mood/models/moodEntry';
-import { WaypointSource } from '@/domain/waypoints/models/waypoint';
+import type { MoodRepository } from './mood.repository';
+import { createRequiredContext } from '../../shared/state/createRequiredContext';
+import { useDayKey } from '../../shared/hooks/useDayKey';
+import { useViewedDay } from '../../shared/state/ViewedDayContext';
+import { useSyncedList } from '../../shared/hooks/useSyncedList';
+import { addDays } from '../../shared/utils/date';
+import { useSettings } from '../settings/SettingsContext';
+import { useAward } from '../waypoints/hooks/useAward';
+import { entryFor } from './models/moodStats';
+import { isValidScore, type MoodEntry } from './models/moodEntry';
+import { WaypointSource } from '../waypoints/models/waypoint';
 
 /** How far back the context keeps check-ins: enough for the longest Trends range. */
 export const HISTORY_DAYS = 180;

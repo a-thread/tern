@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 
-import { colors, font, radius, space } from '@/shared/theme';
+import { colors, font, radius, space } from '../../shared/theme';
 
 /** A short note under a chart, with an optional icon. */
 export function Insight({

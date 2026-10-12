@@ -1,8 +1,8 @@
 import React from 'react';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 
-import { colors } from '@/shared/theme';
-import { Activity } from '@/domain/movement/models/movementEntry';
+import { colors } from '../../shared/theme';
+import { Activity } from '../../domain/movement/models/movementEntry';
 
 type IconName = React.ComponentProps<typeof MaterialCommunityIcons>['name'];
 

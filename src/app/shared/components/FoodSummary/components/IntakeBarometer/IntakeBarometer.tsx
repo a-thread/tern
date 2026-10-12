@@ -24,9 +24,9 @@ import {
 } from '@/domain/food/models/intakeZone';
 import { percentsFromMacros } from '@/domain/food/models/macroSplit';
 import type { FoodEntry } from '@/domain/food/models/foodEntry';
-import { tierShares } from '@/shared/components/FoodSummary/components/IntakeBarometer/models/tierShares';
-import { NovaInfoSheet } from '@/shared/components/FoodSummary/components/IntakeBarometer/components/NovaInfoSheet/NovaInfoSheet';
-import { IntakeInfoSheet } from '@/shared/components/FoodSummary/components/IntakeBarometer/components/IntakeInfoSheet/IntakeInfoSheet';
+import { tierShares } from './models/tierShares';
+import { NovaInfoSheet } from './components/NovaInfoSheet/NovaInfoSheet';
+import { IntakeInfoSheet } from './components/IntakeInfoSheet/IntakeInfoSheet';
 import { useRootNavigation } from '@/navigation/useAppNavigation';
 
 type Totals = { calories: number; protein: number; carbs: number; fat: number };

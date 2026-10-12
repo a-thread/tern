@@ -1,7 +1,7 @@
-import type { TernClient } from '@/shared/backend/supabase';
-import { ok, rows } from '@/shared/backend/query';
-import type { MoodEntry } from '@/domain/mood/models/moodEntry';
-import type { MoodRepository } from '@/domain/mood/mood.repository';
+import type { TernClient } from '../../shared/backend/supabase';
+import { ok, rows } from '../../shared/backend/query';
+import type { MoodEntry } from './models/moodEntry';
+import type { MoodRepository } from './mood.repository';
 
 type MoodRow = { day: string; mood: number; stress: number };
 

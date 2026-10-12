@@ -1,12 +1,12 @@
 import React from 'react';
 
-import { Divider, ToggleRow } from '@/shared/components/ui';
-import TimeStepperRow from '@/settings/components/TimeStepperRow';
+import { Divider, ToggleRow } from '../../shared/components/ui';
+import TimeStepperRow from './TimeStepperRow';
 import {
   formatMinutes,
   Reminders,
   stepMinutes,
-} from '@/domain/settings/models/reminderPlan';
+} from '../../domain/settings/models/reminderPlan';
 
 /** A reminder's on/off row, with its settings rows (divider-separated) shown only while it's on. */
 export function ReminderBlock({

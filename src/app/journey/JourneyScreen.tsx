@@ -3,17 +3,17 @@ import { View, Text, ScrollView, StyleSheet } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { colors, font, space, gradients, typography } from '@/shared/theme';
-import { Group, GroupLabel, Row, IconBadge, Card, FootNote, ProgressBar } from '@/shared/components/ui';
-import { JourneyRoute } from '@/journey/components/JourneyRoute/JourneyRoute';
-import { useReplayOnFocus } from '@/shared/hooks/useReplayOnFocus';
-import { usePullToRefresh } from '@/shared/hooks/usePullToRefresh';
-import { AnimatedNumber } from '@/shared/components/AnimatedNumber/AnimatedNumber';
-import { formatShortDate, monthName } from '@/shared/utils/date';
-import { daysWithWaypoints, listedRules, WaypointSource } from '@/domain/waypoints/models/waypoint';
-import { migrationProgress, milestonesFor } from '@/domain/waypoints/models/milestone';
-import { useSettings } from '@/domain/settings/SettingsContext';
-import { useWaypoints } from '@/domain/waypoints/WaypointsContext';
+import { colors, font, space, gradients, typography } from '../shared/theme';
+import { Group, GroupLabel, Row, IconBadge, Card, FootNote, ProgressBar } from '../shared/components/ui';
+import { JourneyRoute } from './components/JourneyRoute/JourneyRoute';
+import { useReplayOnFocus } from '../shared/hooks/useReplayOnFocus';
+import { usePullToRefresh } from '../shared/hooks/usePullToRefresh';
+import { AnimatedNumber } from '../shared/components/AnimatedNumber/AnimatedNumber';
+import { formatShortDate, monthName } from '../shared/utils/date';
+import { daysWithWaypoints, listedRules, WaypointSource } from '../domain/waypoints/models/waypoint';
+import { migrationProgress, milestonesFor } from '../domain/waypoints/models/milestone';
+import { useSettings } from '../domain/settings/SettingsContext';
+import { useWaypoints } from '../domain/waypoints/WaypointsContext';
 
 const MILESTONE_COLORS = [colors.glacier, colors.violet, colors.aurora];
 

@@ -1,15 +1,15 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, Pressable, StyleSheet } from 'react-native';
 
-import { colors, font, radius, space } from '@/shared/theme';
-import { Card, ProgressBar, Icon } from '@/shared/components/ui';
-import { useToast } from '@/shared/state/ToastContext';
+import { colors, font, radius, space } from '../../theme';
+import { Card, ProgressBar, Icon } from '../ui';
+import { useToast } from '../../state/ToastContext';
 import { useUnits } from '@/domain/settings/hooks/useUnits';
 import { WaterLimits } from '@/domain/water/models/waterEntry';
 import { useWater } from '@/domain/water/WaterContext';
-import { useViewedDay } from '@/shared/state/ViewedDayContext';
-import { waterMessage } from '@/shared/components/WaterCard/models/waterMessage';
-import WaterGlass from '@/shared/components/WaterCard/components/WaterGlass';
+import { useViewedDay } from '../../state/ViewedDayContext';
+import { waterMessage } from './models/waterMessage';
+import WaterGlass from './components/WaterGlass';
 
 /** Today's water on the Food screen: progress toward the goal, quick-add drink sizes and an undo. */
 export default function WaterCard({ bare = false }: { bare?: boolean }) {

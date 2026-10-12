@@ -1,8 +1,8 @@
 import React from 'react';
 import { View, StyleSheet } from 'react-native';
-import { colors, space } from '@/shared/theme';
-import type { DayBar } from '@/trends/components/StepBars';
-import { DayState } from '@/shared/models/dayState';
+import { colors, space } from '../../shared/theme';
+import type { DayBar } from './StepBars';
+import { DayState } from '../../shared/models/dayState';
 
 /* ------------------------------------------------------------------ */
 /* Consistency grid — a month at a glance                               */

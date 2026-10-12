@@ -5,16 +5,16 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import {
   createMemoryBackend,
   type Backend,
-} from '@/BackendContext';
-import { ToastProvider } from '@/shared/state/ToastContext';
-import { dayKey } from '@/shared/utils/date';
-import { FoodProvider } from '@/domain/food/FoodContext';
-import { WaypointsProvider } from '@/domain/waypoints/WaypointsContext';
-import { ActivityProvider } from '@/domain/activity/ActivityContext';
-import { MovementProvider } from '@/domain/movement/MovementContext';
-import { StepsRepository, StepsStatus } from '@/domain/activity/steps.repository';
-import { SettingsProvider } from '@/domain/settings/SettingsContext';
-import HealthDataScreen from '@/settings/health-data/HealthDataScreen';
+} from '../../BackendContext';
+import { ToastProvider } from '../../shared/state/ToastContext';
+import { dayKey } from '../../shared/utils/date';
+import { FoodProvider } from '../../domain/food/FoodContext';
+import { WaypointsProvider } from '../../domain/waypoints/WaypointsContext';
+import { ActivityProvider } from '../../domain/activity/ActivityContext';
+import { MovementProvider } from '../../domain/movement/MovementContext';
+import { StepsRepository, StepsStatus } from '../../domain/activity/steps.repository';
+import { SettingsProvider } from '../../domain/settings/SettingsContext';
+import HealthDataScreen from './HealthDataScreen';
 
 jest.mock('@react-navigation/native', () => ({
   ...jest.requireActual('@react-navigation/native'),

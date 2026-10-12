@@ -3,11 +3,11 @@ import { View, Text, ScrollView, StyleSheet } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 
-import { colors, radius, space, typography } from '@/shared/theme';
-import { Group, GroupLabel, IconBadge, PushHeader, ToggleRow, Stepper, Icon } from '@/shared/components/ui';
-import { useSettings } from '@/domain/settings/SettingsContext';
-import { useActivity } from '@/domain/activity/ActivityContext';
-import { StreakFreezes } from '@/domain/activity/models/dayRecord';
+import { colors, radius, space, typography } from '../../shared/theme';
+import { Group, GroupLabel, IconBadge, PushHeader, ToggleRow, Stepper, Icon } from '../../shared/components/ui';
+import { useSettings } from '../../domain/settings/SettingsContext';
+import { useActivity } from '../../domain/activity/ActivityContext';
+import { StreakFreezes } from '../../domain/activity/models/dayRecord';
 
 export default function RestDaysScreen() {
   const navigation = useNavigation();

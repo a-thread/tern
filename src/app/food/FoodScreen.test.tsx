@@ -2,18 +2,18 @@ import React from 'react';
 import { render, fireEvent, waitFor, act } from '@testing-library/react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
-import { createMemoryBackend } from '@/BackendContext';
-import { ToastProvider } from '@/shared/state/ToastContext';
+import { createMemoryBackend } from '../BackendContext';
+import { ToastProvider } from '../shared/state/ToastContext';
 import {
   ViewedDayProvider,
   useViewedDay,
   type ViewedDay,
-} from '@/shared/state/ViewedDayContext';
-import { addDays, dayKey, formatLongDate } from '@/shared/utils/date';
-import { FoodProvider } from '@/domain/food/FoodContext';
-import { WaypointsProvider } from '@/domain/waypoints/WaypointsContext';
-import { SettingsProvider } from '@/domain/settings/SettingsContext';
-import { WaterProvider } from '@/domain/water/WaterContext';
+} from '../shared/state/ViewedDayContext';
+import { addDays, dayKey, formatLongDate } from '../shared/utils/date';
+import { FoodProvider } from '../domain/food/FoodContext';
+import { WaypointsProvider } from '../domain/waypoints/WaypointsContext';
+import { SettingsProvider } from '../domain/settings/SettingsContext';
+import { WaterProvider } from '../domain/water/WaterContext';
 import FoodScreen from './FoodScreen';
 
 jest.mock('@react-navigation/native', () => ({

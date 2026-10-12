@@ -1,4 +1,4 @@
-import { assertProviderOrder } from '@/providerOrder';
+import { assertProviderOrder } from './providerOrder';
 
 describe('assertProviderOrder', () => {
   it('accepts providers listed after everything they need', () => {

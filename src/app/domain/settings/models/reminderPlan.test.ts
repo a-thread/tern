@@ -1,4 +1,4 @@
-import { restDayTriggers, upcomingDates, describeReminders, formatMinutes, mergeReminders, medicationReminderId, planReminders, waterReminderId, waterTimes, stepMinutes, stepWeekday, type ReminderConfig, Reminders, ReminderKey } from '@/domain/settings/models/reminderPlan';
+import { restDayTriggers, upcomingDates, describeReminders, formatMinutes, mergeReminders, medicationReminderId, planReminders, waterReminderId, waterTimes, stepMinutes, stepWeekday, type ReminderConfig, Reminders, ReminderKey } from './reminderPlan';
 import { Frequency } from '@/shared/models/frequency';
 
 const config = (

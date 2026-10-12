@@ -1,5 +1,5 @@
 import { type FoodEntry, Meal } from '@/domain/food/models/foodEntry';
-import { additionsSince, describeAdditions } from '../models/sessionAdditions';
+import { additionsSince, describeAdditions } from './sessionAdditions';
 
 const entry = (
   name: string,

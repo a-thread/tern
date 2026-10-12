@@ -1,5 +1,5 @@
-import type { FoodEntry } from '@/domain/food/models/foodEntry';
-import type { SearchResult } from '@/domain/food/sources/searchResult';
+import type { FoodEntry } from '../../domain/food/models/foodEntry';
+import type { SearchResult } from '../../domain/food/sources/searchResult';
 
 /**
  * `pick` puts the food screens in "choose a food for a saved meal" mode: the

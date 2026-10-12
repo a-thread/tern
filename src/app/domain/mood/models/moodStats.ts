@@ -1,5 +1,5 @@
 import { round1 } from '@/shared/utils/number';
-import type { MoodEntry, MoodMetric } from '@/domain/mood/models/moodEntry';
+import type { MoodEntry, MoodMetric } from './moodEntry';
 
 /** The entry for a day, if there is one. */
 export const entryFor = (entries: readonly MoodEntry[], day: string) =>

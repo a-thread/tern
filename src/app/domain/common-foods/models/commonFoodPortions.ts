@@ -1,5 +1,5 @@
-import type { Portion } from '@/domain/food/sources/searchResult';
-import { singular } from '@/domain/food/models/measure';
+import type { Portion } from '../../food/sources/searchResult';
+import { singular } from '../../food/models/measure';
 
 /**
  * Picks the portions people actually use for a common food, in the order to

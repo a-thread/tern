@@ -1,5 +1,5 @@
-import { planStreakAlerts, StreakAlerts } from '@/domain/settings/models/streakAlerts';
-import { DINNER_MESSAGES, LUNCH_MESSAGES, dayNumber, variantFor } from '@/domain/settings/models/mealMessages';
+import { planStreakAlerts, StreakAlerts } from './streakAlerts';
+import { DINNER_MESSAGES, LUNCH_MESSAGES, dayNumber, variantFor } from './mealMessages';
 
 const at = (h: number) => new Date(2026, 9, 5, h, 0);
 const base = { on: true, streak: 9, freezes: 0, todayOpen: true, now: at(15) };

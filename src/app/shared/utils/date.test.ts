@@ -5,7 +5,7 @@ import {
   msUntilMidnight,
   parseDayKey,
   weekStartKey,
-} from '@/shared/utils/date';
+} from './date';
 
 describe('date helpers', () => {
   it('round-trips a day key', () => {

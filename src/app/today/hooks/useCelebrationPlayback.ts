@@ -3,7 +3,7 @@ import type { View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useIsFocused } from '@react-navigation/native';
 
-import { useWaypoints, type Celebration } from '@/domain/waypoints/WaypointsContext';
+import { useWaypoints, type Celebration } from '../../domain/waypoints/WaypointsContext';
 
 type Point = { x: number; y: number };
 export type Playing = { celebration: Celebration; origin: Point; target: Point };

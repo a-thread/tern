@@ -10,17 +10,17 @@ import {
   space,
   tierColors,
   typography,
-} from '@/shared/theme';
+} from '../../shared/theme';
 import {
   Group,
   GroupLabel,
   FootNote,
   PushHeader,
   ToggleRow,
-} from '@/shared/components/ui';
-import { TierDot } from '@/shared/components/TierDot';
-import { useFoodDisplay } from '@/domain/food/hooks/useFoodDisplay';
-import { useSettings } from '@/domain/settings/SettingsContext';
+} from '../../shared/components/ui';
+import { TierDot } from '../../shared/components/TierDot';
+import { useFoodDisplay } from '../../domain/food/hooks/useFoodDisplay';
+import { useSettings } from '../../domain/settings/SettingsContext';
 
 const PREVIEW_ITEMS = [
   { tier: 1 as const, name: 'Greek yogurt with berries', calories: 210 },

@@ -1,8 +1,8 @@
 import * as Notifications from 'expo-notifications';
 
-import { Frequency } from '@/shared/models/frequency';
-import { Reminders, type ReminderConfig } from '@/domain/settings/models/reminderPlan';
-import { syncReminders } from '@/domain/settings/reminders';
+import { Frequency } from '../../shared/models/frequency';
+import { Reminders, type ReminderConfig } from './models/reminderPlan';
+import { syncReminders } from './reminders';
 
 jest.mock('expo-notifications', () => ({
   setNotificationHandler: jest.fn(),

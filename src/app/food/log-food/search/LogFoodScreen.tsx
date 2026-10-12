@@ -16,13 +16,13 @@ import {
   FOOD_FILTERS,
   useFoodLookup,
   type FoodFilter,
-} from '../search/hooks/useFoodLookup';
+} from './hooks/useFoodLookup';
 import AddedBanner from '../components/AddedBanner/AddedBanner';
-import { FoodGroup } from '../search/components/FoodGroup/FoodGroup';
-import { FoodSearchBar } from '../search/components/FoodSearchBar/FoodSearchBar';
+import { FoodGroup } from './components/FoodGroup/FoodGroup';
+import { FoodSearchBar } from './components/FoodSearchBar/FoodSearchBar';
 import { ListNote } from '../components/ListNote/ListNote';
-import { LogFoodAllTab } from '../search/components/LogFoodAllTab/LogFoodAllTab';
-import { LogFoodMealsTab } from '../search/components/LogFoodMealsTab/LogFoodMealsTab';
+import { LogFoodAllTab } from './components/LogFoodAllTab/LogFoodAllTab';
+import { LogFoodMealsTab } from './components/LogFoodMealsTab/LogFoodMealsTab';
 import type { LogFoodStackParamList } from '../navigation';
 
 type Props = NativeStackScreenProps<LogFoodStackParamList, 'Search'>;

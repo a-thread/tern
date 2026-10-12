@@ -1,8 +1,8 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-import { colors, font, space } from '@/shared/theme';
-import { DayState } from '@/shared/models/dayState';
-import { LegendDot } from '@/trends/components/LegendDot';
+import { colors, font, space } from '../../shared/theme';
+import { DayState } from '../../shared/models/dayState';
+import { LegendDot } from './LegendDot';
 
 /* ------------------------------------------------------------------ */
 /* Step bars                                                            */

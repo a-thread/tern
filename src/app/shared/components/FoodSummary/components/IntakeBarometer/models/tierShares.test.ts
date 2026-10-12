@@ -1,4 +1,4 @@
-import { tierShares } from '@/shared/components/FoodSummary/components/IntakeBarometer/models/tierShares';
+import { tierShares } from './tierShares';
 
 const food = (tier: 1 | 2 | 3 | 4, calories: number, servings = 1) => ({
   tier,

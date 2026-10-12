@@ -1,7 +1,7 @@
 import { readFileSync } from 'fs';
 import { join } from 'path';
 
-import { birdBox, poseAt, RestScenes, settledPose, Sprite } from '@/today/models/restScene';
+import { birdBox, poseAt, RestScenes, settledPose, Sprite } from './restScene';
 
 /** The size of a PNG in assets/, read from its header. */
 const pngSize = (name: string) => {

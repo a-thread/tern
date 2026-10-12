@@ -1,18 +1,18 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import type { SettingsRepository } from '@/domain/settings/settings.repository';
-import { createRequiredContext } from '@/shared/state/createRequiredContext';
-import { useAuth } from '@/domain/auth/AuthContext';
-import { useToast } from '@/shared/state/ToastContext';
-import { dayKey } from '@/shared/utils/date';
-import { recordGoalChange } from '@/domain/activity/models/stepGoal';
-import { mergeMedications } from '@/domain/medication/models/medication';
-import { clampWaterGoal, WaterLimits } from '@/domain/water/models/waterEntry';
-import { mergeReminders, Reminders } from '@/domain/settings/models/reminderPlan';
-import { initialSettings, changesAnything, type AppSettings } from '@/domain/settings/models/appSettings';
-import { Frequency } from '@/shared/models/frequency';
-import { sanitizeCalorieZone } from '@/domain/food/models/intakeZone';
-import { clampMovementGoal, MovementLimits } from '@/domain/movement/models/movementEntry';
-import { Aim } from '@/domain/food/models/energyBalance';
+import type { SettingsRepository } from './settings.repository';
+import { createRequiredContext } from '../../shared/state/createRequiredContext';
+import { useAuth } from '../auth/AuthContext';
+import { useToast } from '../../shared/state/ToastContext';
+import { dayKey } from '../../shared/utils/date';
+import { recordGoalChange } from '../activity/models/stepGoal';
+import { mergeMedications } from '../medication/models/medication';
+import { clampWaterGoal, WaterLimits } from '../water/models/waterEntry';
+import { mergeReminders, Reminders } from './models/reminderPlan';
+import { initialSettings, changesAnything, type AppSettings } from './models/appSettings';
+import { Frequency } from '../../shared/models/frequency';
+import { sanitizeCalorieZone } from '../food/models/intakeZone';
+import { clampMovementGoal, MovementLimits } from '../movement/models/movementEntry';
+import { Aim } from '../food/models/energyBalance';
 
 type SettingsContextValue = {
   settings: AppSettings;

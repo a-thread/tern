@@ -1,17 +1,17 @@
 import React from 'react';
 
-import { useReminders } from '@/settings/hooks/useReminders';
-import TimeStepperRow from '@/settings/components/TimeStepperRow';
+import { useReminders } from '../hooks/useReminders';
+import TimeStepperRow from './TimeStepperRow';
 import {
   ReminderBlock,
   ReminderTimeRow,
-} from '@/settings/components/ReminderBlock';
+} from './ReminderBlock';
 import {
   stepWeekday,
   weekdayPlural,
   ReminderKey,
-} from '@/domain/settings/models/reminderPlan';
-import { Frequency } from '@/shared/models/frequency';
+} from '../../domain/settings/models/reminderPlan';
+import { Frequency } from '../../shared/models/frequency';
 
 /** The weigh-in reminder, on the day and time it fires. Only offered while weight is tracked. */
 export function WeightReminderRows() {

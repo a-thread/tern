@@ -1,4 +1,4 @@
-import { Units } from '@/shared/utils/units';
+import { Units } from '../../shared/utils/units';
 
 /** Seed data only — the values SettingsContext initializes from. */
 export const settingsSeed = {

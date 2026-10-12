@@ -1,6 +1,6 @@
-import { type FoodEntry, Meal } from '@/domain/food/models/foodEntry';
-import { cleanName, filterMeals, findMealByName, itemsToEntries, savedMealTotals, snapshotItems, sortMeals, validateMealName, type SavedMeal, SavedMealLimits } from '@/domain/saved-meals/models/savedMeals';
-import { amountOf } from '@/domain/food/models/measure';
+import { type FoodEntry, Meal } from '../../food/models/foodEntry';
+import { cleanName, filterMeals, findMealByName, itemsToEntries, savedMealTotals, snapshotItems, sortMeals, validateMealName, type SavedMeal, SavedMealLimits } from './savedMeals';
+import { amountOf } from '../../food/models/measure';
 
 const entry = (name: string, over: Partial<FoodEntry> = {}): FoodEntry => ({
   id: `id-${name}`,

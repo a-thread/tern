@@ -1,13 +1,13 @@
 import React from 'react';
 import { Text } from 'react-native';
 
-import { colors, typography } from '@/shared/theme';
-import { Card, GroupLabel, Icon } from '@/shared/components/ui';
-import { TrendRanges, TrendRange } from '@/trends/models/trendRange';
-import { ConsistencyGrid } from '@/trends/components/ConsistencyGrid';
-import { Insight } from '@/trends/components/Insight';
-import { longestProtectedRun } from '@/trends/models/stepsSummary';
-import { useActivity } from '@/domain/activity/ActivityContext';
+import { colors, typography } from '../../shared/theme';
+import { Card, GroupLabel, Icon } from '../../shared/components/ui';
+import { TrendRanges, TrendRange } from '../models/trendRange';
+import { ConsistencyGrid } from './ConsistencyGrid';
+import { Insight } from './Insight';
+import { longestProtectedRun } from '../models/stepsSummary';
+import { useActivity } from '../../domain/activity/ActivityContext';
 
 /** A grid of the range's days by how each went, with the longest stretch kept up. */
 export function ConsistencyCard({ range }: { range: TrendRange }) {

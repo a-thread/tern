@@ -2,8 +2,8 @@ import React from 'react';
 import { AppState } from 'react-native';
 import { renderHook, act } from '@testing-library/react-native';
 
-import { dayKey } from '@/shared/utils/date';
-import { DayKeyProvider, useDayKey } from '@/shared/hooks/useDayKey';
+import { dayKey } from '../utils/date';
+import { DayKeyProvider, useDayKey } from './useDayKey';
 
 // Not restoreAllMocks: that would also wipe React Native's own AppState mock
 // (a jest.fn), leaving addEventListener returning nothing for later tests.

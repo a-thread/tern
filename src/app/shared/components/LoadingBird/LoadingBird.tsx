@@ -7,7 +7,7 @@ import {
   type ViewStyle,
 } from 'react-native';
 
-import { useReduceMotion } from '@/shared/hooks/useReduceMotion';
+import { useReduceMotion } from '../../hooks/useReduceMotion';
 
 // bird-sprite.png: 16 frames, each 260 x 560 px, laid out horizontally (4160 x 560).
 // The beak is anchored at the same pixel in every cell, so the bird stays put.

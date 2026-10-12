@@ -1,21 +1,21 @@
 import React from 'react';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
-import SettingsRootScreen from '@/settings/SettingsScreen';
-import StepGoalScreen from '@/settings/step-goal/StepGoalScreen';
-import FoodDisplayScreen from '@/settings/food-display/FoodDisplayScreen';
-import HealthDataScreen from '@/settings/health-data/HealthDataScreen';
-import TargetsScreen from '@/settings/targets/TargetsScreen';
-import RestDaysScreen from '@/settings/rest-days/RestDaysScreen';
-import MedicationScreen from '@/settings/medication/MedicationScreen';
-import ActivitySettingsScreen from '@/settings/activity/ActivitySettingsScreen';
-import FoodSettingsScreen from '@/settings/food/FoodSettingsScreen';
-import WeightSettingsScreen from '@/settings/weight/WeightSettingsScreen';
-import WaterSettingsScreen from '@/settings/water/WaterSettingsScreen';
-import MoodSettingsScreen from '@/settings/mood/MoodSettingsScreen';
-import RemindersSettingsScreen from '@/settings/reminders/RemindersSettingsScreen';
-import DataSettingsScreen from '@/settings/data/DataSettingsScreen';
-import type { SettingsStackParamList } from '@/navigation/types';
+import SettingsRootScreen from './SettingsScreen';
+import StepGoalScreen from './step-goal/StepGoalScreen';
+import FoodDisplayScreen from './food-display/FoodDisplayScreen';
+import HealthDataScreen from './health-data/HealthDataScreen';
+import TargetsScreen from './targets/TargetsScreen';
+import RestDaysScreen from './rest-days/RestDaysScreen';
+import MedicationScreen from './medication/MedicationScreen';
+import ActivitySettingsScreen from './activity/ActivitySettingsScreen';
+import FoodSettingsScreen from './food/FoodSettingsScreen';
+import WeightSettingsScreen from './weight/WeightSettingsScreen';
+import WaterSettingsScreen from './water/WaterSettingsScreen';
+import MoodSettingsScreen from './mood/MoodSettingsScreen';
+import RemindersSettingsScreen from './reminders/RemindersSettingsScreen';
+import DataSettingsScreen from './data/DataSettingsScreen';
+import type { SettingsStackParamList } from '../navigation/types';
 
 const Stack = createNativeStackNavigator<SettingsStackParamList>();
 

@@ -10,7 +10,7 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 
-import { colors, font, radius, space } from '@/shared/theme';
+import { colors, font, radius, space } from '../../shared/theme';
 import {
   FootNote,
   Group,
@@ -18,13 +18,13 @@ import {
   Row,
   SheetNav,
   Icon,
-} from '@/shared/components/ui';
-import { useDayKey } from '@/shared/hooks/useDayKey';
-import { addDays } from '@/shared/utils/date';
-import { useUnits } from '@/domain/settings/hooks/useUnits';
-import { useMovement } from '@/domain/movement/MovementContext';
-import { ActivityGlyph } from '@/movement/components/ActivityGlyph';
-import type { MovementStackParamList } from '@/movement/navigation';
+} from '../../shared/components/ui';
+import { useDayKey } from '../../shared/hooks/useDayKey';
+import { addDays } from '../../shared/utils/date';
+import { useUnits } from '../../domain/settings/hooks/useUnits';
+import { useMovement } from '../../domain/movement/MovementContext';
+import { ActivityGlyph } from '../components/ActivityGlyph';
+import type { MovementStackParamList } from '../navigation';
 import {
   ACTIVITY_INFO,
   EFFORT_LABEL,
@@ -32,7 +32,7 @@ import {
   formatDistance,
   isLoggableDay,
   searchActivities,
-} from '@/domain/movement/models/movementEntry';
+} from '../../domain/movement/models/movementEntry';
 
 type Props = NativeStackScreenProps<MovementStackParamList, 'Exercises'>;
 

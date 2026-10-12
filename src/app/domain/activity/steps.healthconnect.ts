@@ -1,5 +1,5 @@
-import { addDays, dayKey, parseDayKey } from '@/shared/utils/date';
-import { StepsRepository, StepsStatus } from '@/domain/activity/steps.repository';
+import { addDays, dayKey, parseDayKey } from '../../shared/utils/date';
+import { StepsRepository, StepsStatus } from './steps.repository';
 
 /**
  * Steps from Android Health Connect.

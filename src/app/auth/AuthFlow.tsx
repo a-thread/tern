@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 
-import { useAuth } from '@/domain/auth/AuthContext';
+import { useAuth } from '../domain/auth/AuthContext';
 import LoginScreen from './login/LoginScreen';
 import CreateAccountScreen from './create-account/CreateAccountScreen';
 import ForgotPasswordScreen from './forgot-password/ForgotPasswordScreen';

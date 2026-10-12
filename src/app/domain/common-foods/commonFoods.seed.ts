@@ -1,4 +1,4 @@
-import type { CommonFood } from '@/domain/common-foods/models/commonFoods';
+import type { CommonFood } from './models/commonFoods';
 
 /**
  * A small starter set of common foods (per 100 g, rounded USDA figures), for

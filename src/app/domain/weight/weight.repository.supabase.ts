@@ -1,7 +1,7 @@
-import type { TernClient } from '@/shared/backend/supabase';
-import { ok, rows } from '@/shared/backend/query';
-import type { WeightEntry } from '@/domain/weight/models/weightEntry';
-import type { WeightRepository } from '@/domain/weight/weight.repository';
+import type { TernClient } from '../../shared/backend/supabase';
+import { ok, rows } from '../../shared/backend/query';
+import type { WeightEntry } from './models/weightEntry';
+import type { WeightRepository } from './weight.repository';
 
 type WeightRow = { id: string; lb: number | string; logged_at: string };
 

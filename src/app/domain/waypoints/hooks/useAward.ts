@@ -1,8 +1,8 @@
 import { useEffect } from 'react';
 
 import { useDayKey } from '@/shared/hooks/useDayKey';
-import { useWaypoints } from '@/domain/waypoints/WaypointsContext';
-import { pointsFor, type WaypointSource } from '@/domain/waypoints/models/waypoint';
+import { useWaypoints } from '../WaypointsContext';
+import { pointsFor, type WaypointSource } from '../models/waypoint';
 
 /**
  * Keeps today's award for `source` in step with `earned`: given when it becomes true,

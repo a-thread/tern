@@ -1,17 +1,17 @@
-import { initialSettings, type AppSettings } from '@/domain/settings/models/appSettings';
-import { Units } from '@/shared/utils/units';
-import { Frequency } from '@/shared/models/frequency';
+import { initialSettings, type AppSettings } from '../../domain/settings/models/appSettings';
+import { Units } from '../../shared/utils/units';
+import { Frequency } from '../../shared/models/frequency';
 import {
   activeReminderCount,
   healthDataSummary,
   remindersSummary,
-} from '@/settings/models/settingsSummary';
-import { activitySummary } from '@/settings/models/activitySummary';
-import { foodSummary } from '@/settings/models/foodSummary';
-import { weightSummary } from '@/settings/models/weightSummary';
-import { waterSummary } from '@/settings/models/waterSummary';
-import { moodSummary } from '@/settings/models/moodSummary';
-import { medicationSummary } from '@/settings/models/medicationSummary';
+} from './settingsSummary';
+import { activitySummary } from './activitySummary';
+import { foodSummary } from './foodSummary';
+import { weightSummary } from './weightSummary';
+import { waterSummary } from './waterSummary';
+import { moodSummary } from './moodSummary';
+import { medicationSummary } from './medicationSummary';
 
 // The one-line summaries on the Settings index, each owned by its feature.
 

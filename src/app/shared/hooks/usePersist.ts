@@ -1,6 +1,6 @@
 import { useCallback } from 'react';
 
-import { useToast } from '@/shared/state/ToastContext';
+import { useToast } from '../state/ToastContext';
 
 /** What to say when a background write fails: a console note, and a message for the person. */
 export type PersistFailure = { log: string; toast: string };

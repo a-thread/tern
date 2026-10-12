@@ -1,10 +1,10 @@
-import type { Medication } from '@/domain/medication/models/medication';
+import type { Medication } from '../../medication/models/medication';
 import { Frequency } from '@/shared/models/frequency';
 import {
   DINNER_MESSAGES,
   LUNCH_MESSAGES,
   type ReminderText,
-} from '@/domain/settings/models/mealMessages';
+} from './mealMessages';
 
 /**
  * What gets scheduled for each reminder. Kept separate from the notification

@@ -3,13 +3,13 @@ import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 
-import { colors, font, radius, space } from '@/shared/theme';
-import { PushHeader, SegmentedControl, Stepper } from '@/shared/components/ui';
-import { useUnits } from '@/domain/settings/hooks/useUnits';
-import { useMovement } from '@/domain/movement/MovementContext';
-import { ActivityGlyph } from '@/movement/components/ActivityGlyph';
-import { MinutesRuler } from '@/movement/exercise-detail/components/MinutesRuler';
-import type { MovementStackParamList } from '@/movement/navigation';
+import { colors, font, radius, space } from '../../shared/theme';
+import { PushHeader, SegmentedControl, Stepper } from '../../shared/components/ui';
+import { useUnits } from '../../domain/settings/hooks/useUnits';
+import { useMovement } from '../../domain/movement/MovementContext';
+import { ActivityGlyph } from '../components/ActivityGlyph';
+import { MinutesRuler } from './components/MinutesRuler';
+import type { MovementStackParamList } from '../navigation';
 import {
   ACTIVITY_INFO,
   countsTowardGoal,
@@ -20,7 +20,7 @@ import {
   EFFORT_LABEL,
   formatDistance,
   MovementLimits,
-} from '@/domain/movement/models/movementEntry';
+} from '../../domain/movement/models/movementEntry';
 
 type Props = NativeStackScreenProps<MovementStackParamList, 'ExerciseDetail'>;
 

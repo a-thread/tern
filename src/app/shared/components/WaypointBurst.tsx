@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useRef } from 'react';
 import { Animated, Easing, StyleSheet, Text, View } from 'react-native';
 import Svg, { Path } from 'react-native-svg';
-import { colors, font } from '@/shared/theme';
+import { colors, font } from '../theme';
 
 type Point = { x: number; y: number };
 
