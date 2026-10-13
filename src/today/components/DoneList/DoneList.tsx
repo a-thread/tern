@@ -8,11 +8,12 @@ import { useFoodDisplay } from '@/domain/food/hooks/useFoodDisplay';
 import { useMedication } from '@/domain/medication/MedicationContext';
 import { useWater } from '@/domain/water/WaterContext';
 import WaterSheet from '../WaterSheet';
-import { movementSummary } from '@/domain/movement/models/movementEntry';
+import { movementSummary, isFromHealthApp } from '@/domain/movement/models/movementEntry';
 import { scoreWord, MoodMetric } from '@/domain/mood/models/moodEntry';
 import { formatLoggedAt } from '@/domain/weight/models/weightEntry';
 import { useViewedDay } from '@shared/state/ViewedDayContext';
 import { dayWord } from '@shared/utils/date';
+import { healthAppName } from '@shared/utils/healthApp';
 import { useDayItems } from '../../hooks/useDayItems';
 import { DoneBadge } from './components/DoneBadge';
 import { useRootNavigation } from '@/navigation/useAppNavigation';
@@ -45,9 +46,7 @@ export function DoneList({
   const water = useWater();
   const { setTaken } = useMedication();
   const [waterOpen, setWaterOpen] = useState(false);
-  const fromHealthConnect = movementOnDay.some(
-    (e) => e.source === 'healthConnect',
-  );
+  const fromHealthApp = movementOnDay.some((e) => isFromHealthApp(e.source));
 
   // An older day with nothing on it says so; today and yesterday have "Left to do" above.
   if (!anythingDone)
@@ -122,8 +121,8 @@ export function DoneList({
             key='done-movement'
             title={`Moved ${movementSummary(movementOnDay)}`}
             sub={
-              fromHealthConnect
-                ? 'Includes workouts from Health Connect'
+              fromHealthApp
+                ? `Includes workouts from ${healthAppName()}`
                 : editable
                   ? 'Add more, or remove one'
                   : undefined

@@ -107,6 +107,15 @@ export const searchActivities = (query: string) => {
  * in the adaptive target, from their own log and weight trend, never from a
  * per-workout estimate. `day` is the local day (YYYY-MM-DD).
  */
+export enum MovementSource {
+  Manual = 'manual',
+  HealthConnect = 'healthConnect',
+  HealthKit = 'healthKit',
+}
+
+/** Whether an entry was read from Health Connect or Apple Health, rather than logged by hand. */
+export const isFromHealthApp = (source: MovementSource) => source !== MovementSource.Manual;
+
 export type MovementEntry = {
   id: string;
   day: string;
@@ -115,8 +124,8 @@ export type MovementEntry = {
   effort: Effort | null;
   /** Optional, in meters (miles or kilometers are a display choice). */
   distanceM?: number | null;
-  /** Logged by hand, or read from Health Connect (read-only, never stored). */
-  source: 'manual' | 'healthConnect';
+  /** Logged by hand, or read from the phone's health app (read-only, never stored). */
+  source: MovementSource;
   loggedAt: string;
 };
 

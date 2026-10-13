@@ -1,21 +1,4 @@
-import {
-  Activity,
-  activityShare,
-  ACTIVITY_INFO,
-  clampMovementGoal,
-  distanceFromDisplay,
-  formatDistance,
-  searchActivities,
-  countsTowardGoal,
-  goalMinutesByDay,
-  dayMinutes,
-  entriesOn,
-  isLoggableDay,
-  isValidMinutes,
-  minutesByDay,
-  movementSummary,
-  type MovementEntry,
-} from './movementEntry';
+import { Activity, activityShare, ACTIVITY_INFO, clampMovementGoal, distanceFromDisplay, formatDistance, searchActivities, countsTowardGoal, goalMinutesByDay, dayMinutes, entriesOn, isLoggableDay, isValidMinutes, minutesByDay, movementSummary, type MovementEntry, MovementSource } from './movementEntry';
 import { Units } from '@shared/utils/units';
 
 const entry = (day: string, activity: Activity, minutes: number, at = `${day}T08:00:00Z`): MovementEntry => ({
@@ -24,7 +7,7 @@ const entry = (day: string, activity: Activity, minutes: number, at = `${day}T08
   activity,
   minutes,
   effort: null,
-  source: 'manual',
+  source: MovementSource.Manual,
   loggedAt: at,
 });
 

@@ -5,6 +5,7 @@ import { useNavigation } from '@react-navigation/native';
 
 import { colors, font, radius, space, typography } from '@shared/theme';
 import { useToast } from '@shared/state/ToastContext';
+import { healthAccessPath, healthAppName } from '@shared/utils/healthApp';
 import { Group, GroupLabel, IconBadge, Chip, FootNote, PushHeader, ToggleRow, Icon } from '@shared/components/ui';
 import { formatLoggedAt } from '../../domain/weight/models/weightEntry';
 import { useActivity, useLastSynced } from '../../domain/activity/ActivityContext';
@@ -22,8 +23,9 @@ export default function HealthDataScreen() {
   const lastSynced = useLastSynced();
   const toast = useToast();
   const [busy, setBusy] = useState(false);
+  const healthApp = healthAppName();
 
-  /** Asks for access to steps (the Health Connect permission prompt) and says how it went. */
+  /** Asks for access to steps (the health app's permission prompt) and says how it went. */
   const requestAccess = async () => {
     if (busy) return;
     setBusy(true);
@@ -31,14 +33,14 @@ export default function HealthDataScreen() {
       const result = await connect();
       toast.show(
         result === StepsStatus.Connected
-          ? 'Health Connect is connected.'
+          ? `${healthApp} is connected.`
           : result === StepsStatus.Unavailable
-            ? "Health Connect isn't available on this device."
+            ? `${healthApp} isn't available on this device.`
             : 'Tern still needs permission to read your steps.',
       );
     } catch (e) {
-      console.warn('Could not connect Health Connect', e);
-      toast.show("Couldn't connect Health Connect — please try again.");
+      console.warn(`Could not connect ${healthApp}`, e);
+      toast.show(`Couldn't connect ${healthApp} — please try again.`);
     } finally {
       setBusy(false);
     }
@@ -85,7 +87,7 @@ export default function HealthDataScreen() {
             <Icon name='heart-pulse' size={19} color='#3B6B4A' />
           </IconBadge>
           <View style={{ flex: 1 }}>
-            <Text style={s.rowTitle}>Health Connect</Text>
+            <Text style={s.rowTitle}>{healthApp}</Text>
             <Text style={s.rowSub}>
               {status === StepsStatus.Connected
                 ? lastSynced
@@ -115,7 +117,7 @@ export default function HealthDataScreen() {
           )}
         </View>
 
-        <GroupLabel>Reading from Health Connect</GroupLabel>
+        <GroupLabel>{`Reading from ${healthApp}`}</GroupLabel>
         <Group>
           <ToggleRow
             title='Steps'
@@ -126,12 +128,12 @@ export default function HealthDataScreen() {
           {settings.trackMovement && movement.workoutsAvailable ? (
             <ToggleRow
               title='Workouts'
-              sub='Count as movement. Read-only: they stay in Health Connect'
+              sub={`Count as movement. Read-only: they stay in ${healthApp}`}
               on={hd.readWorkouts}
               onToggle={async (v) => {
                 patchHealthData({ readWorkouts: v });
                 if (v && !(await movement.connectWorkouts())) {
-                  toast.show('Allow Tern to read exercise in Health Connect to count workouts.');
+                  toast.show(`Allow Tern to read workouts in ${healthApp} to count them.`);
                 }
               }}
             />
@@ -143,7 +145,7 @@ export default function HealthDataScreen() {
           {status === StepsStatus.NeedsPermission ? (
             <Pressable style={s.row} onPress={requestAccess} disabled={busy}>
               <Text style={[s.rowTitle, s.link, { flex: 1 }]}>
-                Connect Health Connect
+                {`Connect ${healthApp}`}
               </Text>
             </Pressable>
           ) : (
@@ -154,9 +156,7 @@ export default function HealthDataScreen() {
         </Group>
 
         <FootNote>
-          Tern only reads your steps, and your workouts when movement is on, and
-          never shares your health data with anyone. To disconnect, remove Tern's access in Health Connect; everything
-          you've logged stays.
+          {`Tern only reads your steps, and your workouts when movement is on, and never shares your health data with anyone. To disconnect, remove Tern's access in ${healthAccessPath()}; everything you've logged stays.`}
         </FootNote>
 
       </ScrollView>

@@ -1,5 +1,5 @@
 import { addDays, dayKey, parseDayKey } from '@shared/utils/date';
-import { Activity, isValidMinutes, type MovementEntry } from './models/movementEntry';
+import { Activity, isValidMinutes, type MovementEntry, MovementSource } from './models/movementEntry';
 
 /** Workouts read from somewhere outside Tern (Health Connect). Read-only: never stored. */
 export interface WorkoutsSource {
@@ -81,7 +81,7 @@ export function sessionToEntry(
     activity: activityForExercise(nameOf(r.exerciseType)),
     minutes,
     effort: null,
-    source: 'healthConnect',
+    source: MovementSource.HealthConnect,
     loggedAt: new Date(start).toISOString(),
   };
 }
