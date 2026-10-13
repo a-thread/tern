@@ -25,3 +25,33 @@ Expo owner `purlieus-systems`.
 
 Test build: Actions > Build > Run workflow > `preview` / `android` gives an installable APK.
 Tick "submit" (production only) to send the build to the store once step 5 above is done.
+
+## iPhone
+
+Not shipped yet. Everything in the repo is ready for a first build; what's left needs an Apple
+Developer Program membership ($99/year), because nothing but Expo Go can run on a real iPhone
+without one, and Expo Go can't load Apple Health.
+
+One-time setup:
+
+1. Join the Apple Developer Program, then create the app in App Store Connect with bundle id
+   `com.purlieus.tern`. Note its numeric Apple ID and put it in `eas.json` as
+   `submit.production.ios.ascAppId`.
+2. `npx eas-cli credentials -p ios`: EAS creates the distribution certificate and provisioning profile,
+   and enables the HealthKit capability on the App ID from the entitlement in `app.json`.
+3. Register your iPhone for development builds: `npx eas-cli device:create`.
+
+First build and check (see [healthkit.md](healthkit.md) for what to look at):
+
+1. `eas build --profile development --platform ios`, install on the iPhone, run the app with `npx expo start --dev-client`.
+2. Settings > Health data > Connect Apple Health. Steps for the last week should match the Health app,
+   including a day with both iPhone and Watch data. Workouts should show as read-only movement.
+3. Check reminders, the barcode scanner, sign-in and the password-reset link.
+
+TestFlight:
+
+1. `eas build --profile production --platform ios --auto-submit` (or Actions > Build > `ios`, tick submit).
+2. In App Store Connect > TestFlight, add testers to an internal group. Builds expire after 90 days.
+
+App Store: screenshots, the privacy policy URL (`docs/index.html`), App Privacy answers, and review
+notes explaining the HealthKit use (guideline 5.1.3).

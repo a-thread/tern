@@ -62,8 +62,9 @@ npx expo start
 
 Scan the QR code with Expo Go, or press `a` to open an Android emulator.
 
-Health Connect steps need a development client instead of Expo Go. See
-[docs/health-connect.md](docs/health-connect.md).
+Health steps need a development client instead of Expo Go: Health Connect on Android
+([docs/health-connect.md](docs/health-connect.md)), Apple Health on iPhone
+([docs/healthkit.md](docs/healthkit.md)).
 
 ## Configuration
 
@@ -73,7 +74,7 @@ Copy [.env.example](.env.example) to `.env` (gitignored). Every variable is opti
 | ------------------------------- | ------------------------------------------------------------------ |
 | `EXPO_PUBLIC_SUPABASE_URL`      | Supabase project URL. Blank runs on local sample data.             |
 | `EXPO_PUBLIC_SUPABASE_ANON_KEY` | Supabase anon key. Safe to ship, since RLS protects the data.      |
-| `EXPO_PUBLIC_HEALTH_CONNECT`    | Set to `1` in a dev build with Health Connect installed.           |
+| `EXPO_PUBLIC_HEALTH`            | Set to `1` in a dev build to read Health Connect or Apple Health.  |
 | `EXPO_PUBLIC_USDA_API_KEY`      | Enables everyday-food search. Blank falls back to Open Food Facts. |
 
 To run against your own backend, follow [supabase/README.md](supabase/README.md) to create
@@ -150,5 +151,7 @@ behavior, never weight or calorie totals**.
 
 ## Status
 
-Android first. iOS builds aren't wired up yet, and HealthKit steps aren't implemented.
+Android is the tested platform. iPhone support (Apple Health steps and workouts, EAS iOS profiles) is in
+the code and config but hasn't run on a real iPhone yet; see [docs/healthkit.md](docs/healthkit.md) for
+what is verified and what is waiting on an Apple Developer account.
 Tern is a tracking tool, not medical advice.

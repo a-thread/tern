@@ -1,4 +1,7 @@
-# Steps and Health Connect
+# Steps and Health Connect (Android)
+
+This page is about Android. iPhone reads Apple Health instead — see [healthkit.md](healthkit.md).
+Both sit behind the same switch and the same screen in the app.
 
 Steps are read on the device and never uploaded. In local (no-keys) mode and the guest
 preview the app shows sample steps. With an account and no step source, steps stay at
@@ -6,22 +9,18 @@ zero and no step waypoints are awarded — sample data would earn a real account
 it didn't earn.
 
 The adapter is [`src/domain/activity/steps.healthconnect.ts`](../src/domain/activity/steps.healthconnect.ts).
-It stays off unless `EXPO_PUBLIC_HEALTH_CONNECT=1`, and has been verified by manual
+It stays off unless `EXPO_PUBLIC_HEALTH=1` (the old name `EXPO_PUBLIC_HEALTH_CONNECT` still works), and has been verified by manual
 testing on an Android device.
 
 ## Turning it on
 
 Health Connect is a native module, so Expo Go can't load it. You need a dev client.
 
-1. `.env` has `EXPO_PUBLIC_HEALTH_CONNECT=1` (the adapter stays off without it).
+1. `.env` has `EXPO_PUBLIC_HEALTH=1` (the adapter stays off without it).
 2. `npx expo prebuild` then `npx expo run:android`, with a device or emulator that has
    Health Connect — built in on Android 14+, a Play Store app before that. Or build one:
    `eas build --profile development --platform android`.
 3. In the app: Settings → Health data → _Connect Health Connect_.
-
-> The `development` profile in `eas.json` sets `developmentClient: true`, but
-> `expo-dev-client` is not a dependency yet. Run `npx expo install expo-dev-client`
-> before using that profile, or the build won't give you a working dev client.
 
 ## What's already configured
 
@@ -55,4 +54,4 @@ counts look wrong, check the `aggregateGroupByPeriod` call against the library d
 
 ## iOS
 
-HealthKit (`react-native-health`) is not wired up. Steps are Android-only for now.
+Apple Health is a separate adapter; see [healthkit.md](healthkit.md).

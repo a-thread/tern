@@ -54,7 +54,7 @@ going over.
 a target to match. It never changes one on its own.
 
 STEPS
-• Connect Health Connect to see today's steps, your streak and your goal.
+• Connect Health Connect (or Apple Health on iPhone) to see today's steps, your streak and your goal.
 • Choose a goal that fits your life, and change it as your life changes.
 • Step counts stay on your device. They're never uploaded.
 
