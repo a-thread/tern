@@ -1,4 +1,4 @@
-import { restDayTriggers, upcomingDates, describeReminders, formatMinutes, mergeReminders, medicationReminderId, planReminders, waterReminderId, waterTimes, stepMinutes, stepWeekday, type ReminderConfig, Reminders, ReminderKey } from './reminderPlan';
+import { rotationDays, NotificationLimits, type PlannedReminder, restDayTriggers, upcomingDates, describeReminders, formatMinutes, mergeReminders, medicationReminderId, planReminders, waterReminderId, waterTimes, stepMinutes, stepWeekday, type ReminderConfig, Reminders, ReminderKey } from './reminderPlan';
 import { Frequency } from '@shared/models/frequency';
 
 const config = (
@@ -288,5 +288,53 @@ describe('restDayTriggers', () => {
   it('is just next week\'s date for a weekly reminder due today', () => {
     const t = restDayTriggers({ id: 'x', hour: 18, minute: 0, weekday: 7 }, now);
     expect(t).toEqual([{ id: 'x-rest-7', date: new Date(2026, 9, 17, 18, 0) }]);
+  });
+});
+
+describe('rotationDays', () => {
+  const rotating = (id: string): PlannedReminder => ({
+    id,
+    key: ReminderKey.Meals,
+    title: 't',
+    body: 'b',
+    hour: 12,
+    minute: 0,
+    variants: [{ title: 't', body: 'b' }],
+  });
+  const fixed = (id: string, key: PlannedReminder['key'] = ReminderKey.Water): PlannedReminder => ({
+    id,
+    key,
+    title: 't',
+    body: 'b',
+    hour: 9,
+    minute: 0,
+  });
+
+  it('keeps the full rotation when there is no limit', () => {
+    expect(rotationDays([rotating('a'), rotating('b')], Infinity, 14)).toBe(14);
+  });
+
+  it('keeps the full rotation when it fits under the iOS limit', () => {
+    const plan = [rotating('a'), rotating('b'), fixed('w1'), fixed('w2')];
+    expect(rotationDays(plan, NotificationLimits.IOS_PENDING, 14)).toBe(14);
+  });
+
+  it('shortens the rotation when a lot of other reminders are scheduled', () => {
+    const many = Array.from({ length: 40 }, (_, i) => fixed(`med-${i}`, 'medication'));
+    const days = rotationDays([rotating('a'), rotating('b'), ...many], NotificationLimits.IOS_PENDING, 14);
+    expect(days).toBeLessThan(14);
+    expect(days * 2 + 40 + NotificationLimits.STREAK_RESERVE).toBeLessThanOrEqual(NotificationLimits.IOS_PENDING);
+  });
+
+  it('counts a rest day as a week of triggers for each repeating reminder', () => {
+    const plan = [rotating('a'), rotating('b'), ...Array.from({ length: 6 }, (_, i) => fixed(`w${i}`))];
+    const normal = rotationDays(plan, NotificationLimits.IOS_PENDING, 14);
+    const rest = rotationDays(plan, NotificationLimits.IOS_PENDING, 14, true);
+    expect(rest).toBeLessThan(normal);
+  });
+
+  it('never goes below one day', () => {
+    const many = Array.from({ length: 80 }, (_, i) => fixed(`m${i}`, 'medication'));
+    expect(rotationDays([rotating('a'), ...many], NotificationLimits.IOS_PENDING, 14)).toBe(1);
   });
 });
