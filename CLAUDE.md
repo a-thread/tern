@@ -1,15 +1,16 @@
 # Tern — React Native Standards
 
-Expo / React Native / TypeScript. Everything lives under `src/app/`.
+Expo / React Native / TypeScript. All app code lives under `src/`.
 
 **Imports**: use a relative path when the target is at most two levels up (`./x`, `../x`,
-`../../x`). Anything further away uses the `@/` alias, which is `src/app/` (`@/shared/theme` is
-`src/app/shared/theme`), rather than a `../../../` chain.
+`../../x`). Reaching into `shared/` from outside it always uses the `@shared/` alias
+(`@shared/theme` is `src/shared/theme`). Anything else further away uses `@/`, which is `src/`
+(`@/domain/food/FoodContext`), rather than a `../../../` chain.
 
 ## Folder Structure
 
 ```
-src/app/
+src/
   AppProviders.tsx  AuthGate.tsx  BackendContext.tsx  providerOrder.ts   composition root
   navigation/                   RootNavigator, the route registry (types.ts), useAppNavigation
   <tab or flow>/                today, food, trends, journey, settings, auth, movement, check-in, log-weight
@@ -63,18 +64,18 @@ src/app/
 - **Enums, not string unions**, for a closed set that is compared or switched on (`DayState`,
   `Meal`, `Frequency`, `TrendRange`). Compare with the member, never a literal.
 - **No generic names** (`types.ts`, `helpers.ts`, `components.tsx`) and **no barrel `index.ts`** files.
-  Import the real file. The one exception is `@/shared/components/ui`, the shared primitives
+  Import the real file. The one exception is `@shared/components/ui`, the shared primitives
   (`Group`, `Row`, `Icon`, `Stepper`…), which every screen uses.
 - **Keep import lists short**: one import line per module (lint enforces it), and when a screen pulls
   in many Contexts just to wire one behaviour (pull to refresh across six of them), put that in a hook
   beside the screen (`useTodayRefresh`) so the screen imports one thing.
-- **Tokens, not literals**: colors, fonts, radii and spacing come from `@/shared/theme`
+- **Tokens, not literals**: colors, fonts, radii and spacing come from `@shared/theme`
   (`colors.danger`, `typography.caption`, `space.md`). Don't hand-write a font/size/color combo that
   a `typography` token already covers.
-- **Repositories**: `ok(query)` for writes and `rows<T>(query)` for selects (`@/shared/backend/query`).
+- **Repositories**: `ok(query)` for writes and `rows<T>(query)` for selects (`@shared/backend/query`).
 - **Contexts** load with `useLoader`, save with `usePersist`, or use `useSyncedList` for an
   optimistic list. Create them with `createRequiredContext`.
-- **Confirmations** use `confirm()` from `@/shared/utils/confirm`, not `Alert.alert` directly.
+- **Confirmations** use `confirm()` from `@shared/utils/confirm`, not `Alert.alert` directly.
 - Navigation: `useRootNavigation()` / `useSettingsNavigation()`, not a hand-typed `useNavigation<…>()`.
 - One component, one responsibility; if it does two things, split it.
 
@@ -91,7 +92,7 @@ src/app/
 - Prop-drilling inside a screen instead of reading the Context.
 - A repository imported outside `BackendContext` and tests.
 - A string-literal union for a value compared more than once.
-- A `../../../` chain (three or more levels up) instead of `@/`.
+- A `../../../` chain (three or more levels up) instead of `@/`, or a relative path into `shared/` instead of `@shared/`.
 
 ## Verification
 

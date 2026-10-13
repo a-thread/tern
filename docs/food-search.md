@@ -7,7 +7,7 @@ Search answers from the phone first and the network second, in one ranked list.
    phone and searched on every keystroke.
 3. **Packaged foods**: Open Food Facts, after a pause in typing.
 4. **USDA**: live FoodData Central search, only when the phone has fewer than three matches
-   (`LookupRules.USDA_BELOW` in [`useFoodLookup.ts`](../src/app/food/log-food/search/hooks/useFoodLookup.ts)).
+   (`LookupRules.USDA_BELOW` in [`useFoodLookup.ts`](../src/food/log-food/search/hooks/useFoodLookup.ts)).
 
 ## Common foods
 
@@ -16,11 +16,11 @@ and SR Legacy. [`scripts/buildCommonFoods.ts`](../scripts/buildCommonFoods.ts) d
 
 - It turns raw descriptions into a name and a detail ("Chicken, broilers or fryers, breast,
   meat only, cooked, roasted" → "Chicken breast" · "meat only, cooked, roasted"), using
-  [`splitUsdaName`](../src/app/domain/common-foods/models/commonFoodName.ts).
+  [`splitUsdaName`](../src/domain/common-foods/models/commonFoodName.ts).
 - It keeps household portions first ("medium banana" before "oz").
 - It picks one food per name and detail, favoring plain forms ("Egg, whole, raw" over
   "Egg, creamed") and foods as people eat them.
-- It suggests a NOVA type only for clear cases ([`suggestTier`](../src/app/domain/common-foods/models/commonFoodTier.ts):
+- It suggests a NOVA type only for clear cases ([`suggestTier`](../src/domain/common-foods/models/commonFoodTier.ts):
   whole foods, culinary ingredients, bread and cheese; never ultra-processed).
 - Hand corrections (names, aliases like "oj", ranks, types) live in
   [`scripts/commonFoods/overrides.json`](../scripts/commonFoods/overrides.json). The build lists
@@ -37,10 +37,10 @@ The list lives in `tern.common_foods`, readable by signed-in users
 (`20261007000000_common_foods.sql`). `tern.common_foods_meta` holds a version: a hash of the
 list.
 
-[`CommonFoodsProvider`](../src/app/domain/common-foods/CommonFoodsContext.tsx) uses the copy saved on the phone
+[`CommonFoodsProvider`](../src/domain/common-foods/CommonFoodsContext.tsx) uses the copy saved on the phone
 straight away, asks for the version, and downloads only when it changed. It never holds the
 app back. Until the first download, search has no common foods. Local mode uses a small seed
-([`commonFoods.seed.ts`](../src/app/domain/common-foods/commonFoods.seed.ts)).
+([`commonFoods.seed.ts`](../src/domain/common-foods/commonFoods.seed.ts)).
 
 ## Open Food Facts
 
@@ -60,17 +60,17 @@ food screen and in the store listing. The project runs on donations and asks tha
 hammer the live API.
 
 Tern caches search results in memory for the session
-([`useFoodSearch.ts`](../src/app/food/log-food/search/hooks/useFoodSearch.ts), the last 60 queries per source).
+([`useFoodSearch.ts`](../src/food/log-food/search/hooks/useFoodSearch.ts), the last 60 queries per source).
 
 ## USDA FoodData Central (live)
 
 It needs a free API key in `EXPO_PUBLIC_USDA_API_KEY`. Without one it's switched off
-([`isUsdaEnabled`](../src/app/domain/food/sources/usda.ts)). Branded foods are not searched;
+([`isUsdaEnabled`](../src/domain/food/sources/usda.ts)). Branded foods are not searched;
 packaged products come from Open Food Facts.
 
 ## What the user sees
 
-One list: [`rankFoods`](../src/app/domain/food/models/foodRanking.ts) scores every row.
+One list: [`rankFoods`](../src/domain/food/models/foodRanking.ts) scores every row.
 
 - Name matches come first: exact, then the name starting with the query, then word matches,
   then detail-only matches.
@@ -85,7 +85,7 @@ Nothing jumps:
 
 - **While you type:** network results from the last query stay on screen, narrowed to the new
   words, until fresh ones arrive.
-- **Late results:** they fold in with [`stableMerge`](../src/app/domain/food/models/foodRanking.ts). Rows
+- **Late results:** they fold in with [`stableMerge`](../src/domain/food/models/foodRanking.ts). Rows
   already on screen keep their order, and only a much better match passes the top rows.
 - **Loading:** a thin line in the search field, not a spinner row.
 - **A source that fails:** one quiet line with Try again. What was found stays.
@@ -99,7 +99,7 @@ Food Facts product's own serving read as "bar" or "cookie"), plus grams. Switchi
 the weight, and every count steps in quarters.
 
 A bare USDA size ("1 large") is completed with the food's noun ("large egg"), see
-[`nounFor`](../src/app/domain/food/models/measure.ts).
+[`nounFor`](../src/domain/food/models/measure.ts).
 
 The logged entry keeps its old shape (one serving of exactly what was eaten, so totals and
 saved meals are unchanged) and adds a `measure`: per-100 g nutrition, the units on offer, and

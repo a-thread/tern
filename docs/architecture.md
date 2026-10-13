@@ -7,7 +7,7 @@ component) that uses it, and only moves up when something else needs it. The rul
 ## Layout
 
 ```text
-src/app/
+src/
   AppProviders.tsx  AuthGate.tsx  BackendContext.tsx  providerOrder.ts   the composition root
   navigation/              RootNavigator, the route registry (types.ts), typed navigation hooks
   today/                   the Today tab: TodayScreen, rest-day/, components/, hooks/, models/
@@ -93,7 +93,7 @@ Every context loads its data and saves edits the same way, so that part is share
 
 Supabase, reached through one repository per domain. Each has an in-memory
 implementation — used in the preview, when there are no keys, and in every test — and a
-Supabase one; [`src/app/BackendContext.tsx`](../src/app/BackendContext.tsx)
+Supabase one; [`src/BackendContext.tsx`](../src/BackendContext.tsx)
 chooses between them and `AppProviders` passes each repository to its provider, so nothing
 else knows which it got.
 

@@ -3,7 +3,7 @@ import { NavigationContainer, DefaultTheme } from '@react-navigation/native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { enableFreeze } from 'react-native-screens';
 import { StatusBar } from 'expo-status-bar';
-import LoadingScreen from '@/shared/components/LoadingScreen/LoadingScreen';
+import LoadingScreen from '@shared/components/LoadingScreen/LoadingScreen';
 
 import {
   useFonts,
@@ -17,11 +17,11 @@ import {
   Manrope_700Bold,
 } from '@expo-google-fonts/manrope';
 
-import { colors } from '@/shared/theme';
+import { colors } from '@shared/theme';
 import { AppProviders } from '@/AppProviders';
 import RootNavigator from '@/navigation/RootNavigator';
 import AuthGate from '@/AuthGate';
-import { ToastProvider } from '@/shared/state/ToastContext';
+import { ToastProvider } from '@shared/state/ToastContext';
 
 enableFreeze(true);
 
