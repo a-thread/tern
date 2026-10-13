@@ -1,6 +1,6 @@
 import { type FoodEntry, Meal } from '../../food/models/foodEntry';
 import type { WeightEntry } from '../../weight/models/weightEntry';
-import { buildDays, computeStreak, type DayRecord, restDaysLeft, weekOf, type BuildDaysInput } from './dayRecord';
+import { buildDays, computeStreak, noStepsThisWeek, type DayRecord, restDaysLeft, weekOf, type BuildDaysInput } from './dayRecord';
 import { goalFor, recordGoalChange, suggestGoal } from './stepGoal';
 import { greetingFor } from '@/today/components/StepsHero/models/greeting';
 import { leftToDo, mealForTime, weighInDue } from '@/today/models/leftToDo';
@@ -448,5 +448,28 @@ describe('todaySummary', () => {
     const summary = todaySummary([], undefined, ['Vitamin D'], true, now);
     expect(summary.medications).toEqual(['Vitamin D']);
     expect(summary.stepGoalReached).toBe(true);
+  });
+});
+
+describe('noStepsThisWeek', () => {
+  const day = (steps: number, future = false) => ({ steps, future });
+
+  it('is true when every past day of the week has no steps', () => {
+    expect(noStepsThisWeek([day(0), day(0), day(0), day(0, true)])).toBe(true);
+  });
+
+  it('is false as soon as one day has steps', () => {
+    expect(noStepsThisWeek([day(0), day(1200), day(0)])).toBe(false);
+  });
+
+  it('only looks at the last seven past days', () => {
+    const old = Array.from({ length: 5 }, () => day(900));
+    const quiet = Array.from({ length: 7 }, () => day(0));
+    expect(noStepsThisWeek([...old, ...quiet])).toBe(true);
+  });
+
+  it('says nothing when there are no days yet', () => {
+    expect(noStepsThisWeek([])).toBe(false);
+    expect(noStepsThisWeek([day(0, true)])).toBe(false);
   });
 });

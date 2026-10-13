@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, ScrollView, StyleSheet, Pressable } from 'react-native';
+import { View, Text, ScrollView, StyleSheet, Pressable, Platform, Linking } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 
@@ -11,6 +11,7 @@ import { formatLoggedAt } from '../../domain/weight/models/weightEntry';
 import { useActivity, useLastSynced } from '../../domain/activity/ActivityContext';
 import { useSettings } from '../../domain/settings/SettingsContext';
 import { StepsStatus } from '../../domain/activity/steps.repository';
+import { noStepsThisWeek } from '../../domain/activity/models/dayRecord';
 import { useMovement } from '../../domain/movement/MovementContext';
 
 export default function HealthDataScreen() {
@@ -19,7 +20,7 @@ export default function HealthDataScreen() {
   const { settings, updateSettings } = useSettings();
   const hd = settings.healthData;
   const movement = useMovement();
-  const { status, refresh, connect } = useActivity();
+  const { status, refresh, connect, days } = useActivity();
   const lastSynced = useLastSynced();
   const toast = useToast();
   const [busy, setBusy] = useState(false);
@@ -117,6 +118,14 @@ export default function HealthDataScreen() {
           )}
         </View>
 
+        {Platform.OS === 'ios' && status === StepsStatus.Connected && noStepsThisWeek(days) ? (
+          <Pressable style={s.hint} onPress={() => Linking.openSettings()} accessibilityRole='link'>
+            <Text style={s.hintText}>
+              {`No steps in the past week. If Tern was refused access, turn Steps on under ${healthAccessPath()}. Tap to open Settings.`}
+            </Text>
+          </Pressable>
+        ) : null}
+
         <GroupLabel>{`Reading from ${healthApp}`}</GroupLabel>
         <Group>
           <ToggleRow
@@ -165,6 +174,13 @@ export default function HealthDataScreen() {
 }
 
 const s = StyleSheet.create({
+  hint: {
+    backgroundColor: colors.sunTint,
+    borderRadius: radius.md,
+    padding: space.md,
+    marginTop: space.md,
+  },
+  hintText: { ...typography.meta, color: colors.ink },
   summaryCard: {
     flexDirection: 'row',
     alignItems: 'center',
