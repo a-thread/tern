@@ -2,7 +2,7 @@ import React from 'react';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 
 import { colors } from '@shared/theme';
-import { Activity } from '@movement/models/movementEntry';
+import { Activity } from '../../domain/movement/models/movementEntry';
 
 type IconName = React.ComponentProps<typeof MaterialCommunityIcons>['name'];
 

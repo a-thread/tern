@@ -1,6 +1,6 @@
 import React from 'react';
 import { Icon } from './Icon';
-import { colors } from '@shared/theme';
+import { colors } from '../../theme';
 
 export function Chevron({ color = colors.ink3 }: { color?: string }) {
   return (

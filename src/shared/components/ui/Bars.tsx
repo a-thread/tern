@@ -1,6 +1,6 @@
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
-import { colors, font, space, typography } from '@shared/theme';
+import { View } from 'react-native';
+import { colors } from '../../theme';
 
 export function ProgressBar({
   value,
@@ -33,39 +33,3 @@ export function ProgressBar({
     </View>
   );
 }
-
-export function MacroBar({
-  label,
-  current,
-  target,
-  unit = 'g',
-  color,
-}: {
-  label: string;
-  current: number;
-  target: number;
-  unit?: string;
-  color: string;
-}) {
-  return (
-    <View style={{ paddingVertical: space.sm }}>
-      <View style={s.macroTop}>
-        <Text style={s.macroLabel}>{label}</Text>
-        <Text style={s.macroSub}>
-          {current} / {target} {unit}
-        </Text>
-      </View>
-      <ProgressBar value={current / target} color={color} height={5} />
-    </View>
-  );
-}
-
-const s = StyleSheet.create({
-  macroTop: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: 6,
-  },
-  macroLabel: { fontFamily: font.body, fontSize: 13, color: colors.ink },
-  macroSub: typography.caption,
-});

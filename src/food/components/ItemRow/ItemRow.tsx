@@ -1,0 +1,73 @@
+import React from 'react';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
+
+import { colors, tierColors, typography } from '@shared/theme';
+import type { FoodEntry } from '@/domain/food/models/foodEntry';
+import { TierDot } from '@shared/components/TierDot';
+import { useFoodDisplay } from '@/domain/food/hooks/useFoodDisplay';
+
+type Item = Pick<
+  FoodEntry,
+  'name' | 'servings' | 'servingLabel' | 'calories' | 'tier'
+>;
+
+/**
+ * One food in a list: food-type dot, name, portion and calories, following the
+ * display settings. With `onPress` the whole row is tappable.
+ */
+export default function ItemRow({
+  item,
+  onPress,
+}: {
+  item: Item;
+  onPress?: () => void;
+}) {
+  const { showTiers, showTierNumber, showCalories } = useFoodDisplay();
+  const row = (
+    <View style={s.row}>
+      {showTiers ? (
+        <TierDot
+          tier={item.tier}
+          color={tierColors[item.tier]}
+          showNumber={showTierNumber}
+        />
+      ) : null}
+      <View style={{ flex: 1 }}>
+        <Text style={s.name}>{item.name}</Text>
+        <Text style={s.sub}>
+          {item.servings === 1
+            ? item.servingLabel
+            : `${item.servings} × ${item.servingLabel}`}
+        </Text>
+      </View>
+      {showCalories ? (
+        <Text style={s.cals}>{Math.round(item.calories * item.servings)}</Text>
+      ) : null}
+    </View>
+  );
+  return onPress ? (
+    <Pressable
+      onPress={onPress}
+      android_ripple={{ color: colors.doveTint }}
+      accessibilityRole='button'
+      accessibilityLabel={`Add ${item.name}`}
+    >
+      {row}
+    </Pressable>
+  ) : (
+    row
+  );
+}
+
+const s = StyleSheet.create({
+  row: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    paddingHorizontal: 13,
+    paddingVertical: 11,
+  },
+  name: typography.rowTitle,
+  sub: { ...typography.small, marginTop: 1 },
+  cals: typography.caption,
+});

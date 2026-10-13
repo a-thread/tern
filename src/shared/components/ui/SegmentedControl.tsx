@@ -1,6 +1,6 @@
 import React from 'react';
 import { Pressable, StyleSheet, Text, View, type StyleProp, type ViewStyle } from 'react-native';
-import { colors, font, typography } from '@shared/theme';
+import { colors, font, typography } from '../../theme';
 
 /** A row of equal pills where exactly one is chosen, e.g. a date range or a meal. */
 export function SegmentedControl<T extends string>({

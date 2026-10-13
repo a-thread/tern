@@ -1,4 +1,4 @@
-import type { AppSettings } from '@settings/models/appSettings';
+import type { AppSettings } from '../../domain/settings/models/appSettings';
 
 /**
  * Reminders that will actually fire: switched on, and for something that's tracked

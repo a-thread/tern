@@ -1,0 +1,276 @@
+import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import { AppState } from 'react-native';
+
+import { createRequiredContext } from '@shared/state/createRequiredContext';
+import { useDayKey } from '@shared/hooks/useDayKey';
+import { useLoader } from '@shared/hooks/useLoader';
+import { usePersist } from '@shared/hooks/usePersist';
+import { addDays } from '@shared/utils/date';
+import { useSettings } from '../settings/SettingsContext';
+import { useAward } from '../waypoints/hooks/useAward';
+import { buildDays, restDaysLeft, weekOf, withFreezes, type DayRecord } from './models/dayRecord';
+import { goalFor } from './models/stepGoal';
+import { StepsRepository, StepsStatus } from './steps.repository';
+import type { RestDaysRepository } from './restDays.repository';
+import { sameDays, sameSteps } from './utils/sameData';
+import { streakBonus, WaypointSource } from '../waypoints/models/waypoint';
+import { DayState } from '@shared/models/dayState';
+import { useMovement } from '../movement/MovementContext';
+
+/** How much history is read: enough for the 6-month views. */
+export const HISTORY_DAYS = 180;
+const REFRESH_MS = 5 * 60 * 1000;
+const REST_FAILURE = {
+  log: 'Could not save rest day',
+  toast: "Couldn't save that rest day — please try again.",
+};
+
+type ActivityContextValue = {
+  /** False until steps and rest days have loaded once. */
+  ready: boolean;
+  status: StepsStatus;
+  todaySteps: number;
+  /** The last HISTORY_DAYS days, oldest to newest, ending today. */
+  days: DayRecord[];
+  /** Monday to Sunday of this week. */
+  week: DayRecord[];
+  streak: number;
+  /** Streak freezes held: each covers a day that would otherwise break the streak. */
+  freezes: number;
+  /** Rest days left in this week's allowance. */
+  restLeft: number;
+  /** Whether the user chose today as a rest day. */
+  todayIsRest: boolean;
+  /**
+   * Whether today is standing as a rest day: chosen, and the goal not reached after all (which
+   * turns it into a goal day and gives the rest day back).
+   */
+  todayRestCounts: boolean;
+  /** Re-reads steps. Resolves to the step status afterwards, or 'failed' if it could not be read. */
+  refresh: () => Promise<StepsStatus | 'failed'>;
+  /** Ask for access to the step source (Health Connect). Resolves to the status afterwards. */
+  connect: () => Promise<StepsStatus>;
+  /** Take today as a rest day. False if the week's allowance is used up. */
+  takeRestDay: () => boolean;
+  undoRestDay: () => void;
+};
+
+const [ActivityContext, useActivity] = createRequiredContext<ActivityContextValue>(
+  'useActivity',
+  'ActivityProvider',
+);
+export { useActivity };
+const LastSyncedContext = createContext<Date | null>(null);
+
+/**
+ * Steps and rest days, and everything derived from them: the day-by-day
+ * record, the streak, and today's awards. Awards here are for behavior only —
+ * reaching the step goal, or taking a rest day — and only ever for today.
+ * Must sit inside SettingsProvider and WaypointsProvider.
+ */
+export function ActivityProvider({
+  steps: stepsRepo,
+  restDays: restRepo,
+  children,
+}: {
+  steps: StepsRepository;
+  restDays: RestDaysRepository;
+  children: React.ReactNode;
+}) {
+  const { settings } = useSettings();
+  const today = useDayKey();
+  const movement = useMovement();
+  // With movement tracked, enough of it in a day makes a goal day too.
+  const movementGoal = movement.enabled ? settings.movementGoalMinutes : 0;
+
+  const [status, setStatus] = useState<StepsStatus>(StepsStatus.Unavailable);
+  const [rawStepsByDay, setStepsByDay] = useState<Record<string, number>>({});
+  const [restList, setRestList] = useState<string[]>([]);
+  const [lastSynced, setLastSynced] = useState<Date | null>(null);
+
+  /** Reads steps and rest days. */
+  const { ready, reload: load } = useLoader(
+    useCallback(async () => {
+      const from = addDays(today, -(HISTORY_DAYS - 1));
+      const nextStatus = await stepsRepo.status();
+      const [steps, rest] = await Promise.all([
+        nextStatus === StepsStatus.Connected
+          ? stepsRepo.getRange(from, today)
+          : Promise.resolve({} as Record<string, number>),
+        restRepo.load(from, today),
+      ]);
+      return { status: nextStatus, steps, rest };
+    }, [stepsRepo, restRepo, today]),
+    ({ status: nextStatus, steps, rest }) => {
+      setStatus((prev) => (prev === nextStatus ? prev : nextStatus));
+      setStepsByDay((prev) => (sameSteps(prev, steps) ? prev : steps));
+      setRestList((prev) => (sameDays(prev, rest) ? prev : rest));
+      setLastSynced(new Date());
+    },
+    'Could not load activity',
+  );
+  const persist = usePersist(load);
+
+  // Pick up new steps when the app returns to the foreground, and every few minutes while open.
+  useEffect(() => {
+    const sub = AppState.addEventListener('change', (s) => {
+      if (s === 'active') load();
+    });
+    const timer = setInterval(load, REFRESH_MS);
+    return () => {
+      sub.remove();
+      clearInterval(timer);
+    };
+  }, [load]);
+
+  const restSet = useMemo(() => new Set(restList), [restList]);
+  // Switching off "read steps" in Settings hides the data without deleting anything.
+  const readSteps = settings.healthData.readSteps;
+  const stepsByDay = useMemo(
+    () => (readSteps ? rawStepsByDay : {}),
+    [readSteps, rawStepsByDay],
+  );
+
+  const recorded = useMemo(
+    () =>
+      buildDays({
+        stepsByDay,
+        restDays: restSet,
+        goalFor: (day) =>
+          goalFor(settings.stepGoalHistory, settings.stepGoal, day),
+        restPerWeek: settings.restDaysPerWeek,
+        autoDetect: settings.autoDetectRestDays,
+        today,
+        count: HISTORY_DAYS,
+        minutesByDay: movement.goalMinutesByDay,
+        movementGoal,
+      }),
+    [
+      movement.goalMinutesByDay,
+      movementGoal,
+      stepsByDay,
+      restSet,
+      settings.stepGoal,
+      settings.stepGoalHistory,
+      settings.restDaysPerWeek,
+      settings.autoDetectRestDays,
+      today,
+    ],
+  );
+
+  // Freezes are played forward through the record: a day that would have broken the streak
+  // is marked frozen when one was there to spend.
+  const { days, streak, freezes } = useMemo(() => withFreezes(recorded), [recorded]);
+  const week = useMemo(() => weekOf(days, today), [days, today]);
+  const restLeft = restDaysLeft(days, today, settings.restDaysPerWeek);
+  const todaySteps = stepsByDay[today] ?? 0;
+  const todayIsRest = restSet.has(today);
+
+  // Awards. The waypoints ledger ignores repeats (one per source per day), so
+  // these can run freely; they wait for today's ledger so a stale one never decides.
+  // Like meals and water, they follow the day as it stands now, not its high-water mark.
+  const goalReachedToday = todaySteps >= settings.stepGoal;
+  const movedToGoalToday = movementGoal > 0 && movement.todayGoalMinutes >= movementGoal;
+  // Steps are only judged while they can be read: with Health Connect
+  // disconnected or "read steps" switched off, what was earned stays put.
+  const stepsReadable = status === StepsStatus.Connected && readSteps;
+
+  // Lowering the goal to collect the award and raising it again doesn't
+  // keep it: today is judged against the goal it ends up with.
+  // A goal day reached by movement earns it too. With steps unreadable, movement decides alone
+  // (so removing the swim that made the goal day takes the award back).
+  useAward(
+    WaypointSource.Steps,
+    goalReachedToday || movedToGoalToday,
+    ready && movement.ready && (stepsReadable || movementGoal > 0),
+  );
+
+  // A day is either a goal day or a rest day, never both: a rest day taken
+  // early earns its waypoints only if the goal isn't reached after all. So
+  // taking one "just in case" is never better than waiting to see.
+  const restCounts = todayIsRest && !((stepsReadable && goalReachedToday) || movedToGoalToday);
+  useAward(WaypointSource.Rest, restCounts, ready);
+
+  // A streak milestone pays a one-time bonus on the day the streak gets there, so it needs
+  // today's goal reached (a streak of 7 that ended yesterday was paid yesterday). If today's
+  // goal moves out of reach the streak drops a day, and the bonus is taken back at the amount
+  // it was given: the milestone the streak would have reached with today.
+  const reachedToday = days[days.length - 1]?.state === DayState.Goal;
+  const bonus = streakBonus(streak);
+  useAward(
+    WaypointSource.Streak,
+    reachedToday && bonus > 0,
+    ready && movement.ready && (stepsReadable || movementGoal > 0),
+    bonus > 0 ? bonus : streakBonus(streak + 1),
+  );
+
+  const takeRestDay = useCallback(() => {
+    if (todayIsRest || restLeft <= 0) return false;
+    setRestList((prev) => [...prev, today]);
+    persist(restRepo.add(today), REST_FAILURE);
+    return true;
+  }, [todayIsRest, restLeft, today, restRepo, persist]);
+
+  const undoRestDay = useCallback(() => {
+    setRestList((prev) => prev.filter((d) => d !== today));
+    persist(restRepo.remove(today), REST_FAILURE);
+  }, [today, restRepo, persist]);
+
+  const refresh = useCallback(async () => (await load())?.status ?? 'failed', [load]);
+
+  const connect = useCallback(async (): Promise<StepsStatus> => {
+    const granted = await stepsRepo.connect();
+    return (await load())?.status ?? granted;
+  }, [stepsRepo, load]);
+
+  const value = useMemo<ActivityContextValue>(
+    () => ({
+      ready,
+      status,
+      todaySteps,
+      days,
+      week,
+      streak,
+      freezes,
+      restLeft,
+      todayIsRest,
+      todayRestCounts: restCounts,
+      refresh,
+      connect,
+      takeRestDay,
+      undoRestDay,
+    }),
+    [
+      ready,
+      status,
+      todaySteps,
+      days,
+      week,
+      streak,
+      freezes,
+      restLeft,
+      todayIsRest,
+      restCounts,
+      refresh,
+      connect,
+      takeRestDay,
+      undoRestDay,
+    ],
+  );
+
+  return (
+    <ActivityContext.Provider value={value}>
+      <LastSyncedContext.Provider value={lastSynced}>
+        {children}
+      </LastSyncedContext.Provider>
+    </ActivityContext.Provider>
+  );
+}
+
+/**
+ * When steps were last read. Kept out of the main context on purpose: it changes
+ * on every refresh, and only the Health data screen shows it.
+ */
+export function useLastSynced(): Date | null {
+  return useContext(LastSyncedContext);
+}

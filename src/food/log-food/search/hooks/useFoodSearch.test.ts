@@ -1,0 +1,143 @@
+import { renderHook, act, waitFor } from '@testing-library/react-native';
+
+import { FoodApiError } from '@/domain/food/sources/http';
+import { searchProducts } from '../../sources/openFoodFacts';
+import {
+  clearSearchCache,
+  useFoodSearch,
+  FoodSearch,
+} from './useFoodSearch';
+import type { SearchResult } from '@/domain/food/sources/searchResult';
+
+jest.mock('../../sources/openFoodFacts', () => {
+  const actual = jest.requireActual('../../sources/openFoodFacts');
+  return { ...actual, searchProducts: jest.fn() };
+});
+const search = searchProducts as jest.MockedFunction<typeof searchProducts>;
+
+const food = (name: string): SearchResult => ({
+  id: name,
+  name,
+  servingLabel: '100 g',
+  calories: 100,
+  protein: 1,
+  carbs: 1,
+  fat: 1,
+  tier: 1,
+});
+
+beforeEach(() => {
+  jest.useFakeTimers();
+  search.mockReset();
+  clearSearchCache();
+});
+afterEach(() => jest.useRealTimers());
+
+const type = async (ms = FoodSearch.DEBOUNCE_MS) => {
+  await act(async () => {
+    jest.advanceTimersByTime(ms);
+  });
+};
+
+describe('useFoodSearch', () => {
+  it('does nothing for an empty or one-character query', () => {
+    const { result, rerender } = renderHook(
+      ({ q }: { q: string }) => useFoodSearch(q),
+      { initialProps: { q: '' } },
+    );
+    expect(result.current.state.status).toBe('idle');
+    rerender({ q: 'o' });
+    expect(result.current.state.status).toBe('idle');
+    expect(search).not.toHaveBeenCalled();
+  });
+
+  it('waits for a pause in typing, then searches once', async () => {
+    search.mockResolvedValue([food('Rolled oats')]);
+    const { result, rerender } = renderHook(
+      ({ q }: { q: string }) => useFoodSearch(q),
+      { initialProps: { q: 'ro' } },
+    );
+    // Nothing is "loading" until the pause is over and a request really runs.
+    expect(result.current.state.status).toBe('idle');
+
+    await type(FoodSearch.DEBOUNCE_MS - 100);
+    rerender({ q: 'rol' });
+    await type(FoodSearch.DEBOUNCE_MS - 100);
+    expect(search).not.toHaveBeenCalled(); // still typing
+
+    await type(200);
+    await waitFor(() => expect(result.current.state.status).toBe('done'));
+    expect(search).toHaveBeenCalledTimes(1);
+    expect(search.mock.calls[0][0]).toBe('rol');
+  });
+
+  it('does not search while disabled', async () => {
+    const { result } = renderHook(() => useFoodSearch('oats', false));
+    await type();
+    expect(search).not.toHaveBeenCalled();
+    expect(result.current.state.status).toBe('idle');
+  });
+
+  it('reports an error, and retries', async () => {
+    search.mockRejectedValueOnce(new FoodApiError('network', 'down'));
+    const { result } = renderHook(() => useFoodSearch('oats'));
+    await type();
+    await waitFor(() =>
+      expect(result.current.state).toEqual({
+        status: 'error',
+        kind: 'network',
+        results: [],
+        query: null,
+      }),
+    );
+
+    search.mockResolvedValueOnce([food('Oats')]);
+    act(() => result.current.retry());
+    await type();
+    await waitFor(() => expect(result.current.state.status).toBe('done'));
+  });
+
+  it('keeps the last results on screen while the next search runs', async () => {
+    let resolve: (r: SearchResult[]) => void = () => {};
+    search.mockResolvedValueOnce([food('Oats')]);
+    const { result, rerender } = renderHook(
+      ({ q }: { q: string }) => useFoodSearch(q),
+      { initialProps: { q: 'oats' } },
+    );
+    await type();
+    await waitFor(() => expect(result.current.state.status).toBe('done'));
+
+    search.mockImplementationOnce(() => new Promise((r) => (resolve = r)));
+    rerender({ q: 'oat milk' });
+    // While typing, and while the request runs, the old results stay.
+    expect(result.current.state).toMatchObject({
+      status: 'done',
+      query: 'oats',
+    });
+    await type();
+    expect(result.current.state).toMatchObject({
+      status: 'loading',
+      query: 'oats',
+      results: [food('Oats')],
+    });
+
+    await act(async () => resolve([food('Oat milk')]));
+    expect(result.current.state).toMatchObject({
+      status: 'done',
+      query: 'oat milk',
+      results: [food('Oat milk')],
+    });
+  });
+
+  it('reuses a remembered search instead of asking again', async () => {
+    search.mockResolvedValue([food('Oats')]);
+    const first = renderHook(() => useFoodSearch('oats'));
+    await type();
+    await waitFor(() => expect(first.result.current.state.status).toBe('done'));
+    first.unmount();
+
+    const second = renderHook(() => useFoodSearch('Oats'));
+    expect(second.result.current.state.status).toBe('done');
+    expect(search).toHaveBeenCalledTimes(1);
+  });
+});

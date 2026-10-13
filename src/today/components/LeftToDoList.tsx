@@ -2,15 +2,21 @@ import React, { useState } from 'react';
 import { Pressable, StyleSheet, Text } from 'react-native';
 
 import { colors, font, radius } from '@shared/theme';
-import { Group, GroupLabel, IconBadge, Row, Icon } from '@shared/components/ui';
-import { useUnits } from '@settings/hooks/useUnits';
-import { formatMinutes } from '@settings/models/reminderPlan';
-import { useMedication } from '@medication/MedicationContext';
-import { useWater } from '@water/WaterContext';
-import WaterSheet from '@water/components/WaterSheet';
-import { formatLoggedAt } from '@weight/models/weightEntry';
-import { useDayItems } from '@today/hooks/useDayItems';
-import { useRootNavigation } from '@shared/navigation/useAppNavigation';
+import {
+  Group,
+  GroupLabel,
+  IconBadge,
+  Row,
+  Icon,
+} from '@shared/components/ui';
+import { useUnits } from '../../domain/settings/hooks/useUnits';
+import { formatMinutes } from '../../domain/settings/models/reminderPlan';
+import { useMedication } from '../../domain/medication/MedicationContext';
+import { useWater } from '../../domain/water/WaterContext';
+import WaterSheet from './WaterSheet';
+import { formatLoggedAt } from '../../domain/weight/models/weightEntry';
+import { useDayItems } from '../hooks/useDayItems';
+import { useRootNavigation } from '../../navigation/useAppNavigation';
 
 /**
  * What is still open on the viewed day: meals, a weigh-in, water, a check-in and (today only)
@@ -50,7 +56,9 @@ export function LeftToDoList() {
                   accessibilityRole='button'
                   accessibilityLabel={`Add ${formatVolume(quickWaterOz[0])} of water`}
                 >
-                  <Text style={s.markText}>{`+${formatVolume(quickWaterOz[0])}`}</Text>
+                  <Text
+                    style={s.markText}
+                  >{`+${formatVolume(quickWaterOz[0])}`}</Text>
                 </Pressable>
               }
             />
@@ -62,7 +70,11 @@ export function LeftToDoList() {
               onPress={() => navigation.navigate('CheckIn')}
               icon={
                 <IconBadge bg={colors.violetTint}>
-                  <Icon name='emoticon-happy-outline' size={16} color={colors.violet} />
+                  <Icon
+                    name='emoticon-happy-outline'
+                    size={16}
+                    color={colors.violet}
+                  />
                 </IconBadge>
               }
               chevron
@@ -85,10 +97,16 @@ export function LeftToDoList() {
               key='meal'
               title={item.title}
               sub={item.sub}
-              onPress={() => navigation.navigate('LogFood', { meal: item.meal })}
+              onPress={() =>
+                navigation.navigate('LogFood', { meal: item.meal })
+              }
               icon={
                 <IconBadge bg={colors.kelpTint}>
-                  <Icon name='silverware-fork-knife' size={16} color={colors.kelp} />
+                  <Icon
+                    name='silverware-fork-knife'
+                    size={16}
+                    color={colors.kelp}
+                  />
                 </IconBadge>
               }
               chevron

@@ -1,8 +1,12 @@
 import React from 'react';
 
 import { Divider, ToggleRow } from '@shared/components/ui';
-import TimeStepperRow from '@settings/components/TimeStepperRow';
-import { formatMinutes, Reminders, stepMinutes } from '@settings/models/reminderPlan';
+import TimeStepperRow from './TimeStepperRow';
+import {
+  formatMinutes,
+  Reminders,
+  stepMinutes,
+} from '../../domain/settings/models/reminderPlan';
 
 /** A reminder's on/off row, with its settings rows (divider-separated) shown only while it's on. */
 export function ReminderBlock({
@@ -24,7 +28,9 @@ export function ReminderBlock({
       <ToggleRow title={title} sub={sub} on={on} onToggle={onToggle} />
       {on
         ? rows.map((row, i) => (
-            <React.Fragment key={React.isValidElement(row) && row.key !== null ? row.key : i}>
+            <React.Fragment
+              key={React.isValidElement(row) && row.key !== null ? row.key : i}
+            >
               <Divider />
               {row}
             </React.Fragment>

@@ -92,21 +92,19 @@ a project and apply the migrations in [supabase/migrations/](supabase/migrations
 
 ## Project layout
 
-One folder per domain under [src/](src). Each follows the same layout: pure rules in
-`models/`, state in a `*Context.tsx`, all I/O in `data/`, and its UI in
-`screens/` and `components/`. The rules are in
-[docs/architecture.md](docs/architecture.md#feature-layout).
+Code is organised by screen: each tab or flow has a folder holding its screens, and each
+component holds the pieces only it uses. Data and rules shared across tabs are in `domain/`,
+generic UI and helpers in `shared/`. Imports are relative up to two levels (`../../x`); `shared/` is always `@shared/…`, and anything else further away is `@/…` (both aliases point into `src`). The rules are in
+[CLAUDE.md](CLAUDE.md) and [docs/architecture.md](docs/architecture.md#layout).
 
 ```text
 App.tsx          fonts, providers, navigation
 src/
-  app/           the composition root: backend, providers, navigators, settings menu
-  shared/        theme tokens, UI components, charts, route types, auth, helpers
-  today/         the Today tab, steps, rest days
-  food/          the Food tab, add-food flow, saved meals, search
-  journey/       the waypoints ledger, map, milestones
-  trends/        steps, weight, water and mood over time
-  weight/ water/ mood/ medication/ settings/
+  navigation/    the root navigator and route types
+  today/ food/ trends/ journey/ settings/ auth/    one folder per tab or flow, screens inside
+  movement/ check-in/ log-weight/                  modal flows
+  domain/        Contexts, repositories and models used across tabs
+  shared/        theme tokens, UI components, hooks, helpers
 supabase/        migrations and setup
 docs/            architecture, design, release notes, hosted store pages
 ```

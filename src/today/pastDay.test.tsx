@@ -1,18 +1,18 @@
 import React from 'react';
 import { renderHook, act, waitFor } from '@testing-library/react-native';
 
-import { createMemoryBackend } from '@app/BackendContext';
+import { createMemoryBackend } from '../BackendContext';
 import { ToastProvider } from '@shared/state/ToastContext';
 import { ViewedDayProvider, useViewedDay } from '@shared/state/ViewedDayContext';
 import { addDays, dayKey } from '@shared/utils/date';
-import { FoodProvider, useFood } from '@food/FoodContext';
-import { createMemoryFoodRepository } from '@food/data/food.repository';
-import { Meal } from '@food/models/foodEntry';
-import { SettingsProvider, useSettings } from '@settings/SettingsContext';
-import { WaypointsProvider, useWaypoints } from '@journey/WaypointsContext';
-import { WaypointSource } from '@journey/models/waypoint';
-import { WaterProvider, useWater } from '@water/WaterContext';
-import { MoodProvider, useMood } from '@mood/MoodContext';
+import { FoodProvider, useFood } from '../domain/food/FoodContext';
+import { createMemoryFoodRepository } from '../domain/food/food.repository';
+import { Meal } from '../domain/food/models/foodEntry';
+import { SettingsProvider, useSettings } from '../domain/settings/SettingsContext';
+import { WaypointsProvider, useWaypoints } from '../domain/waypoints/WaypointsContext';
+import { WaypointSource } from '../domain/waypoints/models/waypoint';
+import { WaterProvider, useWater } from '../domain/water/WaterContext';
+import { MoodProvider, useMood } from '../domain/mood/MoodContext';
 
 // Looking back at a past day: food, water and the check-in follow the viewed day, yesterday
 // can be filled in, earlier days can't, and no waypoint moves while a past day is showing.

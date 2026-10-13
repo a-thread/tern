@@ -1,4 +1,4 @@
-import type { Activity } from '@movement/models/movementEntry';
+import type { Activity } from '../domain/movement/models/movementEntry';
 
 /** The movement logging flow, presented modally from the root stack. */
 export type MovementStackParamList = {

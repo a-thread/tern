@@ -2,7 +2,7 @@ import React from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { colors, font, space } from '@shared/theme';
-import { useAuth } from '@shared/auth/AuthContext';
+import { useAuth } from '../../domain/auth/AuthContext';
 
 /** Signing out (or leaving the preview), and the app version, at the foot of Settings. */
 export function AccountSection() {

@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { RefreshControl } from 'react-native';
-import { colors } from '@shared/theme';
+import { colors } from '../theme';
 
 /**
  * Pull to refresh for a ScrollView: pass the result as its `refreshControl`.

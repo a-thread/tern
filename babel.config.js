@@ -6,20 +6,9 @@ module.exports = function (api) {
       [
         'module-resolver',
         {
-          root: ['./src'],
           alias: {
-            '@app': './src/app',
+            '@': './src',
             '@shared': './src/shared',
-            '@food': './src/food',
-            '@weight': './src/weight',
-            '@today': './src/today',
-            '@journey': './src/journey',
-            '@trends': './src/trends',
-            '@settings': './src/settings',
-            '@medication': './src/medication',
-            '@water': './src/water',
-            '@movement': './src/movement',
-            '@mood': './src/mood',
           },
         },
       ],

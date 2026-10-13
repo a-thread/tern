@@ -1,12 +1,12 @@
-import { usdaFoodToResult, type UsdaMeasure } from '@food/data/sources/usda';
-import type { CommonFood } from '@food/models/commonFoods';
-import { cleanPortionLabel, plainness, splitUsdaName } from '@food/models/commonFoodName';
-import { portionKind, typicalPortions } from '@food/models/commonFoodPortions';
-import { nounFor } from '@food/models/measure';
-import { suggestTier } from '@food/models/commonFoodTier';
-import { normalizeText, wordsOf } from '@food/models/foodQuery';
-import type { Tier } from '@food/models/foodEntry';
-import type { Portion } from '@food/data/sources/searchResult';
+import { usdaFoodToResult, type UsdaMeasure } from '@/domain/food/sources/usda';
+import type { CommonFood } from '@/domain/common-foods/models/commonFoods';
+import { cleanPortionLabel, plainness, splitUsdaName } from '@/domain/common-foods/models/commonFoodName';
+import { portionKind, typicalPortions } from '@/domain/common-foods/models/commonFoodPortions';
+import { nounFor } from '@/domain/food/models/measure';
+import { suggestTier } from '@/domain/common-foods/models/commonFoodTier';
+import { normalizeText, wordsOf } from '@/domain/food/models/foodQuery';
+import type { Tier } from '@/domain/food/models/foodEntry';
+import type { Portion } from '@/domain/food/sources/searchResult';
 
 /**
  * Turns USDA FoodData Central bulk downloads into the common-foods list.

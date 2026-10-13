@@ -4,18 +4,8 @@
     "strict": true,
     "baseUrl": ".",
     "paths": {
-      "@app/*": ["src/app/*"],
-      "@shared/*": ["src/shared/*"],
-      "@food/*": ["src/food/*"],
-      "@weight/*": ["src/weight/*"],
-      "@today/*": ["src/today/*"],
-      "@journey/*": ["src/journey/*"],
-      "@trends/*": ["src/trends/*"],
-      "@settings/*": ["src/settings/*"],
-      "@medication/*": ["src/medication/*"],
-      "@water/*": ["src/water/*"],
-      "@movement/*": ["src/movement/*"],
-      "@mood/*": ["src/mood/*"]
+      "@/*": ["src/*"],
+      "@shared/*": ["src/shared/*"]
     }
   }
 }

@@ -1,17 +1,17 @@
 import { useEffect, useState } from 'react';
 
-import { useFood } from '@food/FoodContext';
-import { useWeight } from '@weight/WeightContext';
-import { useSettings } from '@settings/SettingsContext';
-import { useMedication } from '@medication/MedicationContext';
-import type { Medication } from '@medication/models/medication';
-import { useWater } from '@water/WaterContext';
-import { useMood } from '@mood/MoodContext';
-import { leftToDo } from '@today/models/leftToDo';
-import { todaySummary } from '@today/models/todaySummary';
-import { useActivity } from '@today/ActivityContext';
-import { useMovement } from '@movement/MovementContext';
-import { entriesOn } from '@movement/models/movementEntry';
+import { useFood } from '../../domain/food/FoodContext';
+import { useWeight } from '../../domain/weight/WeightContext';
+import { useSettings } from '../../domain/settings/SettingsContext';
+import { useMedication } from '../../domain/medication/MedicationContext';
+import type { Medication } from '../../domain/medication/models/medication';
+import { useWater } from '../../domain/water/WaterContext';
+import { useMood } from '../../domain/mood/MoodContext';
+import { leftToDo } from '../models/leftToDo';
+import { todaySummary } from '../models/todaySummary';
+import { useActivity } from '../../domain/activity/ActivityContext';
+import { useMovement } from '../../domain/movement/MovementContext';
+import { entriesOn } from '../../domain/movement/models/movementEntry';
 import { useViewedDay } from '@shared/state/ViewedDayContext';
 import { dayKey, parseDayKey } from '@shared/utils/date';
 

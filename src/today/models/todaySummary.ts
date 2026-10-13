@@ -1,6 +1,6 @@
-import type { FoodEntry } from '@food/models/foodEntry';
-import { Meals } from '@food/models/meals';
-import { isLoggedToday, type WeightEntry } from '@weight/models/weightEntry';
+import type { FoodEntry } from '../../domain/food/models/foodEntry';
+import { Meals } from '../../domain/food/models/meals';
+import { isLoggedToday, type WeightEntry } from '../../domain/weight/models/weightEntry';
 
 export type TodaySummary = {
   /** The meals logged today (in day order) and their calories; null when nothing is logged. */

@@ -1,7 +1,7 @@
-import { DayRecord } from '@today/models/dayRecord';
+import { DayRecord } from '../../domain/activity/models/dayRecord';
 import { DayState } from '@shared/models/dayState';
 import { monthName, weekdayLetter } from '@shared/utils/date';
-import { TrendRanges, TrendRange } from '@shared/models/trendRange';
+import { TrendRanges, TrendRange } from './trendRange';
 
 export type StepBar = { label: string; value: number; state: DayState };
 

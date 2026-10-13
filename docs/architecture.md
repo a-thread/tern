@@ -1,170 +1,99 @@
 # Architecture
 
-One folder per domain, and every domain has the same shape. The layout is a rule, not a
-habit: a file belongs in the folder for its kind, and code that passes CI but breaks the
-layout is still a review comment.
+Code is organised by screen, not by kind. A file lives next to the screen (or the single
+component) that uses it, and only moves up when something else needs it. The rules are in
+[CLAUDE.md](../CLAUDE.md); this page explains the shape and why.
 
-## Feature layout
+## Layout
 
 ```text
-src/<feature>/
-  <Feature>Context.tsx       the Feature Store: state, actions, derived values
-  <Feature>Context.test.tsx
-  models/                    the domain: types, constants and the pure rules about them
-    <concept>.ts                   one concept per file (waterEntry.ts, waterBars.ts…)
-    <feature>.test.ts              tests for the feature's models
-  navigation.ts              the feature's stack param list, if it has a stack
-  utils/                     generic pure helpers that are not about one domain concept
-  data/                      every touch of the outside world, and nothing else
-    <name>.repository.ts           interface + in-memory implementation
-    <name>.repository.supabase.ts  Supabase implementation
-    <name>.mock.ts                 seed data for the preview and tests
-    sources/                       third-party read APIs (food: usda, openFoodFacts)
-  hooks/                     feature-local hooks
-  components/                feature-local UI, one component per file
-  screens/                   *Screen.tsx and *Stack.tsx
+src/
+  AppProviders.tsx  AuthGate.tsx  BackendContext.tsx  providerOrder.ts   the composition root
+  navigation/              RootNavigator, the route registry (types.ts), typed navigation hooks
+  today/                   the Today tab: TodayScreen, rest-day/, components/, hooks/, models/
+  food/                    the Food tab, log-food/ (the Add food stack), edit-food/, save-meal/
+  trends/                  Trends, steps-detail/, weight-detail/, and the trend cards
+  journey/                 the map, waypoints/, milestone/
+  settings/                SettingsStack, the index, and one folder per page (water/, mood/, targets/…)
+  auth/                    sign in, create account, forgot and reset password
+  movement/  check-in/  log-weight/   modal flows
+  domain/<name>/           what several tabs share: a Context, its repository, models
+  shared/                  generic UI and plumbing: components/, hooks/, models/, state/, theme/, utils/
 ```
 
-| Layer     | Lives in                              | Rule                                                                                                                    |
-| --------- | ------------------------------------- | ----------------------------------------------------------------------------------------------------------------------- |
-| Data      | `data/`                               | I/O only. No React, no state. Hidden behind a repository interface; the memory implementation is what tests use.        |
-| Rules     | `models/`, `utils/`                   | Pure functions, types and constants. Never imports React or `data/`, so it is testable without rendering.               |
-| State     | `*Context.tsx`                        | Composes `data/` and `utils/`. Owns the actions. Exposes what the UI reads; screens never touch a repository.           |
-| UI        | `screens/`, `components/`, `hooks/`   | Reads the context and wires the view. No business rules — if it needs one, it belongs in `models/` or `utils/`.         |
+Inside a screen the same shape repeats: `<Name>Screen.tsx`, then `components/<Name>/<Name>.tsx`
+(one folder per component, test beside it), `hooks/`, `models/`, `utils/`. A component's private
+pieces nest in its own folder — `search/components/FoodGroup/components/FoodResultRow/` is only
+used by `FoodGroup`, so it lives inside it. Something used by two sibling components sits in
+their common parent's `components/`; something used from two tabs moves to `domain/` or `shared/`.
 
-The rules:
+## Layers
 
-1. **`data/` is mandatory for anything with I/O.** Repositories, mocks, device adapters
-   (`steps.healthconnect.ts`), notification scheduling (`reminders.ts`) and third-party
-   APIs all live there. Outside `data/` (and `shared/backend`, `shared/auth`), nothing
-   touches `supabase-js`, `fetch`, notifications, Health Connect or AsyncStorage.
-2. **Repository naming** is `<resource>.repository.ts`, `<resource>.repository.supabase.ts`
-   and `<resource>.mock.ts`, where the resource is what the interface is named for
-   (`waypoints`, `savedMeals`, `restDays`). A feature may have several resources.
-3. **`models/` is a folder, one concept per file.** No single `models.ts` that keeps growing:
-   split by what the code is about (`dayRecord.ts`, `stepGoal.ts`, `leftToDo.ts`). A model
-   file imports other model files, never React, a context or `data/`. `utils/` is only for
-   helpers that aren't about one domain concept (comparing two lists, picking a colour).
-   Tests sit beside what they test; a feature's `<feature>.test.ts` covers its model files.
-4. **Constants are grouped in classes.** Fixed values live as `static readonly` members of a
-   class named for what they describe — `WaterLimits.MAX_DRINK_OZ`, `StepGoal.MIN`,
-   `Meals.CORE` — in the model file they belong to, not as loose `UPPER_CASE` exports.
-   One class per group, no instances, no methods; the rules about them stay functions.
-   A lone constant that nothing else relates to can stay a plain `const`.
-5. **Props are for shared components.** (The one other use: `AppProviders` hands each provider its repository.) Components inside a feature read the context
-   directly rather than drilling props. `shared/components` take props.
-6. **Provider scope.** Mount a context at the root (`AppProviders`) only if it is
-   genuinely app-wide. State owned by one flow is provided at that flow's navigator.
-7. **Screens of one navigator share a subfolder** (`food/screens/logging/` holds
-   `LogFoodStack` and its screens) once a feature has more than one navigator. A feature
-   with a single stack keeps `screens/` flat.
-8. **No generic names.** No `types.ts`, `components.tsx`, `helpers.ts`, and no `index.ts`
-   barrels inside a feature. Name the file for what it holds.
-9. **Imports.** `./x` inside the same folder; the `@feature/...` alias for anything else.
-   No `../`.
-10. **Promotion.** Code used by two or more features moves to `shared/` (`shared/models`,
-   `shared/utils`, `shared/hooks`, `shared/components`). A feature never
-   imports another feature's `data/` — go through its context or `models/`. Only the
-   composition root (`app/BackendContext`) and tests may.
-11. **Only create a folder when it has a file.** A feature does not get an empty
-    `components/` for symmetry. But once a file of that kind exists, it goes in the folder.
-12. **Sub-features.** A flow big enough to have its own context and repository may become
-    a nested feature with the same layout. Nothing needs that yet.
+| Layer | Lives in                         | Rule                                                                                |
+| ----- | -------------------------------- | ----------------------------------------------------------------------------------- |
+| Data  | `domain/<name>/*.repository*.ts` | I/O only. No React, no state. Behind an interface; the memory version is for tests. |
+| Rules | `models/`, `utils/`              | Pure functions, types, constants. Never import React, a Context or a repository.    |
+| State | `domain/<name>/*Context.tsx`     | Composes a repository, owns the actions, exposes what the UI reads.                 |
+| UI    | screens, `components/`, `hooks/` | Reads the Context, wires the view. No business rules.                               |
 
-`shared/` is organised by kind (`auth`, `components`, `hooks`, `models`, `navigation`, `state`,
-`theme`, `utils`) and follows the import rule above.
+Dependencies point down: `shared` → `domain` → screens → `app`. A screen never imports another
+tab's folder. If two tabs need something it moves to `domain/` (data and rules) or `shared/`
+(generic UI), which means "used by more than one component or util", not "might be reused".
 
-## Dependencies
+### Domain
 
-Code only depends downward. From the bottom up:
+`domain/` holds one folder per kind of data, each with the same parts: `<Name>Context.tsx`,
+`<name>.repository.ts` (interface plus in-memory version), `<name>.repository.supabase.ts`,
+sometimes `<name>.mock.ts`, and its `models/`. The domains are `food`, `saved-meals`,
+`common-foods`, `weight`, `water`, `mood`, `medication`, `movement`, `activity` (steps and rest
+days), `waypoints`, `settings` and `auth`. Third-party read APIs (USDA, Open Food Facts) sit in
+`domain/food/sources/`.
 
-| Layer        | Lives in                                                    | May import                                  |
-| ------------ | ----------------------------------------------------------- | ------------------------------------------- |
-| shared       | `src/shared`                                                | nothing                                     |
-| settings     | `src/settings`                                              | shared                                      |
-| journey      | `src/journey` (the waypoints ledger)                        | shared, settings                            |
-| leaf domains | `weight`, `water`, `mood`, `medication`, `movement`         | shared, settings, journey                   |
-| food         | `src/food`                                                  | everything above (it shows a water card)    |
-| today        | `src/today`                                                 | everything above                            |
-| trends       | `src/trends`                                                | everything above                            |
-| app          | `src/app`                                                   | everything                                  |
+Only `BackendContext` builds repositories. `AppProviders` hands each to its provider as a
+`repo` prop, so nothing below `app/` knows whether it got Supabase or the in-memory version, and a
+screen that wants history asks its Context (`loadHistory`, `loadRange`).
 
-Two exceptions keep this workable. A feature's `models/` are vocabulary any feature may import
-(settings stores a `Medication`, today reads a `FoodEntry`), because they are pure and import
-nothing back. And tests may import from anywhere. Everything else flows down: if a lower layer
-needs something from a higher one, the higher one hands it over, or the thing moves down.
+`AppProviders` lists every provider and the ones it needs; the order is checked at start-up
+(`assertProviderOrder`), so a provider placed too high fails loudly. State that belongs to one
+flow is provided at that flow's navigator instead of at the root.
 
-Two examples of that, both done:
+### Settings
 
-- The "all meals logged" award used to live in the waypoints ledger, which read the food log.
-  Now food awards it through `useAward`, like water and mood, so the ledger knows nothing of food.
-- Settings used to own screens for steps, food display and medication. Those screens now
-  live with their features, each feature supplies its own rows (`StepGoalRow`,
-  `WaterSettingsRows`, `MealReminderRows`…), and the settings menu in `app/screens/SettingsScreen`
-  only arranges them.
-
-### The app layer
-
-`src/app` is the composition root, the one place that knows every feature:
-
-- `BackendContext` builds the repositories (in-memory or Supabase) and `AppProviders` hands each to
-  its provider as a `repo` prop. Features never reach for a backend themselves, so nothing below
-  `app/` knows which one it got. A screen that wants history asks its context (`loadHistory`,
-  `loadRange`), never a repository.
-- `AppProviders` lists every provider with the ones it needs; the order is checked at start-up
-  (`assertProviderOrder`), so a provider placed too high fails loudly, naming both.
-- The root navigator, the settings stack and the settings menu, and `AuthGate`, live here.
+Each settings page is a sub-screen of `settings/` with its own folder (`settings/water/`,
+`settings/mood/`…). Rows several pages share (`ReminderBlock`, `TimeStepperRow`, the reminder
+rows) are in `settings/components/`, and the one-line summaries on the index are in
+`settings/models/`.
 
 ### Closed sets are enums
 
 A value from a fixed set that is compared or switched on is an enum, not a string union:
 `DayState`, `Meal`, `WaypointSource`, `MoodMetric`, `Frequency`, `Units`, `StepsStatus`,
 `TrendRange`. Values are the same strings that are stored, so saved data does not change.
-Compare with the member (`day.state === DayState.Rest`), never a literal.
+Compare with the member (`day.state === DayState.Rest`), never a literal. Fixed numbers are
+grouped as `static readonly` members of a class (`WaterLimits.MAX_DRINK_OZ`).
 
 ### Shared building blocks for contexts
 
-Every context loads its data and saves edits the same way, so that part is shared rather
-than rewritten:
+Every context loads its data and saves edits the same way, so that part is shared:
 
 - `useLoader(load, onLoaded, note)` — loads when its deps change, tracks `ready`, ignores
   results after unmount, and logs rather than throws.
 - `usePersist(reload)` — the optimistic write: change the screen first, hand the repository
   write over, and on failure tell the person and reload.
+- `useSyncedList(load, note)` — `useLoader` and `usePersist` together for a list, with a
+  `change(update, write, failure)` that edits the list and persists in one call.
 - `createRequiredContext(hookName, providerName)` — the context and a hook that throws when
   used outside its provider.
-- `useAward(source, earned, active)` (in `journey/hooks`) — keeps today's waypoint award in
-  step with a condition: given when it becomes true, taken back when it stops.
-
-## Where things are
-
-```
-App.tsx                    fonts, providers, navigation
-src/
-  shared/
-    theme/index.ts         all design tokens, the palette rule, gradient sets
-    components/ui/         Group, Row, Chip, Toggle, Stepper, SegmentedControl, PillToggle, LegendDot…
-    components/charts/     FlightPath, StepBars, WeightTrend, ConsistencyGrid, JourneyRoute, DayRing
-    components/TernMark.tsx  the logo as a tintable SVG path
-    navigation/types.ts    the route registry: every cross-feature param list
-    state/                 toasts and createRequiredContext
-    auth/                  sign in, create account, password reset
-    hooks/, models/, utils/  day keys, loading and saving helpers, trend ranges, dates, units, ids
-  app/                     the composition root: backend, providers, navigators, AuthGate, settings menu
-  today/                   TodayScreen, steps, rest days, step-goal and health-data screens
-  food/                    the Food tab, the Add food stack, saved meals, search, food settings
-  journey/                 waypoints ledger, the map, milestones, reward cards
-  trends/                  steps, weight, water and mood over time
-  weight/, water/, mood/, medication/, movement/
-  settings/                the settings document, units, reminders, profile and account sections
-supabase/migrations/       the schema, in order
-```
+- `useAward(source, earned, active)` (in `domain/waypoints/hooks`) — keeps today's waypoint
+  award in step with a condition.
+- `ok(query)` and `rows<T>(query)` (`shared/backend/query`) — what every Supabase repository
+  uses instead of repeating the `if (error) throw error` check.
 
 ## Storage
 
 Supabase, reached through one repository per domain. Each has an in-memory
 implementation — used in the preview, when there are no keys, and in every test — and a
-Supabase one; [`src/app/BackendContext.tsx`](../src/app/BackendContext.tsx)
+Supabase one; [`src/BackendContext.tsx`](../src/BackendContext.tsx)
 chooses between them and `AppProviders` passes each repository to its provider, so nothing
 else knows which it got.
 

@@ -1,7 +1,7 @@
 import { useCallback, useState } from 'react';
 
-import { useLoader } from '@shared/hooks/useLoader';
-import { usePersist, type PersistFailure } from '@shared/hooks/usePersist';
+import { useLoader } from './useLoader';
+import { usePersist, type PersistFailure } from './usePersist';
 
 /**
  * A list a context loads from storage and edits optimistically. `change` updates the list on

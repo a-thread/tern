@@ -1,5 +1,5 @@
-import { computeTrend } from '@weight/models/weightTrend';
-import type { WeightEntry } from '@weight/models/weightEntry';
+import { computeTrend } from '../../domain/weight/models/weightTrend';
+import type { WeightEntry } from '../../domain/weight/models/weightEntry';
 
 /**
  * Returns the smoothed weight trend for the last `rangeDays` days.

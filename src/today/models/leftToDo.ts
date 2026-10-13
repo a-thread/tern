@@ -1,8 +1,7 @@
-import { Meals } from '@food/models/meals';
-import type { FoodEntry } from '@food/models/foodEntry';
+import { Meals } from '../../domain/food/models/meals';
+import { type FoodEntry, Meal } from '../../domain/food/models/foodEntry';
 import { Frequency } from '@shared/models/frequency';
-import { isLoggedToday, type WeightEntry } from '@weight/models/weightEntry';
-import { Meal } from '@food/models/foodEntry';
+import { isLoggedToday, type WeightEntry } from '../../domain/weight/models/weightEntry';
 
 export type LeftToDoItem =
   | { kind: 'meal'; meal: FoodEntry['meal']; title: string; sub: string }

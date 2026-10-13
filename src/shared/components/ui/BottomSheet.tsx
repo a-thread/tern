@@ -11,7 +11,7 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { colors, space } from '@shared/theme';
+import { colors, space } from '../../theme';
 
 const FADE_IN_MS = 180;
 const SLIDE_IN_MS = 280;

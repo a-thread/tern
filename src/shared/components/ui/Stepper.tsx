@@ -1,6 +1,6 @@
 import React from 'react';
 import { Pressable, StyleSheet, Text, View, type StyleProp, type ViewStyle } from 'react-native';
-import { colors, font } from '@shared/theme';
+import { colors, font } from '../../theme';
 
 /**
  * A − / + control around a value, for servings, scales, times and counts. `compact`

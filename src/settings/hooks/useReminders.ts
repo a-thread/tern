@@ -1,5 +1,5 @@
-import { useSettings } from '@settings/SettingsContext';
-import { describeReminders, type ReminderConfig } from '@settings/models/reminderPlan';
+import { useSettings } from '../../domain/settings/SettingsContext';
+import { describeReminders, type ReminderConfig } from '../../domain/settings/models/reminderPlan';
 
 /** The reminder settings, the sentence describing each, and a way to change one reminder at a time. */
 export function useReminders() {

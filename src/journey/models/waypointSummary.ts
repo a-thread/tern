@@ -1,5 +1,5 @@
-import { Milestones, milestonesFor, type Milestone } from './milestone';
-import { pointsFor, WaypointSource, type LedgerEvent } from './waypoint';
+import { Milestones, milestonesFor, type Milestone } from '../../domain/waypoints/models/milestone';
+import { pointsFor, WaypointSource, type LedgerEvent } from '../../domain/waypoints/models/waypoint';
 
 /** One line of "today" on the waypoints card: what was earned, and for how much. */
 export type EarnedLine = { label: string; points: number };

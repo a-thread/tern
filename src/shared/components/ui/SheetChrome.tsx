@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet, Pressable } from 'react-native';
 import { Icon } from './Icon';
-import { colors, font, space, typography } from '@shared/theme';
+import { colors, font, space, typography } from '../../theme';
 
 /** Nav bar for logging sheets: Cancel/Back on the left, an optional bold action on the right. */
 export function SheetNav({

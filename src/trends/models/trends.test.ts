@@ -1,8 +1,8 @@
-import { TrendRanges, TrendRange } from '@shared/models/trendRange';
+import { TrendRanges, TrendRange } from './trendRange';
 import { bucketSteps } from './stepBars';
 import { longestProtectedRun, summarizeSteps } from './stepsSummary';
 import { weightTrendFor } from './weightTrend';
-import { DayRecord } from '@today/models/dayRecord';
+import { DayRecord } from '../../domain/activity/models/dayRecord';
 import { DayState } from '@shared/models/dayState';
 
 describe('longestProtectedRun', () => {

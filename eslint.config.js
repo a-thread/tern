@@ -11,6 +11,8 @@ module.exports = [
       'jsx-quotes': ['error', 'prefer-single'],
       // Apostrophes in JSX text are fine; escaping them only hurts readability.
       'react/no-unescaped-entities': 'off',
+      // One import line per module, so the list at the top of a file stays as short as it can.
+      'import/no-duplicates': 'error',
     },
   },
   {

@@ -59,7 +59,7 @@ person a padded ledger fools is the person keeping it.
 ### What earns waypoints
 
 Every rule is for something done, never for a number. The amounts live in
-[`WaypointRules`](../src/journey/models/waypoint.ts), and the database check in the newest
+[`WaypointRules`](../src/domain/waypoints/models/waypoint.ts), and the database check in the newest
 `waypoint_events_points_check` migration has to agree with them (a test compares the two).
 
 | Source | Waypoints | For |
@@ -83,6 +83,6 @@ the next day that would break it. A frozen day holds the streak without adding t
 shows in blue.
 
 Freezes aren't stored. They're worked out by replaying the day record
-([`withFreezes`](../src/today/models/dayRecord.ts)), so the same history always gives the same
+([`withFreezes`](../src/domain/activity/models/dayRecord.ts)), so the same history always gives the same
 answer and changing a goal or a rest day stays consistent. Earning one costs nothing, and
 nothing buys one, so there's no way to spend points to protect a streak.

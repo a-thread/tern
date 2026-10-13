@@ -57,7 +57,7 @@ get nothing.
 ## Waypoints ledger
 
 Waypoints are earned for behavior only. `waypoint_events.source` is restricted
-to the sources in `WaypointRules` (`src/journey/models/waypoint.ts`), each worth
+to the sources in `WaypointRules` (`src/domain/waypoints/models/waypoint.ts`), each worth
 fixed points except streak milestones; the newest migration with
 `waypoint_events_points_check` lists them. There
 is at most one award per source per day (so awarding is idempotent), and taking
@@ -89,7 +89,7 @@ rest waypoints; undoing it takes them back quietly.
 Two repeating local notifications (no server involved): meals twice a day, and
 a weekly weigh-in. Defaults are 12:30 pm and 7:00 pm, and Sundays at 8:00 am;
 turn a reminder on in Settings and its times can be changed in 15-minute steps.
-They're scheduled on the device ([src/settings/reminders.ts](../src/settings/reminders.ts))
+They're scheduled on the device ([src/domain/settings/reminders.ts](../src/domain/settings/reminders.ts))
 and can't tell whether you've already logged, so the wording is neutral. The old
 "step goal nudge" was removed: a scheduled notification can't check how close
 you are to the goal.
