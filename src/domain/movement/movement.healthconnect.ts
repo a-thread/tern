@@ -1,7 +1,9 @@
+import { Platform } from 'react-native';
 import { addDays, dayKey, parseDayKey } from '@shared/utils/date';
+import { healthEnabled } from '../health/healthEnabled';
 import { Activity, isValidMinutes, type MovementEntry, MovementSource } from './models/movementEntry';
 
-/** Workouts read from somewhere outside Tern (Health Connect). Read-only: never stored. */
+/** Workouts read from somewhere outside Tern (Health Connect, Apple Health). Read-only: never stored. */
 export interface WorkoutsSource {
   /** Whether Tern may read workouts; asks for permission when `ask` is true. */
   connect(ask?: boolean): Promise<boolean>;
@@ -88,10 +90,10 @@ export function sessionToEntry(
 
 /**
  * Workouts from Android Health Connect, under the same switch as steps
- * (EXPO_PUBLIC_HEALTH_CONNECT=1, see docs/health-connect.md); null otherwise.
+ * (EXPO_PUBLIC_HEALTH=1, see docs/health-connect.md); null otherwise, and off Android.
  */
 export function createHealthConnectWorkouts(): WorkoutsSource | null {
-  if (process.env.EXPO_PUBLIC_HEALTH_CONNECT !== '1') return null;
+  if (Platform.OS !== 'android' || !healthEnabled()) return null;
   let hc: any;
   try {
     // eslint-disable-next-line @typescript-eslint/no-require-imports
