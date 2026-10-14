@@ -26,7 +26,7 @@ import {
   createUnavailableStepsRepository,
   type StepsRepository,
 } from './domain/activity/steps.repository';
-import { createHealthConnectStepsRepository } from './domain/activity/steps.healthconnect';
+import { createHealthStepsRepository } from './domain/activity/steps.health';
 import {
   createMemoryRestDaysRepository,
   type RestDaysRepository,
@@ -62,7 +62,8 @@ import {
   type MovementRepository,
 } from './domain/movement/movement.repository';
 import { createSupabaseMovementRepository } from './domain/movement/movement.repository.supabase';
-import { createHealthConnectWorkouts, type WorkoutsSource } from './domain/movement/movement.healthconnect';
+import type { WorkoutsSource } from './domain/movement/movement.healthconnect';
+import { createHealthWorkouts } from './domain/movement/movement.health';
 import type { DataRepository } from './domain/settings/dataRepository';
 import { createSupabaseDataRepository } from './domain/settings/dataRepository.supabase';
 
@@ -79,7 +80,7 @@ export type Backend = {
   water: WaterRepository;
   mood: MoodRepository;
   movement: MovementRepository;
-  /** Workouts read from Health Connect; null where it isn't available. */
+  /** Workouts read from Health Connect or Apple Health; null where neither is available. */
   workouts: WorkoutsSource | null;
   /** The shared common-foods list that search uses on the phone. */
   commonFoods: CommonFoodsRepository;
@@ -117,7 +118,7 @@ export function createRemoteBackend(): Backend {
     // Real steps only. With no step source the count stays at zero — mock
     // steps would earn a real account waypoints it didn't earn.
     steps:
-      createHealthConnectStepsRepository() ??
+      createHealthStepsRepository() ??
       createUnavailableStepsRepository(),
     restDays: createSupabaseRestDaysRepository(supabase),
     savedMeals: createSupabaseSavedMealsRepository(supabase),
@@ -126,7 +127,7 @@ export function createRemoteBackend(): Backend {
     mood: createSupabaseMoodRepository(supabase),
     commonFoods: createSupabaseCommonFoodsRepository(supabase),
     movement: createSupabaseMovementRepository(supabase),
-    workouts: createHealthConnectWorkouts(),
+    workouts: createHealthWorkouts(),
     data: createSupabaseDataRepository(supabase),
   };
 }

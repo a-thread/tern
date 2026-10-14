@@ -1,10 +1,6 @@
 import type { TernClient } from '@shared/backend/supabase';
 import { ok, rows } from '@shared/backend/query';
-import {
-  Activity,
-  Effort,
-  type MovementEntry,
-} from './models/movementEntry';
+import { Activity, Effort, type MovementEntry, MovementSource } from './models/movementEntry';
 import type { MovementRepository } from './movement.repository';
 
 type MovementRow = {
@@ -29,7 +25,7 @@ export const rowToMovement = (row: MovementRow): MovementEntry => ({
   minutes: Number(row.minutes),
   effort: row.effort && EFFORTS.has(row.effort) ? (row.effort as Effort) : null,
   distanceM: row.distance_m ?? null,
-  source: 'manual',
+  source: MovementSource.Manual,
   loggedAt: row.logged_at,
 });
 

@@ -73,6 +73,39 @@ export type PlannedReminder = {
   variants?: readonly ReminderText[];
 };
 
+/** What the phone lets Tern keep scheduled. iOS silently drops everything past the 64 soonest. */
+export class NotificationLimits {
+  static readonly IOS_PENDING = 64;
+  /** Room kept for streak alerts, which are scheduled separately. */
+  static readonly STREAK_RESERVE = 4;
+  /** A repeating reminder that goes quiet for a rest day becomes up to this many triggers. */
+  static readonly REST_DAY_TRIGGERS = 7;
+}
+
+/**
+ * How many days ahead the reminders with rotating wording (the meal ones, one notification per
+ * day) can be scheduled without the plan going over `limit` pending notifications. Between one
+ * day and `maxDays`; everything else in the plan counts as one notification (or the rest-day
+ * set of weekly repeats), and streak alerts get a reserve.
+ */
+export function rotationDays(
+  plan: readonly PlannedReminder[],
+  limit: number,
+  maxDays: number,
+  restToday = false,
+): number {
+  const rotating = plan.filter((r) => r.variants).length;
+  if (rotating === 0) return maxDays;
+  const fixed = plan
+    .filter((r) => !r.variants)
+    .reduce(
+      (n, r) => n + (restToday && r.key !== 'medication' ? NotificationLimits.REST_DAY_TRIGGERS : 1),
+      0,
+    );
+  const budget = limit - NotificationLimits.STREAK_RESERVE - fixed;
+  return Math.max(1, Math.min(maxDays, Math.floor(budget / rotating)));
+}
+
 export const medicationReminderId = (medicationId: string) =>
   `tern-med-${medicationId}`;
 

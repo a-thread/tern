@@ -11,7 +11,7 @@ export enum StepsStatus {
   Unavailable = 'unavailable',
 }
 
-/** Where step counts come from (Health Connect on Android; mock data in local mode). */
+/** Where step counts come from (Health Connect on Android, Apple Health on iPhone; mock data in local mode). */
 export interface StepsRepository {
   status(): Promise<StepsStatus>;
   /** Asks the user for access to their steps; resolves to the status afterwards. */

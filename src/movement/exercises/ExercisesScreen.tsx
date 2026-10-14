@@ -21,6 +21,7 @@ import {
 } from '@shared/components/ui';
 import { useDayKey } from '@shared/hooks/useDayKey';
 import { addDays } from '@shared/utils/date';
+import { healthAppName } from '@shared/utils/healthApp';
 import { useUnits } from '../../domain/settings/hooks/useUnits';
 import { useMovement } from '../../domain/movement/MovementContext';
 import { ActivityGlyph } from '../components/ActivityGlyph';
@@ -32,6 +33,8 @@ import {
   formatDistance,
   isLoggableDay,
   searchActivities,
+  MovementSource,
+  isFromHealthApp,
 } from '../../domain/movement/models/movementEntry';
 
 type Props = NativeStackScreenProps<MovementStackParamList, 'Exercises'>;
@@ -90,12 +93,12 @@ export default function ExercisesScreen({ navigation, route }: Props) {
                       ? `${EFFORT_LABEL[e.effort].toLowerCase()} intensity`
                       : null,
                     e.distanceM ? formatDistance(e.distanceM, units) : null,
-                    e.source === 'healthConnect' ? 'Health Connect' : null,
+                    isFromHealthApp(e.source) ? healthAppName() : null,
                   ]
                     .filter(Boolean)
                     .join(' · ')}
                   right={
-                    e.source === 'manual' && canLog ? (
+                    e.source === MovementSource.Manual && canLog ? (
                       <Pressable
                         onPress={() => remove(e.id)}
                         hitSlop={8}

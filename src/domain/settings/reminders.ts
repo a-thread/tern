@@ -3,8 +3,10 @@ import * as Notifications from 'expo-notifications';
 
 import { dayNumber, variantFor } from './models/mealMessages';
 import {
+  NotificationLimits,
   planReminders,
   restDayTriggers,
+  rotationDays,
   upcomingDates,
   type PlanExtras,
   type PlannedReminder,
@@ -72,8 +74,9 @@ function rotated(
   r: PlannedReminder,
   now: Date,
   skipToday: boolean,
+  days: number,
 ): { id: string; title: string; body: string; date: Date }[] {
-  return upcomingDates(r, now, ROTATE_DAYS, skipToday).map((date, i) => {
+  return upcomingDates(r, now, days, skipToday).map((date, i) => {
     const { title, body } = variantFor(r.variants ?? [r], dayNumber(date));
     return { id: `${r.id}-${i}`, title, body, date };
   });
@@ -102,10 +105,17 @@ export async function syncReminders(
   if (!(await ensurePermission())) return SyncResult.Denied;
 
   const now = new Date();
+  // iOS drops everything past its 64 soonest notifications, so the rotation shortens to fit.
+  const days = rotationDays(
+    plan,
+    Platform.OS === 'ios' ? NotificationLimits.IOS_PENDING : Infinity,
+    ROTATE_DAYS,
+    restToday,
+  );
   for (const r of plan) {
     const quiet = restToday && r.key !== 'medication';
     if (r.variants) {
-      for (const d of rotated(r, now, quiet)) {
+      for (const d of rotated(r, now, quiet, days)) {
         await Notifications.scheduleNotificationAsync({
           identifier: d.id,
           content: { title: d.title, body: d.body },

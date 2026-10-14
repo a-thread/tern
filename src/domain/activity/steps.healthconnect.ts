@@ -1,4 +1,6 @@
+import { Platform } from 'react-native';
 import { addDays, dayKey, parseDayKey } from '@shared/utils/date';
+import { healthEnabled } from '../health/healthEnabled';
 import { StepsRepository, StepsStatus } from './steps.repository';
 
 /**
@@ -6,14 +8,14 @@ import { StepsRepository, StepsStatus } from './steps.repository';
  *
  * Verified by manual testing on an Android device. It needs a custom dev build
  * (Expo Go can't load native modules); to turn it on, see docs/health-connect.md.
- * It is off unless EXPO_PUBLIC_HEALTH_CONNECT=1, and returns null (steps
- * unavailable) if the package isn't installed.
+ * It is off unless EXPO_PUBLIC_HEALTH=1, and returns null (steps unavailable) off
+ * Android or if the package isn't installed. The iPhone equivalent is steps.healthkit.ts.
  */
 export function createHealthConnectStepsRepository(): StepsRepository | null {
   // Off unless asked for. Metro turns a require of a missing package into a
   // runtime error even inside try/catch, so it must never be reached without
   // the package installed.
-  if (process.env.EXPO_PUBLIC_HEALTH_CONNECT !== '1') return null;
+  if (Platform.OS !== 'android' || !healthEnabled()) return null;
 
   let hc: any;
   try {

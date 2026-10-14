@@ -46,7 +46,7 @@ tab's folder. If two tabs need something it moves to `domain/` (data and rules) 
 `<name>.repository.ts` (interface plus in-memory version), `<name>.repository.supabase.ts`,
 sometimes `<name>.mock.ts`, and its `models/`. The domains are `food`, `saved-meals`,
 `common-foods`, `weight`, `water`, `mood`, `medication`, `movement`, `activity` (steps and rest
-days), `waypoints`, `settings` and `auth`. Third-party read APIs (USDA, Open Food Facts) sit in
+days), `waypoints`, `settings`, `auth` and `health` (the HealthKit wrapper both step and workout adapters use). Third-party read APIs (USDA, Open Food Facts) sit in
 `domain/food/sources/`.
 
 Only `BackendContext` builds repositories. `AppProviders` hands each to its provider as a

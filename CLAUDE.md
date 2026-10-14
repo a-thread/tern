@@ -76,6 +76,10 @@ src/
 - **Contexts** load with `useLoader`, save with `usePersist`, or use `useSyncedList` for an
   optimistic list. Create them with `createRequiredContext`.
 - **Confirmations** use `confirm()` from `@shared/utils/confirm`, not `Alert.alert` directly.
+- **Health data**: steps and workouts come from the phone's health app through `createHealthStepsRepository`
+  / `createHealthWorkouts` (Apple Health on iPhone, Health Connect on Android); adapters take a small
+  interface (`HealthKitApi`) so they test without the native library. Say "Apple Health" or "Health
+  Connect" in the UI with `healthAppName()`, never a literal.
 - Navigation: `useRootNavigation()` / `useSettingsNavigation()`, not a hand-typed `useNavigation<…>()`.
 - One component, one responsibility; if it does two things, split it.
 

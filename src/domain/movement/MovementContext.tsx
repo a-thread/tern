@@ -10,17 +10,7 @@ import { useAward } from '../waypoints/hooks/useAward';
 import { WaypointSource } from '../waypoints/models/waypoint';
 import type { MovementRepository } from './movement.repository';
 import type { WorkoutsSource } from './movement.healthconnect';
-import {
-  dayMinutes,
-  goalMinutesByDay,
-  isLoggableDay,
-  isValidMinutes,
-  MovementLimits,
-  minutesByDay,
-  type Activity,
-  type Effort,
-  type MovementEntry,
-} from './models/movementEntry';
+import { dayMinutes, goalMinutesByDay, isLoggableDay, isValidMinutes, MovementLimits, minutesByDay, type Activity, type Effort, type MovementEntry, MovementSource } from './models/movementEntry';
 
 /** How far back movement is loaded: the same history the week rings and streak use. */
 const HISTORY_DAYS = 180;
@@ -118,7 +108,7 @@ export function MovementProvider({
         minutes,
         effort,
         distanceM: distanceM && distanceM > 0 ? Math.min(Math.round(distanceM), MovementLimits.MAX_DISTANCE_M) : null,
-        source: 'manual',
+        source: MovementSource.Manual,
         loggedAt: new Date().toISOString(),
       };
       change((prev) => [...prev, entry], repo.add(entry), {
@@ -133,7 +123,7 @@ export function MovementProvider({
   const remove = useCallback(
     (id: string) => {
       const target = entries.find((e) => e.id === id);
-      if (!target || target.source !== 'manual') return;
+      if (!target || target.source !== MovementSource.Manual) return;
       change((prev) => prev.filter((e) => e.id !== id), repo.remove(id), {
         log: 'Could not remove movement',
         toast: "Couldn't remove that — please try again.",

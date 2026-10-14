@@ -1,4 +1,5 @@
 import React from 'react';
+import { Platform } from 'react-native';
 import { render, fireEvent, waitFor, act } from '@testing-library/react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
@@ -69,16 +70,28 @@ async function open(steps: StepsRepository) {
 }
 
 describe('Health data screen', () => {
-  it('tapping the Off chip asks for access and says it worked', async () => {
-    const { findByText, getByLabelText } = await open(source(StepsStatus.NeedsPermission, StepsStatus.Connected));
-    fireEvent.press(getByLabelText('Off. Tap to allow access to steps'));
-    await findByText('Health Connect is connected.');
-  });
+  describe.each([
+    ['android', 'Health Connect'],
+    ['ios', 'Apple Health'],
+  ] as const)('on %s', (os, name) => {
+    beforeEach(() => {
+      jest.replaceProperty(Platform, 'OS', os);
+    });
+    afterEach(() => {
+      jest.restoreAllMocks();
+    });
 
-  it('says so when Health Connect is not available on the device', async () => {
-    const { findByText, getByLabelText } = await open(source(StepsStatus.Unavailable));
-    fireEvent.press(getByLabelText('Off. Tap to allow access to steps'));
-    await findByText("Health Connect isn't available on this device.");
+    it('tapping the Off chip asks for access and says it worked', async () => {
+      const { findByText, getByLabelText } = await open(source(StepsStatus.NeedsPermission, StepsStatus.Connected));
+      fireEvent.press(getByLabelText('Off. Tap to allow access to steps'));
+      await findByText(`${name} is connected.`);
+    });
+
+    it(`says so when ${name} is not available on the device`, async () => {
+      const { findByText, getByLabelText } = await open(source(StepsStatus.Unavailable));
+      fireEvent.press(getByLabelText('Off. Tap to allow access to steps'));
+      await findByText(`${name} isn't available on this device.`);
+    });
   });
 
   it('says so when permission was not granted', async () => {

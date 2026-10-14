@@ -15,16 +15,22 @@ import {
   minutesByDay,
   movementSummary,
   type MovementEntry,
+  MovementSource,
 } from './movementEntry';
 import { Units } from '@shared/utils/units';
 
-const entry = (day: string, activity: Activity, minutes: number, at = `${day}T08:00:00Z`): MovementEntry => ({
+const entry = (
+  day: string,
+  activity: Activity,
+  minutes: number,
+  at = `${day}T08:00:00Z`,
+): MovementEntry => ({
   id: `${day}-${activity}-${minutes}`,
   day,
   activity,
   minutes,
   effort: null,
-  source: 'manual',
+  source: MovementSource.Manual,
   loggedAt: at,
 });
 
@@ -49,7 +55,10 @@ describe('movementEntry', () => {
   });
 
   it('lists a day earliest first', () => {
-    expect(entriesOn(log, '2026-10-07').map((e) => e.activity)).toEqual([Activity.Swim, Activity.Walk]);
+    expect(entriesOn(log, '2026-10-07').map((e) => e.activity)).toEqual([
+      Activity.Swim,
+      Activity.Walk,
+    ]);
   });
 
   it('allows logging today and yesterday only', () => {
@@ -69,7 +78,9 @@ describe('movementEntry', () => {
   });
 
   it('shares minutes by activity, biggest first', () => {
-    expect(activityShare(log).map((a) => [a.activity, Math.round(a.share * 100)])).toEqual([
+    expect(
+      activityShare(log).map((a) => [a.activity, Math.round(a.share * 100)]),
+    ).toEqual([
       [Activity.Swim, 50],
       [Activity.Walk, 50],
     ]);
@@ -77,12 +88,12 @@ describe('movementEntry', () => {
   });
 
   it('finds exercises by search', () => {
-    expect(searchActivities('ball').map((a) => ACTIVITY_INFO[a].label)).toEqual([
-      'Basketball',
-      'Pickleball',
-      'Volleyball',
-    ]);
-    expect(searchActivities('')).toHaveLength(Object.keys(ACTIVITY_INFO).length);
+    expect(searchActivities('ball').map((a) => ACTIVITY_INFO[a].label)).toEqual(
+      ['Basketball', 'Pickleball', 'Volleyball'],
+    );
+    expect(searchActivities('')).toHaveLength(
+      Object.keys(ACTIVITY_INFO).length,
+    );
   });
 
   it('counts steps-based exercises out of goal days, and offers distance where it fits', () => {
@@ -101,8 +112,12 @@ describe('movementEntry', () => {
   });
 
   it('summarises a day', () => {
-    expect(movementSummary([entry('d', Activity.Swim, 35)])).toBe('35 min swimming');
-    expect(movementSummary(entriesOn(log, '2026-10-07'))).toBe('50 min · swimming and walking');
+    expect(movementSummary([entry('d', Activity.Swim, 35)])).toBe(
+      '35 min swimming',
+    );
+    expect(movementSummary(entriesOn(log, '2026-10-07'))).toBe(
+      '50 min · swimming and walking',
+    );
     expect(movementSummary([])).toBe('');
   });
 });

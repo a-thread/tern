@@ -1,4 +1,4 @@
-import { Activity } from './models/movementEntry';
+import { Activity, MovementSource } from './models/movementEntry';
 import { activityForExercise, sessionToEntry } from './movement.healthconnect';
 
 describe('Health Connect workouts', () => {
@@ -26,7 +26,7 @@ describe('Health Connect workouts', () => {
       exerciseType: 74,
       metadata: { id: 'abc' },
     });
-    expect(e).toMatchObject({ id: 'hc-abc', activity: Activity.Swim, minutes: 35, source: 'healthConnect', effort: null });
+    expect(e).toMatchObject({ id: 'hc-abc', activity: Activity.Swim, minutes: 35, source: MovementSource.HealthConnect, effort: null });
   });
 
   it('ignores sessions with no usable length', () => {

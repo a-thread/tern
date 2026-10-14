@@ -14,7 +14,10 @@
     },
     "ios": {
       "supportsTablet": false,
-      "bundleIdentifier": "com.purlieus.tern"
+      "bundleIdentifier": "com.purlieus.tern",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
     },
     "android": {
       "package": "com.purlieus.tern",
@@ -42,6 +45,14 @@
         {
           "cameraPermission": "Tern uses the camera to scan food barcodes. Nothing is recorded or saved.",
           "recordAudioAndroid": false
+        }
+      ],
+      [
+        "@kingstinct/react-native-healthkit",
+        {
+          "NSHealthShareUsageDescription": "Tern reads your step counts and workouts from Apple Health to show your daily movement and streak. Nothing is shared or sold.",
+          "NSHealthUpdateUsageDescription": false,
+          "background": false
         }
       ],
       "react-native-health-connect",

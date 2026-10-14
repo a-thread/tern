@@ -15,14 +15,14 @@ documents.
 
 ## Hosted pages
 
-These are served by GitHub Pages from this folder, and are linked from the Play listing.
+These are served by GitHub Pages from this folder, and are linked from the Play listing and the App Store listing.
 They're published documents, not notes — changing one changes what the store shows.
 
 - `index.html` — the privacy policy
-- `delete-account.html` — how to delete an account, which Google Play requires
+- `delete-account.html` — how to delete an account, which Google Play requires (Apple wants it in the app, which it is)
 - `delete-data.html` — how to delete your data
 
 ## Not built yet
 
 - Onboarding, and the day-one empty states that go with it
-- iOS HealthKit — steps are Android-only for now
+- iPhone testing on a real device and the App Store listing — see [RELEASING.md](RELEASING.md)
