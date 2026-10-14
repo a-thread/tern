@@ -26,7 +26,16 @@ import { useUnits } from '../../domain/settings/hooks/useUnits';
 import { useMovement } from '../../domain/movement/MovementContext';
 import { ActivityGlyph } from '../components/ActivityGlyph';
 import type { MovementStackParamList } from '../navigation';
-import { ACTIVITY_INFO, EFFORT_LABEL, entriesOn, formatDistance, isLoggableDay, searchActivities, MovementSource, isFromHealthApp } from '../../domain/movement/models/movementEntry';
+import {
+  ACTIVITY_INFO,
+  EFFORT_LABEL,
+  entriesOn,
+  formatDistance,
+  isLoggableDay,
+  searchActivities,
+  MovementSource,
+  isFromHealthApp,
+} from '../../domain/movement/models/movementEntry';
 
 type Props = NativeStackScreenProps<MovementStackParamList, 'Exercises'>;
 
