@@ -1,6 +1,11 @@
 import type { TernClient } from '@shared/backend/supabase';
 import { ok, rows } from '@shared/backend/query';
-import { Activity, Effort, type MovementEntry, MovementSource } from './models/movementEntry';
+import {
+  Activity,
+  Effort,
+  type MovementEntry,
+  MovementSource,
+} from './models/movementEntry';
 import type { MovementRepository } from './movement.repository';
 
 type MovementRow = {
@@ -48,17 +53,15 @@ export function createSupabaseMovementRepository(
     },
     async add(entry) {
       await ok(
-        db
-          .from('movement_entries')
-          .insert({
-            id: entry.id,
-            day: entry.day,
-            activity: entry.activity,
-            minutes: entry.minutes,
-            effort: entry.effort,
-            distance_m: entry.distanceM ?? null,
-            logged_at: entry.loggedAt,
-          }),
+        db.from('movement_entries').insert({
+          id: entry.id,
+          day: entry.day,
+          activity: entry.activity,
+          minutes: entry.minutes,
+          effort: entry.effort,
+          distance_m: entry.distanceM ?? null,
+          logged_at: entry.loggedAt,
+        }),
       );
     },
     async remove(id) {

@@ -99,7 +99,11 @@ export const ACTIVITY_LABEL = Object.fromEntries(
 /** The list filtered by a search ("ball" finds basketball, pickleball, volleyball). */
 export const searchActivities = (query: string) => {
   const q = query.trim().toLowerCase();
-  return q ? ACTIVITY_ORDER.filter((a) => ACTIVITY_INFO[a].label.toLowerCase().includes(q)) : ACTIVITY_ORDER;
+  return q
+    ? ACTIVITY_ORDER.filter((a) =>
+        ACTIVITY_INFO[a].label.toLowerCase().includes(q),
+      )
+    : ACTIVITY_ORDER;
 };
 
 /**
@@ -114,7 +118,8 @@ export enum MovementSource {
 }
 
 /** Whether an entry was read from Health Connect or Apple Health, rather than logged by hand. */
-export const isFromHealthApp = (source: MovementSource) => source !== MovementSource.Manual;
+export const isFromHealthApp = (source: MovementSource) =>
+  source !== MovementSource.Manual;
 
 export type MovementEntry = {
   id: string;
@@ -145,10 +150,15 @@ export const EFFORT_LABEL: Record<Effort, string> = {
 };
 
 export const isValidMinutes = (m: number) =>
-  Number.isInteger(m) && m >= MovementLimits.MIN_MINUTES && m <= MovementLimits.MAX_MINUTES;
+  Number.isInteger(m) &&
+  m >= MovementLimits.MIN_MINUTES &&
+  m <= MovementLimits.MAX_MINUTES;
 
 export const clampMinutes = (m: number) =>
-  Math.min(Math.max(Math.round(m), MovementLimits.MIN_MINUTES), MovementLimits.MAX_MINUTES);
+  Math.min(
+    Math.max(Math.round(m), MovementLimits.MIN_MINUTES),
+    MovementLimits.MAX_MINUTES,
+  );
 
 /** Movement can be logged by hand for today and yesterday, never further back or ahead. */
 export const isLoggableDay = isTodayOrYesterday;
@@ -158,10 +168,13 @@ export const isLoggableDay = isTodayOrYesterday;
  * steps already count them, and counting them again would make a short walk a
  * goal day. Movement is for what steps can't see: swims, rides, lifting, classes.
  */
-export const countsTowardGoal = (activity: Activity) => !ACTIVITY_INFO[activity].inSteps;
+export const countsTowardGoal = (activity: Activity) =>
+  !ACTIVITY_INFO[activity].inSteps;
 
 /** Minutes moved per day, keyed by day. */
-export function minutesByDay(entries: readonly MovementEntry[]): Record<string, number> {
+export function minutesByDay(
+  entries: readonly MovementEntry[],
+): Record<string, number> {
   const out: Record<string, number> = {};
   for (const e of entries) out[e.day] = (out[e.day] ?? 0) + e.minutes;
   return out;
@@ -176,7 +189,9 @@ export const dayMinutes = (entries: readonly MovementEntry[], day: string) =>
 
 /** A day's entries, earliest first. */
 export const entriesOn = (entries: readonly MovementEntry[], day: string) =>
-  entries.filter((e) => e.day === day).sort((a, b) => a.loggedAt.localeCompare(b.loggedAt));
+  entries
+    .filter((e) => e.day === day)
+    .sort((a, b) => a.loggedAt.localeCompare(b.loggedAt));
 
 /** Each activity's share of the minutes, biggest first: "Walk 48% · Swim 30%". */
 export function activityShare(
@@ -185,18 +200,27 @@ export function activityShare(
   const total = entries.reduce((s, e) => s + e.minutes, 0);
   if (!total) return [];
   const by = new Map<Activity, number>();
-  for (const e of entries) by.set(e.activity, (by.get(e.activity) ?? 0) + e.minutes);
+  for (const e of entries)
+    by.set(e.activity, (by.get(e.activity) ?? 0) + e.minutes);
   return [...by.entries()]
-    .map(([activity, minutes]) => ({ activity, minutes, share: minutes / total }))
+    .map(([activity, minutes]) => ({
+      activity,
+      minutes,
+      share: minutes / total,
+    }))
     .sort((a, b) => b.minutes - a.minutes);
 }
 
 /** "35 min swim", or "50 min · swim and walk" for a day with several. */
 export function movementSummary(entries: readonly MovementEntry[]): string {
   const total = entries.reduce((s, e) => s + e.minutes, 0);
-  const kinds = [...new Set(entries.map((e) => ACTIVITY_LABEL[e.activity].toLowerCase()))];
+  const kinds = [
+    ...new Set(entries.map((e) => ACTIVITY_LABEL[e.activity].toLowerCase())),
+  ];
   if (!kinds.length) return '';
-  return kinds.length === 1 ? `${total} min ${kinds[0]}` : `${total} min · ${kinds.join(' and ')}`;
+  return kinds.length === 1
+    ? `${total} min ${kinds[0]}`
+    : `${total} min · ${kinds.join(' and ')}`;
 }
 
 const METERS_PER_MILE = 1609.344;
@@ -208,7 +232,8 @@ export const distanceToDisplay = (m: number, units: Units) =>
 export const distanceFromDisplay = (value: number, units: Units) =>
   Math.round(units === Units.Imperial ? value * METERS_PER_MILE : value * 1000);
 
-export const distanceUnit = (units: Units) => (units === Units.Imperial ? 'mi' : 'km');
+export const distanceUnit = (units: Units) =>
+  units === Units.Imperial ? 'mi' : 'km';
 
 /** "2.5 mi", "4 km". */
 export const formatDistance = (m: number, units: Units) =>

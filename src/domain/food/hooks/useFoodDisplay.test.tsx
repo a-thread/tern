@@ -10,7 +10,10 @@ async function setup() {
   const wrapper = ({ children }: { children: React.ReactNode }) => (
     <SettingsProvider repo={backend.settings}>{children}</SettingsProvider>
   );
-  const hook = renderHook(() => ({ display: useFoodDisplay(), settings: useSettings() }), { wrapper });
+  const hook = renderHook(
+    () => ({ display: useFoodDisplay(), settings: useSettings() }),
+    { wrapper },
+  );
   await waitFor(() => expect(hook.result.current.settings.ready).toBe(true));
   return hook;
 }

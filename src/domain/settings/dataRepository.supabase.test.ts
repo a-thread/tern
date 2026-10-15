@@ -12,8 +12,8 @@ describe('deleteAccount', () => {
 
   it('throws when the database refuses, so the app can say so', async () => {
     const rpc = jest.fn().mockResolvedValue({ error: new Error('nope') });
-    await expect(createSupabaseDataRepository(dbWithRpc(rpc)).deleteAccount()).rejects.toThrow(
-      'nope',
-    );
+    await expect(
+      createSupabaseDataRepository(dbWithRpc(rpc)).deleteAccount(),
+    ).rejects.toThrow('nope');
   });
 });

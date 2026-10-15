@@ -36,11 +36,23 @@ function pathBetween(a: number, b: number): string {
  * before (`from`, 0 to 1) to the one just reached (`to`), drawing its trail. The new stop
  * pops when the bird lands. Starts after `delay` ms; with reduce motion on, it's already there.
  */
-export function RouteStrip({ from, to, delay = 0 }: { from: number; to: number; delay?: number }) {
+export function RouteStrip({
+  from,
+  to,
+  delay = 0,
+}: {
+  from: number;
+  to: number;
+  delay?: number;
+}) {
   const still = useReduceMotion();
   const [t, setT] = useState(still ? 1 : 0);
   const pop = useRef(new Animated.Value(still ? 1 : 0)).current;
-  const stops = useMemo(() => Milestones.STOPS.map((s) => s.waypoints / Milestones.MIGRATION_LENGTH), []);
+  const stops = useMemo(
+    () =>
+      Milestones.STOPS.map((s) => s.waypoints / Milestones.MIGRATION_LENGTH),
+    [],
+  );
 
   useEffect(() => {
     if (still) {
@@ -52,8 +64,18 @@ export function RouteStrip({ from, to, delay = 0 }: { from: number; to: number; 
     const id = progress.addListener(({ value }) => setT(value));
     const anim = Animated.sequence([
       Animated.delay(delay),
-      Animated.timing(progress, { toValue: 1, duration: 1200, easing: Easing.inOut(Easing.cubic), useNativeDriver: false }),
-      Animated.spring(pop, { toValue: 1, friction: 3, tension: 160, useNativeDriver: false }),
+      Animated.timing(progress, {
+        toValue: 1,
+        duration: 1200,
+        easing: Easing.inOut(Easing.cubic),
+        useNativeDriver: false,
+      }),
+      Animated.spring(pop, {
+        toValue: 1,
+        friction: 3,
+        tension: 160,
+        useNativeDriver: false,
+      }),
     ]);
     anim.start();
     return () => {
@@ -65,14 +87,38 @@ export function RouteStrip({ from, to, delay = 0 }: { from: number; to: number; 
   const at = from + (to - from) * t;
   const bird = pointAt(at);
   const ahead = pointAt(Math.min(at + 0.01, 1));
-  const angle = (Math.atan2(ahead.y - bird.y, ahead.x - bird.x) * 180) / Math.PI;
+  const angle =
+    (Math.atan2(ahead.y - bird.y, ahead.x - bird.x) * 180) / Math.PI;
   const landed = pointAt(to);
 
   return (
-    <Svg width={W} height={H} viewBox={`0 0 ${W} ${H}`} style={{ marginTop: 14 }} accessibilityLabel='The route so far'>
-      <Path d={pathBetween(0, 1)} stroke='rgba(255,255,255,0.22)' strokeWidth={2} strokeDasharray='3 4' fill='none' />
-      <Path d={pathBetween(0, at)} stroke={colors.sunLight} strokeWidth={2.4} strokeLinecap='round' fill='none' />
-      <Circle cx={pointAt(0).x} cy={pointAt(0).y} r={3} fill={colors.sunLight} />
+    <Svg
+      width={W}
+      height={H}
+      viewBox={`0 0 ${W} ${H}`}
+      style={{ marginTop: 14 }}
+      accessibilityLabel='The route so far'
+    >
+      <Path
+        d={pathBetween(0, 1)}
+        stroke='rgba(255,255,255,0.22)'
+        strokeWidth={2}
+        strokeDasharray='3 4'
+        fill='none'
+      />
+      <Path
+        d={pathBetween(0, at)}
+        stroke={colors.sunLight}
+        strokeWidth={2.4}
+        strokeLinecap='round'
+        fill='none'
+      />
+      <Circle
+        cx={pointAt(0).x}
+        cy={pointAt(0).y}
+        r={3}
+        fill={colors.sunLight}
+      />
       {stops.map((f) =>
         Math.abs(f - to) < 1e-6 ? null : (
           <Circle

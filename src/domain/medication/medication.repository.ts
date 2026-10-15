@@ -13,7 +13,8 @@ export interface MedicationRepository {
 
 export function createMemoryMedicationRepository(): MedicationRepository {
   let doses: Dose[] = [];
-  const same = (a: Dose, b: Dose) => a.medicationId === b.medicationId && a.day === b.day;
+  const same = (a: Dose, b: Dose) =>
+    a.medicationId === b.medicationId && a.day === b.day;
   return {
     load: async (from, to) => doses.filter((d) => d.day >= from && d.day <= to),
     take: async (medicationId, day) => {

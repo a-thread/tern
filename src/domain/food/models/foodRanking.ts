@@ -25,7 +25,11 @@ export class FoodRanking {
 }
 
 /** Every word of the query starts a word of the food's name, detail, brand or aliases. */
-export function matchesQuery(r: SearchResult, query: string, aliases: string[] = []): boolean {
+export function matchesQuery(
+  r: SearchResult,
+  query: string,
+  aliases: string[] = [],
+): boolean {
   const q = wordsOf(query);
   if (!q.length) return true;
   return allWordsPrefix(q, [
@@ -57,14 +61,27 @@ export function scoreResult(
   const aliasWords = aliases.flatMap(wordsOf);
 
   let score: number;
-  if (name === nq || aliases.some((a) => normalizeText(a) === nq)) score = FoodRanking.EXACT;
+  if (name === nq || aliases.some((a) => normalizeText(a) === nq))
+    score = FoodRanking.EXACT;
   else if (name.startsWith(nq)) score = FoodRanking.NAME_PREFIX;
-  else if (allWordsPrefix(q, nameWords)) score = FoodRanking.NAME_WORDS + (nameWords[0]?.startsWith(q[0]) ? 50 : 0);
-  else if (allWordsPrefix(q, [...nameWords, ...detailWords, ...aliasWords])) score = FoodRanking.WITH_DETAIL;
-  else if (allWordsPrefix(q, [...nameWords, ...detailWords, ...brandWords, ...aliasWords])) score = FoodRanking.WITH_BRAND;
+  else if (allWordsPrefix(q, nameWords))
+    score = FoodRanking.NAME_WORDS + (nameWords[0]?.startsWith(q[0]) ? 50 : 0);
+  else if (allWordsPrefix(q, [...nameWords, ...detailWords, ...aliasWords]))
+    score = FoodRanking.WITH_DETAIL;
+  else if (
+    allWordsPrefix(q, [
+      ...nameWords,
+      ...detailWords,
+      ...brandWords,
+      ...aliasWords,
+    ])
+  )
+    score = FoodRanking.WITH_BRAND;
   else {
     const all = [...nameWords, ...detailWords, ...brandWords];
-    score = (q.filter((w) => all.some((x) => x.startsWith(w))).length / q.length) * 200;
+    score =
+      (q.filter((w) => all.some((x) => x.startsWith(w))).length / q.length) *
+      200;
   }
 
   score -= Math.min(nameWords.length, 8) * 10;
@@ -73,7 +90,8 @@ export function scoreResult(
   if (r.tier !== null) score += 10;
   if (from === FoodSource.Off) {
     if (q.some((w) => brandWords.some((b) => b.startsWith(w)))) score += 80;
-    if (r.calories > 0 && r.protein === 0 && r.carbs === 0 && r.fat === 0) score -= 150;
+    if (r.calories > 0 && r.protein === 0 && r.carbs === 0 && r.fat === 0)
+      score -= 150;
     if (!r.brand) score -= 40;
   }
   return score;
@@ -93,10 +111,18 @@ export function dedupeFoods<T extends SearchResult>(list: T[]): T[] {
 /** Scores, sorts and de-duplicates foods from every source into one list. */
 export function rankFoods(
   query: string,
-  groups: { from: FoodSource; foods: SearchResult[]; aliases?: (r: SearchResult) => string[] }[],
+  groups: {
+    from: FoodSource;
+    foods: SearchResult[];
+    aliases?: (r: SearchResult) => string[];
+  }[],
 ): RankedFood[] {
   const all = groups.flatMap(({ from, foods, aliases }) =>
-    foods.map((r) => ({ ...r, from, score: scoreResult(query, r, from, aliases?.(r)) })),
+    foods.map((r) => ({
+      ...r,
+      from,
+      score: scoreResult(query, r, from, aliases?.(r)),
+    })),
   );
   all.sort((a, b) => b.score - a.score);
   return dedupeFoods(all).slice(0, FoodRanking.LIMIT);
@@ -108,16 +134,24 @@ export function rankFoods(
  * passes one of the top rows if it beats it by a clear margin (an exact match
  * arriving late can still rise to the top).
  */
-export function stableMerge(shownIds: string[], ranked: RankedFood[]): RankedFood[] {
+export function stableMerge(
+  shownIds: string[],
+  ranked: RankedFood[],
+): RankedFood[] {
   const byId = new Map(ranked.map((r) => [r.id, r]));
-  const kept = shownIds.map((id) => byId.get(id)).filter((r): r is RankedFood => !!r);
+  const kept = shownIds
+    .map((id) => byId.get(id))
+    .filter((r): r is RankedFood => !!r);
   const keptIds = new Set(kept.map((r) => r.id));
   const out = [...kept];
   for (const r of ranked) {
     if (keptIds.has(r.id)) continue;
     let at = out.length;
     for (let i = 0; i < out.length; i++) {
-      const margin = i < FoodRanking.PINNED_ROWS && keptIds.has(out[i].id) ? FoodRanking.PIN_MARGIN : 0;
+      const margin =
+        i < FoodRanking.PINNED_ROWS && keptIds.has(out[i].id)
+          ? FoodRanking.PIN_MARGIN
+          : 0;
       if (r.score > out[i].score + margin) {
         at = i;
         break;

@@ -55,29 +55,43 @@ describe('volume', () => {
 
   it('shows metric to the nearest 10 ml, so a drink entered in ml reads the same again', () => {
     for (const ml of [150, 250, 350, 500, 750, 1000]) {
-      expect(toDisplayVolume(fromDisplayVolume(ml, Units.Metric), Units.Metric)).toBe(ml);
+      expect(
+        toDisplayVolume(fromDisplayVolume(ml, Units.Metric), Units.Metric),
+      ).toBe(ml);
     }
     expect(toDisplayVolume(64, Units.Metric)).toBe(1890);
   });
 
   it('formats for each unit system', () => {
     expect(formatVolume(64, Units.Imperial)).toBe('64 oz');
-    expect(formatVolume(fromDisplayVolume(2000, Units.Metric), Units.Metric)).toBe('2,000 ml');
+    expect(
+      formatVolume(fromDisplayVolume(2000, Units.Metric), Units.Metric),
+    ).toBe('2,000 ml');
     expect(formatVolume(0, Units.Imperial)).toBe('0 oz');
   });
 
   it('offers quick sizes in stored ounces', () => {
     expect(quickWaterOz(Units.Imperial)).toEqual([8, 12, 16]);
-    expect(quickWaterOz(Units.Metric).map((oz) => toDisplayVolume(oz, Units.Metric))).toEqual([250, 350, 500]);
+    expect(
+      quickWaterOz(Units.Metric).map((oz) => toDisplayVolume(oz, Units.Metric)),
+    ).toEqual([250, 350, 500]);
   });
 
   it('steps the goal 8 oz at a time, or 250 ml at a time from a tidy number', () => {
     expect(stepWaterGoal(64, 1, Units.Imperial)).toBe(72);
     expect(stepWaterGoal(64, -1, Units.Imperial)).toBe(56);
     // 64 oz is 1,893 ml: the first metric step lands on a round number.
-    expect(toDisplayVolume(stepWaterGoal(64, 1, Units.Metric), Units.Metric)).toBe(2250);
-    expect(toDisplayVolume(stepWaterGoal(64, -1, Units.Metric), Units.Metric)).toBe(1750);
-    const twice = stepWaterGoal(stepWaterGoal(64, 1, Units.Metric), 1, Units.Metric);
+    expect(
+      toDisplayVolume(stepWaterGoal(64, 1, Units.Metric), Units.Metric),
+    ).toBe(2250);
+    expect(
+      toDisplayVolume(stepWaterGoal(64, -1, Units.Metric), Units.Metric),
+    ).toBe(1750);
+    const twice = stepWaterGoal(
+      stepWaterGoal(64, 1, Units.Metric),
+      1,
+      Units.Metric,
+    );
     expect(toDisplayVolume(twice, Units.Metric)).toBe(2500);
   });
 });

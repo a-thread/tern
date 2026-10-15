@@ -23,11 +23,7 @@ type AuthContextValue = {
   startOnSignUp: boolean;
   continueAsGuest: () => void;
   signIn: (email: string, password: string) => Promise<void>;
-  signUp: (
-    email: string,
-    password: string,
-    firstName: string,
-  ) => Promise<void>;
+  signUp: (email: string, password: string, firstName: string) => Promise<void>;
   sendPasswordReset: (email: string) => Promise<void>;
   updatePassword: (password: string) => Promise<void>;
   /** Ends the session — or, for a guest, just leaves the preview. */

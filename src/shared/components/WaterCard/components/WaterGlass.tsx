@@ -8,8 +8,7 @@ const W = 200;
 const H = 190;
 const TOP = 22;
 const BOTTOM = 177;
-const GLASS =
-  'M62 22h76l-8 146a10 10 0 0 1-10 9H80a10 10 0 0 1-10-9z';
+const GLASS = 'M62 22h76l-8 146a10 10 0 0 1-10 9H80a10 10 0 0 1-10-9z';
 const WAVE_LENGTH = 60;
 const RISE_MS = 850;
 const SLOSH_MS = 2000;
@@ -33,10 +32,17 @@ const RISERS = [
 ];
 
 /** The surface: a wave across the glass, leaned by `tilt`, filled down to the base. */
-function surfacePath(y: number, phase: number, amplitude: number, tilt: number) {
+function surfacePath(
+  y: number,
+  phase: number,
+  amplitude: number,
+  tilt: number,
+) {
   let d = `M ${-WAVE_LENGTH} ${BOTTOM + 20}`;
   for (let x = -WAVE_LENGTH; x <= W + WAVE_LENGTH; x += 6) {
-    const wave = Math.sin(((x + phase * WAVE_LENGTH) / WAVE_LENGTH) * Math.PI * 2);
+    const wave = Math.sin(
+      ((x + phase * WAVE_LENGTH) / WAVE_LENGTH) * Math.PI * 2,
+    );
     const lean = (tilt * (x - W / 2)) / 50;
     d += ` L ${x} ${(y + lean + wave * amplitude).toFixed(2)}`;
   }
@@ -139,7 +145,9 @@ export default function WaterGlass({
             const y = b.y - energy * (6 + i * 4);
             // Never above the surface: a bubble only exists in the water.
             if (y - b.r < surface + 4) return null;
-            return <Circle key={i} cx={x} cy={y} r={b.r} fill='#fff' opacity={0.5} />;
+            return (
+              <Circle key={i} cx={x} cy={y} r={b.r} fill='#fff' opacity={0.5} />
+            );
           })}
           {RISERS.map((b, i) => {
             // Extra bubbles that only appear while pouring, streaming up from the base.
@@ -148,7 +156,14 @@ export default function WaterGlass({
             const x = b.x + Math.sin(t * Math.PI * 6 + i * 2) * 6 * energy;
             if (y < surface + 6 || energy < 0.03) return null;
             return (
-              <Circle key={`r${i}`} cx={x} cy={y} r={b.r} fill='#fff' opacity={0.55 * Math.min(1, energy * 2)} />
+              <Circle
+                key={`r${i}`}
+                cx={x}
+                cy={y}
+                r={b.r}
+                fill='#fff'
+                opacity={0.55 * Math.min(1, energy * 2)}
+              />
             );
           })}
         </>

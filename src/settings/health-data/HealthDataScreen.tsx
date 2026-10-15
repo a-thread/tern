@@ -1,14 +1,34 @@
 import React, { useState } from 'react';
-import { View, Text, ScrollView, StyleSheet, Pressable, Platform, Linking } from 'react-native';
+import {
+  View,
+  Text,
+  ScrollView,
+  StyleSheet,
+  Pressable,
+  Platform,
+  Linking,
+} from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 
 import { colors, font, radius, space, typography } from '@shared/theme';
 import { useToast } from '@shared/state/ToastContext';
 import { healthAccessPath, healthAppName } from '@shared/utils/healthApp';
-import { Group, GroupLabel, IconBadge, Chip, FootNote, PushHeader, ToggleRow, Icon } from '@shared/components/ui';
+import {
+  Group,
+  GroupLabel,
+  IconBadge,
+  Chip,
+  FootNote,
+  PushHeader,
+  ToggleRow,
+  Icon,
+} from '@shared/components/ui';
 import { formatLoggedAt } from '../../domain/weight/models/weightEntry';
-import { useActivity, useLastSynced } from '../../domain/activity/ActivityContext';
+import {
+  useActivity,
+  useLastSynced,
+} from '../../domain/activity/ActivityContext';
 import { useSettings } from '../../domain/settings/SettingsContext';
 import { StepsStatus } from '../../domain/activity/models/stepsStatus';
 import { noStepsThisWeek } from '../../domain/activity/models/dayRecord';
@@ -118,8 +138,14 @@ export default function HealthDataScreen() {
           )}
         </View>
 
-        {Platform.OS === 'ios' && status === StepsStatus.Connected && noStepsThisWeek(days) ? (
-          <Pressable style={s.hint} onPress={() => Linking.openSettings()} accessibilityRole='link'>
+        {Platform.OS === 'ios' &&
+        status === StepsStatus.Connected &&
+        noStepsThisWeek(days) ? (
+          <Pressable
+            style={s.hint}
+            onPress={() => Linking.openSettings()}
+            accessibilityRole='link'
+          >
             <Text style={s.hintText}>
               {`No steps in the past week. If Tern was refused access, turn Steps on under ${healthAccessPath()}. Tap to open Settings.`}
             </Text>
@@ -142,14 +168,20 @@ export default function HealthDataScreen() {
               onToggle={async (v) => {
                 patchHealthData({ readWorkouts: v });
                 if (v && !(await movement.connectWorkouts())) {
-                  toast.show(`Allow Tern to read workouts in ${healthApp} to count them.`);
+                  toast.show(
+                    `Allow Tern to read workouts in ${healthApp} to count them.`,
+                  );
                 }
               }}
             />
           ) : null}
         </Group>
 
-        <GroupLabel>{status === StepsStatus.NeedsPermission ? 'Get started' : "If steps aren't syncing"}</GroupLabel>
+        <GroupLabel>
+          {status === StepsStatus.NeedsPermission
+            ? 'Get started'
+            : "If steps aren't syncing"}
+        </GroupLabel>
         <Group>
           {status === StepsStatus.NeedsPermission ? (
             <Pressable style={s.row} onPress={requestAccess} disabled={busy}>
@@ -167,7 +199,6 @@ export default function HealthDataScreen() {
         <FootNote>
           {`Tern only reads your steps, and your workouts when movement is on, and never shares your health data with anyone. To disconnect, remove Tern's access in ${healthAccessPath()}; everything you've logged stays.`}
         </FootNote>
-
       </ScrollView>
     </View>
   );
@@ -200,5 +231,9 @@ const s = StyleSheet.create({
   rowSub: { ...typography.caption, marginTop: 2 },
   link: { color: colors.coral },
   dangerBtn: { alignItems: 'center', paddingVertical: 11, marginTop: 8 },
-  dangerText: { fontFamily: font.semibold, fontSize: 13.5, color: colors.danger },
+  dangerText: {
+    fontFamily: font.semibold,
+    fontSize: 13.5,
+    color: colors.danger,
+  },
 });

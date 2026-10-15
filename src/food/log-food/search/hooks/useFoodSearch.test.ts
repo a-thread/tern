@@ -2,11 +2,7 @@ import { renderHook, act, waitFor } from '@testing-library/react-native';
 
 import { FoodApiError } from '@/domain/food/sources/http';
 import { searchProducts } from '../../sources/openFoodFacts';
-import {
-  clearSearchCache,
-  useFoodSearch,
-  FoodSearch,
-} from './useFoodSearch';
+import { clearSearchCache, useFoodSearch, FoodSearch } from './useFoodSearch';
 import type { SearchResult } from '@/domain/food/sources/searchResult';
 
 jest.mock('../../sources/openFoodFacts', () => {

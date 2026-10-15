@@ -5,12 +5,15 @@ import LoadingBird from './LoadingBird';
 
 afterEach(() => jest.restoreAllMocks());
 
-const flatten = (style: unknown) => Object.assign({}, ...[style].flat(Infinity).filter(Boolean));
+const flatten = (style: unknown) =>
+  Object.assign({}, ...[style].flat(Infinity).filter(Boolean));
 
 describe('LoadingBird', () => {
   it('announces itself as loading, and can say what is loading', () => {
     const { getByLabelText, rerender } = render(<LoadingBird />);
-    expect(getByLabelText('Loading').props.accessibilityRole).toBe('progressbar');
+    expect(getByLabelText('Loading').props.accessibilityRole).toBe(
+      'progressbar',
+    );
     rerender(<LoadingBird label='Searching foods' />);
     getByLabelText('Searching foods');
   });
@@ -24,7 +27,9 @@ describe('LoadingBird', () => {
 
   it('can be scenery: nothing for a screen reader to announce', () => {
     const { queryByLabelText } = render(<LoadingBird decorative />);
-    expect(queryByLabelText('Loading', { includeHiddenElements: true })).toBeNull();
+    expect(
+      queryByLabelText('Loading', { includeHiddenElements: true }),
+    ).toBeNull();
   });
 
   it('beats its wings faster at a higher speed, so birds can be out of step', () => {

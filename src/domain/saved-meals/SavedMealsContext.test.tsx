@@ -1,10 +1,7 @@
 import React from 'react';
 import { renderHook, act, waitFor } from '@testing-library/react-native';
 
-import {
-  createMemoryBackend,
-  type Backend,
-} from '../../BackendContext';
+import { createMemoryBackend, type Backend } from '../../BackendContext';
 import { dayKey } from '@shared/utils/date';
 import { WaypointsProvider, useWaypoints } from '../waypoints/WaypointsContext';
 import { FoodProvider, useFood } from '../food/FoodContext';
@@ -29,11 +26,13 @@ const entry = (name: string, over: Partial<FoodEntry> = {}): FoodEntry => ({
 
 async function setup(backend: Backend = createMemoryBackend()) {
   const wrapper = ({ children }: { children: React.ReactNode }) => (
-      <WaypointsProvider repo={backend.waypoints}>
-        <FoodProvider repo={backend.food}>
-          <SavedMealsProvider repo={backend.savedMeals}>{children}</SavedMealsProvider>
-        </FoodProvider>
-      </WaypointsProvider>
+    <WaypointsProvider repo={backend.waypoints}>
+      <FoodProvider repo={backend.food}>
+        <SavedMealsProvider repo={backend.savedMeals}>
+          {children}
+        </SavedMealsProvider>
+      </FoodProvider>
+    </WaypointsProvider>
   );
   const hook = renderHook(
     () => ({ saved: useSavedMeals(), food: useFood(), points: useWaypoints() }),
@@ -52,13 +51,23 @@ describe('saving meals', () => {
     const { result, backend } = await setup();
     let outcome: ReturnType<typeof result.current.saved.saveMeal> | undefined;
     await act(async () => {
-      outcome = result.current.saved.saveMeal('  Usual   breakfast ', [entry('Oats'), entry('Banana')]);
+      outcome = result.current.saved.saveMeal('  Usual   breakfast ', [
+        entry('Oats'),
+        entry('Banana'),
+      ]);
       result.current.saved.saveMeal('Big salad', [entry('Lettuce')]);
     });
     expect(outcome).toMatchObject({ ok: true, replaced: false });
-    expect(result.current.saved.meals.map((m) => m.name)).toEqual(['Big salad', 'Usual breakfast']);
+    expect(result.current.saved.meals.map((m) => m.name)).toEqual([
+      'Big salad',
+      'Usual breakfast',
+    ]);
     const stored = await backend.savedMeals.list();
-    expect(stored.find((m) => m.name === 'Usual breakfast')?.items.map((i) => i.name)).toEqual(['Oats', 'Banana']);
+    expect(
+      stored
+        .find((m) => m.name === 'Usual breakfast')
+        ?.items.map((i) => i.name),
+    ).toEqual(['Oats', 'Banana']);
   });
 
   it('replaces a meal with the same name (ignoring case), keeping its id', async () => {
@@ -70,12 +79,18 @@ describe('saving meals', () => {
 
     let outcome: ReturnType<typeof result.current.saved.saveMeal> | undefined;
     await act(async () => {
-      outcome = result.current.saved.saveMeal('lunch', [entry('Sandwich'), entry('Apple')]);
+      outcome = result.current.saved.saveMeal('lunch', [
+        entry('Sandwich'),
+        entry('Apple'),
+      ]);
     });
     expect(outcome).toMatchObject({ ok: true, replaced: true });
     expect(result.current.saved.meals).toHaveLength(1);
     expect(result.current.saved.meals[0].id).toBe(id);
-    expect(result.current.saved.meals[0].items.map((i) => i.name)).toEqual(['Sandwich', 'Apple']);
+    expect(result.current.saved.meals[0].items.map((i) => i.name)).toEqual([
+      'Sandwich',
+      'Apple',
+    ]);
     expect((await backend.savedMeals.list())[0].items).toHaveLength(2);
   });
 
@@ -111,8 +126,13 @@ describe('renaming and deleting', () => {
       error = result.current.saved.renameMeal(a.id, 'Porridge');
     });
     expect(error).toBeNull();
-    expect(result.current.saved.meals.map((m) => m.name)).toEqual(['Breakfast B', 'Porridge']);
-    expect((await backend.savedMeals.list()).map((m) => m.name).sort()).toEqual(['Breakfast B', 'Porridge']);
+    expect(result.current.saved.meals.map((m) => m.name)).toEqual([
+      'Breakfast B',
+      'Porridge',
+    ]);
+    expect((await backend.savedMeals.list()).map((m) => m.name).sort()).toEqual(
+      ['Breakfast B', 'Porridge'],
+    );
   });
 
   it('allows changing only the case of its own name', async () => {
@@ -122,7 +142,10 @@ describe('renaming and deleting', () => {
     });
     let error: string | null = 'unset';
     await act(async () => {
-      error = result.current.saved.renameMeal(result.current.saved.meals[0].id, 'Lunch');
+      error = result.current.saved.renameMeal(
+        result.current.saved.meals[0].id,
+        'Lunch',
+      );
     });
     expect(error).toBeNull();
     expect(result.current.saved.meals[0].name).toBe('Lunch');
@@ -133,7 +156,9 @@ describe('renaming and deleting', () => {
     await act(async () => {
       result.current.saved.saveMeal('Lunch', [entry('Soup')]);
     });
-    await act(async () => result.current.saved.deleteMeal(result.current.saved.meals[0].id));
+    await act(async () =>
+      result.current.saved.deleteMeal(result.current.saved.meals[0].id),
+    );
     expect(result.current.saved.meals).toEqual([]);
     expect(await backend.savedMeals.list()).toEqual([]);
   });
@@ -144,7 +169,9 @@ describe('adding a saved meal to the log', () => {
     const { result, backend } = await setup();
     // Start from a clean log so counts are exact.
     await act(async () => {
-      result.current.food.foodLog.forEach((f) => result.current.food.removeFoodEntry(f.id));
+      result.current.food.foodLog.forEach((f) =>
+        result.current.food.removeFoodEntry(f.id),
+      );
     });
     await act(async () => {
       result.current.saved.saveMeal('Usual', [
@@ -155,21 +182,29 @@ describe('adding a saved meal to the log', () => {
     const meal = result.current.saved.meals[0];
 
     await act(async () => {
-      result.current.food.addFoodEntries(itemsToEntries(meal.items, Meal.Lunch));
+      result.current.food.addFoodEntries(
+        itemsToEntries(meal.items, Meal.Lunch),
+      );
     });
-    const lunch = result.current.food.foodLog.filter((f) => f.meal === Meal.Lunch);
+    const lunch = result.current.food.foodLog.filter(
+      (f) => f.meal === Meal.Lunch,
+    );
     expect(lunch.map((f) => [f.name, f.servingLabel, f.calories])).toEqual([
       ['Oats', '40 g', 150],
       ['Banana', '1 medium (118 g)', 105],
     ]);
     expect(new Set(lunch.map((f) => f.id)).size).toBe(2); // fresh ids
-    expect((await backend.food.load(dayKey())).filter((f) => f.meal === Meal.Lunch)).toHaveLength(2);
+    expect(
+      (await backend.food.load(dayKey())).filter((f) => f.meal === Meal.Lunch),
+    ).toHaveLength(2);
   });
 
   it('earns the meals bonus once when a saved meal completes the day', async () => {
     const { result } = await setup();
     await act(async () => {
-      result.current.food.foodLog.forEach((f) => result.current.food.removeFoodEntry(f.id));
+      result.current.food.foodLog.forEach((f) =>
+        result.current.food.removeFoodEntry(f.id),
+      );
     });
     const before = result.current.points.waypoints;
 
@@ -185,31 +220,45 @@ describe('adding a saved meal to the log', () => {
     });
     // The all-meals bonus, once, plus 5 for each meal that has food in it.
     expect(result.current.points.waypoints).toBe(before + 15 + 3 * 5);
-    expect(result.current.points.celebrations.filter((c) => c.source === WaypointSource.Meals)).toHaveLength(1);
+    expect(
+      result.current.points.celebrations.filter(
+        (c) => c.source === WaypointSource.Meals,
+      ),
+    ).toHaveLength(1);
   });
 });
 
-const item = (name: string, over: Partial<FoodEntry> = {}) => snapshotItems([entry(name, over)])[0];
+const item = (name: string, over: Partial<FoodEntry> = {}) =>
+  snapshotItems([entry(name, over)])[0];
 
 describe('building a meal from scratch', () => {
   it('collects foods in a draft, then saves it as a new meal', async () => {
     const { result, backend } = await setup();
     act(() => result.current.saved.startDraft());
-    expect(result.current.saved.draft).toMatchObject({ id: null, name: '', items: [] });
+    expect(result.current.saved.draft).toMatchObject({
+      id: null,
+      name: '',
+      items: [],
+    });
 
     act(() => {
       result.current.saved.setDraftName('  Post-run  snack ');
-      result.current.saved.addDraftItem(item('Banana', { servingLabel: '1 medium (118 g)' }));
+      result.current.saved.addDraftItem(
+        item('Banana', { servingLabel: '1 medium (118 g)' }),
+      );
       result.current.saved.addDraftItem(item('Yogurt'));
     });
 
-    let outcome: ReturnType<typeof result.current.saved.commitDraft> | undefined;
+    let outcome:
+      ReturnType<typeof result.current.saved.commitDraft> | undefined;
     await act(async () => {
       outcome = result.current.saved.commitDraft();
     });
     expect(outcome).toMatchObject({ ok: true, created: true });
     expect(result.current.saved.draft).toBeNull();
-    expect(result.current.saved.meals.map((m) => m.name)).toEqual(['Post-run snack']);
+    expect(result.current.saved.meals.map((m) => m.name)).toEqual([
+      'Post-run snack',
+    ]);
     const stored = await backend.savedMeals.list();
     expect(stored[0].items.map((i) => [i.name, i.servingLabel])).toEqual([
       ['Banana', '1 medium (118 g)'],
@@ -224,7 +273,8 @@ describe('building a meal from scratch', () => {
     });
     act(() => result.current.saved.startDraft());
 
-    let outcome: ReturnType<typeof result.current.saved.commitDraft> | undefined;
+    let outcome:
+      ReturnType<typeof result.current.saved.commitDraft> | undefined;
     await act(async () => {
       outcome = result.current.saved.commitDraft();
     });
@@ -275,21 +325,29 @@ describe('editing a saved meal', () => {
       result.current.saved.removeDraftItem(1); // drop Banana
       result.current.saved.addDraftItem(item('Coffee'));
     });
-    expect(result.current.saved.draft?.items.map((i) => [i.name, i.servings])).toEqual([
+    expect(
+      result.current.saved.draft?.items.map((i) => [i.name, i.servings]),
+    ).toEqual([
       ['Oats', 1.5],
       ['Coffee', 1],
     ]);
     // The saved meal is untouched until the draft is committed.
-    expect(result.current.saved.meals[0].items.map((i) => i.name)).toEqual(['Oats', 'Banana']);
+    expect(result.current.saved.meals[0].items.map((i) => i.name)).toEqual([
+      'Oats',
+      'Banana',
+    ]);
 
-    let outcome: ReturnType<typeof result.current.saved.commitDraft> | undefined;
+    let outcome:
+      ReturnType<typeof result.current.saved.commitDraft> | undefined;
     await act(async () => {
       outcome = result.current.saved.commitDraft();
     });
     expect(outcome).toMatchObject({ ok: true, created: false });
     expect(result.current.saved.meals).toHaveLength(1);
     expect(result.current.saved.meals[0].id).toBe(original.id);
-    expect(result.current.saved.meals[0].items.map((i) => [i.name, i.servings])).toEqual([
+    expect(
+      result.current.saved.meals[0].items.map((i) => [i.name, i.servings]),
+    ).toEqual([
       ['Oats', 1.5],
       ['Coffee', 1],
     ]);
@@ -323,7 +381,9 @@ describe('logging a saved meal at a different size', () => {
   it('adds every item scaled, and leaves the saved meal unchanged', async () => {
     const { result } = await setup();
     await act(async () => {
-      result.current.food.foodLog.forEach((f) => result.current.food.removeFoodEntry(f.id));
+      result.current.food.foodLog.forEach((f) =>
+        result.current.food.removeFoodEntry(f.id),
+      );
     });
     await act(async () => {
       result.current.saved.saveMeal('Usual', [
@@ -333,14 +393,20 @@ describe('logging a saved meal at a different size', () => {
     });
     const meal = result.current.saved.meals[0];
     await act(async () => {
-      result.current.food.addFoodEntries(itemsToEntries(meal.items, Meal.Lunch, 0.5));
+      result.current.food.addFoodEntries(
+        itemsToEntries(meal.items, Meal.Lunch, 0.5),
+      );
     });
-    const lunch = result.current.food.foodLog.filter((f) => f.meal === Meal.Lunch);
+    const lunch = result.current.food.foodLog.filter(
+      (f) => f.meal === Meal.Lunch,
+    );
     expect(lunch.map((f) => [f.name, f.servings])).toEqual([
       ['Oats', 0.5],
       ['Banana', 1],
     ]);
-    expect(result.current.saved.meals[0].items.map((i) => i.servings)).toEqual([1, 2]);
+    expect(result.current.saved.meals[0].items.map((i) => i.servings)).toEqual([
+      1, 2,
+    ]);
   });
 });
 
@@ -352,6 +418,8 @@ describe('quick successive saves', () => {
       result.current.saved.saveMeal('lunch', [entry('Sandwich')]);
     });
     expect(result.current.saved.meals).toHaveLength(1);
-    expect(result.current.saved.meals[0].items.map((i) => i.name)).toEqual(['Sandwich']);
+    expect(result.current.saved.meals[0].items.map((i) => i.name)).toEqual([
+      'Sandwich',
+    ]);
   });
 });

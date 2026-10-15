@@ -20,10 +20,7 @@ import { ProfileSection } from './components/ProfileSection';
 import { SectionRow } from './components/SectionRow';
 import { UnitsRow } from './components/UnitsRow';
 import { AccountSection } from './components/AccountSection';
-import {
-  healthDataSummary,
-  remindersSummary,
-} from './models/settingsSummary';
+import { healthDataSummary, remindersSummary } from './models/settingsSummary';
 import { activitySummary } from './models/activitySummary';
 import { foodSummary } from './models/foodSummary';
 import { weightSummary } from './models/weightSummary';

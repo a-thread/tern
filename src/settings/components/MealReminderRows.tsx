@@ -1,10 +1,7 @@
 import React from 'react';
 
 import { useReminders } from '../hooks/useReminders';
-import {
-  ReminderBlock,
-  ReminderTimeRow,
-} from './ReminderBlock';
+import { ReminderBlock, ReminderTimeRow } from './ReminderBlock';
 
 /** The meal reminders: on or off, and the midday and evening times. */
 export function MealReminderRows() {

@@ -43,7 +43,11 @@ export function bucketWater(
       ? round2(withData.reduce((s, d) => s + byDay[d], 0) / withData.length)
       : 0;
     const month = monthName(week[0]);
-    bars.push({ label: month !== lastMonth ? month[0] : '', value: avg, state: barState(avg, goalOz) });
+    bars.push({
+      label: month !== lastMonth ? month[0] : '',
+      value: avg,
+      state: barState(avg, goalOz),
+    });
     lastMonth = month;
   }
   return bars;
@@ -58,5 +62,7 @@ export function averageDaily(
   const totals = dayKeys(today, days)
     .map((d) => byDay[d] ?? 0)
     .filter((v) => v > 0);
-  return totals.length ? round2(totals.reduce((s, v) => s + v, 0) / totals.length) : null;
+  return totals.length
+    ? round2(totals.reduce((s, v) => s + v, 0) / totals.length)
+    : null;
 }

@@ -37,7 +37,10 @@ type MoodContextValue = {
   clearDay: () => void;
 };
 
-const [MoodContext, useMood] = createRequiredContext<MoodContextValue>('useMood', 'MoodProvider');
+const [MoodContext, useMood] = createRequiredContext<MoodContextValue>(
+  'useMood',
+  'MoodProvider',
+);
 export { useMood };
 
 /** Mood and stress check-ins, and the waypoint for checking in. Must sit inside SettingsProvider and WaypointsProvider. */
@@ -53,7 +56,10 @@ export function MoodProvider({
   const { day, editable } = useViewedDay();
 
   const { entries, ready, reload, change } = useSyncedList(
-    useCallback(() => repo.load(addDays(today, -(HISTORY_DAYS - 1)), today), [repo, today]),
+    useCallback(
+      () => repo.load(addDays(today, -(HISTORY_DAYS - 1)), today),
+      [repo, today],
+    ),
     'Could not load check-ins',
   );
 
@@ -68,12 +74,17 @@ export function MoodProvider({
 
   const checkIn = useCallback(
     (mood: number, stress: number) => {
-      if (!editable || !isValidScore(mood) || !isValidScore(stress)) return false;
+      if (!editable || !isValidScore(mood) || !isValidScore(stress))
+        return false;
       const entry: MoodEntry = { day, mood, stress };
-      change((prev) => [...prev.filter((e) => e.day !== day), entry], repo.save(entry), {
-        log: 'Could not save check-in',
-        toast: "Couldn't save your check-in — please try again.",
-      });
+      change(
+        (prev) => [...prev.filter((e) => e.day !== day), entry],
+        repo.save(entry),
+        {
+          log: 'Could not save check-in',
+          toast: "Couldn't save your check-in — please try again.",
+        },
+      );
       return true;
     },
     [repo, day, editable, change],
@@ -88,7 +99,16 @@ export function MoodProvider({
   }, [repo, day, editable, change]);
 
   const value = useMemo<MoodContextValue>(
-    () => ({ ready, reload, enabled, entries, today: todays, onDay, checkIn, clearDay }),
+    () => ({
+      ready,
+      reload,
+      enabled,
+      entries,
+      today: todays,
+      onDay,
+      checkIn,
+      clearDay,
+    }),
     [ready, reload, enabled, entries, todays, onDay, checkIn, clearDay],
   );
 

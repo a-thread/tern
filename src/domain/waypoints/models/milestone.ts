@@ -17,13 +17,18 @@ export type Milestone = {
 /** The stops on one migration. */
 export class Milestones {
   /**
-  * One full migration, roughly as tracked Greenland terns fly it: south from
-  * the colony, down the African coast to the Weddell Sea, and home again up the
-  * middle of the Atlantic. Thresholds are the running total within one trip;
-  * after the last stop the next migration begins, so the journey never runs
-  * out. Nothing here depends on weight or calories.
-  */
-  static readonly STOPS: { id: string; name: string; note: string; waypoints: number }[] = [
+   * One full migration, roughly as tracked Greenland terns fly it: south from
+   * the colony, down the African coast to the Weddell Sea, and home again up the
+   * middle of the Atlantic. Thresholds are the running total within one trip;
+   * after the last stop the next migration begins, so the journey never runs
+   * out. Nothing here depends on weight or calories.
+   */
+  static readonly STOPS: {
+    id: string;
+    name: string;
+    note: string;
+    waypoints: number;
+  }[] = [
     {
       id: 'iceland',
       name: 'Iceland',
@@ -93,14 +98,21 @@ export class Milestones {
   ];
 
   /** Waypoints in one full migration. */
-  static readonly MIGRATION_LENGTH = Milestones.STOPS[Milestones.STOPS.length - 1].waypoints;
+  static readonly MIGRATION_LENGTH =
+    Milestones.STOPS[Milestones.STOPS.length - 1].waypoints;
 }
 
 /** Which migration a total is on (1-based), and how far through it, 0 to 1. */
-export function migrationProgress(total: number): { lap: number; progress: number } {
+export function migrationProgress(total: number): {
+  lap: number;
+  progress: number;
+} {
   const t = Math.max(total, 0);
   const lap = Math.floor(t / Milestones.MIGRATION_LENGTH) + 1;
-  return { lap, progress: (t % Milestones.MIGRATION_LENGTH) / Milestones.MIGRATION_LENGTH };
+  return {
+    lap,
+    progress: (t % Milestones.MIGRATION_LENGTH) / Milestones.MIGRATION_LENGTH,
+  };
 }
 
 /**
@@ -109,21 +121,26 @@ export function migrationProgress(total: number): { lap: number; progress: numbe
  * every migration. A stop counts as reached when `total` has passed it, even
  * if the events that got there are no longer on record (`reachedOn` is then unset).
  */
-export function milestonesFor(total: number, events: LedgerEvent[]): Milestone[] {
+export function milestonesFor(
+  total: number,
+  events: LedgerEvent[],
+): Milestone[] {
   const ordered = [...events].sort((a, b) => a.day.localeCompare(b.day));
   const out: Milestone[] = [];
   let i = 0;
   let running = 0;
   for (let lap = 1; ; lap++) {
     for (const stop of Milestones.STOPS) {
-      const waypoints = (lap - 1) * Milestones.MIGRATION_LENGTH + stop.waypoints;
+      const waypoints =
+        (lap - 1) * Milestones.MIGRATION_LENGTH + stop.waypoints;
       const base = { ...stop, id: `${lap}-${stop.id}`, waypoints, lap };
       if (total < waypoints) {
         out.push({ ...base, reached: false });
         return out;
       }
       // Stops are in increasing order, so the replay carries on from the last one.
-      while (running < waypoints && i < ordered.length) running += ordered[i++].points;
+      while (running < waypoints && i < ordered.length)
+        running += ordered[i++].points;
       out.push(
         running >= waypoints
           ? { ...base, reached: true, reachedOn: ordered[i - 1].day }
@@ -142,7 +159,9 @@ export function latestMilestone(total: number): Milestone | null {
   if (total < Milestones.STOPS[0].waypoints) return null;
   const lap = Math.floor(total / Milestones.MIGRATION_LENGTH) + 1;
   const within = total % Milestones.MIGRATION_LENGTH;
-  const stop = [...Milestones.STOPS].reverse().find((s) => s.waypoints <= within);
+  const stop = [...Milestones.STOPS]
+    .reverse()
+    .find((s) => s.waypoints <= within);
   if (stop) {
     return {
       ...stop,

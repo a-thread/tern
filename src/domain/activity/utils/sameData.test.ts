@@ -17,7 +17,9 @@ describe('sameSteps', () => {
 
 describe('sameDays', () => {
   it('ignores order', () => {
-    expect(sameDays(['2026-09-19', '2026-09-20'], ['2026-09-20', '2026-09-19'])).toBe(true);
+    expect(
+      sameDays(['2026-09-19', '2026-09-20'], ['2026-09-20', '2026-09-19']),
+    ).toBe(true);
     expect(sameDays([], [])).toBe(true);
   });
 

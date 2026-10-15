@@ -46,7 +46,11 @@ type Logged = Pick<FoodEntry, 'meal' | 'calories' | 'servings'>;
  * per weigh-in), this one moves per day, so a change over the window is a
  * change over that many days. Days before the first weigh-in are left out.
  */
-export function dailyTrend(weighs: readonly Weigh[], from: string, to: string): Record<string, number> {
+export function dailyTrend(
+  weighs: readonly Weigh[],
+  from: string,
+  to: string,
+): Record<string, number> {
   const byDay = new Map<string, number[]>();
   for (const w of weighs) {
     const d = dayKey(new Date(w.loggedAt));
@@ -55,7 +59,12 @@ export function dailyTrend(weighs: readonly Weigh[], from: string, to: string): 
   }
   const days = [...byDay.keys()].sort();
   if (!days.length) return {};
-  const reading = new Map(days.map((d) => [d, byDay.get(d)!.reduce((a, b) => a + b, 0) / byDay.get(d)!.length]));
+  const reading = new Map(
+    days.map((d) => [
+      d,
+      byDay.get(d)!.reduce((a, b) => a + b, 0) / byDay.get(d)!.length,
+    ]),
+  );
 
   const alpha = 2 / (AdaptiveTarget.TREND_DAYS + 1);
   const out: Record<string, number> = {};
@@ -84,7 +93,9 @@ export function dailyTrend(weighs: readonly Weigh[], from: string, to: string): 
 }
 
 const daysBetween = (a: string, b: string) =>
-  Math.round((Date.parse(`${b}T12:00:00Z`) - Date.parse(`${a}T12:00:00Z`)) / 86_400_000);
+  Math.round(
+    (Date.parse(`${b}T12:00:00Z`) - Date.parse(`${a}T12:00:00Z`)) / 86_400_000,
+  );
 
 /**
  * Days logged fully enough to trust: food in at least two meals, or every core
@@ -100,7 +111,10 @@ export function completeDays(
       const entries = byDay[d];
       if (!entries.length) return false;
       const meals = new Set(entries.map((e) => e.meal));
-      return meals.size >= 2 || allMealsLogged(entries as FoodEntry[], skippedByDay[d] ?? []);
+      return (
+        meals.size >= 2 ||
+        allMealsLogged(entries as FoodEntry[], skippedByDay[d] ?? [])
+      );
     })
     .sort();
 }
@@ -144,8 +158,12 @@ export function estimateBurn(input: {
   const mid = addDays(from, Math.floor(AdaptiveTarget.WINDOW_DAYS / 2));
 
   const inWindow = (d: string) => d >= from && d <= to;
-  const logged = completeDays(input.foodByDay, input.skippedByDay).filter(inWindow);
-  const weighDays = input.weighs.map((w) => dayKey(new Date(w.loggedAt))).filter(inWindow);
+  const logged = completeDays(input.foodByDay, input.skippedByDay).filter(
+    inWindow,
+  );
+  const weighDays = input.weighs
+    .map((w) => dayKey(new Date(w.loggedAt)))
+    .filter(inWindow);
   const firstHalf = weighDays.filter((d) => d < mid).length;
   const secondHalf = weighDays.length - firstHalf;
 
@@ -173,10 +191,13 @@ export function estimateBurn(input: {
     input.foodByDay[d].reduce((sum, e) => sum + e.calories * e.servings, 0),
   );
   const mean = intakes.reduce((a, b) => a + b, 0) / intakes.length;
-  const kcal = mean - (change * AdaptiveTarget.KCAL_PER_LB) / AdaptiveTarget.WINDOW_DAYS;
+  const kcal =
+    mean - (change * AdaptiveTarget.KCAL_PER_LB) / AdaptiveTarget.WINDOW_DAYS;
 
   // How sure: the spread of daily intake, plus a little for the weight trend.
-  const sd = Math.sqrt(intakes.reduce((s, x) => s + (x - mean) ** 2, 0) / intakes.length);
+  const sd = Math.sqrt(
+    intakes.reduce((s, x) => s + (x - mean) ** 2, 0) / intakes.length,
+  );
   const margin = Math.round((1.96 * sd) / Math.sqrt(intakes.length) + 50);
 
   return {
@@ -196,8 +217,14 @@ export function estimateBurn(input: {
  * than `MAX_LOSS_SHARE` of body weight a week, never below `FLOOR`, and at most
  * `MAX_WEEKLY_CHANGE` away from the current target. Rounded to 50.
  */
-export function suggestTarget(burnKcal: number, aim: Aim, currentTarget: number, weightLb: number): number {
-  const fastest = (weightLb * AdaptiveTarget.MAX_LOSS_SHARE * AdaptiveTarget.KCAL_PER_LB) / 7;
+export function suggestTarget(
+  burnKcal: number,
+  aim: Aim,
+  currentTarget: number,
+  weightLb: number,
+): number {
+  const fastest =
+    (weightLb * AdaptiveTarget.MAX_LOSS_SHARE * AdaptiveTarget.KCAL_PER_LB) / 7;
   let target = burnKcal + AdaptiveTarget.AIM_OFFSET[aim];
   target = Math.max(target, burnKcal - fastest, AdaptiveTarget.FLOOR);
   target = Math.min(
@@ -211,7 +238,11 @@ export function suggestTarget(burnKcal: number, aim: Aim, currentTarget: number,
 export const worthSuggesting = (suggested: number, currentTarget: number) =>
   Math.abs(suggested - currentTarget) >= AdaptiveTarget.MIN_DIFFERENCE;
 
-export type EnergyWeek = { weekEnd: string; burn: number | null; intake: number | null };
+export type EnergyWeek = {
+  weekEnd: string;
+  burn: number | null;
+  intake: number | null;
+};
 
 /**
  * Week by week, oldest first: average logged intake on fully logged days, and
@@ -230,11 +261,20 @@ export function weeklyEnergy(input: {
     // The estimate as it stood the day after this week ended.
     const asOf = addDays(input.today, -7 * w);
     const weekEnd = addDays(asOf, -1);
-    const days = Array.from({ length: 7 }, (_, i) => addDays(weekEnd, -i)).filter((d) => complete.has(d));
+    const days = Array.from({ length: 7 }, (_, i) =>
+      addDays(weekEnd, -i),
+    ).filter((d) => complete.has(d));
     const intake = days.length
       ? Math.round(
-          days.reduce((s, d) => s + input.foodByDay[d].reduce((t, e) => t + e.calories * e.servings, 0), 0) /
-            days.length,
+          days.reduce(
+            (s, d) =>
+              s +
+              input.foodByDay[d].reduce(
+                (t, e) => t + e.calories * e.servings,
+                0,
+              ),
+            0,
+          ) / days.length,
         )
       : null;
     const est = estimateBurn({ ...input, today: asOf });

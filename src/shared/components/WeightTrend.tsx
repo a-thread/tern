@@ -1,5 +1,14 @@
 import React from 'react';
-import Svg, { Circle, Polyline, Polygon, Line, Defs, LinearGradient, Stop, Text as SvgText } from 'react-native-svg';
+import Svg, {
+  Circle,
+  Polyline,
+  Polygon,
+  Line,
+  Defs,
+  LinearGradient,
+  Stop,
+  Text as SvgText,
+} from 'react-native-svg';
 import { colors } from '../theme';
 
 /* ------------------------------------------------------------------ */
@@ -21,7 +30,8 @@ export function WeightTrend({
 }) {
   const W = 280;
   const H = height;
-  if (trend.length === 0) return <Svg width='100%' height={H} viewBox={`0 0 ${W} ${H}`} />;
+  if (trend.length === 0)
+    return <Svg width='100%' height={H} viewBox={`0 0 ${W} ${H}`} />;
   const min = Math.min(...trend, goal ?? Infinity) - (spread ?? 0.8);
   const max = Math.max(...trend, goal ?? -Infinity) + (spread ?? 0.8);
   const range = max - min || 1;

@@ -1,5 +1,16 @@
 import { type FoodEntry, Meal } from '../../food/models/foodEntry';
-import { cleanName, filterMeals, findMealByName, itemsToEntries, savedMealTotals, snapshotItems, sortMeals, validateMealName, type SavedMeal, SavedMealLimits } from './savedMeals';
+import {
+  cleanName,
+  filterMeals,
+  findMealByName,
+  itemsToEntries,
+  savedMealTotals,
+  snapshotItems,
+  sortMeals,
+  validateMealName,
+  type SavedMeal,
+  SavedMealLimits,
+} from './savedMeals';
 import { amountOf } from '../../food/models/measure';
 
 const entry = (name: string, over: Partial<FoodEntry> = {}): FoodEntry => ({
@@ -16,7 +27,12 @@ const entry = (name: string, over: Partial<FoodEntry> = {}): FoodEntry => ({
   ...over,
 });
 
-const meal = (name: string): SavedMeal => ({ id: name, name, items: [], createdAt: '2026-09-20T00:00:00Z' });
+const meal = (name: string): SavedMeal => ({
+  id: name,
+  name,
+  items: [],
+  createdAt: '2026-09-20T00:00:00Z',
+});
 
 describe('names', () => {
   it('cleans spacing and compares ignoring case', () => {
@@ -35,7 +51,14 @@ describe('names', () => {
 describe('snapshotItems / itemsToEntries', () => {
   it('keeps portions and the food type you chose, and drops ids and the meal', () => {
     const items = snapshotItems([
-      entry('Oats', { servings: 1, servingLabel: '40 g', calories: 150, tier: 3, tierOverridden: true, brand: 'Quaker' }),
+      entry('Oats', {
+        servings: 1,
+        servingLabel: '40 g',
+        calories: 150,
+        tier: 3,
+        tierOverridden: true,
+        brand: 'Quaker',
+      }),
     ]);
     expect(items).toEqual([
       {
@@ -56,12 +79,17 @@ describe('snapshotItems / itemsToEntries', () => {
   });
 
   it('stops at the item limit', () => {
-    const many = Array.from({ length: SavedMealLimits.MAX_ITEMS + 5 }, (_, i) => entry(`Food ${i}`));
+    const many = Array.from({ length: SavedMealLimits.MAX_ITEMS + 5 }, (_, i) =>
+      entry(`Food ${i}`),
+    );
     expect(snapshotItems(many)).toHaveLength(SavedMealLimits.MAX_ITEMS);
   });
 
   it('turns saved items back into entries for whichever meal you choose', () => {
-    const entries = itemsToEntries(snapshotItems([entry('Oats'), entry('Banana')]), Meal.Dinner);
+    const entries = itemsToEntries(
+      snapshotItems([entry('Oats'), entry('Banana')]),
+      Meal.Dinner,
+    );
     expect(entries.map((e) => [e.name, e.meal])).toEqual([
       ['Oats', 'dinner'],
       ['Banana', 'dinner'],
@@ -76,27 +104,44 @@ describe('totals', () => {
       entry('A', { calories: 100, servings: 2, protein: 5 }),
       entry('B', { calories: 50, servings: 1, protein: 1 }),
     ]);
-    expect(savedMealTotals(items)).toMatchObject({ calories: 250, protein: 11 });
+    expect(savedMealTotals(items)).toMatchObject({
+      calories: 250,
+      protein: 11,
+    });
   });
 });
 
 describe('finding and filtering', () => {
-  const meals = [meal('Usual breakfast'), meal('chili night'), meal('Big Salad')];
+  const meals = [
+    meal('Usual breakfast'),
+    meal('chili night'),
+    meal('Big Salad'),
+  ];
 
   it('finds a meal by name ignoring case', () => {
-    expect(findMealByName(meals, ' USUAL breakfast ')?.id).toBe('Usual breakfast');
+    expect(findMealByName(meals, ' USUAL breakfast ')?.id).toBe(
+      'Usual breakfast',
+    );
     expect(findMealByName(meals, 'pizza')).toBeUndefined();
   });
 
   it('sorts by name, ignoring case, without changing the original', () => {
-    expect(sortMeals(meals).map((m) => m.name)).toEqual(['Big Salad', 'chili night', 'Usual breakfast']);
+    expect(sortMeals(meals).map((m) => m.name)).toEqual([
+      'Big Salad',
+      'chili night',
+      'Usual breakfast',
+    ]);
     expect(meals[0].name).toBe('Usual breakfast');
   });
 
   it('filters by every word of the query', () => {
     expect(filterMeals(meals, '')).toHaveLength(3);
-    expect(filterMeals(meals, 'breakfast').map((m) => m.name)).toEqual(['Usual breakfast']);
-    expect(filterMeals(meals, 'big sal').map((m) => m.name)).toEqual(['Big Salad']);
+    expect(filterMeals(meals, 'breakfast').map((m) => m.name)).toEqual([
+      'Usual breakfast',
+    ]);
+    expect(filterMeals(meals, 'big sal').map((m) => m.name)).toEqual([
+      'Big Salad',
+    ]);
     expect(filterMeals(meals, 'nope')).toEqual([]);
   });
 });
@@ -115,13 +160,28 @@ describe('measured items', () => {
   });
 
   it('scales a measured meal by its amount, so half of two eggs is one egg', () => {
-    const [half] = itemsToEntries(snapshotItems([entry('Eggs', { ...eggs })]), Meal.Lunch, 0.5);
-    expect(half).toMatchObject({ servings: 1, servingLabel: '1 large egg (50 g)', calories: 72 });
+    const [half] = itemsToEntries(
+      snapshotItems([entry('Eggs', { ...eggs })]),
+      Meal.Lunch,
+      0.5,
+    );
+    expect(half).toMatchObject({
+      servings: 1,
+      servingLabel: '1 large egg (50 g)',
+      calories: 72,
+    });
     expect(half.measure?.quantity).toBe(1);
   });
 
   it('logs a measured item as saved at full scale', () => {
-    const [same] = itemsToEntries(snapshotItems([entry('Eggs', { ...eggs })]), Meal.Lunch);
-    expect(same).toMatchObject({ servings: 1, servingLabel: '2 large eggs (100 g)', calories: 143 });
+    const [same] = itemsToEntries(
+      snapshotItems([entry('Eggs', { ...eggs })]),
+      Meal.Lunch,
+    );
+    expect(same).toMatchObject({
+      servings: 1,
+      servingLabel: '2 large eggs (100 g)',
+      calories: 143,
+    });
   });
 });

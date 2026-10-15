@@ -24,12 +24,18 @@ export default function SettingsStack() {
   return (
     <Stack.Navigator screenOptions={{ headerShown: false, freezeOnBlur: true }}>
       <Stack.Screen name='SettingsRoot' component={SettingsRootScreen} />
-      <Stack.Screen name='ActivitySettings' component={ActivitySettingsScreen} />
+      <Stack.Screen
+        name='ActivitySettings'
+        component={ActivitySettingsScreen}
+      />
       <Stack.Screen name='FoodSettings' component={FoodSettingsScreen} />
       <Stack.Screen name='WeightSettings' component={WeightSettingsScreen} />
       <Stack.Screen name='WaterSettings' component={WaterSettingsScreen} />
       <Stack.Screen name='MoodSettings' component={MoodSettingsScreen} />
-      <Stack.Screen name='RemindersSettings' component={RemindersSettingsScreen} />
+      <Stack.Screen
+        name='RemindersSettings'
+        component={RemindersSettingsScreen}
+      />
       <Stack.Screen name='DataSettings' component={DataSettingsScreen} />
       <Stack.Screen name='StepGoal' component={StepGoalScreen} />
       <Stack.Screen name='FoodDisplay' component={FoodDisplayScreen} />

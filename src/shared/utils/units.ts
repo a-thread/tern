@@ -28,7 +28,6 @@ export function formatWeight(lb: number, units: Units, digits = 1): string {
   return `${toDisplayWeight(lb, units).toFixed(digits)} ${weightUnitLabel(units)}`;
 }
 
-
 const ML_PER_FL_OZ = 29.5735295625;
 
 /** Water is always stored in US fluid ounces; millilitres are a display choice. */
@@ -38,7 +37,8 @@ export const mlToOz = (ml: number) => ml / ML_PER_FL_OZ;
 /** Stored ounces rounded to the database's 0.01 precision. */
 export const roundOz = (oz: number) => Math.round(oz * 100) / 100;
 
-export const volumeUnitLabel = (units: Units) => (units === Units.Imperial ? 'oz' : 'ml');
+export const volumeUnitLabel = (units: Units) =>
+  units === Units.Imperial ? 'oz' : 'ml';
 
 /**
  * Stored ounces as a whole number in the user's unit. Millilitres are rounded to
@@ -58,13 +58,19 @@ export function formatVolume(oz: number, units: Units): string {
 
 /** The quick-add drink sizes, in stored ounces: 8 / 12 / 16 oz, or 250 / 350 / 500 ml. */
 export const quickWaterOz = (units: Units): number[] =>
-  units === Units.Imperial ? [8, 12, 16] : [250, 350, 500].map((ml) => fromDisplayVolume(ml, Units.Metric));
+  units === Units.Imperial
+    ? [8, 12, 16]
+    : [250, 350, 500].map((ml) => fromDisplayVolume(ml, Units.Metric));
 
 /**
  * The daily goal one step up or down (`direction` 1 or -1): 8 oz at a time, or 250 ml
  * at a time from the nearest 250 ml, so a metric goal lands on tidy numbers.
  */
-export function stepWaterGoal(oz: number, direction: 1 | -1, units: Units): number {
+export function stepWaterGoal(
+  oz: number,
+  direction: 1 | -1,
+  units: Units,
+): number {
   if (units === Units.Imperial) return Math.round(oz) + direction * 8;
   const ml = Math.round(ozToMl(oz) / 250) * 250 + direction * 250;
   return fromDisplayVolume(ml, Units.Metric);

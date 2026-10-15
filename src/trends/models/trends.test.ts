@@ -16,7 +16,12 @@ describe('longestProtectedRun', () => {
   });
 
   it('treats rest days as protecting the streak, not breaking it', () => {
-    const days: DayState[] = [DayState.Goal, DayState.Rest, DayState.Goal, DayState.Goal];
+    const days: DayState[] = [
+      DayState.Goal,
+      DayState.Rest,
+      DayState.Goal,
+      DayState.Goal,
+    ];
     expect(longestProtectedRun(days)).toBe(4);
   });
 
@@ -33,7 +38,12 @@ describe('longestProtectedRun', () => {
   });
 
   it('resets on none (missed) days', () => {
-    const days: DayState[] = [DayState.Goal, DayState.Goal, DayState.None, DayState.Goal];
+    const days: DayState[] = [
+      DayState.Goal,
+      DayState.Goal,
+      DayState.None,
+      DayState.Goal,
+    ];
     expect(longestProtectedRun(days)).toBe(2);
   });
 });
@@ -57,7 +67,10 @@ describe('summarizeSteps', () => {
   });
 
   it('is null without any data', () => {
-    expect(summarizeSteps(series([0, 0, 0]), 3)).toEqual({ average: null, changePct: null });
+    expect(summarizeSteps(series([0, 0, 0]), 3)).toEqual({
+      average: null,
+      changePct: null,
+    });
   });
 
   it('compares with the period before, when there is one', () => {
@@ -74,7 +87,10 @@ describe('summarizeSteps', () => {
 // ---- range-aware charts ----
 
 /** `count` consecutive days ending 2026-09-20, each with the given steps and state. */
-const dayRecords = (count: number, steps = (i: number) => 1000 * (i + 1)): DayRecord[] =>
+const dayRecords = (
+  count: number,
+  steps = (i: number) => 1000 * (i + 1),
+): DayRecord[] =>
   Array.from({ length: count }, (_, i) => {
     const d = new Date(2026, 8, 20 - (count - 1 - i));
     const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
@@ -84,7 +100,12 @@ const dayRecords = (count: number, steps = (i: number) => 1000 * (i + 1)): DayRe
       goal: 5000,
       minutes: 0,
       movedToGoal: false,
-      state: steps(i) >= 5000 ? DayState.Goal : steps(i) > 0 ? DayState.Partial : DayState.None,
+      state:
+        steps(i) >= 5000
+          ? DayState.Goal
+          : steps(i) > 0
+            ? DayState.Partial
+            : DayState.None,
       chosenRest: false,
       isToday: i === count - 1,
       future: false,
@@ -119,14 +140,19 @@ describe('bucketSteps', () => {
   });
 
   it('6 months: labels a month initial where a new month starts, and nowhere else', () => {
-    const labels = bucketSteps(history, TrendRange.SixMonths).map((b) => b.label);
+    const labels = bucketSteps(history, TrendRange.SixMonths).map(
+      (b) => b.label,
+    );
     expect(labels.filter(Boolean).length).toBeGreaterThanOrEqual(5);
     expect(labels.filter(Boolean).length).toBeLessThanOrEqual(7);
     expect(labels[0]).not.toBe('');
   });
 
   it('6 months: a week with no steps data is empty, not zero-goal', () => {
-    const bars = bucketSteps(dayRecords(14, () => 0), TrendRange.SixMonths);
+    const bars = bucketSteps(
+      dayRecords(14, () => 0),
+      TrendRange.SixMonths,
+    );
     expect(bars.map((b) => b.state)).toEqual(['none', 'none']);
   });
 
@@ -149,7 +175,13 @@ describe('weightTrendFor', () => {
     loggedAt: new Date(2026, 8, 20 - daysAgo, 7, 0).toISOString(),
   });
   // newest first: 170 today ... older readings heavier
-  const entries = [entry(0, 170), entry(3, 171), entry(10, 173), entry(40, 176), entry(100, 180)];
+  const entries = [
+    entry(0, 170),
+    entry(3, 171),
+    entry(10, 173),
+    entry(40, 176),
+    entry(100, 180),
+  ];
 
   it('a week holds only the readings from the last seven days', () => {
     expect(weightTrendFor(entries, 7, now)).toHaveLength(2);

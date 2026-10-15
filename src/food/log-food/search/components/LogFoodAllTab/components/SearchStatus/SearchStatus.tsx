@@ -43,6 +43,12 @@ const s = StyleSheet.create({
     paddingHorizontal: space.sm,
     paddingTop: space.md,
   },
-  text: { flex: 1, fontFamily: font.body, fontSize: 12, lineHeight: 17, color: colors.ink2 },
+  text: {
+    flex: 1,
+    fontFamily: font.body,
+    fontSize: 12,
+    lineHeight: 17,
+    color: colors.ink2,
+  },
   retry: { fontFamily: font.semibold, fontSize: 12.5, color: colors.coral },
 });

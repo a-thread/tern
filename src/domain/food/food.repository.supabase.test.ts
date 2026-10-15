@@ -63,7 +63,9 @@ describe('measure column', () => {
   it('reads a stored measure, and ignores a missing or damaged one', () => {
     expect(rowToFood({ ...row, measure }).measure).toEqual(measure);
     expect(rowToFood(row).measure).toBeUndefined();
-    expect(rowToFood({ ...row, measure: { quantity: 'two' } }).measure).toBeUndefined();
+    expect(
+      rowToFood({ ...row, measure: { quantity: 'two' } }).measure,
+    ).toBeUndefined();
   });
 
   it('writes the measure only when the patch has one', () => {

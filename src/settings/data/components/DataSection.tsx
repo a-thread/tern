@@ -20,7 +20,10 @@ export function DataSection() {
     setBusy(true);
     try {
       const copy = await data.exportAll();
-      await Share.share({ title: 'Tern data', message: JSON.stringify(copy, null, 2) });
+      await Share.share({
+        title: 'Tern data',
+        message: JSON.stringify(copy, null, 2),
+      });
     } catch (e) {
       console.warn('Could not export data', e);
       toast.show("Couldn't export your data — please try again.");
@@ -79,24 +82,24 @@ export function DataSection() {
 
   return (
     <Group>
-        <Pressable style={s.row} onPress={exportData} disabled={busy}>
-          <View style={{ flex: 1 }}>
-            <Text style={s.title}>Export my data</Text>
-            <Text style={s.sub}>A copy of everything Tern holds, as JSON</Text>
-          </View>
-        </Pressable>
-        <Pressable style={s.row} onPress={deleteData} disabled={busy}>
-          <View style={{ flex: 1 }}>
-            <Text style={[s.title, s.danger]}>Delete my data</Text>
-            <Text style={s.sub}>Erase your log, weigh-ins and waypoints</Text>
-          </View>
-        </Pressable>
-        <Pressable style={s.row} onPress={deleteAccount} disabled={busy}>
-          <View style={{ flex: 1 }}>
-            <Text style={[s.title, s.danger]}>Delete my account</Text>
-            <Text style={s.sub}>Remove your login and everything in it</Text>
-          </View>
-        </Pressable>
+      <Pressable style={s.row} onPress={exportData} disabled={busy}>
+        <View style={{ flex: 1 }}>
+          <Text style={s.title}>Export my data</Text>
+          <Text style={s.sub}>A copy of everything Tern holds, as JSON</Text>
+        </View>
+      </Pressable>
+      <Pressable style={s.row} onPress={deleteData} disabled={busy}>
+        <View style={{ flex: 1 }}>
+          <Text style={[s.title, s.danger]}>Delete my data</Text>
+          <Text style={s.sub}>Erase your log, weigh-ins and waypoints</Text>
+        </View>
+      </Pressable>
+      <Pressable style={s.row} onPress={deleteAccount} disabled={busy}>
+        <View style={{ flex: 1 }}>
+          <Text style={[s.title, s.danger]}>Delete my account</Text>
+          <Text style={s.sub}>Remove your login and everything in it</Text>
+        </View>
+      </Pressable>
     </Group>
   );
 }

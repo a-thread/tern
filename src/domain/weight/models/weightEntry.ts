@@ -14,7 +14,20 @@ export function isLoggedOn(iso: string, day: string): boolean {
 }
 
 const WEEKDAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+const MONTHS = [
+  'Jan',
+  'Feb',
+  'Mar',
+  'Apr',
+  'May',
+  'Jun',
+  'Jul',
+  'Aug',
+  'Sep',
+  'Oct',
+  'Nov',
+  'Dec',
+];
 
 /** "Today, 7:02 am" · "Yesterday, 7:14 am" · "Thu, 6:58 am" · "Aug 3, 7:00 am" */
 export function formatLoggedAt(iso: string, now: Date = new Date()): string {

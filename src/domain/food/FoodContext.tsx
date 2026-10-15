@@ -24,9 +24,15 @@ type FoodContextValue = {
   /** Reads everything again from storage (pull to refresh). */
   reload: () => Promise<unknown>;
   /** Entries grouped by day for `from`..`to` inclusive, for averages and "recent foods". Days with nothing logged are absent. */
-  loadHistory: (from: string, to: string) => Promise<Record<string, FoodEntry[]>>;
+  loadHistory: (
+    from: string,
+    to: string,
+  ) => Promise<Record<string, FoodEntry[]>>;
   /** Meals marked "nothing today" by day for `from`..`to`, for the adaptive target. */
-  loadSkippedHistory: (from: string, to: string) => Promise<Record<string, FoodEntry['meal'][]>>;
+  loadSkippedHistory: (
+    from: string,
+    to: string,
+  ) => Promise<Record<string, FoodEntry['meal'][]>>;
   /** Adds to the viewed day. Every write is ignored on a day that can't be edited (before yesterday). */
   addFoodEntry: (entry: NewFoodEntry) => void;
   /** Adds several entries at once (e.g. a saved meal) as a single update. */
@@ -42,7 +48,10 @@ type FoodContextValue = {
 const NO_ENTRIES: FoodEntry[] = [];
 const NO_MEALS: FoodEntry['meal'][] = [];
 
-const [FoodContext, useFood] = createRequiredContext<FoodContextValue>('useFood', 'FoodProvider');
+const [FoodContext, useFood] = createRequiredContext<FoodContextValue>(
+  'useFood',
+  'FoodProvider',
+);
 export { useFood };
 
 /**
@@ -65,7 +74,10 @@ export function FoodProvider({
 
   const { ready, reload } = useLoader(
     useCallback(async () => {
-      const [entries, skipped] = await Promise.all([food.load(day), food.loadSkipped(day)]);
+      const [entries, skipped] = await Promise.all([
+        food.load(day),
+        food.loadSkipped(day),
+      ]);
       return { entries, skipped };
     }, [food, day]),
     ({ entries, skipped }) => {
@@ -85,7 +97,10 @@ export function FoodProvider({
     [persistWith],
   );
 
-  const loadHistory = useCallback((from: string, to: string) => food.history(from, to), [food]);
+  const loadHistory = useCallback(
+    (from: string, to: string) => food.history(from, to),
+    [food],
+  );
   const loadSkippedHistory = useCallback(
     (from: string, to: string) => food.skippedHistory(from, to),
     [food],
@@ -106,7 +121,9 @@ export function FoodProvider({
       if (!entries.length || !editable) return;
       const full: FoodEntry[] = entries.map((e) => ({ ...e, id: newId() }));
       setFoodLog((prev) => [...prev, ...full]);
-      persist(Promise.all(full.map((f) => food.add(day, f))).then(() => undefined));
+      persist(
+        Promise.all(full.map((f) => food.add(day, f))).then(() => undefined),
+      );
     },
     [food, day, editable, persist],
   );
@@ -152,9 +169,21 @@ export function FoodProvider({
 
   // Each meal logged also earns a little on its own, so a partial day still counts for something.
   // Only food logged: marking a meal "nothing today" completes the day above but isn't paid here.
-  useAward(WaypointSource.Breakfast, foodLog.some((f) => f.meal === Meal.Breakfast), loaded);
-  useAward(WaypointSource.Lunch, foodLog.some((f) => f.meal === Meal.Lunch), loaded);
-  useAward(WaypointSource.Dinner, foodLog.some((f) => f.meal === Meal.Dinner), loaded);
+  useAward(
+    WaypointSource.Breakfast,
+    foodLog.some((f) => f.meal === Meal.Breakfast),
+    loaded,
+  );
+  useAward(
+    WaypointSource.Lunch,
+    foodLog.some((f) => f.meal === Meal.Lunch),
+    loaded,
+  );
+  useAward(
+    WaypointSource.Dinner,
+    foodLog.some((f) => f.meal === Meal.Dinner),
+    loaded,
+  );
 
   // A meal with food in it isn't skipped any more, however the food got there
   // (added, moved from another meal, or a saved meal).

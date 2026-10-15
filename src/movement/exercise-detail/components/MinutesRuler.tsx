@@ -13,7 +13,13 @@ const SPAN = 30;
  * A ruler to drag for minutes, like the weigh-in ruler: a tick a minute, a
  * longer one every five, numbers every ten, and the needle in the middle.
  */
-export function MinutesRuler({ value, onChange }: { value: number; onChange: (minutes: number) => void }) {
+export function MinutesRuler({
+  value,
+  onChange,
+}: {
+  value: number;
+  onChange: (minutes: number) => void;
+}) {
   const current = useRef(value);
   current.current = value;
   const start = useRef(value);
@@ -29,7 +35,10 @@ export function MinutesRuler({ value, onChange }: { value: number; onChange: (mi
       },
       onPanResponderMove: (_e, g) => {
         const next = Math.round(start.current - g.dx / PX_PER_MINUTE);
-        const clamped = Math.min(Math.max(next, MovementLimits.MIN_MINUTES), MovementLimits.MAX_MINUTES);
+        const clamped = Math.min(
+          Math.max(next, MovementLimits.MIN_MINUTES),
+          MovementLimits.MAX_MINUTES,
+        );
         if (clamped !== current.current) onChangeRef.current(clamped);
       },
     }),
@@ -52,7 +61,10 @@ export function MinutesRuler({ value, onChange }: { value: number; onChange: (mi
       onAccessibilityAction={(e) =>
         onChange(
           Math.min(
-            Math.max(value + (e.nativeEvent.actionName === 'increment' ? 5 : -5), MovementLimits.MIN_MINUTES),
+            Math.max(
+              value + (e.nativeEvent.actionName === 'increment' ? 5 : -5),
+              MovementLimits.MIN_MINUTES,
+            ),
             MovementLimits.MAX_MINUTES,
           ),
         )
@@ -63,7 +75,13 @@ export function MinutesRuler({ value, onChange }: { value: number; onChange: (mi
           <View key={m} style={s.tickCol}>
             {m >= 0 ? (
               <>
-                <View style={[s.tick, m % 5 === 0 && s.tickMid, m % 10 === 0 && s.tickMajor]} />
+                <View
+                  style={[
+                    s.tick,
+                    m % 5 === 0 && s.tickMid,
+                    m % 10 === 0 && s.tickMajor,
+                  ]}
+                />
                 {m % 10 === 0 ? <Text style={s.label}>{m}</Text> : null}
               </>
             ) : null}
@@ -76,13 +94,31 @@ export function MinutesRuler({ value, onChange }: { value: number; onChange: (mi
 }
 
 const s = StyleSheet.create({
-  ruler: { height: 84, backgroundColor: colors.track, overflow: 'hidden', justifyContent: 'flex-start' },
-  track: { flexDirection: 'row', alignSelf: 'center', height: 84, width: PX_PER_MINUTE * (SPAN * 2 + 1) },
+  ruler: {
+    height: 84,
+    backgroundColor: colors.track,
+    overflow: 'hidden',
+    justifyContent: 'flex-start',
+  },
+  track: {
+    flexDirection: 'row',
+    alignSelf: 'center',
+    height: 84,
+    width: PX_PER_MINUTE * (SPAN * 2 + 1),
+  },
   tickCol: { width: PX_PER_MINUTE, alignItems: 'center' },
   tick: { width: 1.5, height: 14, backgroundColor: colors.ink3 },
   tickMid: { height: 22 },
   tickMajor: { height: 32, width: 2, backgroundColor: colors.ink },
-  label: { position: 'absolute', top: 40, width: 40, textAlign: 'center', fontFamily: font.semibold, fontSize: 13, color: colors.ink },
+  label: {
+    position: 'absolute',
+    top: 40,
+    width: 40,
+    textAlign: 'center',
+    fontFamily: font.semibold,
+    fontSize: 13,
+    color: colors.ink,
+  },
   needle: {
     position: 'absolute',
     left: '50%',

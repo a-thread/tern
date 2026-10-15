@@ -19,9 +19,20 @@ export function SettingsPage({
   const navigation = useNavigation();
   const insets = useSafeAreaInsets();
   return (
-    <View style={{ flex: 1, backgroundColor: colors.paper, paddingTop: insets.top }}>
-      <PushHeader title={title} backLabel={backLabel} onBack={() => navigation.goBack()} />
-      <ScrollView contentContainerStyle={{ paddingHorizontal: space.lg, paddingBottom: 60 }}>
+    <View
+      style={{ flex: 1, backgroundColor: colors.paper, paddingTop: insets.top }}
+    >
+      <PushHeader
+        title={title}
+        backLabel={backLabel}
+        onBack={() => navigation.goBack()}
+      />
+      <ScrollView
+        contentContainerStyle={{
+          paddingHorizontal: space.lg,
+          paddingBottom: 60,
+        }}
+      >
         {children}
       </ScrollView>
     </View>

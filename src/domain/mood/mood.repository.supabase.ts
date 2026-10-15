@@ -29,17 +29,15 @@ export function createSupabaseMoodRepository(db: TernClient): MoodRepository {
     async save(entry) {
       // One row per day: checking in again replaces it.
       await ok(
-        db
-          .from('mood_checkins')
-          .upsert(
-            {
-              day: entry.day,
-              mood: entry.mood,
-              stress: entry.stress,
-              updated_at: new Date().toISOString(),
-            },
-            { onConflict: 'user_id,day' },
-          ),
+        db.from('mood_checkins').upsert(
+          {
+            day: entry.day,
+            mood: entry.mood,
+            stress: entry.stress,
+            updated_at: new Date().toISOString(),
+          },
+          { onConflict: 'user_id,day' },
+        ),
       );
     },
     async remove(day) {

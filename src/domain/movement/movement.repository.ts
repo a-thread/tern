@@ -8,7 +8,9 @@ export interface MovementRepository {
   remove(id: string): Promise<void>;
 }
 
-export function createMemoryMovementRepository(initial: MovementEntry[] = []): MovementRepository {
+export function createMemoryMovementRepository(
+  initial: MovementEntry[] = [],
+): MovementRepository {
   let entries = [...initial];
   return {
     load: async (from, to) =>

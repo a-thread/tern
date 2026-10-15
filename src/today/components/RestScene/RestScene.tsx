@@ -167,7 +167,8 @@ export function RestScene({
   // A steady clock, only while the screen is showing and motion is allowed.
   useEffect(() => {
     if (!isFocused || reduceMotion) return;
-    const gap = motion === SceneMotion.Settled ? REST_FRAME_MS : FLIGHT_FRAME_MS;
+    const gap =
+      motion === SceneMotion.Settled ? REST_FRAME_MS : FLIGHT_FRAME_MS;
     let last = 0;
     let frame = requestAnimationFrame(function tick() {
       const t = Date.now();
@@ -184,7 +185,8 @@ export function RestScene({
 
   // The landing is over, or the take-off is.
   useEffect(() => {
-    if (motion === SceneMotion.Arriving && sinceMs >= RestScenes.FLIGHT_MS) setLanded(true);
+    if (motion === SceneMotion.Arriving && sinceMs >= RestScenes.FLIGHT_MS)
+      setLanded(true);
   }, [motion, sinceMs]);
 
   // The feet touch: whatever waits for the landing (the waypoint feathers) can go.
@@ -194,7 +196,8 @@ export function RestScene({
     if (!entrance) return;
     const touched =
       motion === SceneMotion.Settled ||
-      (motion === SceneMotion.Arriving && sinceMs >= RestScenes.FLIGHT_MS * RestScenes.TOUCHDOWN_K);
+      (motion === SceneMotion.Arriving &&
+        sinceMs >= RestScenes.FLIGHT_MS * RestScenes.TOUCHDOWN_K);
     if (touched) touchdownRef.current?.();
   }, [entrance, motion, sinceMs]);
   useEffect(() => {
@@ -239,13 +242,7 @@ export function RestScene({
           </Defs>
 
           <G clipPath='url(#canvasClip)'>
-            <Rect
-              x={0}
-              y={0}
-              width={W}
-              height={HORIZON}
-              fill='url(#restSky)'
-            />
+            <Rect x={0} y={0} width={W} height={HORIZON} fill='url(#restSky)' />
 
             {STARS.map((star, idx) => (
               <Circle
@@ -309,7 +306,10 @@ export function RestScene({
               />
             ))}
 
-            <Driftwood lap={activePose.ripple[1] ?? 0} float={activePose.driftwood} />
+            <Driftwood
+              lap={activePose.ripple[1] ?? 0}
+              float={activePose.driftwood}
+            />
           </G>
         </Svg>
 

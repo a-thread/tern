@@ -1,6 +1,9 @@
 import type { FoodEntry } from '../../domain/food/models/foodEntry';
 import { Meals } from '../../domain/food/models/meals';
-import { isLoggedToday, type WeightEntry } from '../../domain/weight/models/weightEntry';
+import {
+  isLoggedToday,
+  type WeightEntry,
+} from '../../domain/weight/models/weightEntry';
 
 export type TodaySummary = {
   /** The meals logged today (in day order) and their calories; null when nothing is logged. */
@@ -30,7 +33,8 @@ export function todaySummary(
   const calories = foodLog.reduce((sum, f) => sum + f.calories * f.servings, 0);
   return {
     meals: names.length ? { names, calories: Math.round(calories) } : null,
-    weighedIn: lastWeight && isLoggedToday(lastWeight.loggedAt, now) ? lastWeight : null,
+    weighedIn:
+      lastWeight && isLoggedToday(lastWeight.loggedAt, now) ? lastWeight : null,
     medications: takenMedicationNames,
     stepGoalReached,
     waterOz: waterOz > 0 ? waterOz : null,

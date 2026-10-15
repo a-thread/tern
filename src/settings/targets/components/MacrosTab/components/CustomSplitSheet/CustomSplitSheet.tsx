@@ -17,9 +17,17 @@ import {
 import { MACRO_LABEL } from '../../models/macroLabel';
 
 /** Sets the macro split by hand, a few percent at a time, until it adds up to 100%. */
-export function CustomSplitSheet({ visible, onClose }: { visible: boolean; onClose: () => void }) {
+export function CustomSplitSheet({
+  visible,
+  onClose,
+}: {
+  visible: boolean;
+  onClose: () => void;
+}) {
   const { settings, updateSettings } = useSettings();
-  const [draft, setDraft] = useState<MacroSplit>(() => percentsFromMacros(settings.macroTargets));
+  const [draft, setDraft] = useState<MacroSplit>(() =>
+    percentsFromMacros(settings.macroTargets),
+  );
 
   // Each time the sheet opens it starts from the split in use.
   useEffect(() => {
@@ -73,7 +81,9 @@ export function CustomSplitSheet({ visible, onClose }: { visible: boolean; onClo
 
         <View style={s.totalRow}>
           <Text style={s.rowTitle}>Total</Text>
-          <Text style={[s.total, valid && { color: colors.kelp }]}>{total}%</Text>
+          <Text style={[s.total, valid && { color: colors.kelp }]}>
+            {total}%
+          </Text>
         </View>
         {!valid ? <Text style={s.hint}>Total must equal 100%</Text> : null}
 
@@ -81,7 +91,9 @@ export function CustomSplitSheet({ visible, onClose }: { visible: boolean; onClo
           style={[s.update, !valid && s.updateOff]}
           disabled={!valid}
           onPress={() => {
-            updateSettings({ macroTargets: macrosFromPercents(settings.calorieTarget, draft) });
+            updateSettings({
+              macroTargets: macrosFromPercents(settings.calorieTarget, draft),
+            });
             onClose();
           }}
           accessibilityRole='button'

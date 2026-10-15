@@ -2,10 +2,7 @@ import React from 'react';
 
 import { useReminders } from '../hooks/useReminders';
 import TimeStepperRow from './TimeStepperRow';
-import {
-  ReminderBlock,
-  ReminderTimeRow,
-} from './ReminderBlock';
+import { ReminderBlock, ReminderTimeRow } from './ReminderBlock';
 import {
   stepWeekday,
   weekdayPlural,

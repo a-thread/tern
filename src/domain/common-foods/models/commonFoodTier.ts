@@ -16,7 +16,8 @@ const CULINARY =
   /^(olive oil|vegetable oil|canola oil|coconut oil|oil|butter|ghee|lard|sugar|brown sugar|honey|maple syrup|salt|flour|cornstarch|vinegar)\b/i;
 
 // Processed by name (bread, cheese), or by preparation (canned, smoked).
-const PROCESSED_NAME = /\b(bread|cheese|tofu|hummus|peanut butter|nut butter)\b/i;
+const PROCESSED_NAME =
+  /\b(bread|cheese|tofu|hummus|peanut butter|nut butter)\b/i;
 const PROCESSED_PREP = /\b(canned|smoked|cured|pickled)\b/i;
 
 const WHOLE_CATEGORY =
@@ -25,7 +26,11 @@ const WHOLE_CATEGORY =
 const WHOLE_NAME =
   /^(eggs?|egg whites?|milk|plain yogurt|greek yogurt|yogurt|rice|oats|oatmeal|quinoa|barley|pasta|spaghetti|noodles|potatoe?s?|sweet potatoe?s?|coffee|tea|water)\b/i;
 
-export function suggestTier(name: string, detail = '', category = ''): Tier | null {
+export function suggestTier(
+  name: string,
+  detail = '',
+  category = '',
+): Tier | null {
   const text = `${name} ${detail}`;
   if (CULINARY.test(name)) return 2;
   if (NOT_PLAIN.test(text)) return null;

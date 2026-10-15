@@ -46,17 +46,33 @@ export function useAdaptiveTarget() {
     Promise.all([loadHistory(from, to), loadSkippedHistory(from, to)])
       .then(([foodByDay, skippedByDay]) => {
         if (cancelled) return;
-        setEstimate(estimateBurn({ foodByDay, skippedByDay, weighs: weightEntries, today }));
+        setEstimate(
+          estimateBurn({
+            foodByDay,
+            skippedByDay,
+            weighs: weightEntries,
+            today,
+          }),
+        );
       })
       .catch((e) => console.warn('Could not work out the adaptive target', e));
     return () => {
       cancelled = true;
     };
-  }, [on, today, loadHistory, loadSkippedHistory, weightEntries, foodLog.length]);
+  }, [
+    on,
+    today,
+    loadHistory,
+    loadSkippedHistory,
+    weightEntries,
+    foodLog.length,
+  ]);
 
   const current = settings.calorieTarget;
   const suggestion =
-    estimate?.status === 'ready' ? suggestTarget(estimate.kcal, settings.aim, current, estimate.weightLb) : null;
+    estimate?.status === 'ready'
+      ? suggestTarget(estimate.kcal, settings.aim, current, estimate.weightLb)
+      : null;
   const week = weekStartKey(today);
   const offer =
     on &&
@@ -66,17 +82,27 @@ export function useAdaptiveTarget() {
 
   const apply = useCallback(() => {
     if (suggestion === null) return;
-    const calorieTarget = Math.min(Math.max(suggestion, TARGET_MIN), TARGET_MAX);
+    const calorieTarget = Math.min(
+      Math.max(suggestion, TARGET_MIN),
+      TARGET_MAX,
+    );
     updateSettings({
       calorieTarget,
       // The split stays the same; the grams follow the new target.
-      macroTargets: rescaleMacros(settings.macroTargets, current, calorieTarget),
+      macroTargets: rescaleMacros(
+        settings.macroTargets,
+        current,
+        calorieTarget,
+      ),
       lastSuggestionWeek: week,
     });
   }, [suggestion, settings.macroTargets, current, week, updateSettings]);
 
   /** "Not now": nothing more until next week. */
-  const dismiss = useCallback(() => updateSettings({ lastSuggestionWeek: week }), [updateSettings, week]);
+  const dismiss = useCallback(
+    () => updateSettings({ lastSuggestionWeek: week }),
+    [updateSettings, week],
+  );
 
   return { available, on, estimate, suggestion, offer, apply, dismiss };
 }

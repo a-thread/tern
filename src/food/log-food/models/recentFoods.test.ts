@@ -1,9 +1,5 @@
 import { type FoodEntry, Meal } from '@/domain/food/models/foodEntry';
-import {
-  filterFoods,
-  loggedAsResult,
-  recentFoods,
-} from './recentFoods';
+import { filterFoods, loggedAsResult, recentFoods } from './recentFoods';
 import { amountOf } from '@/domain/food/models/measure';
 
 const eggsAmount = amountOf({

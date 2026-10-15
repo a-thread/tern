@@ -41,7 +41,8 @@ export async function getJson(
       },
       signal: ctrl.signal,
     });
-    if (!res.ok) throw new FoodApiError('http', `Food database returned ${res.status}`);
+    if (!res.ok)
+      throw new FoodApiError('http', `Food database returned ${res.status}`);
     return await res.json();
   } catch (e) {
     if (e instanceof FoodApiError) throw e;

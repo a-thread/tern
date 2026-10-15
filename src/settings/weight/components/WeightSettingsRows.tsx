@@ -15,13 +15,17 @@ export function WeightSettingsRows() {
   const { weightEntries } = useWeight();
 
   // A new goal starts at the latest weigh-in, so it suggests no direction.
-  const startGoal = () => updateSettings({ weightGoalLb: Math.round(weightEntries[0]?.lb ?? 150) });
+  const startGoal = () =>
+    updateSettings({ weightGoalLb: Math.round(weightEntries[0]?.lb ?? 150) });
 
   // Whole pounds, or half kilograms, in whichever unit is showing.
   const stepGoal = (dir: 1 | -1) => {
     if (settings.weightGoalLb === null) return;
     const shown = toDisplay(settings.weightGoalLb);
-    const next = units === Units.Imperial ? Math.round(shown) + dir : Math.round(shown * 2) / 2 + dir * 0.5;
+    const next =
+      units === Units.Imperial
+        ? Math.round(shown) + dir
+        : Math.round(shown * 2) / 2 + dir * 0.5;
     updateSettings({ weightGoalLb: fromDisplay(next) });
   };
 
@@ -44,7 +48,11 @@ export function WeightSettingsRows() {
           }
           right={
             settings.weightGoalLb === null ? (
-              <Pressable onPress={startGoal} hitSlop={8} accessibilityRole='button'>
+              <Pressable
+                onPress={startGoal}
+                hitSlop={8}
+                accessibilityRole='button'
+              >
                 <Text style={s.link}>Set a goal</Text>
               </Pressable>
             ) : (

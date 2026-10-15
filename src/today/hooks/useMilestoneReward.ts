@@ -17,8 +17,16 @@ export function useMilestoneReward(animating: boolean) {
   const { pending: pendingMilestone, markCelebrated } = usePendingMilestone();
 
   useEffect(() => {
-    if (!isFocused || animating || celebrations.length || !pendingMilestone) return;
+    if (!isFocused || animating || celebrations.length || !pendingMilestone)
+      return;
     markCelebrated(pendingMilestone);
     navigation.navigate('Milestone', { waypoints: pendingMilestone.waypoints });
-  }, [isFocused, animating, celebrations.length, pendingMilestone, markCelebrated, navigation]);
+  }, [
+    isFocused,
+    animating,
+    celebrations.length,
+    pendingMilestone,
+    markCelebrated,
+    navigation,
+  ]);
 }

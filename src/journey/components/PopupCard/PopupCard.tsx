@@ -28,8 +28,17 @@ export function PopupCard({
 
   useEffect(() => {
     Animated.parallel([
-      Animated.timing(opacity, { toValue: 1, duration: 200, useNativeDriver: true }),
-      Animated.spring(scale, { toValue: 1, friction: 7, tension: 80, useNativeDriver: true }),
+      Animated.timing(opacity, {
+        toValue: 1,
+        duration: 200,
+        useNativeDriver: true,
+      }),
+      Animated.spring(scale, {
+        toValue: 1,
+        friction: 7,
+        tension: 80,
+        useNativeDriver: true,
+      }),
     ]).start();
   }, [opacity, scale]);
 
@@ -41,14 +50,21 @@ export function PopupCard({
       <Pressable onPress={() => {}}>
         <Animated.View style={{ opacity, transform: [{ scale }] }}>
           <LinearGradient colors={colors} style={s.card}>
-            <Pressable style={s.close} onPress={close} hitSlop={10} accessibilityLabel='Close'>
+            <Pressable
+              style={s.close}
+              onPress={close}
+              hitSlop={10}
+              accessibilityLabel='Close'
+            >
               <Text style={s.closeText}>✕</Text>
             </Pressable>
             {children}
             <Pressable onPress={toJourney} hitSlop={8} accessibilityRole='link'>
               <Text style={s.link}>See your journey ›</Text>
             </Pressable>
-            <Text style={s.foot}>Earned for showing up, never for weight or calories.</Text>
+            <Text style={s.foot}>
+              Earned for showing up, never for weight or calories.
+            </Text>
           </LinearGradient>
           {overlay ? (
             <View style={StyleSheet.absoluteFill} pointerEvents='none'>
@@ -68,10 +84,22 @@ const s = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  card: { width: CARD_WIDTH, borderRadius: 20, paddingHorizontal: 20, paddingTop: 22, paddingBottom: 18, alignItems: 'center' },
+  card: {
+    width: CARD_WIDTH,
+    borderRadius: 20,
+    paddingHorizontal: 20,
+    paddingTop: 22,
+    paddingBottom: 18,
+    alignItems: 'center',
+  },
   close: { position: 'absolute', top: 10, right: 12, padding: 4, zIndex: 1 },
   closeText: { color: 'rgba(255,255,255,0.6)', fontSize: 14 },
-  link: { fontFamily: font.semibold, fontSize: 13, color: colors.sunLight, marginTop: 16 },
+  link: {
+    fontFamily: font.semibold,
+    fontSize: 13,
+    color: colors.sunLight,
+    marginTop: 16,
+  },
   foot: {
     fontFamily: font.body,
     fontSize: 10.5,
@@ -83,8 +111,19 @@ const s = StyleSheet.create({
 
 /** Text styles the popups share. */
 export const popup = StyleSheet.create({
-  label: { fontFamily: font.body, fontSize: 12, color: 'rgba(255,255,255,0.75)', textAlign: 'center' },
-  big: { fontFamily: font.displayMedium, fontSize: 30, color: '#FBFAF7', textAlign: 'center', marginTop: 4 },
+  label: {
+    fontFamily: font.body,
+    fontSize: 12,
+    color: 'rgba(255,255,255,0.75)',
+    textAlign: 'center',
+  },
+  big: {
+    fontFamily: font.displayMedium,
+    fontSize: 30,
+    color: '#FBFAF7',
+    textAlign: 'center',
+    marginTop: 4,
+  },
   title: {
     fontFamily: font.displayMedium,
     fontSize: 21,
@@ -94,9 +133,26 @@ export const popup = StyleSheet.create({
     marginBottom: 2,
   },
   section: { alignSelf: 'stretch', marginTop: 16 },
-  sectionTitle: { fontFamily: font.body, fontSize: 11, color: 'rgba(255,255,255,0.55)', marginBottom: 6 },
-  line: { flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 3 },
-  lineText: { fontFamily: font.body, fontSize: 12.5, color: 'rgba(255,255,255,0.88)' },
+  sectionTitle: {
+    fontFamily: font.body,
+    fontSize: 11,
+    color: 'rgba(255,255,255,0.55)',
+    marginBottom: 6,
+  },
+  line: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    paddingVertical: 3,
+  },
+  lineText: {
+    fontFamily: font.body,
+    fontSize: 12.5,
+    color: 'rgba(255,255,255,0.88)',
+  },
   gold: { fontFamily: font.semibold, color: colors.sunLight },
-  soft: { fontFamily: font.body, fontSize: 11.5, color: 'rgba(255,255,255,0.6)' },
+  soft: {
+    fontFamily: font.body,
+    fontSize: 11.5,
+    color: 'rgba(255,255,255,0.6)',
+  },
 });

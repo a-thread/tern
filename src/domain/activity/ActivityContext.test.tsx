@@ -1,10 +1,7 @@
 import React from 'react';
 import { renderHook, act, waitFor } from '@testing-library/react-native';
 
-import {
-  createMemoryBackend,
-  type Backend,
-} from '../../BackendContext';
+import { createMemoryBackend, type Backend } from '../../BackendContext';
 import { dayKey } from '@shared/utils/date';
 import { SettingsProvider, useSettings } from '../settings/SettingsContext';
 import { FoodProvider } from '../food/FoodContext';
@@ -18,27 +15,37 @@ import { WaypointSource } from '../waypoints/models/waypoint';
 const todayKey = dayKey();
 
 /** A step source reporting `todaySteps` today and nothing before. */
-const stepsRepo = (todaySteps: number, status: StepsStatus = StepsStatus.Connected): StepsRepository => ({
+const stepsRepo = (
+  todaySteps: number,
+  status: StepsStatus = StepsStatus.Connected,
+): StepsRepository => ({
   status: async () => status,
   connect: async () => status,
-  getRange: async () => (status === StepsStatus.Connected ? { [todayKey]: todaySteps } : {}),
+  getRange: async () =>
+    status === StepsStatus.Connected ? { [todayKey]: todaySteps } : {},
 });
 
 async function setup(steps: StepsRepository) {
   const backend: Backend = { ...createMemoryBackend(), steps };
   const wrapper = ({ children }: { children: React.ReactNode }) => (
-      <SettingsProvider repo={backend.settings}>
-        <WaypointsProvider repo={backend.waypoints}>
-          <FoodProvider repo={backend.food}>
-            <MovementProvider repo={backend.movement}>
-              <ActivityProvider steps={backend.steps} restDays={backend.restDays}>{children}</ActivityProvider>
-            </MovementProvider>
-          </FoodProvider>
-        </WaypointsProvider>
-      </SettingsProvider>
+    <SettingsProvider repo={backend.settings}>
+      <WaypointsProvider repo={backend.waypoints}>
+        <FoodProvider repo={backend.food}>
+          <MovementProvider repo={backend.movement}>
+            <ActivityProvider steps={backend.steps} restDays={backend.restDays}>
+              {children}
+            </ActivityProvider>
+          </MovementProvider>
+        </FoodProvider>
+      </WaypointsProvider>
+    </SettingsProvider>
   );
   const hook = renderHook(
-    () => ({ activity: useActivity(), points: useWaypoints(), settings: useSettings() }),
+    () => ({
+      activity: useActivity(),
+      points: useWaypoints(),
+      settings: useSettings(),
+    }),
     { wrapper },
   );
   await waitFor(() => {
@@ -52,7 +59,11 @@ describe('ActivityProvider awards', () => {
   it('awards the step-goal waypoints once when today reaches the goal', async () => {
     const { result, backend } = await setup(stepsRepo(9000));
     await waitFor(() =>
-      expect(result.current.points.celebrations.some((c) => c.source === WaypointSource.Steps)).toBe(true),
+      expect(
+        result.current.points.celebrations.some(
+          (c) => c.source === WaypointSource.Steps,
+        ),
+      ).toBe(true),
     );
     const snapshot = await backend.waypoints.load(todayKey);
     expect(snapshot.todaySources).toContain('steps');
@@ -62,24 +73,40 @@ describe('ActivityProvider awards', () => {
   it("takes today's step award back if the goal is raised past today's steps", async () => {
     const { result } = await setup(stepsRepo(5000)); // the default goal is 4,800
     await waitFor(() =>
-      expect(result.current.points.events.some((e) => e.source === WaypointSource.Steps)).toBe(true),
+      expect(
+        result.current.points.events.some(
+          (e) => e.source === WaypointSource.Steps,
+        ),
+      ).toBe(true),
     );
     const withSteps = result.current.points.waypoints;
 
-    await act(async () => result.current.settings.updateSettings({ stepGoal: 8000 }));
-    await waitFor(() => expect(result.current.points.waypoints).toBe(withSteps - 40));
+    await act(async () =>
+      result.current.settings.updateSettings({ stepGoal: 8000 }),
+    );
+    await waitFor(() =>
+      expect(result.current.points.waypoints).toBe(withSteps - 40),
+    );
   });
 
   it('awards nothing below the goal', async () => {
     const { result } = await setup(stepsRepo(3000));
-    expect(result.current.points.celebrations.some((c) => c.source === WaypointSource.Steps)).toBe(false);
+    expect(
+      result.current.points.celebrations.some(
+        (c) => c.source === WaypointSource.Steps,
+      ),
+    ).toBe(false);
   });
 
   it('never awards from steps that are unavailable', async () => {
     const { result } = await setup(stepsRepo(0, StepsStatus.Unavailable));
     expect(result.current.activity.status).toBe('unavailable');
     expect(result.current.activity.todaySteps).toBe(0);
-    expect(result.current.points.celebrations.some((c) => c.source === WaypointSource.Steps)).toBe(false);
+    expect(
+      result.current.points.celebrations.some(
+        (c) => c.source === WaypointSource.Steps,
+      ),
+    ).toBe(false);
   });
 });
 
@@ -93,9 +120,13 @@ describe('rest days', () => {
       taken = result.current.activity.takeRestDay();
     });
     expect(taken).toBe(true);
-    await waitFor(() => expect(result.current.points.waypoints).toBe(before + 10));
+    await waitFor(() =>
+      expect(result.current.points.waypoints).toBe(before + 10),
+    );
     expect(result.current.activity.todayIsRest).toBe(true);
-    expect((await backend.waypoints.load(todayKey)).todaySources).toContain('rest');
+    expect((await backend.waypoints.load(todayKey)).todaySources).toContain(
+      'rest',
+    );
 
     await act(async () => result.current.activity.undoRestDay());
     await waitFor(() => expect(result.current.points.waypoints).toBe(before));
@@ -114,14 +145,18 @@ describe('rest days', () => {
     await act(async () => {
       result.current.activity.takeRestDay();
     });
-    await waitFor(() => expect(result.current.points.waypoints).toBe(before + 10));
+    await waitFor(() =>
+      expect(result.current.points.waypoints).toBe(before + 10),
+    );
     expect(result.current.activity.restLeft).toBe(1);
 
     steps = 9000;
     await act(async () => {
       await result.current.activity.refresh();
     });
-    await waitFor(() => expect(result.current.points.waypoints).toBe(before + 40));
+    await waitFor(() =>
+      expect(result.current.points.waypoints).toBe(before + 40),
+    );
     const sources = result.current.points.events
       .filter((e) => e.day === todayKey)
       .map((e) => e.source);
@@ -206,7 +241,8 @@ describe('reporting the result of a refresh and of connecting', () => {
   it('connecting reports whether access was granted', async () => {
     let granted = false;
     const repo: StepsRepository = {
-      status: async () => (granted ? StepsStatus.Connected : StepsStatus.NeedsPermission),
+      status: async () =>
+        granted ? StepsStatus.Connected : StepsStatus.NeedsPermission,
       connect: async () => {
         granted = true;
         return StepsStatus.Connected;

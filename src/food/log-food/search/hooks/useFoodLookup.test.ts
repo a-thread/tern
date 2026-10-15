@@ -129,7 +129,9 @@ describe('useFoodLookup', () => {
     expect(result.current.pending).toBe(false);
     expect(after.slice(0, before.length)).toEqual(before);
     expect(after).toContain('off-1');
-    expect(result.current.foods.find((f) => f.id === 'off-1')?.from).toBe(FoodSource.Off);
+    expect(result.current.foods.find((f) => f.id === 'off-1')?.from).toBe(
+      FoodSource.Off,
+    );
   });
 
   it('only asks USDA when the phone has fewer than three matches', async () => {

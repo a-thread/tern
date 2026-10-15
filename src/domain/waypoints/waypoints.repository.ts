@@ -48,7 +48,8 @@ const SEEDED_TODAY = [
 ];
 
 export function createMemoryWaypointsRepository(
-  history: number = INITIAL_WAYPOINTS - SEEDED_TODAY.reduce((sum, s) => sum + pointsFor(s), 0),
+  history: number = INITIAL_WAYPOINTS -
+    SEEDED_TODAY.reduce((sum, s) => sum + pointsFor(s), 0),
   today: WaypointSource[] = SEEDED_TODAY,
 ): WaypointsRepository {
   let events: LedgerEvent[] = [];

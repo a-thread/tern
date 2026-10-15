@@ -102,6 +102,11 @@ export function dayWord(day: string, today: string): string {
 /** `now`'s clock time on `day`, as an ISO timestamp: when something logged after the fact is dated. */
 export function atTimeOn(day: string, now: Date = new Date()): string {
   const d = parseDayKey(day);
-  d.setHours(now.getHours(), now.getMinutes(), now.getSeconds(), now.getMilliseconds());
+  d.setHours(
+    now.getHours(),
+    now.getMinutes(),
+    now.getSeconds(),
+    now.getMilliseconds(),
+  );
   return d.toISOString();
 }

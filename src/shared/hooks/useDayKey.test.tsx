@@ -24,9 +24,13 @@ describe('useDayKey', () => {
     const mock = AppState.addEventListener as unknown as jest.Mock;
     mock.mockClear();
     const wrapper = shared
-      ? ({ children }: { children: React.ReactNode }) => <DayKeyProvider>{children}</DayKeyProvider>
+      ? ({ children }: { children: React.ReactNode }) => (
+          <DayKeyProvider>{children}</DayKeyProvider>
+        )
       : undefined;
-    renderHook(() => Array.from({ length: consumers }, () => useDayKey()), { wrapper });
+    renderHook(() => Array.from({ length: consumers }, () => useDayKey()), {
+      wrapper,
+    });
     return mock.mock.calls.length;
   };
 
@@ -45,7 +49,9 @@ describe('useDayKey', () => {
     const wrapper = ({ children }: { children: React.ReactNode }) => (
       <DayKeyProvider>{children}</DayKeyProvider>
     );
-    const { result } = renderHook(() => [useDayKey(), useDayKey()], { wrapper });
+    const { result } = renderHook(() => [useDayKey(), useDayKey()], {
+      wrapper,
+    });
     expect(result.current).toEqual(['2026-09-20', '2026-09-20']);
 
     act(() => {

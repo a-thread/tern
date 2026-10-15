@@ -22,7 +22,9 @@ describe('Driftwood', () => {
 
   it('fills the body from the gradient it defines', () => {
     const ui = draw();
-    const filled = ui.UNSAFE_getAllByType(Path).filter((p) => String(p.props.fill ?? '').startsWith('url(#'));
+    const filled = ui
+      .UNSAFE_getAllByType(Path)
+      .filter((p) => String(p.props.fill ?? '').startsWith('url(#'));
     expect(filled).toHaveLength(1);
     expect(filled[0].props.fill).toBe('url(#driftwoodBody)');
   });
@@ -31,14 +33,20 @@ describe('Driftwood', () => {
     const ui = draw();
     // Drawn around (155, 79): moved by however far the scene's driftwood is from that.
     const moved = `translate(${RestScenes.DRIFTWOOD.x - 155} ${RestScenes.DRIFTWOOD.top - 79})`;
-    expect(ui.UNSAFE_getAllByType(G).some((g) => g.props.transform === moved)).toBe(true);
+    expect(
+      ui.UNSAFE_getAllByType(G).some((g) => g.props.transform === moved),
+    ).toBe(true);
   });
 
   it('drifts the laps of water with the ripples', () => {
     const laps = (lap: number) =>
       draw(lap)
         .UNSAFE_getAllByType(G)
-        .find((g) => String(g.props.transform ?? '').startsWith('translate(') && g.props.stroke === '#FBFAF7')?.props.transform;
+        .find(
+          (g) =>
+            String(g.props.transform ?? '').startsWith('translate(') &&
+            g.props.stroke === '#FBFAF7',
+        )?.props.transform;
     expect(laps(0)).toBe('translate(0 0)');
     expect(laps(8)).toBe('translate(2.8 0)');
   });

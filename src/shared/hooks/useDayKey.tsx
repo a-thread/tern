@@ -43,7 +43,9 @@ function useTrackedDayKey(enabled: boolean): string {
  */
 export function DayKeyProvider({ children }: { children: React.ReactNode }) {
   const key = useTrackedDayKey(true);
-  return <DayKeyContext.Provider value={key}>{children}</DayKeyContext.Provider>;
+  return (
+    <DayKeyContext.Provider value={key}>{children}</DayKeyContext.Provider>
+  );
 }
 
 /**

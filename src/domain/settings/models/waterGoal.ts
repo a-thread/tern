@@ -9,4 +9,7 @@ export class WaterGoal {
 
 /** Keeps a goal within what makes sense. */
 export const clampWaterGoal = (oz: number) =>
-  Math.min(Math.max(Math.round(oz * 100) / 100, WaterGoal.MIN_OZ), WaterGoal.MAX_OZ);
+  Math.min(
+    Math.max(Math.round(oz * 100) / 100, WaterGoal.MIN_OZ),
+    WaterGoal.MAX_OZ,
+  );

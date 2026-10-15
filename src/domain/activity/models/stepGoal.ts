@@ -13,7 +13,8 @@ export function suggestGoal(
 ): number | null {
   const recent = days.slice(-30).filter((d) => d.steps > 0);
   if (recent.length < 14) return null;
-  const hitRate = recent.filter((d) => d.steps >= d.goal).length / recent.length;
+  const hitRate =
+    recent.filter((d) => d.steps >= d.goal).length / recent.length;
   const round = (n: number) => Math.round(n / 100) * 100;
 
   if (hitRate >= 0.9) {

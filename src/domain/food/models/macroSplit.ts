@@ -51,10 +51,12 @@ export function macrosFromPercents(
   split: MacroSplit,
 ): MacroGrams {
   const grams = (key: MacroKey) =>
-    Math.round(
-      (calories * split[key]) / 100 / MacroSplits.KCAL_PER_GRAM[key],
-    );
-  return { protein: grams('protein'), carbs: grams('carbs'), fat: grams('fat') };
+    Math.round((calories * split[key]) / 100 / MacroSplits.KCAL_PER_GRAM[key]);
+  return {
+    protein: grams('protein'),
+    carbs: grams('carbs'),
+    fat: grams('fat'),
+  };
 }
 
 /** Whole percents that always add to 100 (largest remainder), from macro grams. */

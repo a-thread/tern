@@ -15,7 +15,9 @@ export function CalorieTargetsRow({ onPress }: { onPress: () => void }) {
         </IconBadge>
       }
       title='Calorie & macro targets'
-      value={settings.trackCalories ? settings.calorieTarget.toLocaleString() : 'Off'}
+      value={
+        settings.trackCalories ? settings.calorieTarget.toLocaleString() : 'Off'
+      }
       chevron
       onPress={onPress}
     />

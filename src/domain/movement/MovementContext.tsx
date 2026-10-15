@@ -10,7 +10,18 @@ import { useAward } from '../waypoints/hooks/useAward';
 import { WaypointSource } from '../waypoints/models/waypoint';
 import type { MovementRepository } from './movement.repository';
 import type { WorkoutsSource } from './movement.healthconnect';
-import { dayMinutes, goalMinutesByDay, isLoggableDay, isValidMinutes, MovementLimits, minutesByDay, type Activity, type Effort, type MovementEntry, MovementSource } from './models/movementEntry';
+import {
+  dayMinutes,
+  goalMinutesByDay,
+  isLoggableDay,
+  isValidMinutes,
+  MovementLimits,
+  minutesByDay,
+  type Activity,
+  type Effort,
+  type MovementEntry,
+  MovementSource,
+} from './models/movementEntry';
 
 /** How far back movement is loaded: the same history the week rings and streak use. */
 const HISTORY_DAYS = 180;
@@ -47,10 +58,11 @@ type MovementContextValue = {
   connectWorkouts: () => Promise<boolean>;
 };
 
-const [MovementContext, useMovement] = createRequiredContext<MovementContextValue>(
-  'useMovement',
-  'MovementProvider',
-);
+const [MovementContext, useMovement] =
+  createRequiredContext<MovementContextValue>(
+    'useMovement',
+    'MovementProvider',
+  );
 export { useMovement };
 
 /**
@@ -72,27 +84,41 @@ export function MovementProvider({
   const { settings } = useSettings();
   const today = useDayKey();
   const enabled = settings.trackMovement;
-  const readWorkouts = enabled && settings.healthData.readWorkouts && !!workouts;
+  const readWorkouts =
+    enabled && settings.healthData.readWorkouts && !!workouts;
 
   const load = useCallback(
     async (from: string, to: string) => {
       const [manual, read] = await Promise.all([
         repo.load(from, to),
-        readWorkouts && workouts ? workouts.getRange(from, to).catch(() => []) : Promise.resolve([]),
+        readWorkouts && workouts
+          ? workouts.getRange(from, to).catch(() => [])
+          : Promise.resolve([]),
       ]);
-      return [...manual, ...read].sort((a, b) => a.loggedAt.localeCompare(b.loggedAt));
+      return [...manual, ...read].sort((a, b) =>
+        a.loggedAt.localeCompare(b.loggedAt),
+      );
     },
     [repo, workouts, readWorkouts],
   );
 
   const { entries, ready, reload, change } = useSyncedList(
-    useCallback(() => load(addDays(today, -(HISTORY_DAYS - 1)), today), [load, today]),
+    useCallback(
+      () => load(addDays(today, -(HISTORY_DAYS - 1)), today),
+      [load, today],
+    ),
     'Could not load movement',
   );
 
-  const byDay = useMemo(() => (enabled ? minutesByDay(entries) : {}), [entries, enabled]);
+  const byDay = useMemo(
+    () => (enabled ? minutesByDay(entries) : {}),
+    [entries, enabled],
+  );
   const todayMinutes = enabled ? dayMinutes(entries, today) : 0;
-  const goalByDay = useMemo(() => (enabled ? goalMinutesByDay(entries) : {}), [entries, enabled]);
+  const goalByDay = useMemo(
+    () => (enabled ? goalMinutesByDay(entries) : {}),
+    [entries, enabled],
+  );
   const todayGoalMinutes = goalByDay[today] ?? 0;
 
   // Logging any movement today earns its waypoint; removing it all takes it back.
@@ -107,7 +133,10 @@ export function MovementProvider({
         activity,
         minutes,
         effort,
-        distanceM: distanceM && distanceM > 0 ? Math.min(Math.round(distanceM), MovementLimits.MAX_DISTANCE_M) : null,
+        distanceM:
+          distanceM && distanceM > 0
+            ? Math.min(Math.round(distanceM), MovementLimits.MAX_DISTANCE_M)
+            : null,
         source: MovementSource.Manual,
         loggedAt: new Date().toISOString(),
       };
@@ -155,8 +184,26 @@ export function MovementProvider({
       workoutsAvailable: !!workouts,
       connectWorkouts,
     }),
-    [ready, reload, enabled, entries, byDay, todayMinutes, goalByDay, todayGoalMinutes, add, remove, load, workouts, connectWorkouts],
+    [
+      ready,
+      reload,
+      enabled,
+      entries,
+      byDay,
+      todayMinutes,
+      goalByDay,
+      todayGoalMinutes,
+      add,
+      remove,
+      load,
+      workouts,
+      connectWorkouts,
+    ],
   );
 
-  return <MovementContext.Provider value={value}>{children}</MovementContext.Provider>;
+  return (
+    <MovementContext.Provider value={value}>
+      {children}
+    </MovementContext.Provider>
+  );
 }

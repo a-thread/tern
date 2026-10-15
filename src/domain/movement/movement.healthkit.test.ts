@@ -1,6 +1,10 @@
 import type { HealthKitApi } from '../health/healthkit';
 import { Activity, MovementSource } from './models/movementEntry';
-import { activityForWorkoutType, createHealthKitWorkouts, workoutToEntry } from './movement.healthkit';
+import {
+  activityForWorkoutType,
+  createHealthKitWorkouts,
+  workoutToEntry,
+} from './movement.healthkit';
 
 const api = (over: Partial<HealthKitApi> = {}): HealthKitApi => ({
   isAvailable: async () => true,
@@ -48,14 +52,33 @@ describe('workoutToEntry', () => {
   });
 
   it('puts a workout that ends after midnight on the day it started', () => {
-    const e = workoutToEntry({ id: 'late', start: new Date(2026, 9, 7, 23, 40), end: new Date(2026, 9, 8, 0, 20), activityType: 37 });
+    const e = workoutToEntry({
+      id: 'late',
+      start: new Date(2026, 9, 7, 23, 40),
+      end: new Date(2026, 9, 8, 0, 20),
+      activityType: 37,
+    });
     expect(e?.day).toBe('2026-10-07');
   });
 
   it('ignores workouts with no usable length', () => {
     const start = new Date(2026, 9, 7, 7, 10);
-    expect(workoutToEntry({ id: 'x', start, end: new Date(start.getTime() + 20_000), activityType: 37 })).toBeNull();
-    expect(workoutToEntry({ id: 'y', start: new Date('x'), end: new Date('y'), activityType: 37 })).toBeNull();
+    expect(
+      workoutToEntry({
+        id: 'x',
+        start,
+        end: new Date(start.getTime() + 20_000),
+        activityType: 37,
+      }),
+    ).toBeNull();
+    expect(
+      workoutToEntry({
+        id: 'y',
+        start: new Date('x'),
+        end: new Date('y'),
+        activityType: 37,
+      }),
+    ).toBeNull();
   });
 });
 
@@ -69,7 +92,9 @@ describe('HealthKit workouts', () => {
     const requestAuthorization = jest.fn(async () => {
       needs = false;
     });
-    const source = createHealthKitWorkouts(api({ needsAuthorization: async () => needs, requestAuthorization }))!;
+    const source = createHealthKitWorkouts(
+      api({ needsAuthorization: async () => needs, requestAuthorization }),
+    )!;
     expect(await source.connect()).toBe(false);
     expect(requestAuthorization).not.toHaveBeenCalled();
     expect(await source.connect(true)).toBe(true);
@@ -80,15 +105,30 @@ describe('HealthKit workouts', () => {
 
   it('reads workouts for the range as movement, and nothing before permission', async () => {
     const workouts = jest.fn(async () => [
-      { id: 'a', start: new Date(2026, 9, 7, 8, 0), end: new Date(2026, 9, 7, 8, 30), activityType: 37 },
-      { id: 'b', start: new Date(2026, 9, 7, 9, 0), end: new Date(2026, 9, 7, 9, 0, 5), activityType: 37 },
+      {
+        id: 'a',
+        start: new Date(2026, 9, 7, 8, 0),
+        end: new Date(2026, 9, 7, 8, 30),
+        activityType: 37,
+      },
+      {
+        id: 'b',
+        start: new Date(2026, 9, 7, 9, 0),
+        end: new Date(2026, 9, 7, 9, 0, 5),
+        activityType: 37,
+      },
     ]);
     const source = createHealthKitWorkouts(api({ workouts }))!;
     const entries = await source.getRange('2026-10-07', '2026-10-07');
     expect(entries.map((e) => [e.id, e.minutes])).toEqual([['hk-a', 30]]);
-    expect(workouts).toHaveBeenCalledWith(new Date(2026, 9, 7), new Date(2026, 9, 8));
+    expect(workouts).toHaveBeenCalledWith(
+      new Date(2026, 9, 7),
+      new Date(2026, 9, 8),
+    );
 
-    const waiting = createHealthKitWorkouts(api({ needsAuthorization: async () => true, workouts }))!;
+    const waiting = createHealthKitWorkouts(
+      api({ needsAuthorization: async () => true, workouts }),
+    )!;
     expect(await waiting.getRange('2026-10-07', '2026-10-07')).toEqual([]);
   });
 });

@@ -1,10 +1,7 @@
 import React from 'react';
 
 import { useReminders } from '../hooks/useReminders';
-import {
-  ReminderBlock,
-  ReminderTimeRow,
-} from './ReminderBlock';
+import { ReminderBlock, ReminderTimeRow } from './ReminderBlock';
 import { ReminderKey } from '../../domain/settings/models/reminderPlan';
 
 /** The daily check-in reminder. Only offered while mood tracking is on. */

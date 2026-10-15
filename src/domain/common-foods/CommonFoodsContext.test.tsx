@@ -4,7 +4,11 @@ import { renderHook, waitFor } from '@testing-library/react-native';
 
 import { commonFoodsSeed } from './commonFoods.seed';
 import type { CommonFoodsRepository } from './commonFoods.repository';
-import { COMMON_FOODS_KEY, CommonFoodsProvider, useCommonFoods } from './CommonFoodsContext';
+import {
+  COMMON_FOODS_KEY,
+  CommonFoodsProvider,
+  useCommonFoods,
+} from './CommonFoodsContext';
 
 const repo = (version: string | null): jest.Mocked<CommonFoodsRepository> => ({
   version: jest.fn(async () => version),
@@ -27,7 +31,9 @@ describe('CommonFoodsProvider', () => {
     await waitFor(() => expect(result.current.version).toBe('v1'));
     expect(result.current.index.entries).toHaveLength(commonFoodsSeed.length);
     expect(r.loadAll).toHaveBeenCalledTimes(1);
-    await waitFor(async () => expect(await AsyncStorage.getItem(COMMON_FOODS_KEY)).toContain('"v1"'));
+    await waitFor(async () =>
+      expect(await AsyncStorage.getItem(COMMON_FOODS_KEY)).toContain('"v1"'),
+    );
   });
 
   it('uses the saved copy and does not download the same version again', async () => {

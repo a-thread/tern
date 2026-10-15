@@ -25,5 +25,14 @@ export function useAward(
     if (!active || awardDay !== today) return;
     if (earned) addWaypoints(points, source);
     else revokeWaypoints(points, source);
-  }, [source, earned, active, points, awardDay, today, addWaypoints, revokeWaypoints]);
+  }, [
+    source,
+    earned,
+    active,
+    points,
+    awardDay,
+    today,
+    addWaypoints,
+    revokeWaypoints,
+  ]);
 }

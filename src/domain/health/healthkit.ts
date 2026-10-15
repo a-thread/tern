@@ -36,22 +36,36 @@ const SHOULD_REQUEST = 1;
 /** The slice of `@kingstinct/react-native-healthkit` that Tern uses. */
 export type HealthKitModule = {
   isHealthDataAvailableAsync: () => Promise<boolean>;
-  getRequestStatusForAuthorization: (types: { toRead: readonly string[] }) => Promise<number>;
-  requestAuthorization: (types: { toRead: readonly string[] }) => Promise<boolean>;
+  getRequestStatusForAuthorization: (types: {
+    toRead: readonly string[];
+  }) => Promise<number>;
+  requestAuthorization: (types: {
+    toRead: readonly string[];
+  }) => Promise<boolean>;
   queryStatisticsCollectionForQuantity: (
     identifier: string,
     statistics: readonly string[],
     anchorDate: Date,
     interval: { day: number },
-    options?: { unit?: string; filter?: { date?: { startDate?: Date; endDate?: Date } } },
-  ) => Promise<readonly { startDate?: Date; sumQuantity?: { quantity: number } }[]>;
+    options?: {
+      unit?: string;
+      filter?: { date?: { startDate?: Date; endDate?: Date } };
+    },
+  ) => Promise<
+    readonly { startDate?: Date; sumQuantity?: { quantity: number } }[]
+  >;
   queryWorkoutSamples: (options: {
     limit: number;
     ascending?: boolean;
     filter?: { date?: { startDate?: Date; endDate?: Date } };
   }) => Promise<
     readonly {
-      toJSON(): { uuid: string; startDate: Date; endDate: Date; workoutActivityType: number };
+      toJSON(): {
+        uuid: string;
+        startDate: Date;
+        endDate: Date;
+        workoutActivityType: number;
+      };
       dispose?: () => void;
     }[]
   >;
@@ -61,18 +75,29 @@ export function createHealthKitApi(hk: HealthKitModule): HealthKitApi {
   const toRead = [STEPS, WORKOUTS] as const;
   return {
     isAvailable: () => hk.isHealthDataAvailableAsync(),
-    needsAuthorization: async () => (await hk.getRequestStatusForAuthorization({ toRead })) === SHOULD_REQUEST,
+    needsAuthorization: async () =>
+      (await hk.getRequestStatusForAuthorization({ toRead })) ===
+      SHOULD_REQUEST,
     requestAuthorization: async () => {
       await hk.requestAuthorization({ toRead });
     },
     dailySteps: async (from, to) => {
-      const rows = await hk.queryStatisticsCollectionForQuantity(STEPS, ['cumulativeSum'], from, { day: 1 }, {
-        unit: 'count',
-        filter: { date: { startDate: from, endDate: to } },
-      });
+      const rows = await hk.queryStatisticsCollectionForQuantity(
+        STEPS,
+        ['cumulativeSum'],
+        from,
+        { day: 1 },
+        {
+          unit: 'count',
+          filter: { date: { startDate: from, endDate: to } },
+        },
+      );
       return rows
         .filter((r) => r.startDate)
-        .map((r) => ({ day: r.startDate as Date, steps: r.sumQuantity?.quantity ?? 0 }));
+        .map((r) => ({
+          day: r.startDate as Date,
+          steps: r.sumQuantity?.quantity ?? 0,
+        }));
     },
     workouts: async (from, to) => {
       const samples = await hk.queryWorkoutSamples({
@@ -83,7 +108,12 @@ export function createHealthKitApi(hk: HealthKitModule): HealthKitApi {
       return samples.map((sample) => {
         const w = sample.toJSON();
         sample.dispose?.(); // the native sample must be released once read
-        return { id: w.uuid, start: w.startDate, end: w.endDate, activityType: Number(w.workoutActivityType) };
+        return {
+          id: w.uuid,
+          start: w.startDate,
+          end: w.endDate,
+          activityType: Number(w.workoutActivityType),
+        };
       });
     },
   };

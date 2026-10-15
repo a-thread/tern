@@ -59,10 +59,11 @@ type SavedMealsContextValue = {
   commitDraft: () => CommitOutcome;
 };
 
-const [SavedMealsContext, useSavedMeals] = createRequiredContext<SavedMealsContextValue>(
-  'useSavedMeals',
-  'SavedMealsProvider',
-);
+const [SavedMealsContext, useSavedMeals] =
+  createRequiredContext<SavedMealsContextValue>(
+    'useSavedMeals',
+    'SavedMealsProvider',
+  );
 export { useSavedMeals };
 
 /**
@@ -109,14 +110,20 @@ export function SavedMealsProvider({
     (name: string, entries: FoodEntry[]): SaveOutcome => {
       const problem = validateMealName(name);
       if (problem) return { ok: false, error: problem };
-      if (!entries.length) return { ok: false, error: 'Add some foods to this meal first.' };
+      if (!entries.length)
+        return { ok: false, error: 'Add some foods to this meal first.' };
 
       const clean = cleanName(name);
       const items = snapshotItems(entries);
       const existing = findMealByName(latest.current, clean);
       const meal: SavedMeal = existing
         ? { ...existing, name: clean, items }
-        : { id: newId(), name: clean, items, createdAt: new Date().toISOString() };
+        : {
+            id: newId(),
+            name: clean,
+            items,
+            createdAt: new Date().toISOString(),
+          };
 
       commit(
         sortMeals(
@@ -139,7 +146,8 @@ export function SavedMealsProvider({
       const meal = latest.current.find((m) => m.id === id);
       if (!meal) return 'That meal no longer exists.';
       const clash = findMealByName(latest.current, clean);
-      if (clash && clash.id !== id) return `You already have a meal called “${clash.name}”.`;
+      if (clash && clash.id !== id)
+        return `You already have a meal called “${clash.name}”.`;
       if (meal.name === clean) return null;
 
       const renamed = { ...meal, name: clean };
@@ -167,7 +175,9 @@ export function SavedMealsProvider({
 
   const startDraft = useCallback(
     (mealId?: string) => {
-      const meal = mealId ? latest.current.find((m) => m.id === mealId) : undefined;
+      const meal = mealId
+        ? latest.current.find((m) => m.id === mealId)
+        : undefined;
       changeDraft(meal ? draftFromMeal(meal) : emptyDraft());
     },
     [changeDraft],
@@ -191,7 +201,8 @@ export function SavedMealsProvider({
   const stepDraftItem = useCallback(
     (index: number, delta: number) => {
       const d = draftRef.current;
-      if (d) changeDraft({ ...d, items: stepItemServings(d.items, index, delta) });
+      if (d)
+        changeDraft({ ...d, items: stepItemServings(d.items, index, delta) });
     },
     [changeDraft],
   );
@@ -213,10 +224,17 @@ export function SavedMealsProvider({
     if (problem) return { ok: false, error: problem };
 
     const clean = cleanName(d.name);
-    const existing = d.id ? latest.current.find((m) => m.id === d.id) : undefined;
+    const existing = d.id
+      ? latest.current.find((m) => m.id === d.id)
+      : undefined;
     const meal: SavedMeal = existing
       ? { ...existing, name: clean, items: d.items }
-      : { id: d.id ?? newId(), name: clean, items: d.items, createdAt: new Date().toISOString() };
+      : {
+          id: d.id ?? newId(),
+          name: clean,
+          items: d.items,
+          createdAt: new Date().toISOString(),
+        };
 
     commit(
       sortMeals(
@@ -264,7 +282,8 @@ export function SavedMealsProvider({
   );
 
   return (
-    <SavedMealsContext.Provider value={value}>{children}</SavedMealsContext.Provider>
+    <SavedMealsContext.Provider value={value}>
+      {children}
+    </SavedMealsContext.Provider>
   );
 }
-

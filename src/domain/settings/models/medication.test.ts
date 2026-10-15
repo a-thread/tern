@@ -1,4 +1,11 @@
-import { cleanMedName, mergeMedications, newMedication, validateMedName, type Medication, MedicationLimits } from './medication';
+import {
+  cleanMedName,
+  mergeMedications,
+  newMedication,
+  validateMedName,
+  type Medication,
+  MedicationLimits,
+} from './medication';
 import { Frequency } from '@shared/models/frequency';
 
 const med = (
@@ -26,8 +33,15 @@ describe('validateMedName', () => {
 
   it('rejects empty and over-long names', () => {
     expect(validateMedName('   ', existing)).not.toBeNull();
-    expect(validateMedName('x'.repeat(MedicationLimits.MAX_NAME_LENGTH + 1), existing)).not.toBeNull();
-    expect(validateMedName('x'.repeat(MedicationLimits.MAX_NAME_LENGTH), existing)).toBeNull();
+    expect(
+      validateMedName(
+        'x'.repeat(MedicationLimits.MAX_NAME_LENGTH + 1),
+        existing,
+      ),
+    ).not.toBeNull();
+    expect(
+      validateMedName('x'.repeat(MedicationLimits.MAX_NAME_LENGTH), existing),
+    ).toBeNull();
   });
 
   it('rejects a duplicate ignoring case and spacing, but lets a medication keep its own name', () => {
@@ -56,7 +70,14 @@ describe('cleanMedName / newMedication', () => {
 describe('mergeMedications', () => {
   it('keeps well-formed entries and drops junk', () => {
     const merged = mergeMedications([
-      { id: 'a', name: ' Iron ', at: 600, remind: true, frequency: 'weekly', weekday: 5 },
+      {
+        id: 'a',
+        name: ' Iron ',
+        at: 600,
+        remind: true,
+        frequency: 'weekly',
+        weekday: 5,
+      },
       { id: 'a', name: 'Duplicate id', at: 600 },
       { id: 'b', name: '', at: 600 },
       { name: 'No id' },
@@ -64,8 +85,22 @@ describe('mergeMedications', () => {
       { id: 'c', name: 'Bad time', at: 9999, remind: 'yes' },
     ]);
     expect(merged).toEqual([
-      { id: 'a', name: 'Iron', at: 600, frequency: 'weekly', weekday: 5, remind: true },
-      { id: 'c', name: 'Bad time', at: 480, frequency: 'daily', weekday: 1, remind: false },
+      {
+        id: 'a',
+        name: 'Iron',
+        at: 600,
+        frequency: 'weekly',
+        weekday: 5,
+        remind: true,
+      },
+      {
+        id: 'c',
+        name: 'Bad time',
+        at: 480,
+        frequency: 'daily',
+        weekday: 1,
+        remind: false,
+      },
     ]);
   });
 

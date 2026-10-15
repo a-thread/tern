@@ -9,7 +9,9 @@ describe('shouldReplay', () => {
 
   it('does not replay on a quick return with the same number', () => {
     expect(shouldReplay(played, played.at + 5_000, 6842)).toBe(false);
-    expect(shouldReplay(played, played.at + REPLAY_AFTER_MS - 1, 6842)).toBe(false);
+    expect(shouldReplay(played, played.at + REPLAY_AFTER_MS - 1, 6842)).toBe(
+      false,
+    );
   });
 
   it('replays when the number changed, however quickly you return', () => {
@@ -18,6 +20,8 @@ describe('shouldReplay', () => {
 
   it('replays after being away for a minute or more', () => {
     expect(shouldReplay(played, played.at + REPLAY_AFTER_MS, 6842)).toBe(true);
-    expect(shouldReplay(played, played.at + 10 * REPLAY_AFTER_MS, 6842)).toBe(true);
+    expect(shouldReplay(played, played.at + 10 * REPLAY_AFTER_MS, 6842)).toBe(
+      true,
+    );
   });
 });

@@ -1,5 +1,13 @@
-import { Milestones, milestonesFor, type Milestone } from '../../domain/waypoints/models/milestone';
-import { pointsFor, WaypointSource, type LedgerEvent } from '../../domain/waypoints/models/waypoint';
+import {
+  Milestones,
+  milestonesFor,
+  type Milestone,
+} from '../../domain/waypoints/models/milestone';
+import {
+  pointsFor,
+  WaypointSource,
+  type LedgerEvent,
+} from '../../domain/waypoints/models/waypoint';
 
 /** One line of "today" on the waypoints card: what was earned, and for how much. */
 export type EarnedLine = { label: string; points: number };
@@ -25,7 +33,9 @@ const MEALS: { source: WaypointSource; name: string }[] = [
 /** "breakfast", "breakfast and lunch", "breakfast, lunch and dinner" — capitalised. */
 function listOf(names: string[]): string {
   const text =
-    names.length <= 2 ? names.join(' and ') : `${names.slice(0, -1).join(', ')} and ${names[names.length - 1]}`;
+    names.length <= 2
+      ? names.join(' and ')
+      : `${names.slice(0, -1).join(', ')} and ${names[names.length - 1]}`;
   return text.charAt(0).toUpperCase() + text.slice(1);
 }
 
@@ -33,14 +43,24 @@ function listOf(names: string[]): string {
  * What `day` earned, as lines to read: the goal day first, the meals logged that day on one
  * line, then the rest in a steady order. Empty when nothing was earned.
  */
-export function earnedOn(events: LedgerEvent[], day: string): { lines: EarnedLine[]; total: number } {
+export function earnedOn(
+  events: LedgerEvent[],
+  day: string,
+): { lines: EarnedLine[]; total: number } {
   const todays = events.filter((e) => e.day === day);
   const pointsOf = (source: WaypointSource) =>
-    todays.filter((e) => e.source === source).reduce((sum, e) => sum + e.points, 0);
-  const has = (source: WaypointSource) => todays.some((e) => e.source === source);
+    todays
+      .filter((e) => e.source === source)
+      .reduce((sum, e) => sum + e.points, 0);
+  const has = (source: WaypointSource) =>
+    todays.some((e) => e.source === source);
 
   const lines: EarnedLine[] = [];
-  if (has(WaypointSource.Steps)) lines.push({ label: LABELS[WaypointSource.Steps]!, points: pointsOf(WaypointSource.Steps) });
+  if (has(WaypointSource.Steps))
+    lines.push({
+      label: LABELS[WaypointSource.Steps]!,
+      points: pointsOf(WaypointSource.Steps),
+    });
   const meals = MEALS.filter((m) => has(m.source));
   if (meals.length) {
     lines.push({
@@ -58,7 +78,8 @@ export function earnedOn(events: LedgerEvent[], day: string): { lines: EarnedLin
     WaypointSource.Rest,
     WaypointSource.Streak,
   ]) {
-    if (has(source)) lines.push({ label: LABELS[source]!, points: pointsOf(source) });
+    if (has(source))
+      lines.push({ label: LABELS[source]!, points: pointsOf(source) });
   }
   return { lines, total: todays.reduce((sum, e) => sum + e.points, 0) };
 }
@@ -77,19 +98,26 @@ export function stillOpen(
   tracking: Tracking,
   max = 2,
 ): EarnedLine[] {
-  const done = new Set(events.filter((e) => e.day === day).map((e) => e.source));
+  const done = new Set(
+    events.filter((e) => e.day === day).map((e) => e.source),
+  );
   const open: EarnedLine[] = [];
   const meal = MEALS.find((m) => !done.has(m.source));
-  if (meal) open.push({ label: `Log ${meal.name}`, points: pointsFor(meal.source) });
+  if (meal)
+    open.push({ label: `Log ${meal.name}`, points: pointsFor(meal.source) });
   if (tracking.mood && !done.has(WaypointSource.Mood)) {
     open.push({ label: 'Check in', points: pointsFor(WaypointSource.Mood) });
   }
   if (tracking.water && !done.has(WaypointSource.Water)) {
     open.push({ label: 'Water goal', points: pointsFor(WaypointSource.Water) });
   }
-  if (!done.has(WaypointSource.Steps)) open.push({ label: 'Step goal', points: pointsFor(WaypointSource.Steps) });
+  if (!done.has(WaypointSource.Steps))
+    open.push({ label: 'Step goal', points: pointsFor(WaypointSource.Steps) });
   if (tracking.movement && !done.has(WaypointSource.Movement)) {
-    open.push({ label: 'Log movement', points: pointsFor(WaypointSource.Movement) });
+    open.push({
+      label: 'Log movement',
+      points: pointsFor(WaypointSource.Movement),
+    });
   }
   return open.slice(0, max);
 }
@@ -128,5 +156,7 @@ export function legProgress(leg: Leg, total: number): number {
 export function routeFraction(stopTotal: number): number {
   const within = stopTotal % Milestones.MIGRATION_LENGTH;
   // The last stop of a migration is the whole way round, not back to the start.
-  return within === 0 && stopTotal > 0 ? 1 : within / Milestones.MIGRATION_LENGTH;
+  return within === 0 && stopTotal > 0
+    ? 1
+    : within / Milestones.MIGRATION_LENGTH;
 }

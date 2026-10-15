@@ -1,15 +1,18 @@
 import React from 'react';
 import { renderHook, act, waitFor } from '@testing-library/react-native';
 
+import { createMemoryBackend, type Backend } from '../../BackendContext';
 import {
-  createMemoryBackend,
-  type Backend,
-} from '../../BackendContext';
-import { SettingsProvider, useSettings } from '../../domain/settings/SettingsContext';
+  SettingsProvider,
+  useSettings,
+} from '../../domain/settings/SettingsContext';
 import { FoodProvider } from '../../domain/food/FoodContext';
 import { createMemoryFoodRepository } from '../../domain/food/food.repository';
 import { createMemoryWaypointsRepository } from '../../domain/waypoints/waypoints.repository';
-import { WaypointsProvider, useWaypoints } from '../../domain/waypoints/WaypointsContext';
+import {
+  WaypointsProvider,
+  useWaypoints,
+} from '../../domain/waypoints/WaypointsContext';
 import { Milestones } from '../../domain/waypoints/models/milestone';
 import { usePendingMilestone } from './usePendingMilestone';
 import { WaypointSource } from '../../domain/waypoints/models/waypoint';
@@ -18,7 +21,8 @@ const FIRST_STOP = Milestones.STOPS[0];
 const SECOND_STOP = Milestones.STOPS[1];
 
 /** A ledger holding `total` from before today, with no awards made today. */
-const ledgerWith = (total: number) => createMemoryWaypointsRepository(total, []);
+const ledgerWith = (total: number) =>
+  createMemoryWaypointsRepository(total, []);
 
 /**
  * The hook over a backend holding exactly `total` waypoints: an empty food log
@@ -31,11 +35,11 @@ async function setup(total: number) {
     food: createMemoryFoodRepository([]),
   };
   const wrapper = ({ children }: { children: React.ReactNode }) => (
-      <SettingsProvider repo={backend.settings}>
-        <WaypointsProvider repo={backend.waypoints}>
-          <FoodProvider repo={backend.food}>{children}</FoodProvider>
-        </WaypointsProvider>
-      </SettingsProvider>
+    <SettingsProvider repo={backend.settings}>
+      <WaypointsProvider repo={backend.waypoints}>
+        <FoodProvider repo={backend.food}>{children}</FoodProvider>
+      </WaypointsProvider>
+    </SettingsProvider>
   );
   const hook = renderHook(
     () => ({
@@ -78,7 +82,9 @@ describe('usePendingMilestone', () => {
     );
 
     // An ordinary award tips the total over the first stop.
-    await act(async () => result.current.points.addWaypoints(40, WaypointSource.Steps));
+    await act(async () =>
+      result.current.points.addWaypoints(40, WaypointSource.Steps),
+    );
     await waitFor(() =>
       expect(result.current.milestone.pending).toMatchObject({
         name: FIRST_STOP.name,

@@ -21,6 +21,8 @@ describe('assertProviderOrder', () => {
   });
 
   it('rejects a provider that needs one that is not listed at all', () => {
-    expect(() => assertProviderOrder([{ name: 'mood', needs: ['settings'] }])).toThrow(/settings/);
+    expect(() =>
+      assertProviderOrder([{ name: 'mood', needs: ['settings'] }]),
+    ).toThrow(/settings/);
   });
 });

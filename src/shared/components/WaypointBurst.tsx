@@ -19,7 +19,12 @@ function Feather() {
   return (
     <Svg width={20} height={20} viewBox='0 0 20 20'>
       <Path d='M3 18C3 8 9 2 18 2C18 10 12 16 4 17Z' fill={FEATHER} />
-      <Path d='M3 19L14 7' stroke='#F5F3EE' strokeWidth={1.1} strokeLinecap='round' />
+      <Path
+        d='M3 19L14 7'
+        stroke='#F5F3EE'
+        strokeWidth={1.1}
+        strokeLinecap='round'
+      />
     </Svg>
   );
 }
@@ -65,7 +70,10 @@ export default function WaypointBurst({
   const particles = useMemo(
     () =>
       Array.from({ length: PARTICLES }, (_, i) => {
-        const angle = -Math.PI + (i / (PARTICLES - 1)) * Math.PI + (rand(id + i) - 0.5) * 0.5;
+        const angle =
+          -Math.PI +
+          (i / (PARTICLES - 1)) * Math.PI +
+          (rand(id + i) - 0.5) * 0.5;
         const radius = 38 + rand(id * 3 + i) * 52;
         return {
           key: i,
@@ -74,7 +82,9 @@ export default function WaypointBurst({
           burstY: origin.y + Math.sin(angle) * radius - 6,
           delay: rand(id * 7 + i) * 0.22,
           size: 0.8 + rand(id * 5 + i) * 0.55,
-          spin: (rand(id * 11 + i) > 0.5 ? 1 : -1) * (140 + rand(id * 13 + i) * 200),
+          spin:
+            (rand(id * 11 + i) > 0.5 ? 1 : -1) *
+            (140 + rand(id * 13 + i) * 200),
         };
       }),
     [id, origin.x, origin.y],

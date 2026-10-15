@@ -341,8 +341,7 @@ export function upcomingDates(
 
 /** A replacement trigger for a reminder on a rest day: a weekly repeat, or a single date. */
 export type RestTrigger =
-  | { id: string; weekday: number }
-  | { id: string; date: Date };
+  { id: string; weekday: number } | { id: string; date: Date };
 
 /**
  * How a reminder that repeats by itself goes quiet for the rest of today, when a repeating

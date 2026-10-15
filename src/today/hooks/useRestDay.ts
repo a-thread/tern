@@ -58,7 +58,10 @@ export function useRestDay(): {
   // Whatever happens to the scene, the waypoints are never kept waiting for long.
   useEffect(() => {
     if (!holdCelebrations) return;
-    const timer = setTimeout(() => setTouchedDown(true), RestScenes.FLIGHT_MS + 1000);
+    const timer = setTimeout(
+      () => setTouchedDown(true),
+      RestScenes.FLIGHT_MS + 1000,
+    );
     return () => clearTimeout(timer);
   }, [holdCelebrations]);
 

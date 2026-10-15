@@ -7,7 +7,11 @@ export enum TrendRange {
 
 /** What each Trends range means, in one place: its length, how it reads in a sentence, how it is drawn. */
 export class TrendRanges {
-  static readonly ALL: readonly TrendRange[] = [TrendRange.Week, TrendRange.Month, TrendRange.SixMonths];
+  static readonly ALL: readonly TrendRange[] = [
+    TrendRange.Week,
+    TrendRange.Month,
+    TrendRange.SixMonths,
+  ];
 
   /** How many days each range covers. */
   static readonly DAYS: Readonly<Record<TrendRange, number>> = {

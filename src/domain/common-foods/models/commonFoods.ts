@@ -46,7 +46,10 @@ export function commonFoodToResult(f: CommonFood): SearchResult {
 type Entry = { food: CommonFood; result: SearchResult; words: string[] };
 
 /** The list prepared for searching: words worked out once, not on every keystroke. */
-export type CommonFoodIndex = { entries: Entry[]; aliases: Map<string, string[]> };
+export type CommonFoodIndex = {
+  entries: Entry[];
+  aliases: Map<string, string[]>;
+};
 
 export function buildCommonIndex(foods: CommonFood[]): CommonFoodIndex {
   const aliases = new Map<string, string[]>();
@@ -66,7 +69,10 @@ export function buildCommonIndex(foods: CommonFood[]): CommonFoodIndex {
   return { entries, aliases };
 }
 
-export const emptyCommonIndex: CommonFoodIndex = { entries: [], aliases: new Map() };
+export const emptyCommonIndex: CommonFoodIndex = {
+  entries: [],
+  aliases: new Map(),
+};
 
 /** The aliases of a common food result, for scoring. */
 export const aliasesOf = (index: CommonFoodIndex) => (r: SearchResult) =>
@@ -82,7 +88,10 @@ export function searchCommonFoods(
   if (!q.length) return [];
   return index.entries
     .filter((e) => allWordsPrefix(q, e.words))
-    .map((e) => ({ r: e.result, s: scoreResult(query, e.result, FoodSource.Common, e.food.aliases) }))
+    .map((e) => ({
+      r: e.result,
+      s: scoreResult(query, e.result, FoodSource.Common, e.food.aliases),
+    }))
     .sort((a, b) => b.s - a.s)
     .slice(0, limit)
     .map((x) => x.r);

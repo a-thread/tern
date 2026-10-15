@@ -15,7 +15,10 @@ jest.mock('../../settings/SettingsContext', () => ({
 }));
 
 // Three weeks of 2,050 a day while the trend falls 1.2 lb: a burn of about 2,250.
-const mockFood: Record<string, { meal: Meal; calories: number; servings: number }[]> = {};
+const mockFood: Record<
+  string,
+  { meal: Meal; calories: number; servings: number }[]
+> = {};
 for (let i = 1; i <= 30; i++) {
   mockFood[addDays(TODAY, -i)] = [
     { meal: Meal.Breakfast, calories: 615, servings: 1 },
@@ -25,7 +28,11 @@ for (let i = 1; i <= 30; i++) {
 }
 const mockWeights = Array.from({ length: 45 }, (_, k) => {
   const i = 45 - k;
-  return { id: `w${i}`, lb: 170 + (1.2 / 21) * (i - 1), loggedAt: `${addDays(TODAY, -i)}T12:00:00` };
+  return {
+    id: `w${i}`,
+    lb: 170 + (1.2 / 21) * (i - 1),
+    loggedAt: `${addDays(TODAY, -i)}T12:00:00`,
+  };
 }).reverse();
 // Stable functions, like the real context's callbacks: new ones each render would reload forever.
 const mockFoodContext = {
@@ -34,7 +41,9 @@ const mockFoodContext = {
   loadSkippedHistory: async () => ({}),
 };
 jest.mock('../FoodContext', () => ({ useFood: () => mockFoodContext }));
-jest.mock('../../weight/WeightContext', () => ({ useWeight: () => ({ weightEntries: mockWeights }) }));
+jest.mock('../../weight/WeightContext', () => ({
+  useWeight: () => ({ weightEntries: mockWeights }),
+}));
 
 beforeEach(() => {
   mockUpdate.mockReset();
@@ -69,7 +78,10 @@ describe('useAdaptiveTarget', () => {
     await waitFor(() => expect(result.current.offer).toBe(true));
     act(() => result.current.apply());
     expect(mockUpdate).toHaveBeenCalledWith(
-      expect.objectContaining({ calorieTarget: 2000, lastSuggestionWeek: weekStartKey(TODAY) }),
+      expect.objectContaining({
+        calorieTarget: 2000,
+        lastSuggestionWeek: weekStartKey(TODAY),
+      }),
     );
     const { macroTargets } = mockUpdate.mock.calls[0][0];
     expect(macroTargets.protein).toBeLessThan(131);

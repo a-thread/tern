@@ -10,7 +10,13 @@ import { usePersist } from '@shared/hooks/usePersist';
 import { newId } from '@shared/utils/id';
 import { useSettings } from '../settings/SettingsContext';
 import { useAward } from '../waypoints/hooks/useAward';
-import { dayTotal, isValidDrink, lastDrink, waterProgress, type WaterEntry } from './models/waterEntry';
+import {
+  dayTotal,
+  isValidDrink,
+  lastDrink,
+  waterProgress,
+  type WaterEntry,
+} from './models/waterEntry';
 import { WaypointSource } from '../waypoints/models/waypoint';
 
 type WaterContextValue = {
@@ -57,7 +63,10 @@ export function WaterProvider({
   const [entries, setEntries] = useState<WaterEntry[]>([]);
   const [loadedDay, setLoadedDay] = useState<string | null>(null);
   const { ready, reload } = useLoader(
-    useCallback(async () => ({ day, entries: await repo.load(day, day) }), [repo, day]),
+    useCallback(
+      async () => ({ day, entries: await repo.load(day, day) }),
+      [repo, day],
+    ),
     (loaded) => {
       setEntries(loaded.entries);
       setLoadedDay(loaded.day);
@@ -74,7 +83,11 @@ export function WaterProvider({
   // The waypoint follows the log, like "all meals": earned on reaching the goal, quietly
   // taken back if removing a drink drops the total below it. Nothing happens while tracking is off,
   // or until today's drinks are the ones loaded (a past day's total says nothing about today's).
-  useAward(WaypointSource.Water, reached, enabled && ready && loadedDay === today && day === today);
+  useAward(
+    WaypointSource.Water,
+    reached,
+    enabled && ready && loadedDay === today && day === today,
+  );
 
   const addWater = useCallback(
     (oz: number) => {
@@ -107,7 +120,10 @@ export function WaterProvider({
     });
   }, [lastId, editable, repo, persist]);
 
-  const loadRange = useCallback((from: string, to: string) => repo.load(from, to), [repo]);
+  const loadRange = useCallback(
+    (from: string, to: string) => repo.load(from, to),
+    [repo],
+  );
 
   const value = useMemo<WaterContextValue>(
     () => ({
@@ -123,8 +139,21 @@ export function WaterProvider({
       lastOz: last?.oz ?? null,
       loadRange,
     }),
-    [ready, reload, enabled, totalOz, goalOz, reached, addWater, undoLast, last?.oz, loadRange],
+    [
+      ready,
+      reload,
+      enabled,
+      totalOz,
+      goalOz,
+      reached,
+      addWater,
+      undoLast,
+      last?.oz,
+      loadRange,
+    ],
   );
 
-  return <WaterContext.Provider value={value}>{children}</WaterContext.Provider>;
+  return (
+    <WaterContext.Provider value={value}>{children}</WaterContext.Provider>
+  );
 }

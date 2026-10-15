@@ -1,9 +1,7 @@
 import React from 'react';
 import { renderHook, act, waitFor } from '@testing-library/react-native';
 
-import {
-  createMemoryBackend,
-} from '../../BackendContext';
+import { createMemoryBackend } from '../../BackendContext';
 import { SettingsProvider, useSettings } from './SettingsContext';
 import { changesAnything } from './models/appSettings';
 
@@ -11,13 +9,19 @@ async function setup() {
   const backend = createMemoryBackend();
   const save = jest.spyOn(backend.settings, 'save');
   const wrapper = ({ children }: { children: React.ReactNode }) => (
-      <SettingsProvider repo={backend.settings}>{children}</SettingsProvider>
+    <SettingsProvider repo={backend.settings}>{children}</SettingsProvider>
   );
   const hook = renderHook(() => useSettings(), { wrapper });
   await waitFor(() => expect(hook.result.current.ready).toBe(true));
   save.mockClear(); // ignore anything saved while loading
   let renders = 0;
-  return { ...hook, save, backend, countRenders: () => renders, bump: () => renders++ };
+  return {
+    ...hook,
+    save,
+    backend,
+    countRenders: () => renders,
+    bump: () => renders++,
+  };
 }
 
 describe('updateSettings', () => {
@@ -43,7 +47,10 @@ describe('updateSettings', () => {
     act(() =>
       result.current.updateSettings({
         macroTargets: { ...before.macroTargets },
-        reminders: { ...before.reminders, mealLog: { ...before.reminders.mealLog } },
+        reminders: {
+          ...before.reminders,
+          mealLog: { ...before.reminders.mealLog },
+        },
       }),
     );
     expect(save).not.toHaveBeenCalled();
@@ -54,7 +61,9 @@ describe('updateSettings', () => {
     const { result, save } = await setup();
     const { macroTargets } = result.current.settings;
     act(() =>
-      result.current.updateSettings({ macroTargets: { ...macroTargets, protein: macroTargets.protein + 1 } }),
+      result.current.updateSettings({
+        macroTargets: { ...macroTargets, protein: macroTargets.protein + 1 },
+      }),
     );
     expect(save).toHaveBeenCalledTimes(1);
   });
@@ -62,7 +71,8 @@ describe('updateSettings', () => {
   it('saves once per real change when the same value is sent repeatedly', async () => {
     const { result, save } = await setup();
     act(() => {
-      for (let i = 0; i < 20; i++) result.current.updateSettings({ calorieTarget: 2300 });
+      for (let i = 0; i < 20; i++)
+        result.current.updateSettings({ calorieTarget: 2300 });
     });
     expect(save).toHaveBeenCalledTimes(1);
   });
@@ -92,9 +102,13 @@ describe('defaults and older saves', () => {
 
   it('keeps what an existing account already saved, whatever the new defaults are', async () => {
     const backend = createMemoryBackend();
-    await backend.settings.save({ stepGoal: 9000, weightGoalLb: 163, weighInFrequency: 'daily' } as never);
+    await backend.settings.save({
+      stepGoal: 9000,
+      weightGoalLb: 163,
+      weighInFrequency: 'daily',
+    } as never);
     const wrapper = ({ children }: { children: React.ReactNode }) => (
-        <SettingsProvider repo={backend.settings}>{children}</SettingsProvider>
+      <SettingsProvider repo={backend.settings}>{children}</SettingsProvider>
     );
     const { result } = renderHook(() => useSettings(), { wrapper });
     await waitFor(() => expect(result.current.ready).toBe(true));
@@ -107,16 +121,30 @@ describe('defaults and older saves', () => {
     const backend = createMemoryBackend();
     await backend.settings.save({
       reminders: { weeklyWeighIn: { on: false, weekday: 4, at: 420 } },
-      medications: [{ id: 'm1', name: ' Iron ', at: 600, remind: true }, { name: 'broken' }],
+      medications: [
+        { id: 'm1', name: ' Iron ', at: 600, remind: true },
+        { name: 'broken' },
+      ],
     } as never);
     const wrapper = ({ children }: { children: React.ReactNode }) => (
-        <SettingsProvider repo={backend.settings}>{children}</SettingsProvider>
+      <SettingsProvider repo={backend.settings}>{children}</SettingsProvider>
     );
     const { result } = renderHook(() => useSettings(), { wrapper });
     await waitFor(() => expect(result.current.ready).toBe(true));
-    expect(result.current.settings.reminders.weighIn).toEqual({ on: false, weekday: 4, at: 420 });
+    expect(result.current.settings.reminders.weighIn).toEqual({
+      on: false,
+      weekday: 4,
+      at: 420,
+    });
     expect(result.current.settings.medications).toEqual([
-      { id: 'm1', name: 'Iron', at: 600, frequency: 'daily', weekday: 1, remind: true },
+      {
+        id: 'm1',
+        name: 'Iron',
+        at: 600,
+        frequency: 'daily',
+        weekday: 1,
+        remind: true,
+      },
     ]);
   });
 });
@@ -131,7 +159,7 @@ describe('mood settings', () => {
     const backend = createMemoryBackend();
     await backend.settings.save({ trackMood: true } as never);
     const wrapper = ({ children }: { children: React.ReactNode }) => (
-        <SettingsProvider repo={backend.settings}>{children}</SettingsProvider>
+      <SettingsProvider repo={backend.settings}>{children}</SettingsProvider>
     );
     const { result } = renderHook(() => useSettings(), { wrapper });
     await waitFor(() => expect(result.current.ready).toBe(true));
@@ -148,9 +176,12 @@ describe('water settings', () => {
 
   it('keeps a saved goal but pulls a silly one back into range', async () => {
     const backend = createMemoryBackend();
-    await backend.settings.save({ trackWater: true, waterGoalOz: 9999 } as never);
+    await backend.settings.save({
+      trackWater: true,
+      waterGoalOz: 9999,
+    } as never);
     const wrapper = ({ children }: { children: React.ReactNode }) => (
-        <SettingsProvider repo={backend.settings}>{children}</SettingsProvider>
+      <SettingsProvider repo={backend.settings}>{children}</SettingsProvider>
     );
     const { result } = renderHook(() => useSettings(), { wrapper });
     await waitFor(() => expect(result.current.ready).toBe(true));

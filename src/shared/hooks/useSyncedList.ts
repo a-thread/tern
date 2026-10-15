@@ -8,12 +8,19 @@ import { usePersist, type PersistFailure } from './usePersist';
  * screen straight away and hands the repository write to `usePersist`, which tells the person and
  * reloads if it fails.
  */
-export function useSyncedList<T>(load: () => Promise<T[]>, failureNote: string) {
+export function useSyncedList<T>(
+  load: () => Promise<T[]>,
+  failureNote: string,
+) {
   const [entries, setEntries] = useState<T[]>([]);
   const { ready, reload } = useLoader(load, setEntries, failureNote);
   const persist = usePersist(reload);
   const change = useCallback(
-    (update: (prev: T[]) => T[], write: Promise<unknown>, failure: PersistFailure) => {
+    (
+      update: (prev: T[]) => T[],
+      write: Promise<unknown>,
+      failure: PersistFailure,
+    ) => {
       setEntries(update);
       persist(write, failure);
     },

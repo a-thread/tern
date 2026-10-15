@@ -39,7 +39,8 @@ export function useUnits() {
       formatVolume: (oz: number) => formatVolume(oz, units),
       quickWaterOz: quickWaterOz(units),
       /** The goal one step up (1) or down (-1), in stored ounces. */
-      stepWaterGoal: (oz: number, direction: 1 | -1) => stepWaterGoal(oz, direction, units),
+      stepWaterGoal: (oz: number, direction: 1 | -1) =>
+        stepWaterGoal(oz, direction, units),
     }),
     [units],
   );

@@ -34,14 +34,12 @@ export function createSupabaseWaterRepository(db: TernClient): WaterRepository {
     },
     async add(entry) {
       await ok(
-        db
-          .from('water_entries')
-          .insert({
-            id: entry.id,
-            oz: entry.oz,
-            logged_on: entry.loggedOn,
-            logged_at: entry.loggedAt,
-          }),
+        db.from('water_entries').insert({
+          id: entry.id,
+          oz: entry.oz,
+          logged_on: entry.loggedOn,
+          logged_at: entry.loggedAt,
+        }),
       );
     },
     async remove(id) {

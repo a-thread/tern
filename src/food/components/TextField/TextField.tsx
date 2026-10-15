@@ -1,5 +1,11 @@
 import React from 'react';
-import { StyleSheet, Text, TextInput, View, type TextInputProps } from 'react-native';
+import {
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
+  type TextInputProps,
+} from 'react-native';
 
 import { colors, font, radius } from '@shared/theme';
 
@@ -7,11 +13,18 @@ import { colors, font, radius } from '@shared/theme';
 export function TextField({
   error,
   ...input
-}: Omit<TextInputProps, 'style' | 'placeholderTextColor'> & { error?: string | null }) {
+}: Omit<TextInputProps, 'style' | 'placeholderTextColor'> & {
+  error?: string | null;
+}) {
   return (
     <>
       <View style={s.card}>
-        <TextInput placeholderTextColor={colors.ink3} returnKeyType='done' style={s.input} {...input} />
+        <TextInput
+          placeholderTextColor={colors.ink3}
+          returnKeyType='done'
+          style={s.input}
+          {...input}
+        />
       </View>
       {error ? <Text style={s.error}>{error}</Text> : null}
     </>
@@ -31,5 +44,11 @@ const s = StyleSheet.create({
     color: colors.ink,
     paddingVertical: 11,
   },
-  error: { fontFamily: font.body, fontSize: 12.5, color: colors.danger, marginTop: 6, marginLeft: 4 },
+  error: {
+    fontFamily: font.body,
+    fontSize: 12.5,
+    color: colors.danger,
+    marginTop: 6,
+    marginLeft: 4,
+  },
 });

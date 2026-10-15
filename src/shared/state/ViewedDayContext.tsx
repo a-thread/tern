@@ -1,4 +1,11 @@
-import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import React, {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+} from 'react';
 import { AppState } from 'react-native';
 
 import { useDayKey } from '../hooks/useDayKey';
@@ -45,13 +52,15 @@ export function ViewedDayProvider({ children }: { children: React.ReactNode }) {
   );
   const showToday = useCallback(() => setPicked(null), []);
 
-  const value = useMemo(() => viewedDay(picked ?? today, today, setDay, showToday), [
-    picked,
-    today,
-    setDay,
-    showToday,
-  ]);
-  return <ViewedDayContext.Provider value={value}>{children}</ViewedDayContext.Provider>;
+  const value = useMemo(
+    () => viewedDay(picked ?? today, today, setDay, showToday),
+    [picked, today, setDay, showToday],
+  );
+  return (
+    <ViewedDayContext.Provider value={value}>
+      {children}
+    </ViewedDayContext.Provider>
+  );
 }
 
 const noop = () => {};
@@ -76,5 +85,8 @@ function viewedDay(
 export function useViewedDay(): ViewedDay {
   const shared = useContext(ViewedDayContext);
   const today = useDayKey();
-  return useMemo(() => shared ?? viewedDay(today, today, noop, noop), [shared, today]);
+  return useMemo(
+    () => shared ?? viewedDay(today, today, noop, noop),
+    [shared, today],
+  );
 }

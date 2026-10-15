@@ -37,9 +37,14 @@ describe('allMealsLogged', () => {
   });
 
   it('counts a meal marked "nothing today" exactly like a logged one', () => {
-    const log = [entry({ id: 'a', meal: Meal.Breakfast }), entry({ id: 'b', meal: Meal.Dinner })];
+    const log = [
+      entry({ id: 'a', meal: Meal.Breakfast }),
+      entry({ id: 'b', meal: Meal.Dinner }),
+    ];
     expect(allMealsLogged(log, [Meal.Lunch])).toBe(true);
-    expect(allMealsLogged([], [Meal.Breakfast, Meal.Lunch, Meal.Dinner])).toBe(true);
+    expect(allMealsLogged([], [Meal.Breakfast, Meal.Lunch, Meal.Dinner])).toBe(
+      true,
+    );
     expect(allMealsLogged(log, [])).toBe(false);
   });
 
@@ -130,12 +135,20 @@ describe('averageIntake', () => {
       '2026-09-01': [item(1000, 40), item(500, 20)],
       '2026-09-03': [item(1500, 60)],
     });
-    expect(a).toEqual({ days: 2, calories: 1500, protein: 60, carbs: 30, fat: 8 });
+    expect(a).toEqual({
+      days: 2,
+      calories: 1500,
+      protein: 60,
+      carbs: 30,
+      fat: 8,
+    });
   });
 
   it('leaves out today when other days exist, but not when it is the only day', () => {
     const days = { '2026-09-01': [item(2000)], '2026-09-02': [item(500)] };
     expect(averageIntake(days, '2026-09-02')?.calories).toBe(2000);
-    expect(averageIntake({ '2026-09-02': [item(500)] }, '2026-09-02')?.calories).toBe(500);
+    expect(
+      averageIntake({ '2026-09-02': [item(500)] }, '2026-09-02')?.calories,
+    ).toBe(500);
   });
 });

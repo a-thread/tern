@@ -5,9 +5,24 @@ import { BottomSheet } from '@shared/components/ui';
 import { colors, font, space, tierColors, typography } from '@shared/theme';
 
 const LEVELS = [
-  { tiers: '1–2', color: tierColors[1], name: 'Whole', body: 'Fruit, vegetables, eggs, plain meat and dairy, and basic ingredients like oil, flour and butter.' },
-  { tiers: '3', color: tierColors[3], name: 'Processed', body: 'Foods made by combining those, like bread, cheese, canned beans and tinned fish.' },
-  { tiers: '4', color: tierColors[4], name: 'Ultra-processed', body: 'Industrial products with additives, like packaged snacks, soft drinks and instant meals.' },
+  {
+    tiers: '1–2',
+    color: tierColors[1],
+    name: 'Whole',
+    body: 'Fruit, vegetables, eggs, plain meat and dairy, and basic ingredients like oil, flour and butter.',
+  },
+  {
+    tiers: '3',
+    color: tierColors[3],
+    name: 'Processed',
+    body: 'Foods made by combining those, like bread, cheese, canned beans and tinned fish.',
+  },
+  {
+    tiers: '4',
+    color: tierColors[4],
+    name: 'Ultra-processed',
+    body: 'Industrial products with additives, like packaged snacks, soft drinks and instant meals.',
+  },
 ] as const;
 
 /** A short explainer on the NOVA scale, as a sheet that slides up from the bottom. */

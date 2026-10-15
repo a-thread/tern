@@ -14,7 +14,9 @@ describe('foodQuery', () => {
   });
 
   it('matches every query word as a prefix of some word', () => {
-    expect(allWordsPrefix(wordsOf('chick bre'), wordsOf('Chicken breast'))).toBe(true);
+    expect(
+      allWordsPrefix(wordsOf('chick bre'), wordsOf('Chicken breast')),
+    ).toBe(true);
     expect(allWordsPrefix(wordsOf('app'), wordsOf('Pineapple'))).toBe(false);
     expect(allWordsPrefix(wordsOf('app'), wordsOf('Apple'))).toBe(true);
   });

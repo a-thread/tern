@@ -23,11 +23,24 @@ const JUNK =
   /\b(nlea|single serving|serving package|100 calorie|package|guideline|cubic inch|linear inch|as purchased|yields|bunch|quantity not specified|racc|school|box|pouch|envelope|microwavable|spaghettio'?s|dannon|cracker jack|without refuse|without skin and seeds|ns as to|pot)\b/i;
 
 const SIZE = /^(extra small|small|medium|large|extra large|jumbo)\b/i;
-const SIZE_ORDER = ['medium', 'small', 'large', 'extra small', 'extra large', 'jumbo'];
-const VOLUME = /^(cups?|tbsp|tablespoons?|tsp|teaspoons?|fl oz|fluid ounces?|pint|quart)\b/i;
+const SIZE_ORDER = [
+  'medium',
+  'small',
+  'large',
+  'extra small',
+  'extra large',
+  'jumbo',
+];
+const VOLUME =
+  /^(cups?|tbsp|tablespoons?|tsp|teaspoons?|fl oz|fluid ounces?|pint|quart)\b/i;
 const SPOON = /^(tbsp|tablespoons?|tsp|teaspoons?)\b/i;
 const WEIGHT = /^(oz|ounces?|g|grams?|lbs?|pounds?)\b/i;
-const VOLUME_ORDER = [/^cup/i, /^(tbsp|tablespoon)/i, /^(tsp|teaspoon)/i, /^fl oz/i];
+const VOLUME_ORDER = [
+  /^cup/i,
+  /^(tbsp|tablespoon)/i,
+  /^(tsp|teaspoon)/i,
+  /^fl oz/i,
+];
 
 // A single item named generically: "1 fruit" of an orange is "1 orange".
 const GENERIC_ITEM = /^(fruit|berry|berries|whole|item|each|regular)$/i;
@@ -63,7 +76,10 @@ export function portionKind(label: string): PortionKind {
  * noun ("medium" → "medium apple", "medium whole" → "medium tomato",
  * "fruit" → "orange"), and a plural count reads as one ("berries" → "berry").
  */
-export function tidyPortionLabel(label: string, noun: string | null): string | null {
+export function tidyPortionLabel(
+  label: string,
+  noun: string | null,
+): string | null {
   if (JUNK.test(label)) return null;
   let l = label
     .replace(/\([^)]*\)/g, ' ')
@@ -77,7 +93,8 @@ export function tidyPortionLabel(label: string, noun: string | null): string | n
   if (WEIGHT.test(l)) l = l.split(',')[0].trim();
   if (noun) {
     const rest = l.replace(SIZE, '').trim();
-    if (SIZE.test(l) && (rest === '' || GENERIC_ITEM.test(rest))) l = `${SIZE.exec(l)![1]} ${noun}`;
+    if (SIZE.test(l) && (rest === '' || GENERIC_ITEM.test(rest)))
+      l = `${SIZE.exec(l)![1]} ${noun}`;
     else if (GENERIC_ITEM.test(l)) l = noun;
   }
   return portionKind(l) === 'count' && !/\s/.test(l) ? singular(l) : l;
@@ -122,27 +139,43 @@ export function typicalPortions(
   // The whole thing ("avocado", a chicken "breast") before its pieces ("slice"), as long as
   // it's a single serving: a whole 900 g pineapple isn't what anyone means by one.
   const cut = noun?.split(' ').pop() ?? null;
-  const isWhole = (p: Portion) => (p.label === noun || p.label === cut) && p.grams <= WHOLE_MAX_GRAMS;
+  const isWhole = (p: Portion) =>
+    (p.label === noun || p.label === cut) && p.grams <= WHOLE_MAX_GRAMS;
 
   const of = (k: PortionKind) => list.filter((p) => portionKind(p.label) === k);
-  const sizes = of(PortionKind.Size).sort((a, b) => sizeRank(a.label) - sizeRank(b.label));
-  const counts = of(PortionKind.Count).sort((a, b) => Number(isWhole(b)) - Number(isWhole(a)));
-  const volumes = of(PortionKind.Volume).sort((a, b) => volumeRank(a.label, spooned) - volumeRank(b.label, spooned));
+  const sizes = of(PortionKind.Size).sort(
+    (a, b) => sizeRank(a.label) - sizeRank(b.label),
+  );
+  const counts = of(PortionKind.Count).sort(
+    (a, b) => Number(isWhole(b)) - Number(isWhole(a)),
+  );
+  const volumes = of(PortionKind.Volume).sort(
+    (a, b) => volumeRank(a.label, spooned) - volumeRank(b.label, spooned),
+  );
   const weights = of(PortionKind.Weight);
-  if ((ounceFirst || meat) && !weights.some((w) => w.label === 'oz')) weights.unshift(OUNCE);
+  if ((ounceFirst || meat) && !weights.some((w) => w.label === 'oz'))
+    weights.unshift(OUNCE);
   // Drinks are logged by the cup: eight fluid ounces when USDA only gives one.
   const flOz = volumes.find((v) => v.label === 'fl oz');
   if (liquid && flOz && !volumes.some((v) => /^cup/.test(v.label))) {
-    volumes.unshift({ label: 'cup', grams: Math.round(flOz.grams * 8 * 10) / 10 });
+    volumes.unshift({
+      label: 'cup',
+      grams: Math.round(flOz.grams * 8 * 10) / 10,
+    });
   }
 
   // A whole item is as typical as a medium one when there are no sizes.
   const whole = counts.find(isWhole);
   const typical = sizes[0] ?? whole ?? counts[0];
   // Slices (bacon, bread, cheese) are how people count even when each is light.
-  const small = typical !== undefined && typical.grams < SMALL_ITEM_GRAMS && !/\bslice\b/.test(typical.label);
+  const small =
+    typical !== undefined &&
+    typical.grams < SMALL_ITEM_GRAMS &&
+    !/\bslice\b/.test(typical.label);
   // Drinks served in their own container: a glass of wine, a can of beer.
-  const served = liquid ? counts.filter((c) => SERVED.test(c.label) && c.grams <= WHOLE_MAX_GRAMS) : [];
+  const served = liquid
+    ? counts.filter((c) => SERVED.test(c.label) && c.grams <= WHOLE_MAX_GRAMS)
+    : [];
 
   let ordered: Portion[];
   if (ounceFirst) ordered = [...weights, ...sizes, ...counts, ...volumes];
@@ -152,11 +185,32 @@ export function typicalPortions(
     const cutSizes = sizes.filter((s) => cut !== null && s.label.endsWith(cut));
     const otherSizes = sizes.filter((s) => !cutSizes.includes(s));
     const rest = counts.filter((c) => c !== whole);
-    ordered = [...cutSizes, ...(whole ? [whole] : []), ...weights, ...otherSizes, ...rest, ...volumes];
-  }
-  else if (served.length) ordered = [...served, ...volumes, ...sizes, ...counts.filter((c) => !served.includes(c)), ...weights];
-  else if (liquid || spooned || small || !typical) ordered = [...volumes, ...sizes, ...counts, ...weights];
-  else if (whole && !sizes.some((s) => /^medium\b/.test(s.label))) ordered = [whole, ...sizes, ...counts.filter((c) => c !== whole), ...volumes, ...weights];
+    ordered = [
+      ...cutSizes,
+      ...(whole ? [whole] : []),
+      ...weights,
+      ...otherSizes,
+      ...rest,
+      ...volumes,
+    ];
+  } else if (served.length)
+    ordered = [
+      ...served,
+      ...volumes,
+      ...sizes,
+      ...counts.filter((c) => !served.includes(c)),
+      ...weights,
+    ];
+  else if (liquid || spooned || small || !typical)
+    ordered = [...volumes, ...sizes, ...counts, ...weights];
+  else if (whole && !sizes.some((s) => /^medium\b/.test(s.label)))
+    ordered = [
+      whole,
+      ...sizes,
+      ...counts.filter((c) => c !== whole),
+      ...volumes,
+      ...weights,
+    ];
   else ordered = [...sizes, ...counts, ...volumes, ...weights];
   // Nothing big enough to share leads the list: a whole pizza, a melon, a bottle of wine.
   const fits = ordered.filter((p) => p.grams <= WHOLE_MAX_GRAMS);

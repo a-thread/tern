@@ -8,7 +8,10 @@ import { useFoodDisplay } from '@/domain/food/hooks/useFoodDisplay';
 import { useMedication } from '@/domain/medication/MedicationContext';
 import { useWater } from '@/domain/water/WaterContext';
 import WaterSheet from '../WaterSheet';
-import { movementSummary, isFromHealthApp } from '@/domain/movement/models/movementEntry';
+import {
+  movementSummary,
+  isFromHealthApp,
+} from '@/domain/movement/models/movementEntry';
 import { scoreWord, MoodMetric } from '@/domain/mood/models/moodEntry';
 import { formatLoggedAt } from '@/domain/weight/models/weightEntry';
 import { useViewedDay } from '@shared/state/ViewedDayContext';

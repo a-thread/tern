@@ -14,19 +14,31 @@ type DataContextValue = {
   deleteAccount: () => Promise<void>;
 };
 
-const [DataContext, useData] = createRequiredContext<DataContextValue>('useData', 'DataProvider');
+const [DataContext, useData] = createRequiredContext<DataContextValue>(
+  'useData',
+  'DataProvider',
+);
 export { useData };
 
 const NOT_AVAILABLE = 'Account data is not available in local mode';
 
 /** Whole-account export and erase. `repo` is absent in local mode. */
-export function DataProvider({ repo, children }: { repo?: DataRepository; children: React.ReactNode }) {
+export function DataProvider({
+  repo,
+  children,
+}: {
+  repo?: DataRepository;
+  children: React.ReactNode;
+}) {
   const value = useMemo<DataContextValue>(
     () => ({
       available: repo !== undefined,
-      exportAll: () => (repo ? repo.exportAll() : Promise.reject(new Error(NOT_AVAILABLE))),
-      deleteAll: () => (repo ? repo.deleteAll() : Promise.reject(new Error(NOT_AVAILABLE))),
-      deleteAccount: () => (repo ? repo.deleteAccount() : Promise.reject(new Error(NOT_AVAILABLE))),
+      exportAll: () =>
+        repo ? repo.exportAll() : Promise.reject(new Error(NOT_AVAILABLE)),
+      deleteAll: () =>
+        repo ? repo.deleteAll() : Promise.reject(new Error(NOT_AVAILABLE)),
+      deleteAccount: () =>
+        repo ? repo.deleteAccount() : Promise.reject(new Error(NOT_AVAILABLE)),
     }),
     [repo],
   );

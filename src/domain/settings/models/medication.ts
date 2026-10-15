@@ -15,7 +15,6 @@ export type Medication = {
   remind: boolean;
 };
 
-
 /** How many medications can be tracked, and what a new one starts with. */
 export class MedicationLimits {
   static readonly MAX_COUNT = 10;
@@ -36,7 +35,8 @@ export function validateMedName(
 ): string | null {
   const clean = cleanMedName(name);
   if (!clean) return 'Give the medication a name.';
-  if (clean.length > MedicationLimits.MAX_NAME_LENGTH) return `Keep the name under ${MedicationLimits.MAX_NAME_LENGTH} characters.`;
+  if (clean.length > MedicationLimits.MAX_NAME_LENGTH)
+    return `Keep the name under ${MedicationLimits.MAX_NAME_LENGTH} characters.`;
   if (existing.some((m) => m.id !== selfId && sameName(m.name, clean))) {
     return 'You already track a medication with that name.';
   }
@@ -71,12 +71,18 @@ export function mergeMedications(saved: unknown): Medication[] {
         id: m.id,
         name: cleanMedName(m.name).slice(0, MedicationLimits.MAX_NAME_LENGTH),
         at:
-          typeof m.at === 'number' && Number.isFinite(m.at) && m.at >= 0 && m.at < 1440
+          typeof m.at === 'number' &&
+          Number.isFinite(m.at) &&
+          m.at >= 0 &&
+          m.at < 1440
             ? Math.floor(m.at)
             : MedicationLimits.DEFAULT_TIME,
-        frequency: m.frequency === Frequency.Weekly ? Frequency.Weekly : Frequency.Daily,
+        frequency:
+          m.frequency === Frequency.Weekly ? Frequency.Weekly : Frequency.Daily,
         weekday:
-          Number.isInteger(m.weekday) && m.weekday >= 1 && m.weekday <= 7 ? m.weekday : 1,
+          Number.isInteger(m.weekday) && m.weekday >= 1 && m.weekday <= 7
+            ? m.weekday
+            : 1,
         remind: m.remind === true,
       });
     }

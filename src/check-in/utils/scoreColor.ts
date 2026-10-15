@@ -1,5 +1,9 @@
 import { colors } from '@shared/theme';
-import { clampScore, MoodScale, MoodMetric } from '../../domain/mood/models/moodEntry';
+import {
+  clampScore,
+  MoodScale,
+  MoodMetric,
+} from '../../domain/mood/models/moodEntry';
 
 import { mix } from '@shared/utils/color';
 

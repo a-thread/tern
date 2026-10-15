@@ -1,4 +1,9 @@
-import { measureToPortion, searchUsdaWithKey, usdaFoodToResult, type UsdaFood } from './usda';
+import {
+  measureToPortion,
+  searchUsdaWithKey,
+  usdaFoodToResult,
+  type UsdaFood,
+} from './usda';
 import { FoodSource } from '../models/foodSource';
 
 // Portion values are real USDA "food details" data (apples, white rice, pita).
@@ -14,10 +19,30 @@ const apple: UsdaFood = {
     { nutrientId: 1005, value: 13.6 },
   ],
   foodPortions: [
-    { amount: 1, measureUnit: { name: 'undetermined' }, modifier: 'large (3-1/4" dia)', gramWeight: 216 },
-    { amount: 1, measureUnit: { name: 'undetermined' }, modifier: 'cup slices', gramWeight: 110 },
-    { amount: 1, measureUnit: { name: 'undetermined' }, modifier: 'small (2-3/4" dia)', gramWeight: 132 },
-    { amount: 1, measureUnit: { name: 'undetermined' }, modifier: 'medium (3" dia)', gramWeight: 161 },
+    {
+      amount: 1,
+      measureUnit: { name: 'undetermined' },
+      modifier: 'large (3-1/4" dia)',
+      gramWeight: 216,
+    },
+    {
+      amount: 1,
+      measureUnit: { name: 'undetermined' },
+      modifier: 'cup slices',
+      gramWeight: 110,
+    },
+    {
+      amount: 1,
+      measureUnit: { name: 'undetermined' },
+      modifier: 'small (2-3/4" dia)',
+      gramWeight: 132,
+    },
+    {
+      amount: 1,
+      measureUnit: { name: 'undetermined' },
+      modifier: 'medium (3" dia)',
+      gramWeight: 161,
+    },
   ],
 };
 
@@ -50,7 +75,11 @@ describe('usdaFoodToResult', () => {
       foodMeasures: [
         { disseminationText: '1 cup', gramWeight: 158, rank: 2 },
         { disseminationText: '1 tbsp', gramWeight: 10, rank: 3 },
-        { disseminationText: 'Quantity not specified', gramWeight: 100, rank: 1 },
+        {
+          disseminationText: 'Quantity not specified',
+          gramWeight: 100,
+          rank: 1,
+        },
       ],
     });
     expect(r?.portions).toEqual([
@@ -74,13 +103,35 @@ describe('usdaFoodToResult', () => {
   });
 
   it('falls back to Atwater energy, the older nutrient numbers, and kilojoules', () => {
-    expect(usdaFoodToResult({ fdcId: 2, description: 'Oats', foodNutrients: [{ nutrientId: 2047, value: 371 }] })?.calories).toBe(371);
-    expect(usdaFoodToResult({ fdcId: 3, description: 'Oats', foodNutrients: [{ nutrientNumber: '208', value: 380 }] })?.calories).toBe(380);
-    expect(usdaFoodToResult({ fdcId: 4, description: 'Oats', foodNutrients: [{ nutrientId: 1062, value: 1000 }] })?.calories).toBe(239);
+    expect(
+      usdaFoodToResult({
+        fdcId: 2,
+        description: 'Oats',
+        foodNutrients: [{ nutrientId: 2047, value: 371 }],
+      })?.calories,
+    ).toBe(371);
+    expect(
+      usdaFoodToResult({
+        fdcId: 3,
+        description: 'Oats',
+        foodNutrients: [{ nutrientNumber: '208', value: 380 }],
+      })?.calories,
+    ).toBe(380);
+    expect(
+      usdaFoodToResult({
+        fdcId: 4,
+        description: 'Oats',
+        foodNutrients: [{ nutrientId: 1062, value: 1000 }],
+      })?.calories,
+    ).toBe(239);
   });
 
   it('leaves out portions when there are none, and drops duplicates', () => {
-    const r = usdaFoodToResult({ fdcId: 5, description: 'Thing', foodNutrients: [{ nutrientId: 1008, value: 100 }] });
+    const r = usdaFoodToResult({
+      fdcId: 5,
+      description: 'Thing',
+      foodNutrients: [{ nutrientId: 1008, value: 100 }],
+    });
     expect(r?.portions).toBeUndefined();
     const dup = usdaFoodToResult({
       fdcId: 6,
@@ -95,27 +146,70 @@ describe('usdaFoodToResult', () => {
   });
 
   it('drops foods with no name, id or energy, or an impossible energy', () => {
-    expect(usdaFoodToResult({ fdcId: 7, description: ' ', foodNutrients: [{ nutrientId: 1008, value: 1 }] })).toBeNull();
-    expect(usdaFoodToResult({ description: 'No id', foodNutrients: [{ nutrientId: 1008, value: 1 }] })).toBeNull();
-    expect(usdaFoodToResult({ fdcId: 8, description: 'No energy', foodNutrients: [{ nutrientId: 1003, value: 5 }] })).toBeNull();
-    expect(usdaFoodToResult({ fdcId: 9, description: 'Bad', foodNutrients: [{ nutrientId: 1008, value: 5000 }] })).toBeNull();
+    expect(
+      usdaFoodToResult({
+        fdcId: 7,
+        description: ' ',
+        foodNutrients: [{ nutrientId: 1008, value: 1 }],
+      }),
+    ).toBeNull();
+    expect(
+      usdaFoodToResult({
+        description: 'No id',
+        foodNutrients: [{ nutrientId: 1008, value: 1 }],
+      }),
+    ).toBeNull();
+    expect(
+      usdaFoodToResult({
+        fdcId: 8,
+        description: 'No energy',
+        foodNutrients: [{ nutrientId: 1003, value: 5 }],
+      }),
+    ).toBeNull();
+    expect(
+      usdaFoodToResult({
+        fdcId: 9,
+        description: 'Bad',
+        foodNutrients: [{ nutrientId: 1008, value: 5000 }],
+      }),
+    ).toBeNull();
   });
 });
 
 describe('measureToPortion', () => {
   it('completes a bare size with the food, so an egg is counted in eggs', () => {
-    expect(measureToPortion({ disseminationText: '1 large', gramWeight: 50 }, 'egg')).toEqual({ label: 'large egg', grams: 50 });
-    expect(measureToPortion({ disseminationText: '1 cup', gramWeight: 240 }, 'egg')).toEqual({ label: 'cup', grams: 240 });
-    expect(measureToPortion({ disseminationText: '1 large', gramWeight: 50 })).toEqual({ label: 'large', grams: 50 });
+    expect(
+      measureToPortion({ disseminationText: '1 large', gramWeight: 50 }, 'egg'),
+    ).toEqual({ label: 'large egg', grams: 50 });
+    expect(
+      measureToPortion({ disseminationText: '1 cup', gramWeight: 240 }, 'egg'),
+    ).toEqual({ label: 'cup', grams: 240 });
+    expect(
+      measureToPortion({ disseminationText: '1 large', gramWeight: 50 }),
+    ).toEqual({ label: 'large', grams: 50 });
   });
 
   it('turns "2 slices = 56 g" into one slice of 28 g', () => {
-    expect(measureToPortion({ amount: 2, modifier: 'slice', gramWeight: 56 })).toEqual({ label: 'slice', grams: 28 });
+    expect(
+      measureToPortion({ amount: 2, modifier: 'slice', gramWeight: 56 }),
+    ).toEqual({ label: 'slice', grams: 28 });
   });
 
   it('uses the unit name when there is no modifier, unless it is a placeholder', () => {
-    expect(measureToPortion({ amount: 1, measureUnit: { name: 'cup' }, gramWeight: 240 })).toEqual({ label: 'cup', grams: 240 });
-    expect(measureToPortion({ amount: 1, measureUnit: { name: 'undetermined' }, gramWeight: 50 })).toBeNull();
+    expect(
+      measureToPortion({
+        amount: 1,
+        measureUnit: { name: 'cup' },
+        gramWeight: 240,
+      }),
+    ).toEqual({ label: 'cup', grams: 240 });
+    expect(
+      measureToPortion({
+        amount: 1,
+        measureUnit: { name: 'undetermined' },
+        gramWeight: 50,
+      }),
+    ).toBeNull();
   });
 
   it('rejects missing, zero or absurd weights', () => {
@@ -127,7 +221,12 @@ describe('measureToPortion', () => {
 
 // Real USDA search-result data (Survey/FNDDS "Apple, raw"), captured live.
 describe('real search-result shape', () => {
-  const m = (disseminationText: string, gramWeight: number, modifier: string, rank: number) => ({
+  const m = (
+    disseminationText: string,
+    gramWeight: number,
+    modifier: string,
+    rank: number,
+  ) => ({
     disseminationText,
     gramWeight,
     modifier,
@@ -171,14 +270,32 @@ describe('real search-result shape', () => {
   });
 
   it('reads quantities in the phrase, including fractions', () => {
-    expect(measureToPortion(m('2 slices', 56, '1', 1))).toEqual({ label: 'slices', grams: 28 });
-    expect(measureToPortion(m('1/2 cup', 60, '1', 1))).toEqual({ label: 'cup', grams: 120 });
-    expect(measureToPortion(m('1 1/2 cups', 180, '1', 1))).toEqual({ label: 'cups', grams: 120 });
-    expect(measureToPortion(m('1 apple, any size', 320, '64730', 1))).toEqual({ label: 'apple, any size', grams: 320 });
+    expect(measureToPortion(m('2 slices', 56, '1', 1))).toEqual({
+      label: 'slices',
+      grams: 28,
+    });
+    expect(measureToPortion(m('1/2 cup', 60, '1', 1))).toEqual({
+      label: 'cup',
+      grams: 120,
+    });
+    expect(measureToPortion(m('1 1/2 cups', 180, '1', 1))).toEqual({
+      label: 'cups',
+      grams: 120,
+    });
+    expect(measureToPortion(m('1 apple, any size', 320, '64730', 1))).toEqual({
+      label: 'apple, any size',
+      grams: 320,
+    });
   });
 
   it('drops a portion that has only a code and no readable name', () => {
-    expect(measureToPortion({ modifier: '62015', gramWeight: 165, measureUnitName: 'undetermined' })).toBeNull();
+    expect(
+      measureToPortion({
+        modifier: '62015',
+        gramWeight: 165,
+        measureUnitName: 'undetermined',
+      }),
+    ).toBeNull();
   });
 });
 
@@ -188,7 +305,15 @@ describe('searchUsda request', () => {
   it('posts the query as JSON, with the key in the URL only', async () => {
     const spy = jest.spyOn(global, 'fetch').mockResolvedValueOnce({
       ok: true,
-      json: async () => ({ foods: [{ fdcId: 1, description: 'Chicken breast', foodNutrients: [{ nutrientId: 1008, value: 165 }] }] }),
+      json: async () => ({
+        foods: [
+          {
+            fdcId: 1,
+            description: 'Chicken breast',
+            foodNutrients: [{ nutrientId: 1008, value: 165 }],
+          },
+        ],
+      }),
     } as Response);
     const r = await searchUsdaWithKey('  chicken breast ', 'abc123');
     expect(r.map((x) => x.name)).toEqual(['Chicken breast']);

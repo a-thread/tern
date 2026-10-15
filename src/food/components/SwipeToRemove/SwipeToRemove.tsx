@@ -1,5 +1,12 @@
 import React, { useMemo, useRef, useState } from 'react';
-import { Animated, PanResponder, Pressable, StyleSheet, Text, View } from 'react-native';
+import {
+  Animated,
+  PanResponder,
+  Pressable,
+  StyleSheet,
+  Text,
+  View,
+} from 'react-native';
 
 import { colors, font } from '@shared/theme';
 
@@ -32,19 +39,28 @@ export function SwipeToRemove({
   const settle = (to: number) => {
     current.current = to;
     setOpen(to !== 0);
-    Animated.spring(x, { toValue: to, useNativeDriver: true, bounciness: 0, speed: 20 }).start();
+    Animated.spring(x, {
+      toValue: to,
+      useNativeDriver: true,
+      bounciness: 0,
+      speed: 20,
+    }).start();
   };
 
   const pan = useMemo(
     () =>
       PanResponder.create({
         onMoveShouldSetPanResponder: (_, g) =>
-          Math.abs(g.dx) > SIDEWAYS.MIN && Math.abs(g.dx) > Math.abs(g.dy) * SIDEWAYS.RATIO,
+          Math.abs(g.dx) > SIDEWAYS.MIN &&
+          Math.abs(g.dx) > Math.abs(g.dy) * SIDEWAYS.RATIO,
         onPanResponderGrant: () => {
           start.current = current.current;
         },
         onPanResponderMove: (_, g) => {
-          const next = Math.min(0, Math.max(-ACTION_WIDTH, start.current + g.dx));
+          const next = Math.min(
+            0,
+            Math.max(-ACTION_WIDTH, start.current + g.dx),
+          );
           x.setValue(next);
         },
         onPanResponderRelease: (_, g) => {
@@ -71,7 +87,10 @@ export function SwipeToRemove({
           <Text style={s.actionText}>{label}</Text>
         </Pressable>
       </View>
-      <Animated.View style={[s.front, { transform: [{ translateX: x }] }]} {...pan.panHandlers}>
+      <Animated.View
+        style={[s.front, { transform: [{ translateX: x }] }]}
+        {...pan.panHandlers}
+      >
         {children}
         {open ? (
           <Pressable
@@ -88,7 +107,16 @@ export function SwipeToRemove({
 const s = StyleSheet.create({
   wrap: { overflow: 'hidden' },
   front: { backgroundColor: colors.card },
-  action: { ...StyleSheet.absoluteFillObject, alignItems: 'flex-end', backgroundColor: colors.danger },
-  actionBtn: { width: ACTION_WIDTH, flex: 1, alignItems: 'center', justifyContent: 'center' },
+  action: {
+    ...StyleSheet.absoluteFillObject,
+    alignItems: 'flex-end',
+    backgroundColor: colors.danger,
+  },
+  actionBtn: {
+    width: ACTION_WIDTH,
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   actionText: { fontFamily: font.semibold, fontSize: 13.5, color: '#fff' },
 });

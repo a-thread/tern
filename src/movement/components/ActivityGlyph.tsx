@@ -51,5 +51,11 @@ export function ActivityGlyph({
   size?: number;
   color?: string;
 }) {
-  return <MaterialCommunityIcons name={ICONS[activity] ?? ICONS[Activity.Other]} size={size} color={color} />;
+  return (
+    <MaterialCommunityIcons
+      name={ICONS[activity] ?? ICONS[Activity.Other]}
+      size={size}
+      color={color}
+    />
+  );
 }

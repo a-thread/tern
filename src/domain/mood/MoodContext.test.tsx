@@ -1,10 +1,7 @@
 import React from 'react';
 import { renderHook, act, waitFor } from '@testing-library/react-native';
 
-import {
-  createMemoryBackend,
-  type Backend,
-} from '../../BackendContext';
+import { createMemoryBackend, type Backend } from '../../BackendContext';
 import { ToastProvider } from '@shared/state/ToastContext';
 import { dayKey } from '@shared/utils/date';
 import { FoodProvider } from '../food/FoodContext';
@@ -17,18 +14,22 @@ const today = dayKey();
 
 async function setup(backend: Backend = createMemoryBackend()) {
   const wrapper = ({ children }: { children: React.ReactNode }) => (
-      <ToastProvider>
-        <SettingsProvider repo={backend.settings}>
-          <WaypointsProvider repo={backend.waypoints}>
-            <FoodProvider repo={backend.food}>
-              <MoodProvider repo={backend.mood}>{children}</MoodProvider>
-            </FoodProvider>
-          </WaypointsProvider>
-        </SettingsProvider>
-      </ToastProvider>
+    <ToastProvider>
+      <SettingsProvider repo={backend.settings}>
+        <WaypointsProvider repo={backend.waypoints}>
+          <FoodProvider repo={backend.food}>
+            <MoodProvider repo={backend.mood}>{children}</MoodProvider>
+          </FoodProvider>
+        </WaypointsProvider>
+      </SettingsProvider>
+    </ToastProvider>
   );
   const hook = renderHook(
-    () => ({ mood: useMood(), settings: useSettings(), points: useWaypoints() }),
+    () => ({
+      mood: useMood(),
+      settings: useSettings(),
+      points: useWaypoints(),
+    }),
     { wrapper },
   );
   await waitFor(() => {
@@ -39,13 +40,19 @@ async function setup(backend: Backend = createMemoryBackend()) {
   return { ...hook, backend };
 }
 
-const turnOn = async (result: { current: { settings: ReturnType<typeof useSettings> } }) =>
+const turnOn = async (result: {
+  current: { settings: ReturnType<typeof useSettings> };
+}) =>
   act(async () => {
     result.current.settings.updateSettings({ trackMood: true });
   });
 
-const hasAward = (result: { current: { points: ReturnType<typeof useWaypoints> } }) =>
-  result.current.points.events.some((e) => e.source === WaypointSource.Mood && e.day === today);
+const hasAward = (result: {
+  current: { points: ReturnType<typeof useWaypoints> };
+}) =>
+  result.current.points.events.some(
+    (e) => e.source === WaypointSource.Mood && e.day === today,
+  );
 
 describe('MoodProvider', () => {
   it('is off until mood tracking is turned on, with no check-in yet', async () => {
@@ -62,12 +69,18 @@ describe('MoodProvider', () => {
       ok = result.current.mood.checkIn(7, 3);
     });
     expect(ok).toBe(true);
-    expect(result.current.mood.today).toEqual({ day: today, mood: 7, stress: 3 });
+    expect(result.current.mood.today).toEqual({
+      day: today,
+      mood: 7,
+      stress: 3,
+    });
     await act(async () => {
       result.current.mood.checkIn(4, 8);
     });
     expect(result.current.mood.entries).toHaveLength(1);
-    expect(await backend.mood.load(today, today)).toEqual([{ day: today, mood: 4, stress: 8 }]);
+    expect(await backend.mood.load(today, today)).toEqual([
+      { day: today, mood: 4, stress: 8 },
+    ]);
   });
 
   it('refuses a score off the scale', async () => {
@@ -86,7 +99,11 @@ describe('MoodProvider', () => {
     await backend.mood.save({ day: '2026-01-01', mood: 5, stress: 5 });
     await backend.mood.save({ day: today, mood: 8, stress: 2 });
     const { result } = await setup(backend);
-    expect(result.current.mood.today).toEqual({ day: today, mood: 8, stress: 2 });
+    expect(result.current.mood.today).toEqual({
+      day: today,
+      mood: 8,
+      stress: 2,
+    });
   });
 
   it('removing the check-in from today leaves the others', async () => {

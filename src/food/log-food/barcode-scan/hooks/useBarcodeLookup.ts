@@ -12,7 +12,9 @@ import { ScanPhaseKind, type ScanPhase } from '../models/scanPhase';
  * Coming back to the screen starts a fresh scan.
  */
 export function useBarcodeLookup(onFound: (result: SearchResult) => void) {
-  const [phase, setPhase] = useState<ScanPhase>({ kind: ScanPhaseKind.Scanning });
+  const [phase, setPhase] = useState<ScanPhase>({
+    kind: ScanPhaseKind.Scanning,
+  });
   const busy = useRef(false);
 
   const scanAgain = useCallback(() => {
@@ -39,7 +41,10 @@ export function useBarcodeLookup(onFound: (result: SearchResult) => void) {
         name: res.status === 'no-nutrition' ? res.name : undefined,
       });
     } catch (e) {
-      console.warn('Barcode lookup failed', e instanceof FoodApiError ? e.kind : e);
+      console.warn(
+        'Barcode lookup failed',
+        e instanceof FoodApiError ? e.kind : e,
+      );
       setPhase({ kind: ScanPhaseKind.Error });
     }
   };

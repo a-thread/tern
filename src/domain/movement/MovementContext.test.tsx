@@ -15,14 +15,20 @@ import { MovementProvider, useMovement } from './MovementContext';
 
 async function setup() {
   // No steps at all, so only movement can make today a goal day.
-  const backend: Backend = { ...createMemoryBackend(), steps: createUnavailableStepsRepository() };
+  const backend: Backend = {
+    ...createMemoryBackend(),
+    steps: createUnavailableStepsRepository(),
+  };
   const wrapper = ({ children }: { children: React.ReactNode }) => (
     <ToastProvider>
       <SettingsProvider repo={backend.settings}>
         <WaypointsProvider repo={backend.waypoints}>
           <FoodProvider repo={backend.food}>
             <MovementProvider repo={backend.movement}>
-              <ActivityProvider steps={backend.steps} restDays={backend.restDays}>
+              <ActivityProvider
+                steps={backend.steps}
+                restDays={backend.restDays}
+              >
                 {children}
               </ActivityProvider>
             </MovementProvider>
@@ -32,7 +38,12 @@ async function setup() {
     </ToastProvider>
   );
   const hook = renderHook(
-    () => ({ movement: useMovement(), activity: useActivity(), points: useWaypoints(), settings: useSettings() }),
+    () => ({
+      movement: useMovement(),
+      activity: useActivity(),
+      points: useWaypoints(),
+      settings: useSettings(),
+    }),
     { wrapper },
   );
   await waitFor(() => {
@@ -40,7 +51,9 @@ async function setup() {
     expect(hook.result.current.activity.ready).toBe(true);
     expect(hook.result.current.points.ready).toBe(true);
   });
-  await act(async () => hook.result.current.settings.updateSettings({ trackMovement: true }));
+  await act(async () =>
+    hook.result.current.settings.updateSettings({ trackMovement: true }),
+  );
   return hook;
 }
 
@@ -51,15 +64,30 @@ describe('MovementProvider', () => {
     const { result } = await setup();
     let ok = false;
     await act(async () => {
-      ok = result.current.movement.add({ day: today(), activity: Activity.Swim, minutes: 20, effort: null });
+      ok = result.current.movement.add({
+        day: today(),
+        activity: Activity.Swim,
+        minutes: 20,
+        effort: null,
+      });
     });
     expect(ok).toBe(true);
     await act(async () => {
-      ok = result.current.movement.add({ day: addDays(today(), -1), activity: Activity.Walk, minutes: 15, effort: Effort.Easy });
+      ok = result.current.movement.add({
+        day: addDays(today(), -1),
+        activity: Activity.Walk,
+        minutes: 15,
+        effort: Effort.Easy,
+      });
     });
     expect(ok).toBe(true);
     await act(async () => {
-      ok = result.current.movement.add({ day: addDays(today(), -2), activity: Activity.Walk, minutes: 15, effort: null });
+      ok = result.current.movement.add({
+        day: addDays(today(), -2),
+        activity: Activity.Walk,
+        minutes: 15,
+        effort: null,
+      });
     });
     expect(ok).toBe(false);
     expect(result.current.movement.todayMinutes).toBe(20);
@@ -71,54 +99,106 @@ describe('MovementProvider', () => {
     const before = result.current.points.waypoints;
 
     await act(async () => {
-      result.current.movement.add({ day: today(), activity: Activity.Swim, minutes: 20, effort: null });
+      result.current.movement.add({
+        day: today(),
+        activity: Activity.Swim,
+        minutes: 20,
+        effort: null,
+      });
     });
-    await waitFor(() => expect(result.current.points.waypoints).toBe(before + 10));
-    expect(result.current.activity.week.find((d) => d.isToday)?.state).not.toBe(DayState.Goal);
+    await waitFor(() =>
+      expect(result.current.points.waypoints).toBe(before + 10),
+    );
+    expect(result.current.activity.week.find((d) => d.isToday)?.state).not.toBe(
+      DayState.Goal,
+    );
 
     await act(async () => {
-      result.current.movement.add({ day: today(), activity: Activity.Bike, minutes: 15, effort: null });
+      result.current.movement.add({
+        day: today(),
+        activity: Activity.Bike,
+        minutes: 15,
+        effort: null,
+      });
     });
     // 35 minutes passes the default 30: a goal day, and its 40 waypoints.
-    await waitFor(() => expect(result.current.activity.week.find((d) => d.isToday)?.state).toBe(DayState.Goal));
-    await waitFor(() => expect(result.current.points.waypoints).toBe(before + 50));
+    await waitFor(() =>
+      expect(result.current.activity.week.find((d) => d.isToday)?.state).toBe(
+        DayState.Goal,
+      ),
+    );
+    await waitFor(() =>
+      expect(result.current.points.waypoints).toBe(before + 50),
+    );
   });
 
   it('takes it all back when the movement is removed', async () => {
     const { result } = await setup();
     const before = result.current.points.waypoints;
     await act(async () => {
-      result.current.movement.add({ day: today(), activity: Activity.Strength, minutes: 40, effort: Effort.Hard });
+      result.current.movement.add({
+        day: today(),
+        activity: Activity.Strength,
+        minutes: 40,
+        effort: Effort.Hard,
+      });
     });
-    await waitFor(() => expect(result.current.points.waypoints).toBe(before + 50));
+    await waitFor(() =>
+      expect(result.current.points.waypoints).toBe(before + 50),
+    );
 
     const id = result.current.movement.entries[0].id;
     await act(async () => result.current.movement.remove(id));
     await waitFor(() => expect(result.current.points.waypoints).toBe(before));
-    expect(result.current.activity.week.find((d) => d.isToday)?.state).not.toBe(DayState.Goal);
+    expect(result.current.activity.week.find((d) => d.isToday)?.state).not.toBe(
+      DayState.Goal,
+    );
   });
 
   it('logs walks and runs without counting them toward a goal day, since steps already do', async () => {
     const { result } = await setup();
     const before = result.current.points.waypoints;
     await act(async () => {
-      result.current.movement.add({ day: today(), activity: Activity.Walk, minutes: 45, effort: null });
-      result.current.movement.add({ day: today(), activity: Activity.Run, minutes: 30, effort: null });
+      result.current.movement.add({
+        day: today(),
+        activity: Activity.Walk,
+        minutes: 45,
+        effort: null,
+      });
+      result.current.movement.add({
+        day: today(),
+        activity: Activity.Run,
+        minutes: 30,
+        effort: null,
+      });
     });
-    await waitFor(() => expect(result.current.points.waypoints).toBe(before + 10));
+    await waitFor(() =>
+      expect(result.current.points.waypoints).toBe(before + 10),
+    );
     expect(result.current.movement.todayMinutes).toBe(75);
     expect(result.current.movement.todayGoalMinutes).toBe(0);
-    expect(result.current.activity.week.find((d) => d.isToday)?.state).not.toBe(DayState.Goal);
+    expect(result.current.activity.week.find((d) => d.isToday)?.state).not.toBe(
+      DayState.Goal,
+    );
   });
 
   it('shows nothing and counts nothing while tracking is off', async () => {
     const { result } = await setup();
     await act(async () => {
-      result.current.movement.add({ day: today(), activity: Activity.Run, minutes: 40, effort: null });
+      result.current.movement.add({
+        day: today(),
+        activity: Activity.Run,
+        minutes: 40,
+        effort: null,
+      });
     });
-    await act(async () => result.current.settings.updateSettings({ trackMovement: false }));
+    await act(async () =>
+      result.current.settings.updateSettings({ trackMovement: false }),
+    );
     expect(result.current.movement.entries).toEqual([]);
     expect(result.current.movement.todayMinutes).toBe(0);
-    expect(result.current.activity.week.find((d) => d.isToday)?.state).not.toBe(DayState.Goal);
+    expect(result.current.activity.week.find((d) => d.isToday)?.state).not.toBe(
+      DayState.Goal,
+    );
   });
 });

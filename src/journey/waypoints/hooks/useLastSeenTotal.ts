@@ -12,7 +12,9 @@ export function useLastSeenTotal(): {
   lastSeen: number | null | undefined;
   remember: (total: number) => void;
 } {
-  const [lastSeen, setLastSeen] = useState<number | null | undefined>(undefined);
+  const [lastSeen, setLastSeen] = useState<number | null | undefined>(
+    undefined,
+  );
 
   useEffect(() => {
     let alive = true;

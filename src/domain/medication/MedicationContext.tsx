@@ -32,10 +32,11 @@ type MedicationContextValue = {
   loadTaken: (day: string) => Promise<Medication[]>;
 };
 
-const [MedicationContext, useMedication] = createRequiredContext<MedicationContextValue>(
-  'useMedication',
-  'MedicationProvider',
-);
+const [MedicationContext, useMedication] =
+  createRequiredContext<MedicationContextValue>(
+    'useMedication',
+    'MedicationProvider',
+  );
 export { useMedication };
 
 /** Today's doses, next to the medications in settings. Must sit inside SettingsProvider. */
@@ -67,31 +68,43 @@ export function MedicationProvider({
         else next.delete(medicationId);
         return next;
       });
-      persist(taken ? repo.take(medicationId, today) : repo.untake(medicationId, today), {
-        log: 'Could not save medication dose',
-        toast: "Couldn't save that — please try again.",
-      });
+      persist(
+        taken
+          ? repo.take(medicationId, today)
+          : repo.untake(medicationId, today),
+        {
+          log: 'Could not save medication dose',
+          toast: "Couldn't save that — please try again.",
+        },
+      );
     },
     [repo, today, persist],
   );
 
   const removeMedication = useCallback(
     (medicationId: string) => {
-      updateSettings({ medications: medications.filter((m) => m.id !== medicationId) });
+      updateSettings({
+        medications: medications.filter((m) => m.id !== medicationId),
+      });
       setTakenIds((prev) => {
         if (!prev.has(medicationId)) return prev;
         const next = new Set(prev);
         next.delete(medicationId);
         return next;
       });
-      repo.forget(medicationId).catch((e) => console.warn('Could not forget doses', e));
+      repo
+        .forget(medicationId)
+        .catch((e) => console.warn('Could not forget doses', e));
     },
     [repo, medications, updateSettings],
   );
 
   // Only medications that still exist count as taken.
   const takenToday = useMemo(
-    () => new Set([...takenIds].filter((id) => medications.some((m) => m.id === id))),
+    () =>
+      new Set(
+        [...takenIds].filter((id) => medications.some((m) => m.id === id)),
+      ),
     [takenIds, medications],
   );
   // 1 = Sunday … 7 = Saturday, like the reminder weekdays.
@@ -100,22 +113,56 @@ export function MedicationProvider({
     () => dueMeds(medications, takenToday, weekday),
     [medications, takenToday, weekday],
   );
-  const taken = useMemo(() => takenMeds(medications, takenToday), [medications, takenToday]);
+  const taken = useMemo(
+    () => takenMeds(medications, takenToday),
+    [medications, takenToday],
+  );
 
   // Everything scheduled today taken earns a waypoint; un-marking one takes it back. Nothing
   // is due (or paid) on a day with no medication scheduled.
-  useAward(WaypointSource.Medication, taken.length > 0 && due.length === 0, ready && medications.length > 0);
+  useAward(
+    WaypointSource.Medication,
+    taken.length > 0 && due.length === 0,
+    ready && medications.length > 0,
+  );
 
   const loadTaken = useCallback(
     async (day: string) =>
-      takenMeds(medications, new Set((await repo.load(day, day)).map((d) => d.medicationId))),
+      takenMeds(
+        medications,
+        new Set((await repo.load(day, day)).map((d) => d.medicationId)),
+      ),
     [repo, medications],
   );
 
   const value = useMemo<MedicationContextValue>(
-    () => ({ ready, reload, medications, takenToday, due, taken, setTaken, removeMedication, loadTaken }),
-    [ready, reload, medications, takenToday, due, taken, setTaken, removeMedication, loadTaken],
+    () => ({
+      ready,
+      reload,
+      medications,
+      takenToday,
+      due,
+      taken,
+      setTaken,
+      removeMedication,
+      loadTaken,
+    }),
+    [
+      ready,
+      reload,
+      medications,
+      takenToday,
+      due,
+      taken,
+      setTaken,
+      removeMedication,
+      loadTaken,
+    ],
   );
 
-  return <MedicationContext.Provider value={value}>{children}</MedicationContext.Provider>;
+  return (
+    <MedicationContext.Provider value={value}>
+      {children}
+    </MedicationContext.Provider>
+  );
 }

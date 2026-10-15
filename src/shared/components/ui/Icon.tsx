@@ -3,7 +3,9 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 
 import { colors } from '../../theme';
 
-export type IconName = React.ComponentProps<typeof MaterialCommunityIcons>['name'];
+export type IconName = React.ComponentProps<
+  typeof MaterialCommunityIcons
+>['name'];
 
 /**
  * An icon from Material Community Icons (https://pictogrammers.com/library/mdi/), the one icon
@@ -28,7 +30,9 @@ export function Icon({
       color={color}
       accessibilityLabel={accessibilityLabel}
       accessibilityElementsHidden={!accessibilityLabel}
-      importantForAccessibility={accessibilityLabel ? 'yes' : 'no-hide-descendants'}
+      importantForAccessibility={
+        accessibilityLabel ? 'yes' : 'no-hide-descendants'
+      }
     />
   );
 }

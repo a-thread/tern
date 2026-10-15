@@ -3,14 +3,24 @@ import type { View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useIsFocused } from '@react-navigation/native';
 
-import { useWaypoints, type Celebration } from '../../domain/waypoints/WaypointsContext';
+import {
+  useWaypoints,
+  type Celebration,
+} from '../../domain/waypoints/WaypointsContext';
 
 type Point = { x: number; y: number };
-export type Playing = { celebration: Celebration; origin: Point; target: Point };
+export type Playing = {
+  celebration: Celebration;
+  origin: Point;
+  target: Point;
+};
 
 function measureInWindow(ref: React.RefObject<View | null>) {
-  return new Promise<{ x: number; y: number; width: number; height: number }>((resolve) =>
-    ref.current?.measureInWindow((x, y, width, height) => resolve({ x, y, width, height })),
+  return new Promise<{ x: number; y: number; width: number; height: number }>(
+    (resolve) =>
+      ref.current?.measureInWindow((x, y, width, height) =>
+        resolve({ x, y, width, height }),
+      ),
   );
 }
 
@@ -32,7 +42,8 @@ export function useCelebrationPlayback(hold = false) {
   const nextCelebration = celebrations[0];
 
   useEffect(() => {
-    if (hold || !isFocused || playing || starting.current || !nextCelebration) return;
+    if (hold || !isFocused || playing || starting.current || !nextCelebration)
+      return;
     starting.current = true;
     (async () => {
       const [root, hero, chip] = await Promise.all([
@@ -45,8 +56,15 @@ export function useCelebrationPlayback(hold = false) {
         y: r.y - root.y + r.height / 2,
       });
       const origin = inRoot(hero);
-      origin.y = Math.min(Math.max(origin.y, insets.top + 90), root.height - 160);
-      setPlaying({ celebration: nextCelebration, origin, target: inRoot(chip) });
+      origin.y = Math.min(
+        Math.max(origin.y, insets.top + 90),
+        root.height - 160,
+      );
+      setPlaying({
+        celebration: nextCelebration,
+        origin,
+        target: inRoot(chip),
+      });
       starting.current = false;
     })();
   }, [hold, isFocused, playing, nextCelebration, insets.top]);

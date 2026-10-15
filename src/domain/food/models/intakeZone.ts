@@ -1,4 +1,7 @@
-import { type CalorieZone, CalorieZoneLimits } from '../../settings/models/calorieZone';
+import {
+  type CalorieZone,
+  CalorieZoneLimits,
+} from '../../settings/models/calorieZone';
 
 export class IntakeZones {
   /** The default zone sits this share either side of the calorie target. */
@@ -70,8 +73,10 @@ export type ZoneStatus =
 
 /** Where intake sits against the zone, with how far outside it. Information only. */
 export function zoneStatus(intake: number, zone: CalorieZone): ZoneStatus {
-  if (intake < zone.min) return { kind: 'below', amount: Math.round(zone.min - intake) };
-  if (intake > zone.max) return { kind: 'above', amount: Math.round(intake - zone.max) };
+  if (intake < zone.min)
+    return { kind: 'below', amount: Math.round(zone.min - intake) };
+  if (intake > zone.max)
+    return { kind: 'above', amount: Math.round(intake - zone.max) };
   return { kind: 'in' };
 }
 

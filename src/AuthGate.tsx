@@ -59,7 +59,5 @@ function RequireSession({ children }: { children: React.ReactNode }) {
 }
 
 function Spinner() {
-  return (
-    <LoadingScreen />
-  );
+  return <LoadingScreen />;
 }

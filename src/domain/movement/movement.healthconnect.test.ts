@@ -11,7 +11,9 @@ describe('Health Connect workouts', () => {
     expect(activityForExercise('SWIMMING_POOL')).toBe(Activity.Swim);
     expect(activityForExercise('WEIGHTLIFTING')).toBe(Activity.Strength);
     expect(activityForExercise('PILATES')).toBe(Activity.Pilates);
-    expect(activityForExercise('HIGH_INTENSITY_INTERVAL_TRAINING')).toBe(Activity.Hiit);
+    expect(activityForExercise('HIGH_INTENSITY_INTERVAL_TRAINING')).toBe(
+      Activity.Hiit,
+    );
     expect(activityForExercise('HIKING')).toBe(Activity.Hike);
     expect(activityForExercise('PADDLING')).toBe(Activity.Kayaking);
     expect(activityForExercise('CALISTHENICS')).toBe(Activity.Strength);
@@ -26,11 +28,22 @@ describe('Health Connect workouts', () => {
       exerciseType: 74,
       metadata: { id: 'abc' },
     });
-    expect(e).toMatchObject({ id: 'hc-abc', activity: Activity.Swim, minutes: 35, source: MovementSource.HealthConnect, effort: null });
+    expect(e).toMatchObject({
+      id: 'hc-abc',
+      activity: Activity.Swim,
+      minutes: 35,
+      source: MovementSource.HealthConnect,
+      effort: null,
+    });
   });
 
   it('ignores sessions with no usable length', () => {
-    expect(sessionToEntry({ startTime: '2026-10-07T07:10:00Z', endTime: '2026-10-07T07:10:20Z' })).toBeNull();
+    expect(
+      sessionToEntry({
+        startTime: '2026-10-07T07:10:00Z',
+        endTime: '2026-10-07T07:10:20Z',
+      }),
+    ).toBeNull();
     expect(sessionToEntry({ startTime: 'x', endTime: 'y' })).toBeNull();
   });
 });

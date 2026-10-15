@@ -1,10 +1,7 @@
 import React from 'react';
 import { renderHook, act, waitFor } from '@testing-library/react-native';
 import { FoodProvider, useFood } from '../food/FoodContext';
-import {
-  createMemoryBackend,
-  type Backend,
-} from '../../BackendContext';
+import { createMemoryBackend, type Backend } from '../../BackendContext';
 import { dayKey } from '@shared/utils/date';
 import { WaypointsProvider, useWaypoints } from './WaypointsContext';
 import { INITIAL_WAYPOINTS } from './waypoints.mock';
@@ -20,9 +17,9 @@ function useHarness() {
 /** Renders the food + waypoints providers over a fresh in-memory backend, once both have loaded. */
 async function setup(backend: Backend = createMemoryBackend()) {
   const wrapper = ({ children }: { children: React.ReactNode }) => (
-      <WaypointsProvider repo={backend.waypoints}>
-        <FoodProvider repo={backend.food}>{children}</FoodProvider>
-      </WaypointsProvider>
+    <WaypointsProvider repo={backend.waypoints}>
+      <FoodProvider repo={backend.food}>{children}</FoodProvider>
+    </WaypointsProvider>
   );
   const hook = renderHook(() => useHarness(), { wrapper });
   await waitFor(() => expect(hook.result.current.ready).toBe(true));
@@ -39,7 +36,9 @@ describe('waypoints meals bonus (reactive to foodLog)', () => {
     const { result } = await setup();
     const initial = result.current.waypoints;
     const lunch = result.current.foodLog.filter((f) => f.meal === Meal.Lunch);
-    await act(async () => lunch.forEach((f) => result.current.removeFoodEntry(f.id)));
+    await act(async () =>
+      lunch.forEach((f) => result.current.removeFoodEntry(f.id)),
+    );
     expect(result.current.waypoints).toBe(initial - 15 - 5); // the bonus, and lunch's own award
 
     // "Nothing today" completes the day again, but lunch's own award is for food logged.
@@ -106,19 +105,28 @@ describe('celebration queue', () => {
     const { result } = await setup();
     const initial = result.current.waypoints;
 
-    await act(async () => result.current.addWaypoints(40, WaypointSource.Steps));
+    await act(async () =>
+      result.current.addWaypoints(40, WaypointSource.Steps),
+    );
 
     expect(result.current.waypoints).toBe(initial + 40);
     expect(result.current.celebrations).toHaveLength(1);
-    expect(result.current.celebrations[0]).toMatchObject({ points: 40, source: 'steps' });
+    expect(result.current.celebrations[0]).toMatchObject({
+      points: 40,
+      source: 'steps',
+    });
     expect(result.current.pendingPoints).toBe(40);
   });
 
   it('clears the pending points once the celebration completes', async () => {
     const { result } = await setup();
-    await act(async () => result.current.addWaypoints(40, WaypointSource.Steps));
+    await act(async () =>
+      result.current.addWaypoints(40, WaypointSource.Steps),
+    );
 
-    await act(async () => result.current.completeCelebration(result.current.celebrations[0].id));
+    await act(async () =>
+      result.current.completeCelebration(result.current.celebrations[0].id),
+    );
 
     expect(result.current.celebrations).toHaveLength(0);
     expect(result.current.pendingPoints).toBe(0);
@@ -126,13 +134,20 @@ describe('celebration queue', () => {
 
   it('celebrates the meals bonus and the meal when earned, and cancels them if taken back before playing', async () => {
     const { result } = await setup();
-    const dinners = result.current.foodLog.filter((f) => f.meal === Meal.Dinner);
+    const dinners = result.current.foodLog.filter(
+      (f) => f.meal === Meal.Dinner,
+    );
 
-    await act(async () => dinners.forEach((d) => result.current.removeFoodEntry(d.id)));
+    await act(async () =>
+      dinners.forEach((d) => result.current.removeFoodEntry(d.id)),
+    );
     expect(result.current.celebrations).toHaveLength(0); // a take-back is quiet
 
     await act(async () => result.current.addFoodEntry(newEntry(Meal.Dinner)));
-    expect(result.current.celebrations.map((c) => c.source).sort()).toEqual(['dinner', 'meals']);
+    expect(result.current.celebrations.map((c) => c.source).sort()).toEqual([
+      'dinner',
+      'meals',
+    ]);
 
     const added = result.current.foodLog.find((f) => f.name === 'Test')!;
     await act(async () => result.current.removeFoodEntry(added.id));
@@ -145,8 +160,12 @@ describe('waypoints ledger', () => {
     const { result } = await setup();
     const initial = result.current.waypoints;
 
-    await act(async () => result.current.addWaypoints(40, WaypointSource.Steps));
-    await act(async () => result.current.addWaypoints(40, WaypointSource.Steps));
+    await act(async () =>
+      result.current.addWaypoints(40, WaypointSource.Steps),
+    );
+    await act(async () =>
+      result.current.addWaypoints(40, WaypointSource.Steps),
+    );
 
     expect(result.current.waypoints).toBe(initial + 40);
     expect(result.current.celebrations).toHaveLength(1);
@@ -156,13 +175,26 @@ describe('waypoints ledger', () => {
     const { result, backend } = await setup();
     const day = dayKey();
 
-    await act(async () => result.current.addWaypoints(40, WaypointSource.Steps));
-    expect((await backend.waypoints.load(day)).total).toBe(INITIAL_WAYPOINTS + 40);
+    await act(async () =>
+      result.current.addWaypoints(40, WaypointSource.Steps),
+    );
+    expect((await backend.waypoints.load(day)).total).toBe(
+      INITIAL_WAYPOINTS + 40,
+    );
 
-    const dinners = result.current.foodLog.filter((f) => f.meal === Meal.Dinner);
-    await act(async () => dinners.forEach((d) => result.current.removeFoodEntry(d.id)));
+    const dinners = result.current.foodLog.filter(
+      (f) => f.meal === Meal.Dinner,
+    );
+    await act(async () =>
+      dinners.forEach((d) => result.current.removeFoodEntry(d.id)),
+    );
     const after = await backend.waypoints.load(day);
     expect(after.total).toBe(INITIAL_WAYPOINTS + 40 - 15 - 5);
-    expect([...after.todaySources].sort()).toEqual(['breakfast', 'lunch', 'steps', 'weight']);
+    expect([...after.todaySources].sort()).toEqual([
+      'breakfast',
+      'lunch',
+      'steps',
+      'weight',
+    ]);
   });
 });

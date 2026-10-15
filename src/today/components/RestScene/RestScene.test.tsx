@@ -7,7 +7,9 @@ import { Sprite } from '../../models/restScene';
 import { RestScene } from './RestScene';
 
 // Reduce motion: no flight and no animation loop, so the scene is exactly as it settles.
-jest.mock('@shared/hooks/useReduceMotion', () => ({ useReduceMotion: () => true }));
+jest.mock('@shared/hooks/useReduceMotion', () => ({
+  useReduceMotion: () => true,
+}));
 jest.mock('@react-navigation/native', () => ({
   ...jest.requireActual('@react-navigation/native'),
   useIsFocused: () => true,
@@ -23,11 +25,14 @@ const props = (extra: Partial<Props> = {}): Props => ({
   detail: '2,310 steps · ☀ 9 days',
   ...extra,
 });
-const show = (extra: Partial<Props> = {}) => render(<RestScene {...props(extra)} />);
+const show = (extra: Partial<Props> = {}) =>
+  render(<RestScene {...props(extra)} />);
 
-const sheetStyle = (ui: ReturnType<typeof show>) => StyleSheet.flatten(ui.UNSAFE_getByType(Image).props.style);
+const sheetStyle = (ui: ReturnType<typeof show>) =>
+  StyleSheet.flatten(ui.UNSAFE_getByType(Image).props.style);
 // Before the scene has been measured: the screen, less Today's side padding and the card's own.
-const unit = () => (Dimensions.get('window').width - 2 * (space.lg + space.md)) / 260;
+const unit = () =>
+  (Dimensions.get('window').width - 2 * (space.lg + space.md)) / 260;
 
 describe('RestScene', () => {
   it('says what it is, and what is going on', () => {
@@ -46,7 +51,7 @@ describe('RestScene', () => {
     expect(style.height).toBeCloseTo(Sprite.CELL.h * Sprite.SCALE * unit());
   });
 
-  it('fills the card: as wide as it is given, at the scene\'s proportions, not a fixed size', () => {
+  it("fills the card: as wide as it is given, at the scene's proportions, not a fixed size", () => {
     const ui = show();
     const style = StyleSheet.flatten(ui.getByTestId('rest-scene').props.style);
     expect(style.alignSelf).toBe('stretch');
@@ -60,11 +65,15 @@ describe('RestScene', () => {
       nativeEvent: { layout: { x: 0, y: 0, width: 260, height: 132 } },
     });
     // One pixel per scene unit.
-    expect(sheetStyle(ui).width).toBeCloseTo(Sprite.CELL.w * Sprite.SCALE * Sprite.FRAMES);
+    expect(sheetStyle(ui).width).toBeCloseTo(
+      Sprite.CELL.w * Sprite.SCALE * Sprite.FRAMES,
+    );
     fireEvent(ui.getByTestId('rest-scene'), 'layout', {
       nativeEvent: { layout: { x: 0, y: 0, width: 520, height: 264 } },
     });
-    expect(sheetStyle(ui).width).toBeCloseTo(Sprite.CELL.w * Sprite.SCALE * Sprite.FRAMES * 2);
+    expect(sheetStyle(ui).width).toBeCloseTo(
+      Sprite.CELL.w * Sprite.SCALE * Sprite.FRAMES * 2,
+    );
   });
 
   it('sits as wide as the cards around it, with no side margin of its own', () => {

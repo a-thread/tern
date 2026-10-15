@@ -3,13 +3,22 @@ import { renderHook, act, waitFor } from '@testing-library/react-native';
 
 import { createMemoryBackend } from '../BackendContext';
 import { ToastProvider } from '@shared/state/ToastContext';
-import { ViewedDayProvider, useViewedDay } from '@shared/state/ViewedDayContext';
+import {
+  ViewedDayProvider,
+  useViewedDay,
+} from '@shared/state/ViewedDayContext';
 import { addDays, dayKey } from '@shared/utils/date';
 import { FoodProvider, useFood } from '../domain/food/FoodContext';
 import { createMemoryFoodRepository } from '../domain/food/food.repository';
 import { Meal } from '../domain/food/models/foodEntry';
-import { SettingsProvider, useSettings } from '../domain/settings/SettingsContext';
-import { WaypointsProvider, useWaypoints } from '../domain/waypoints/WaypointsContext';
+import {
+  SettingsProvider,
+  useSettings,
+} from '../domain/settings/SettingsContext';
+import {
+  WaypointsProvider,
+  useWaypoints,
+} from '../domain/waypoints/WaypointsContext';
 import { WaypointSource } from '../domain/waypoints/models/waypoint';
 import { WaterProvider, useWater } from '../domain/water/WaterContext';
 import { MoodProvider, useMood } from '../domain/mood/MoodContext';
@@ -33,7 +42,10 @@ const snack = {
 };
 
 async function setup() {
-  const backend = { ...createMemoryBackend(), food: createMemoryFoodRepository([]) };
+  const backend = {
+    ...createMemoryBackend(),
+    food: createMemoryFoodRepository([]),
+  };
   const add = jest.spyOn(backend.food, 'add');
   const setSkipped = jest.spyOn(backend.food, 'setSkipped');
   const wrapper = ({ children }: { children: React.ReactNode }) => (
@@ -69,7 +81,11 @@ async function setup() {
     expect(hook.result.current.points.ready).toBe(true);
   });
   await act(async () => {
-    hook.result.current.settings.updateSettings({ trackWater: true, waterGoalOz: 8, trackMood: true });
+    hook.result.current.settings.updateSettings({
+      trackWater: true,
+      waterGoalOz: 8,
+      trackMood: true,
+    });
   });
   return { ...hook, backend, add, setSkipped };
 }
@@ -81,7 +97,8 @@ const view = async (result: Result, day: string) => {
   await waitFor(() => expect(result.current.food.loadedDay).toBe(day));
 };
 
-const awarded = (result: Result) => result.current.points.events.filter((e) => e.day === today);
+const awarded = (result: Result) =>
+  result.current.points.events.filter((e) => e.day === today);
 
 describe('a past day', () => {
   it('logs food to yesterday and pays nothing for it', async () => {
@@ -92,10 +109,18 @@ describe('a past day', () => {
       result.current.food.addFoodEntry(snack);
       result.current.food.setMealSkipped(Meal.Breakfast, true);
     });
-    expect(add).toHaveBeenCalledWith(yesterday, expect.objectContaining({ name: 'Apple' }));
+    expect(add).toHaveBeenCalledWith(
+      yesterday,
+      expect.objectContaining({ name: 'Apple' }),
+    );
     expect(setSkipped).toHaveBeenCalledWith(yesterday, Meal.Breakfast, true);
     expect(result.current.food.foodLog.map((f) => f.name)).toEqual(['Apple']);
-    const food = [WaypointSource.Meals, WaypointSource.Breakfast, WaypointSource.Lunch, WaypointSource.Dinner];
+    const food = [
+      WaypointSource.Meals,
+      WaypointSource.Breakfast,
+      WaypointSource.Lunch,
+      WaypointSource.Dinner,
+    ];
     expect(awarded(result).filter((e) => food.includes(e.source))).toEqual([]);
   });
 
@@ -125,9 +150,13 @@ describe('a past day', () => {
     expect(result.current.water.totalOz).toBe(12);
     expect(result.current.water.reached).toBe(true);
     const saved = await backend.water.load(yesterday, yesterday);
-    expect(saved).toEqual([expect.objectContaining({ oz: 12, loggedOn: yesterday })]);
+    expect(saved).toEqual([
+      expect.objectContaining({ oz: 12, loggedOn: yesterday }),
+    ]);
     expect(dayKey(new Date(saved[0].loggedAt))).toBe(yesterday);
-    expect(awarded(result).some((e) => e.source === WaypointSource.Water)).toBe(false);
+    expect(awarded(result).some((e) => e.source === WaypointSource.Water)).toBe(
+      false,
+    );
   });
 
   it("keeps today's water award while looking back and on return", async () => {
@@ -135,7 +164,8 @@ describe('a past day', () => {
     await act(async () => {
       result.current.water.addWater(12);
     });
-    const hasWater = () => awarded(result).some((e) => e.source === WaypointSource.Water);
+    const hasWater = () =>
+      awarded(result).some((e) => e.source === WaypointSource.Water);
     await waitFor(() => expect(hasWater()).toBe(true));
 
     await view(result, yesterday);
@@ -165,9 +195,17 @@ describe('a past day', () => {
     await act(async () => {
       result.current.mood.checkIn(7, 3);
     });
-    expect(result.current.mood.onDay).toEqual({ day: yesterday, mood: 7, stress: 3 });
+    expect(result.current.mood.onDay).toEqual({
+      day: yesterday,
+      mood: 7,
+      stress: 3,
+    });
     expect(result.current.mood.today).toBeUndefined();
-    expect(await backend.mood.load(yesterday, yesterday)).toEqual([{ day: yesterday, mood: 7, stress: 3 }]);
-    expect(awarded(result).some((e) => e.source === WaypointSource.Mood)).toBe(false);
+    expect(await backend.mood.load(yesterday, yesterday)).toEqual([
+      { day: yesterday, mood: 7, stress: 3 },
+    ]);
+    expect(awarded(result).some((e) => e.source === WaypointSource.Mood)).toBe(
+      false,
+    );
   });
 });

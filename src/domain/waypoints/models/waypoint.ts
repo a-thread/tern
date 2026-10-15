@@ -18,7 +18,11 @@ export enum WaypointSource {
 }
 
 /** One award in the ledger. */
-export type LedgerEvent = { source: WaypointSource; day: string; points: number };
+export type LedgerEvent = {
+  source: WaypointSource;
+  day: string;
+  points: number;
+};
 
 /** Distinct days that earned at least one waypoint. */
 export function daysWithWaypoints(events: LedgerEvent[]): number {
@@ -33,30 +37,59 @@ export class WaypointRules {
    * award is for logging one, whatever it says. For the streak rule, `points`
    * is the first milestone's bonus; later ones pay more.
    */
-  static readonly ALL: { id: WaypointSource; label: string; points: number }[] = [
-    { id: WaypointSource.Steps, label: 'Reaching your step goal', points: 40 },
-    { id: WaypointSource.Meals, label: 'Logging all meals', points: 15 },
-    { id: WaypointSource.Breakfast, label: 'Logging breakfast', points: 5 },
-    { id: WaypointSource.Lunch, label: 'Logging lunch', points: 5 },
-    { id: WaypointSource.Dinner, label: 'Logging dinner', points: 5 },
-    { id: WaypointSource.Rest, label: 'Taking a rest day', points: 10 },
-    { id: WaypointSource.Water, label: 'Reaching your water goal', points: 10 },
-    { id: WaypointSource.Movement, label: 'Logging movement', points: 10 },
-    { id: WaypointSource.Mood, label: 'Checking in on mood and stress', points: 10 },
-    { id: WaypointSource.Medication, label: 'Taking all your medication', points: 10 },
-    { id: WaypointSource.Weight, label: 'Logging a weigh-in', points: 5 },
-    { id: WaypointSource.Streak, label: 'Reaching a streak milestone', points: 25 },
-  ];
+  static readonly ALL: { id: WaypointSource; label: string; points: number }[] =
+    [
+      {
+        id: WaypointSource.Steps,
+        label: 'Reaching your step goal',
+        points: 40,
+      },
+      { id: WaypointSource.Meals, label: 'Logging all meals', points: 15 },
+      { id: WaypointSource.Breakfast, label: 'Logging breakfast', points: 5 },
+      { id: WaypointSource.Lunch, label: 'Logging lunch', points: 5 },
+      { id: WaypointSource.Dinner, label: 'Logging dinner', points: 5 },
+      { id: WaypointSource.Rest, label: 'Taking a rest day', points: 10 },
+      {
+        id: WaypointSource.Water,
+        label: 'Reaching your water goal',
+        points: 10,
+      },
+      { id: WaypointSource.Movement, label: 'Logging movement', points: 10 },
+      {
+        id: WaypointSource.Mood,
+        label: 'Checking in on mood and stress',
+        points: 10,
+      },
+      {
+        id: WaypointSource.Medication,
+        label: 'Taking all your medication',
+        points: 10,
+      },
+      { id: WaypointSource.Weight, label: 'Logging a weigh-in', points: 5 },
+      {
+        id: WaypointSource.Streak,
+        label: 'Reaching a streak milestone',
+        points: 25,
+      },
+    ];
 
   /** The three meals read as one line in lists: "Logging each meal". */
-  static readonly PER_MEAL = [WaypointSource.Breakfast, WaypointSource.Lunch, WaypointSource.Dinner];
+  static readonly PER_MEAL = [
+    WaypointSource.Breakfast,
+    WaypointSource.Lunch,
+    WaypointSource.Dinner,
+  ];
 }
 
 /** The rules as a list for people to read, with the three meals folded into one line. */
 export const listedRules = () =>
   WaypointRules.ALL.filter(
     (r) => r.id !== WaypointSource.Lunch && r.id !== WaypointSource.Dinner,
-  ).map((r) => (r.id === WaypointSource.Breakfast ? { ...r, label: 'Logging each meal' } : r));
+  ).map((r) =>
+    r.id === WaypointSource.Breakfast
+      ? { ...r, label: 'Logging each meal' }
+      : r,
+  );
 
 /** Bonus waypoints for a streak reaching these lengths, in days. */
 export class StreakBonuses {

@@ -1,4 +1,13 @@
-import { defaultZone, MINIMUM_MARK, minimumFill, zoneStatus, macroFill, nudgeZone, resolveZone, zoneScale } from './intakeZone';
+import {
+  defaultZone,
+  MINIMUM_MARK,
+  minimumFill,
+  zoneStatus,
+  macroFill,
+  nudgeZone,
+  resolveZone,
+  zoneScale,
+} from './intakeZone';
 
 describe('intakeZone', () => {
   it('derives a snapped zone around the target', () => {

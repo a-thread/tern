@@ -1,13 +1,25 @@
-import { clampScore, isValidScore, scoreWord, type MoodEntry, MoodScale, MoodMetric } from './moodEntry';
+import {
+  clampScore,
+  isValidScore,
+  scoreWord,
+  type MoodEntry,
+  MoodScale,
+  MoodMetric,
+} from './moodEntry';
 import { average, entriesBetween, entryFor, seriesOf } from './moodStats';
 
-const e = (day: string, mood: number, stress: number): MoodEntry => ({ day, mood, stress });
+const e = (day: string, mood: number, stress: number): MoodEntry => ({
+  day,
+  mood,
+  stress,
+});
 
 describe('scores', () => {
   it('accepts whole numbers on the scale only', () => {
     expect(isValidScore(MoodScale.MIN)).toBe(true);
     expect(isValidScore(MoodScale.MAX)).toBe(true);
-    for (const bad of [0, 11, 5.5, NaN, Infinity, -1]) expect(isValidScore(bad)).toBe(false);
+    for (const bad of [0, 11, 5.5, NaN, Infinity, -1])
+      expect(isValidScore(bad)).toBe(false);
   });
 
   it('clamps and rounds onto the scale, and treats junk as the middle', () => {
@@ -28,7 +40,11 @@ describe('scores', () => {
 });
 
 describe('entries', () => {
-  const list = [e('2026-09-20', 7, 3), e('2026-09-18', 5, 6), e('2026-09-19', 6, 4)];
+  const list = [
+    e('2026-09-20', 7, 3),
+    e('2026-09-18', 5, 6),
+    e('2026-09-19', 6, 4),
+  ];
 
   it('finds a day', () => {
     expect(entryFor(list, '2026-09-19')).toEqual(e('2026-09-19', 6, 4));
@@ -36,10 +52,9 @@ describe('entries', () => {
   });
 
   it('slices a range inclusively and sorts oldest first', () => {
-    expect(entriesBetween(list, '2026-09-19', '2026-09-20').map((x) => x.day)).toEqual([
-      '2026-09-19',
-      '2026-09-20',
-    ]);
+    expect(
+      entriesBetween(list, '2026-09-19', '2026-09-20').map((x) => x.day),
+    ).toEqual(['2026-09-19', '2026-09-20']);
   });
 
   it('charts one metric in day order', () => {
@@ -50,7 +65,9 @@ describe('entries', () => {
 
   it('averages to one decimal, or null with nothing', () => {
     expect(average(list, MoodMetric.Mood)).toBe(6);
-    expect(average([e('a', 7, 3), e('b', 8, 4), e('c', 8, 4)], MoodMetric.Mood)).toBe(7.7);
+    expect(
+      average([e('a', 7, 3), e('b', 8, 4), e('c', 8, 4)], MoodMetric.Mood),
+    ).toBe(7.7);
     expect(average([], MoodMetric.Stress)).toBeNull();
   });
 });

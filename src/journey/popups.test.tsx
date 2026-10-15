@@ -25,7 +25,9 @@ function open(screen: React.ReactElement) {
     <SafeAreaProvider initialMetrics={metrics}>
       <ToastProvider>
         <SettingsProvider repo={backend.settings}>
-          <WaypointsProvider repo={backend.waypoints}>{screen}</WaypointsProvider>
+          <WaypointsProvider repo={backend.waypoints}>
+            {screen}
+          </WaypointsProvider>
         </SettingsProvider>
       </ToastProvider>
     </SafeAreaProvider>,
@@ -33,9 +35,14 @@ function open(screen: React.ReactElement) {
 }
 
 // Only route.params is read; the screens navigate through useNavigation.
-const screenProps = (params: object) => ({ navigation: {}, route: { key: 'k', name: 'x', params } }) as unknown;
-const waypointsProps = screenProps({ streak: 9 }) as React.ComponentProps<typeof WaypointsScreen>;
-const milestoneProps = screenProps({ waypoints: 1000 }) as React.ComponentProps<typeof MilestoneScreen>;
+const screenProps = (params: object) =>
+  ({ navigation: {}, route: { key: 'k', name: 'x', params } }) as unknown;
+const waypointsProps = screenProps({ streak: 9 }) as React.ComponentProps<
+  typeof WaypointsScreen
+>;
+const milestoneProps = screenProps({ waypoints: 1000 }) as React.ComponentProps<
+  typeof MilestoneScreen
+>;
 
 describe('waypoints card', () => {
   it('shows the total, the streak, the next stop, and the way to Journey', async () => {
@@ -45,7 +52,9 @@ describe('waypoints card', () => {
     expect(ui.getByText('☀ 9-day streak')).toBeTruthy();
     expect(ui.getByText(/to go$/)).toBeTruthy();
     expect(ui.getByText('See your journey ›')).toBeTruthy();
-    expect(ui.getByText('Earned for showing up, never for weight or calories.')).toBeTruthy();
+    expect(
+      ui.getByText('Earned for showing up, never for weight or calories.'),
+    ).toBeTruthy();
   });
 });
 

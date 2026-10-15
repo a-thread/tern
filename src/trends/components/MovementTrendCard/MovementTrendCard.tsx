@@ -19,10 +19,7 @@ import {
   minutesByDay,
   type MovementEntry,
 } from '@/domain/movement/models/movementEntry';
-import {
-  averageMinutes,
-  bucketMinutes,
-} from './models/movementBars';
+import { averageMinutes, bucketMinutes } from './models/movementBars';
 
 /** Active minutes over the Trends range: the daily average, a bar per day (or week), and what kinds. */
 export function MovementTrendCard({

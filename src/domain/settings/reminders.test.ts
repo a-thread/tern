@@ -13,7 +13,11 @@ jest.mock('expo-notifications', () => ({
   cancelScheduledNotificationAsync: jest.fn(),
   scheduleNotificationAsync: jest.fn(),
   AndroidImportance: { DEFAULT: 3 },
-  SchedulableTriggerInputTypes: { DATE: 'date', DAILY: 'daily', WEEKLY: 'weekly' },
+  SchedulableTriggerInputTypes: {
+    DATE: 'date',
+    DAILY: 'daily',
+    WEEKLY: 'weekly',
+  },
 }));
 
 const schedule = Notifications.scheduleNotificationAsync as jest.Mock;
@@ -26,7 +30,14 @@ const config: ReminderConfig = {
   mood: { on: true, at: 12 * 60 },
   streak: { on: false },
 };
-const med = { id: 'm', name: 'Iron', at: 12 * 60, remind: true, frequency: Frequency.Daily, weekday: 1 } as const;
+const med = {
+  id: 'm',
+  name: 'Iron',
+  at: 12 * 60,
+  remind: true,
+  frequency: Frequency.Daily,
+  weekday: 1,
+} as const;
 
 describe('syncReminders on a rest day', () => {
   beforeEach(() => {
@@ -44,18 +55,28 @@ describe('syncReminders on a rest day', () => {
     await syncReminders(config, { trackMood: true }, true);
     expect(ids()).toHaveLength(7);
     expect(ids().every((id) => id.startsWith('tern-mood-rest-'))).toBe(true);
-    const dates = schedule.mock.calls.filter(([r]) => r.trigger.type === 'date');
+    const dates = schedule.mock.calls.filter(
+      ([r]) => r.trigger.type === 'date',
+    );
     expect(dates).toHaveLength(1);
     expect(dates[0][0].trigger.date).toEqual(new Date(2026, 9, 17, 12, 0));
   });
 
   it('keeps the usual repeat when its time has already passed today', async () => {
-    await syncReminders({ ...config, mood: { on: true, at: 8 * 60 } }, { trackMood: true }, true);
+    await syncReminders(
+      { ...config, mood: { on: true, at: 8 * 60 } },
+      { trackMood: true },
+      true,
+    );
     expect(ids()).toEqual(['tern-mood']);
   });
 
   it('leaves medication reminders on', async () => {
-    await syncReminders({ ...config, mood: { on: false, at: 0 } }, { medications: [med] }, true);
+    await syncReminders(
+      { ...config, mood: { on: false, at: 0 } },
+      { medications: [med] },
+      true,
+    );
     expect(schedule.mock.calls.map(([r]) => r.trigger.type)).toEqual(['daily']);
   });
 });

@@ -25,7 +25,11 @@ export function Group({
     <View style={[s.group, style]}>
       {items.map((child, i) => (
         // The child's own key (toArray keeps it), so a row that moves keeps its view.
-        <View key={React.isValidElement(child) && child.key !== null ? child.key : i}>
+        <View
+          key={
+            React.isValidElement(child) && child.key !== null ? child.key : i
+          }
+        >
           {i > 0 ? <View style={s.divider} /> : null}
           {child}
         </View>
@@ -112,7 +116,12 @@ export function IconBadge({
     <View
       style={[
         s.iconBadge,
-        { backgroundColor: bg, width: size, height: size, borderRadius: size < 24 ? 6 : radius.sm },
+        {
+          backgroundColor: bg,
+          width: size,
+          height: size,
+          borderRadius: size < 24 ? 6 : radius.sm,
+        },
       ]}
     >
       {children}

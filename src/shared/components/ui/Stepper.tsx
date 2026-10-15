@@ -1,5 +1,12 @@
 import React from 'react';
-import { Pressable, StyleSheet, Text, View, type StyleProp, type ViewStyle } from 'react-native';
+import {
+  Pressable,
+  StyleSheet,
+  Text,
+  View,
+  type StyleProp,
+  type ViewStyle,
+} from 'react-native';
 import { colors, font } from '../../theme';
 
 /**
@@ -27,13 +34,27 @@ export function Stepper({
 }) {
   return (
     <View style={[s.stepper, style]}>
-      <Pressable onPress={onDecrement} hitSlop={8} accessibilityLabel={decrementLabel}>
+      <Pressable
+        onPress={onDecrement}
+        hitSlop={8}
+        accessibilityLabel={decrementLabel}
+      >
         <Text style={[s.btn, compact && s.btnCompact]}>−</Text>
       </Pressable>
-      <Text style={[s.value, compact && s.valueCompact, { minWidth: valueMinWidth }]}>
+      <Text
+        style={[
+          s.value,
+          compact && s.valueCompact,
+          { minWidth: valueMinWidth },
+        ]}
+      >
         {value}
       </Text>
-      <Pressable onPress={onIncrement} hitSlop={8} accessibilityLabel={incrementLabel}>
+      <Pressable
+        onPress={onIncrement}
+        hitSlop={8}
+        accessibilityLabel={incrementLabel}
+      >
         <Text style={[s.btn, compact && s.btnCompact]}>+</Text>
       </Pressable>
     </View>

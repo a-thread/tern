@@ -7,10 +7,7 @@ import { useFocusLoad } from '../../hooks/useFocusLoad';
 import { addDays } from '@shared/utils/date';
 import { useSettings } from '@/domain/settings/SettingsContext';
 import { useUnits } from '@/domain/settings/hooks/useUnits';
-import {
-  averageDaily,
-  bucketWater,
-} from './models/waterBars';
+import { averageDaily, bucketWater } from './models/waterBars';
 import { totalsByDay } from '@/domain/water/models/waterEntry';
 import { TrendRanges, TrendRange } from '../../models/trendRange';
 import { useWater } from '@/domain/water/WaterContext';

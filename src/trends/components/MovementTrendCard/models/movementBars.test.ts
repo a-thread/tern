@@ -16,7 +16,9 @@ describe('movement bars', () => {
   });
 
   it('marks a goal day only from minutes that count toward one', () => {
-    const bars = bucketMinutes(byDay, 30, TrendRange.Week, TODAY, { '2026-10-08': 10 });
+    const bars = bucketMinutes(byDay, 30, TrendRange.Week, TODAY, {
+      '2026-10-08': 10,
+    });
     expect(bars[6]).toMatchObject({ value: 35, state: DayState.Partial });
   });
 

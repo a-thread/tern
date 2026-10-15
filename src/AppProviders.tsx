@@ -2,19 +2,34 @@ import React from 'react';
 import LoadingScreen from '@shared/components/LoadingScreen/LoadingScreen';
 import { DayKeyProvider } from '@shared/hooks/useDayKey';
 import { ViewedDayProvider } from '@shared/state/ViewedDayContext';
-import { SettingsProvider, useSettings } from './domain/settings/SettingsContext';
+import {
+  SettingsProvider,
+  useSettings,
+} from './domain/settings/SettingsContext';
 import { DataProvider } from './domain/settings/DataContext';
 import { RemindersSync } from './RemindersSync';
 import { FoodProvider, useFood } from './domain/food/FoodContext';
 import { SavedMealsProvider } from './domain/saved-meals/SavedMealsContext';
 import { CommonFoodsProvider } from './domain/common-foods/CommonFoodsContext';
 import { WeightProvider, useWeight } from './domain/weight/WeightContext';
-import { WaypointsProvider, useWaypoints } from './domain/waypoints/WaypointsContext';
-import { ActivityProvider, useActivity } from './domain/activity/ActivityContext';
-import { MedicationProvider, useMedication } from './domain/medication/MedicationContext';
+import {
+  WaypointsProvider,
+  useWaypoints,
+} from './domain/waypoints/WaypointsContext';
+import {
+  ActivityProvider,
+  useActivity,
+} from './domain/activity/ActivityContext';
+import {
+  MedicationProvider,
+  useMedication,
+} from './domain/medication/MedicationContext';
 import { WaterProvider, useWater } from './domain/water/WaterContext';
 import { MoodProvider, useMood } from './domain/mood/MoodContext';
-import { MovementProvider, useMovement } from './domain/movement/MovementContext';
+import {
+  MovementProvider,
+  useMovement,
+} from './domain/movement/MovementContext';
 import { useBackend, type Backend } from './BackendContext';
 import { assertProviderOrder, type ProviderSpec } from './providerOrder';
 
@@ -40,7 +55,9 @@ const PROVIDERS: readonly Entry[] = [
   {
     name: 'waypoints',
     needs: [],
-    wrap: (c, b) => <WaypointsProvider repo={b.waypoints}>{c}</WaypointsProvider>,
+    wrap: (c, b) => (
+      <WaypointsProvider repo={b.waypoints}>{c}</WaypointsProvider>
+    ),
   },
   {
     name: 'food',
@@ -50,13 +67,17 @@ const PROVIDERS: readonly Entry[] = [
   {
     name: 'savedMeals',
     needs: [],
-    wrap: (c, b) => <SavedMealsProvider repo={b.savedMeals}>{c}</SavedMealsProvider>,
+    wrap: (c, b) => (
+      <SavedMealsProvider repo={b.savedMeals}>{c}</SavedMealsProvider>
+    ),
   },
   {
     // Not in LoadGate: search works without it until the list arrives.
     name: 'commonFoods',
     needs: [],
-    wrap: (c, b) => <CommonFoodsProvider repo={b.commonFoods}>{c}</CommonFoodsProvider>,
+    wrap: (c, b) => (
+      <CommonFoodsProvider repo={b.commonFoods}>{c}</CommonFoodsProvider>
+    ),
   },
   {
     name: 'weight',
@@ -66,7 +87,9 @@ const PROVIDERS: readonly Entry[] = [
   {
     name: 'medication',
     needs: ['settings', 'waypoints'],
-    wrap: (c, b) => <MedicationProvider repo={b.medication}>{c}</MedicationProvider>,
+    wrap: (c, b) => (
+      <MedicationProvider repo={b.medication}>{c}</MedicationProvider>
+    ),
   },
   {
     name: 'water',
@@ -109,7 +132,10 @@ export function AppProviders({ children }: { children: React.ReactNode }) {
       <RemindersSync />
     </>
   );
-  const tree = PROVIDERS.reduceRight<React.ReactNode>((child, p) => p.wrap(child, backend), inner);
+  const tree = PROVIDERS.reduceRight<React.ReactNode>(
+    (child, p) => p.wrap(child, backend),
+    inner,
+  );
   return (
     <DayKeyProvider>
       <ViewedDayProvider>{tree}</ViewedDayProvider>
@@ -132,9 +158,7 @@ function LoadGate({ children }: { children: React.ReactNode }) {
   ].every(Boolean);
 
   if (!ready) {
-    return (
-      <LoadingScreen />
-    );
+    return <LoadingScreen />;
   }
   return <>{children}</>;
 }

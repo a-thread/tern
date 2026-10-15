@@ -1,8 +1,24 @@
-import { dayTotal, isValidDrink, lastDrink, totalsByDay, waterProgress, type WaterEntry, WaterLimits } from './waterEntry';
-import { averageDaily, bucketWater } from '@/trends/components/WaterTrendCard/models/waterBars';
+import {
+  dayTotal,
+  isValidDrink,
+  lastDrink,
+  totalsByDay,
+  waterProgress,
+  type WaterEntry,
+  WaterLimits,
+} from './waterEntry';
+import {
+  averageDaily,
+  bucketWater,
+} from '@/trends/components/WaterTrendCard/models/waterBars';
 import { TrendRange } from '@/trends/models/trendRange';
 
-const drink = (id: string, oz: number, loggedOn: string, at = '08:00'): WaterEntry => ({
+const drink = (
+  id: string,
+  oz: number,
+  loggedOn: string,
+  at = '08:00',
+): WaterEntry => ({
   id,
   oz,
   loggedOn,
@@ -17,14 +33,25 @@ describe('isValidDrink', () => {
   });
 
   it('rejects nothing, negatives, too much and junk', () => {
-    for (const bad of [0, 0.05, -5, WaterLimits.MAX_DRINK_OZ + 1, NaN, Infinity]) {
+    for (const bad of [
+      0,
+      0.05,
+      -5,
+      WaterLimits.MAX_DRINK_OZ + 1,
+      NaN,
+      Infinity,
+    ]) {
       expect(isValidDrink(bad)).toBe(false);
     }
   });
 });
 
 describe('totals', () => {
-  const entries = [drink('a', 8, '2026-09-20'), drink('b', 16.5, '2026-09-20'), drink('c', 10, '2026-09-19')];
+  const entries = [
+    drink('a', 8, '2026-09-20'),
+    drink('b', 16.5, '2026-09-20'),
+    drink('c', 10, '2026-09-19'),
+  ];
 
   it('adds up a day', () => {
     expect(dayTotal(entries, '2026-09-20')).toBe(24.5);
@@ -32,16 +59,25 @@ describe('totals', () => {
   });
 
   it('keeps hundredths exact, so sums do not drift', () => {
-    const many = Array.from({ length: 3 }, (_, i) => drink(String(i), 8.45, '2026-09-20'));
+    const many = Array.from({ length: 3 }, (_, i) =>
+      drink(String(i), 8.45, '2026-09-20'),
+    );
     expect(dayTotal(many, '2026-09-20')).toBe(25.35);
   });
 
   it('groups by day', () => {
-    expect(totalsByDay(entries)).toEqual({ '2026-09-20': 24.5, '2026-09-19': 10 });
+    expect(totalsByDay(entries)).toEqual({
+      '2026-09-20': 24.5,
+      '2026-09-19': 10,
+    });
   });
 
   it('finds the latest drink of a day', () => {
-    const list = [drink('a', 8, '2026-09-20', '08:00'), drink('b', 16, '2026-09-20', '13:00'), drink('c', 1, '2026-09-19')];
+    const list = [
+      drink('a', 8, '2026-09-20', '08:00'),
+      drink('b', 16, '2026-09-20', '13:00'),
+      drink('c', 1, '2026-09-19'),
+    ];
     expect(lastDrink(list, '2026-09-20')?.id).toBe('b');
     expect(lastDrink(list, '2026-09-01')).toBeUndefined();
   });

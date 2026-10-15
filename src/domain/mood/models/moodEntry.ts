@@ -15,9 +15,31 @@ export class MoodScale {
   /** Where the ruler starts when nothing has been logged yet. */
   static readonly DEFAULT = 5;
 
-  static readonly MOOD_WORDS = ['Very low', 'Low', 'Low', 'Down', 'Okay', 'Okay', 'Good', 'Good', 'Great', 'Great'];
+  static readonly MOOD_WORDS = [
+    'Very low',
+    'Low',
+    'Low',
+    'Down',
+    'Okay',
+    'Okay',
+    'Good',
+    'Good',
+    'Great',
+    'Great',
+  ];
 
-  static readonly STRESS_WORDS = ['Calm', 'Calm', 'Relaxed', 'Mild', 'Some', 'Some', 'Tense', 'High', 'Very high', 'Very high'];
+  static readonly STRESS_WORDS = [
+    'Calm',
+    'Calm',
+    'Relaxed',
+    'Mild',
+    'Some',
+    'Some',
+    'Tense',
+    'High',
+    'Very high',
+    'Very high',
+  ];
 }
 
 export const isValidScore = (n: number) =>
@@ -25,10 +47,17 @@ export const isValidScore = (n: number) =>
 
 /** Rounds to a whole score and keeps it on the scale. */
 export const clampScore = (n: number) =>
-  Math.min(Math.max(Math.round(Number.isFinite(n) ? n : MoodScale.DEFAULT), MoodScale.MIN), MoodScale.MAX);
+  Math.min(
+    Math.max(
+      Math.round(Number.isFinite(n) ? n : MoodScale.DEFAULT),
+      MoodScale.MIN,
+    ),
+    MoodScale.MAX,
+  );
 
 /** A word for a score, so a bare number has some meaning. */
 export function scoreWord(metric: MoodMetric, score: number): string {
-  const words = metric === MoodMetric.Mood ? MoodScale.MOOD_WORDS : MoodScale.STRESS_WORDS;
+  const words =
+    metric === MoodMetric.Mood ? MoodScale.MOOD_WORDS : MoodScale.STRESS_WORDS;
   return words[clampScore(score) - 1];
 }

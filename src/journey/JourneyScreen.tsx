@@ -4,14 +4,29 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { colors, font, space, gradients, typography } from '@shared/theme';
-import { Group, GroupLabel, Row, IconBadge, Card, FootNote, ProgressBar } from '@shared/components/ui';
+import {
+  Group,
+  GroupLabel,
+  Row,
+  IconBadge,
+  Card,
+  FootNote,
+  ProgressBar,
+} from '@shared/components/ui';
 import { JourneyRoute } from './components/JourneyRoute/JourneyRoute';
 import { useReplayOnFocus } from '@shared/hooks/useReplayOnFocus';
 import { usePullToRefresh } from '@shared/hooks/usePullToRefresh';
 import { AnimatedNumber } from '@shared/components/AnimatedNumber/AnimatedNumber';
 import { formatShortDate, monthName } from '@shared/utils/date';
-import { daysWithWaypoints, listedRules, WaypointSource } from '../domain/waypoints/models/waypoint';
-import { migrationProgress, milestonesFor } from '../domain/waypoints/models/milestone';
+import {
+  daysWithWaypoints,
+  listedRules,
+  WaypointSource,
+} from '../domain/waypoints/models/waypoint';
+import {
+  migrationProgress,
+  milestonesFor,
+} from '../domain/waypoints/models/milestone';
 import { useSettings } from '../domain/settings/SettingsContext';
 import { useWaypoints } from '../domain/waypoints/WaypointsContext';
 
@@ -73,10 +88,7 @@ export default function JourneyScreen() {
         <Text style={s.heroTitle}>Journey</Text>
 
         <View style={{ marginTop: space.sm }}>
-          <JourneyRoute
-            progress={migration.progress}
-            replayKey={replayKey}
-          />
+          <JourneyRoute progress={migration.progress} replayKey={replayKey} />
         </View>
 
         <View style={{ alignItems: 'center', marginTop: 6 }}>
@@ -175,9 +187,11 @@ export default function JourneyScreen() {
               (rule) =>
                 (rule.id !== WaypointSource.Water || settings.trackWater) &&
                 (rule.id !== WaypointSource.Mood || settings.trackMood) &&
-                (rule.id !== WaypointSource.Movement || settings.trackMovement) &&
+                (rule.id !== WaypointSource.Movement ||
+                  settings.trackMovement) &&
                 (rule.id !== WaypointSource.Weight || settings.trackWeight) &&
-                (rule.id !== WaypointSource.Medication || settings.medications.length > 0),
+                (rule.id !== WaypointSource.Medication ||
+                  settings.medications.length > 0),
             )
             .map((rule) => (
               <Row
@@ -185,7 +199,9 @@ export default function JourneyScreen() {
                 title={rule.label}
                 icon={
                   <IconBadge bg={RULE_STYLE[rule.id].bg}>
-                    <Text style={[s.rulePoints, { color: RULE_STYLE[rule.id].fg }]}>
+                    <Text
+                      style={[s.rulePoints, { color: RULE_STYLE[rule.id].fg }]}
+                    >
                       {rule.points}
                       {rule.id === WaypointSource.Streak ? '+' : ''}
                     </Text>

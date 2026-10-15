@@ -22,7 +22,13 @@ const CHIPS = [
   { label: '+10%', factor: 1.1 },
 ] as const;
 const clampCalories = (n: number) =>
-  Math.min(Math.max(Math.round(n / CalorieSlider.STEP) * CalorieSlider.STEP, CalorieSlider.MIN), CalorieSlider.MAX);
+  Math.min(
+    Math.max(
+      Math.round(n / CalorieSlider.STEP) * CalorieSlider.STEP,
+      CalorieSlider.MIN,
+    ),
+    CalorieSlider.MAX,
+  );
 
 /** The Calories tab of Targets: the daily target, the intake-bar zone, and the adaptive suggestion. */
 export function CaloriesTab() {
@@ -32,7 +38,11 @@ export function CaloriesTab() {
   const setCalories = (calorieTarget: number) =>
     updateSettings({
       calorieTarget,
-      macroTargets: rescaleMacros(settings.macroTargets, settings.calorieTarget, calorieTarget),
+      macroTargets: rescaleMacros(
+        settings.macroTargets,
+        settings.calorieTarget,
+        calorieTarget,
+      ),
     });
 
   const slider = useSliderValue({
@@ -57,7 +67,9 @@ export function CaloriesTab() {
           <Pressable
             key={c.label}
             style={s.chip}
-            onPress={() => setCalories(clampCalories(settings.calorieTarget * c.factor))}
+            onPress={() =>
+              setCalories(clampCalories(settings.calorieTarget * c.factor))
+            }
             accessibilityRole='button'
           >
             <Text style={s.chipText}>{c.label}</Text>
@@ -70,10 +82,16 @@ export function CaloriesTab() {
         <View style={[s.sliderKnob, { left: `${slider.fillPct}%` }]} />
       </View>
       <View style={s.sliderEnds}>
-        <Text style={s.sliderEndText}>{CalorieSlider.MIN.toLocaleString()}</Text>
-        <Text style={s.sliderEndText}>{CalorieSlider.MAX.toLocaleString()}</Text>
+        <Text style={s.sliderEndText}>
+          {CalorieSlider.MIN.toLocaleString()}
+        </Text>
+        <Text style={s.sliderEndText}>
+          {CalorieSlider.MAX.toLocaleString()}
+        </Text>
       </View>
-      <FootNote>Your macro percentages stay the same when you change calories.</FootNote>
+      <FootNote>
+        Your macro percentages stay the same when you change calories.
+      </FootNote>
 
       {settings.showIntakeBars ? (
         <>
@@ -83,7 +101,8 @@ export function CaloriesTab() {
             <Row title='High' right={<ZoneStepper end='max' zone={zone} />} />
           </Group>
           <FootNote>
-            The range shown on your intake bars. It starts around your calorie target, and you can set your own.
+            The range shown on your intake bars. It starts around your calorie
+            target, and you can set your own.
           </FootNote>
         </>
       ) : null}

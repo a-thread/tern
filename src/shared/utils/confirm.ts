@@ -22,6 +22,10 @@ export function confirm({
 }) {
   Alert.alert(title, message, [
     { text: cancel, style: 'cancel' },
-    { text: action, style: destructive ? 'destructive' : 'default', onPress: onConfirm },
+    {
+      text: action,
+      style: destructive ? 'destructive' : 'default',
+      onPress: onConfirm,
+    },
   ]);
 }

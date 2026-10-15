@@ -1,6 +1,23 @@
 import { type FoodEntry, Meal } from '../../food/models/foodEntry';
-import { addItem, draftFromMeal, emptyDraft, isDraftDirty, removeItemAt, scaledTotals, stepItemServings, stepScale, validateDraft, MealScale } from './mealDraft';
-import { itemsToEntries, scaleServings, snapshotItems, type SavedMeal, SavedMealLimits } from './savedMeals';
+import {
+  addItem,
+  draftFromMeal,
+  emptyDraft,
+  isDraftDirty,
+  removeItemAt,
+  scaledTotals,
+  stepItemServings,
+  stepScale,
+  validateDraft,
+  MealScale,
+} from './mealDraft';
+import {
+  itemsToEntries,
+  scaleServings,
+  snapshotItems,
+  type SavedMeal,
+  SavedMealLimits,
+} from './savedMeals';
 import { amountOf } from '../../food/models/measure';
 
 const item = (name: string, servings = 1, calories = 100) => {
@@ -31,7 +48,9 @@ describe('scaling a whole meal', () => {
     const entries = itemsToEntries(items, Meal.Lunch, 0.5);
     expect(entries.map((e) => e.servings)).toEqual([0.5, 1]);
     expect(items.map((i) => i.servings)).toEqual([1, 2]);
-    expect(itemsToEntries(items, Meal.Lunch).map((e) => e.servings)).toEqual([1, 2]);
+    expect(itemsToEntries(items, Meal.Lunch).map((e) => e.servings)).toEqual([
+      1, 2,
+    ]);
   });
 
   it('steps the scale by a quarter, within limits', () => {
@@ -71,7 +90,9 @@ describe('drafts', () => {
     expect(isDraftDirty(d)).toBe(false);
     expect(isDraftDirty({ ...d, name: '  Usual   breakfast ' })).toBe(false);
     expect(isDraftDirty({ ...d, name: 'Big breakfast' })).toBe(true);
-    expect(isDraftDirty({ ...d, items: [...d.items, item('Coffee')] })).toBe(true);
+    expect(isDraftDirty({ ...d, items: [...d.items, item('Coffee')] })).toBe(
+      true,
+    );
     expect(isDraftDirty({ ...emptyDraft(), name: 'x' })).toBe(true);
   });
 
@@ -79,19 +100,32 @@ describe('drafts', () => {
     const d = draftFromMeal(saved);
     expect(validateDraft(d, [saved, other])).toBeNull();
     expect(validateDraft({ ...d, name: ' ' }, [saved])).toMatch(/name/i);
-    expect(validateDraft({ ...d, items: [] }, [saved])).toMatch(/at least one/i);
-    expect(validateDraft({ ...d, name: 'lunch' }, [saved, other])).toMatch(/already have/);
+    expect(validateDraft({ ...d, items: [] }, [saved])).toMatch(
+      /at least one/i,
+    );
+    expect(validateDraft({ ...d, name: 'lunch' }, [saved, other])).toMatch(
+      /already have/,
+    );
     expect(
-      validateDraft({ ...emptyDraft(), name: 'Lunch', items: [item('X')] }, [other]),
+      validateDraft({ ...emptyDraft(), name: 'Lunch', items: [item('X')] }, [
+        other,
+      ]),
     ).toMatch(/already have/);
     expect(
-      validateDraft({ ...emptyDraft(), name: 'New', items: [item('X')] }, [saved, other]),
+      validateDraft({ ...emptyDraft(), name: 'New', items: [item('X')] }, [
+        saved,
+        other,
+      ]),
     ).toBeNull();
   });
 
   it('adds, removes and adjusts items without changing the original list', () => {
     const items = [item('A'), item('B')];
-    expect(addItem(items, item('C')).map((i) => i.name)).toEqual(['A', 'B', 'C']);
+    expect(addItem(items, item('C')).map((i) => i.name)).toEqual([
+      'A',
+      'B',
+      'C',
+    ]);
     expect(removeItemAt(items, 0).map((i) => i.name)).toEqual(['B']);
     expect(stepItemServings(items, 1, 0.5)[1].servings).toBe(1.5);
     expect(stepItemServings(items, 1, -5)[1].servings).toBe(0.25); // never below a quarter
@@ -101,8 +135,12 @@ describe('drafts', () => {
   });
 
   it('stops adding at the item limit', () => {
-    const full = Array.from({ length: SavedMealLimits.MAX_ITEMS }, (_, i) => item(`F${i}`));
-    expect(addItem(full, item('one more'))).toHaveLength(SavedMealLimits.MAX_ITEMS);
+    const full = Array.from({ length: SavedMealLimits.MAX_ITEMS }, (_, i) =>
+      item(`F${i}`),
+    );
+    expect(addItem(full, item('one more'))).toHaveLength(
+      SavedMealLimits.MAX_ITEMS,
+    );
   });
 });
 
@@ -117,7 +155,10 @@ describe('stepItemServings with a measure', () => {
 
   it('steps a measured item in its own unit and updates its label and calories', () => {
     const [up] = stepItemServings(items, 0, 0.25);
-    expect(up).toMatchObject({ servings: 1, servingLabel: '2.25 large eggs (112.5 g)' });
+    expect(up).toMatchObject({
+      servings: 1,
+      servingLabel: '2.25 large eggs (112.5 g)',
+    });
     expect(up.measure?.quantity).toBe(2.25);
     expect(up.calories).toBe(161);
     const [down] = stepItemServings(items, 0, -0.25);

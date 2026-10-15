@@ -43,10 +43,11 @@ type WaypointsContextValue = {
   completeCelebration: (id: number) => void;
 };
 
-const [WaypointsContext, useWaypoints] = createRequiredContext<WaypointsContextValue>(
-  'useWaypoints',
-  'WaypointsProvider',
-);
+const [WaypointsContext, useWaypoints] =
+  createRequiredContext<WaypointsContextValue>(
+    'useWaypoints',
+    'WaypointsProvider',
+  );
 export { useWaypoints };
 
 export function WaypointsProvider({
@@ -74,7 +75,10 @@ export function WaypointsProvider({
   const reload = useCallback(async () => {
     const id = ++readId.current;
     try {
-      const [snapshot, history] = await Promise.all([ledger.load(day), ledger.history()]);
+      const [snapshot, history] = await Promise.all([
+        ledger.load(day),
+        ledger.history(),
+      ]);
       if (id !== readId.current) return;
       awarded.current = new Set(snapshot.todaySources);
       ledgerDayRef.current = day;
@@ -97,7 +101,10 @@ export function WaypointsProvider({
   }, [reload]);
 
   const enqueue = useCallback((points: number, source: WaypointSource) => {
-    setCelebrations((prev) => [...prev, { id: nextId.current++, points, source }]);
+    setCelebrations((prev) => [
+      ...prev,
+      { id: nextId.current++, points, source },
+    ]);
   }, []);
 
   const award = useCallback(
@@ -111,7 +118,9 @@ export function WaypointsProvider({
       enqueue(points, source);
       ledger.award(source, points, day).catch((e) => {
         console.warn('Could not save waypoints', e);
-        toast.show("Couldn't save your waypoints — they'll sync when you're back online.");
+        toast.show(
+          "Couldn't save your waypoints — they'll sync when you're back online.",
+        );
       });
     },
     [ledger, day, enqueue, toast],
@@ -132,7 +141,9 @@ export function WaypointsProvider({
       });
       ledger.revoke(source, day).catch((e) => {
         console.warn('Could not save waypoints', e);
-        toast.show("Couldn't save your waypoints — they'll sync when you're back online.");
+        toast.show(
+          "Couldn't save your waypoints — they'll sync when you're back online.",
+        );
       });
     },
     [ledger, day, toast],

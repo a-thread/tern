@@ -61,7 +61,8 @@ export function buildDays(input: BuildDaysInput): DayRecord[] {
     minutesByDay = {},
     movementGoal = 0,
   } = input;
-  const moved = (k: string) => movementGoal > 0 && (minutesByDay[k] ?? 0) >= movementGoal;
+  const moved = (k: string) =>
+    movementGoal > 0 && (minutesByDay[k] ?? 0) >= movementGoal;
   const reached = (k: string) => (stepsByDay[k] ?? 0) >= goalFor(k) || moved(k);
   const keys = Array.from({ length: count }, (_, i) =>
     addDays(today, i - (count - 1)),
@@ -217,7 +218,9 @@ export function restDaysLeft(
   today: string,
   restPerWeek: number,
 ): number {
-  const used = weekOf(days, today).filter((d) => d.state === DayState.Rest).length;
+  const used = weekOf(days, today).filter(
+    (d) => d.state === DayState.Rest,
+  ).length;
   return Math.max(restPerWeek - used, 0);
 }
 /**
@@ -225,7 +228,9 @@ export function restDaysLeft(
  * access to steps in Apple Health, which HealthKit won't say outright, so the screen can point
  * to where to change it. A week of true zeros is rare enough that a hint costs little.
  */
-export function noStepsThisWeek(days: readonly Pick<DayRecord, 'steps' | 'future'>[]): boolean {
+export function noStepsThisWeek(
+  days: readonly Pick<DayRecord, 'steps' | 'future'>[],
+): boolean {
   const past = days.filter((d) => !d.future).slice(-7);
   return past.length > 0 && past.every((d) => d.steps === 0);
 }

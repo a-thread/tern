@@ -11,11 +11,15 @@ export const additionsSince = (
  * A short confirmation of what was added, e.g. "Added to Lunch: Oats, Banana
  * (+1 more)". Null when nothing was added.
  */
-export function describeAdditions(added: FoodEntry[], maxNames = 2): string | null {
+export function describeAdditions(
+  added: FoodEntry[],
+  maxNames = 2,
+): string | null {
   if (!added.length) return null;
   const names = added.slice(0, maxNames).map((f) => f.name);
   const more = added.length - names.length;
-  const list = more > 0 ? `${names.join(', ')} (+${more} more)` : names.join(', ');
+  const list =
+    more > 0 ? `${names.join(', ')} (+${more} more)` : names.join(', ');
 
   const meals = new Set(added.map((f) => f.meal));
   if (meals.size === 1) {

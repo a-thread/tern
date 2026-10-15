@@ -32,7 +32,8 @@ export function createHealthConnectStepsRepository(): StepsRepository | null {
   const status = async (): Promise<StepsStatus> => {
     try {
       const sdk = await hc.getSdkStatus();
-      if (sdk !== hc.SdkAvailabilityStatus.SDK_AVAILABLE) return StepsStatus.Unavailable;
+      if (sdk !== hc.SdkAvailabilityStatus.SDK_AVAILABLE)
+        return StepsStatus.Unavailable;
       await hc.initialize();
       const granted: { accessType: string; recordType: string }[] =
         await hc.getGrantedPermissions();

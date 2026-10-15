@@ -41,7 +41,13 @@ describe('measure', () => {
 
   it('turns an amount into one serving of exactly that, keeping the measure', () => {
     const a = amountOf(egg);
-    expect(a).toMatchObject({ servings: 1, servingLabel: '2 large eggs (100 g)', calories: 143, protein: 12.6, fat: 9.5 });
+    expect(a).toMatchObject({
+      servings: 1,
+      servingLabel: '2 large eggs (100 g)',
+      calories: 143,
+      protein: 12.6,
+      fat: 9.5,
+    });
     expect(a.measure).toBe(egg);
     expect(amountOf({ ...egg, quantity: 3 }).calories).toBe(215);
   });
@@ -49,14 +55,23 @@ describe('measure', () => {
   it('steps by a quarter portion, or ten grams', () => {
     expect(stepMeasure(egg, 1).quantity).toBe(2.25);
     expect(stepMeasure({ ...egg, quantity: 0.25 }, -1).quantity).toBe(0.25);
-    expect(stepMeasure({ ...egg, unit: null, quantity: 100 }, 1).quantity).toBe(110);
-    expect(stepMeasure({ ...egg, unit: null, quantity: 8 }, -1).quantity).toBe(5);
+    expect(stepMeasure({ ...egg, unit: null, quantity: 100 }, 1).quantity).toBe(
+      110,
+    );
+    expect(stepMeasure({ ...egg, unit: null, quantity: 8 }, -1).quantity).toBe(
+      5,
+    );
   });
 
   it('keeps the weight when the unit changes', () => {
     expect(switchUnit(egg, null)).toMatchObject({ unit: null, quantity: 100 });
-    expect(switchUnit({ ...egg, unit: null, quantity: 125 }, 'large egg')).toMatchObject({ unit: 'large egg', quantity: 2.5 });
-    expect(switchUnit(egg, 'cup')).toMatchObject({ unit: 'cup', quantity: 0.5 });
+    expect(
+      switchUnit({ ...egg, unit: null, quantity: 125 }, 'large egg'),
+    ).toMatchObject({ unit: 'large egg', quantity: 2.5 });
+    expect(switchUnit(egg, 'cup')).toMatchObject({
+      unit: 'cup',
+      quantity: 0.5,
+    });
     expect(switchUnit(egg, 'large egg')).toBe(egg);
   });
 
@@ -87,23 +102,49 @@ describe('startingMeasure', () => {
   };
 
   it('starts with one of the first portion', () => {
-    expect(startingMeasure(result, 100)).toMatchObject({ unit: 'large egg', quantity: 1, per100: { calories: 143 } });
+    expect(startingMeasure(result, 100)).toMatchObject({
+      unit: 'large egg',
+      quantity: 1,
+      per100: { calories: 143 },
+    });
   });
 
   it('starts from what you had last time, in the unit you used', () => {
-    expect(startingMeasure({ ...result, last: { unit: 'large egg', quantity: 3 } }, 100)).toMatchObject({ unit: 'large egg', quantity: 3 });
-    expect(startingMeasure({ ...result, last: { unit: null, quantity: 80 } }, 100)).toMatchObject({ unit: null, quantity: 80 });
+    expect(
+      startingMeasure(
+        { ...result, last: { unit: 'large egg', quantity: 3 } },
+        100,
+      ),
+    ).toMatchObject({ unit: 'large egg', quantity: 3 });
+    expect(
+      startingMeasure({ ...result, last: { unit: null, quantity: 80 } }, 100),
+    ).toMatchObject({ unit: null, quantity: 80 });
     // A unit the food no longer offers falls back to the first portion.
-    expect(startingMeasure({ ...result, last: { unit: 'jumbo egg', quantity: 3 } }, 100)).toMatchObject({ unit: 'large egg', quantity: 1 });
+    expect(
+      startingMeasure(
+        { ...result, last: { unit: 'jumbo egg', quantity: 3 } },
+        100,
+      ),
+    ).toMatchObject({ unit: 'large egg', quantity: 1 });
   });
 
   it('starts in grams when there are no portions', () => {
-    expect(startingMeasure({ ...result, portions: undefined }, 100)).toMatchObject({ unit: null, quantity: 100 });
+    expect(
+      startingMeasure({ ...result, portions: undefined }, 100),
+    ).toMatchObject({ unit: null, quantity: 100 });
   });
 
   it('converts values given for another weight to per 100 g', () => {
-    const logged: SearchResult = { ...result, servingLabel: '40 g', calories: 60, portions: undefined };
-    expect(startingMeasure(logged, 40)).toMatchObject({ per100: { calories: 150 }, quantity: 40 });
+    const logged: SearchResult = {
+      ...result,
+      servingLabel: '40 g',
+      calories: 60,
+      portions: undefined,
+    };
+    expect(startingMeasure(logged, 40)).toMatchObject({
+      per100: { calories: 150 },
+      quantity: 40,
+    });
   });
 });
 
@@ -117,11 +158,20 @@ describe('parseMeasure', () => {
     expect(parseMeasure({})).toBeUndefined();
     expect(parseMeasure({ ...egg, quantity: 0 })).toBeUndefined();
     expect(parseMeasure({ ...egg, unit: 'jumbo egg' })).toBeUndefined();
-    expect(parseMeasure({ ...egg, per100: { calories: 'lots' } })).toBeUndefined();
+    expect(
+      parseMeasure({ ...egg, per100: { calories: 'lots' } }),
+    ).toBeUndefined();
   });
 
   it('drops portions that are not usable but keeps the rest', () => {
-    const m = parseMeasure({ ...egg, portions: [...egg.portions, { label: 5, grams: 1 }, { label: 'x', grams: 0 }] });
+    const m = parseMeasure({
+      ...egg,
+      portions: [
+        ...egg.portions,
+        { label: 5, grams: 1 },
+        { label: 'x', grams: 0 },
+      ],
+    });
     expect(m?.portions).toEqual(egg.portions);
   });
 });

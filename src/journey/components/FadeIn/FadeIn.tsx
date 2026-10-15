@@ -21,7 +21,12 @@ export function FadeIn({
       t.setValue(1);
       return;
     }
-    const anim = Animated.timing(t, { toValue: 1, duration: 350, delay, useNativeDriver: true });
+    const anim = Animated.timing(t, {
+      toValue: 1,
+      duration: 350,
+      delay,
+      useNativeDriver: true,
+    });
     anim.start();
     return () => anim.stop();
   }, [still, delay, t]);
@@ -32,7 +37,14 @@ export function FadeIn({
         style,
         {
           opacity: t,
-          transform: [{ translateY: t.interpolate({ inputRange: [0, 1], outputRange: [6, 0] }) }],
+          transform: [
+            {
+              translateY: t.interpolate({
+                inputRange: [0, 1],
+                outputRange: [6, 0],
+              }),
+            },
+          ],
         },
       ]}
     >

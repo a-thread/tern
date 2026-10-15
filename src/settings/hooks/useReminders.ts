@@ -1,13 +1,21 @@
 import { useSettings } from '../../domain/settings/SettingsContext';
-import { describeReminders, type ReminderConfig } from '../../domain/settings/models/reminderPlan';
+import {
+  describeReminders,
+  type ReminderConfig,
+} from '../../domain/settings/models/reminderPlan';
 
 /** The reminder settings, the sentence describing each, and a way to change one reminder at a time. */
 export function useReminders() {
   const { settings, updateSettings } = useSettings();
   const reminders = settings.reminders;
 
-  const patch = <K extends keyof ReminderConfig>(key: K, change: Partial<ReminderConfig[K]>) =>
-    updateSettings({ reminders: { ...reminders, [key]: { ...reminders[key], ...change } } });
+  const patch = <K extends keyof ReminderConfig>(
+    key: K,
+    change: Partial<ReminderConfig[K]>,
+  ) =>
+    updateSettings({
+      reminders: { ...reminders, [key]: { ...reminders[key], ...change } },
+    });
 
   return {
     settings,

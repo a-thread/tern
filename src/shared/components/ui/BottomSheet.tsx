@@ -84,8 +84,14 @@ export function BottomSheet({
       onRequestClose={onClose}
       statusBarTranslucent
     >
-      <Animated.View style={[StyleSheet.absoluteFill, s.scrim, { opacity: fade }]}>
-        <Pressable style={{ flex: 1 }} onPress={onClose} accessibilityLabel='Close' />
+      <Animated.View
+        style={[StyleSheet.absoluteFill, s.scrim, { opacity: fade }]}
+      >
+        <Pressable
+          style={{ flex: 1 }}
+          onPress={onClose}
+          accessibilityLabel='Close'
+        />
       </Animated.View>
       <KeyboardAvoidingView
         style={s.anchor}

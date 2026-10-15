@@ -3,7 +3,11 @@ import { StyleSheet, Text, View } from 'react-native';
 
 import { typography } from '@shared/theme';
 import { useSettings } from '@/domain/settings/SettingsContext';
-import { gramRange, MacroSplits, type MacroSplit } from '@/domain/food/models/macroSplit';
+import {
+  gramRange,
+  MacroSplits,
+  type MacroSplit,
+} from '@/domain/food/models/macroSplit';
 import { MACRO_LABEL } from '../../models/macroLabel';
 
 export function SplitDetail({ split }: { split: MacroSplit }) {

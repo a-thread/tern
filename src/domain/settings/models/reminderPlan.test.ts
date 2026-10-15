@@ -1,4 +1,22 @@
-import { rotationDays, NotificationLimits, type PlannedReminder, restDayTriggers, upcomingDates, describeReminders, formatMinutes, mergeReminders, medicationReminderId, planReminders, waterReminderId, waterTimes, stepMinutes, stepWeekday, type ReminderConfig, Reminders, ReminderKey } from './reminderPlan';
+import {
+  rotationDays,
+  NotificationLimits,
+  type PlannedReminder,
+  restDayTriggers,
+  upcomingDates,
+  describeReminders,
+  formatMinutes,
+  mergeReminders,
+  medicationReminderId,
+  planReminders,
+  waterReminderId,
+  waterTimes,
+  stepMinutes,
+  stepWeekday,
+  type ReminderConfig,
+  Reminders,
+  ReminderKey,
+} from './reminderPlan';
 import { Frequency } from '@shared/models/frequency';
 
 const config = (
@@ -47,7 +65,9 @@ describe('planReminders', () => {
   });
 
   it('never mentions weight loss, calories or streaks', () => {
-    const text = planReminders(config({ meals: true, weighIn: true }), { weighInFrequency: Frequency.Daily })
+    const text = planReminders(config({ meals: true, weighIn: true }), {
+      weighInFrequency: Frequency.Daily,
+    })
       .map((r) => `${r.title} ${r.body}`)
       .join(' ')
       .toLowerCase();
@@ -58,7 +78,11 @@ describe('planReminders', () => {
 describe('weigh-in frequency', () => {
   it('is weekly by default, on the chosen weekday', () => {
     const [r] = planReminders(config({ weighIn: true }));
-    expect(r).toMatchObject({ id: 'tern-weigh-in', title: 'Weekly weigh-in', weekday: 1 });
+    expect(r).toMatchObject({
+      id: 'tern-weigh-in',
+      title: 'Weekly weigh-in',
+      weekday: 1,
+    });
   });
 
   it('daily has no weekday, so it repeats every day at the same time', () => {
@@ -70,8 +94,12 @@ describe('weigh-in frequency', () => {
   });
 
   it('reads as "Every day" in Settings when daily', () => {
-    expect(describeReminders(Reminders.DEFAULTS, Frequency.Daily).weighIn).toBe('Every day, 8:00 am');
-    expect(describeReminders(Reminders.DEFAULTS, Frequency.Weekly).weighIn).toBe('Sundays, 8:00 am');
+    expect(describeReminders(Reminders.DEFAULTS, Frequency.Daily).weighIn).toBe(
+      'Every day, 8:00 am',
+    );
+    expect(
+      describeReminders(Reminders.DEFAULTS, Frequency.Weekly).weighIn,
+    ).toBe('Sundays, 8:00 am');
   });
 });
 
@@ -93,9 +121,22 @@ describe('medication reminders', () => {
   });
 
   it('a weekly medication is reminded on its weekday only', () => {
-    const weekly = { ...base, id: 'w', name: 'Injection', at: 10 * 60, remind: true, frequency: Frequency.Weekly, weekday: 4 } as const;
+    const weekly = {
+      ...base,
+      id: 'w',
+      name: 'Injection',
+      at: 10 * 60,
+      remind: true,
+      frequency: Frequency.Weekly,
+      weekday: 4,
+    } as const;
     const [r] = planReminders(config(), { medications: [weekly] });
-    expect(r).toMatchObject({ id: medicationReminderId('w'), weekday: 4, hour: 10, minute: 0 });
+    expect(r).toMatchObject({
+      id: medicationReminderId('w'),
+      weekday: 4,
+      hour: 10,
+      minute: 0,
+    });
   });
 
   it('plans nothing for medications without a reminder', () => {
@@ -103,7 +144,9 @@ describe('medication reminders', () => {
   });
 
   it('keeps every id unique next to the other reminders', () => {
-    const ids = planReminders(config({ meals: true, weighIn: true }), { medications: meds }).map((r) => r.id);
+    const ids = planReminders(config({ meals: true, weighIn: true }), {
+      medications: meds,
+    }).map((r) => r.id);
     expect(new Set(ids).size).toBe(ids.length);
   });
 });
@@ -141,12 +184,17 @@ describe('mergeReminders', () => {
       mealLog: { on: false, time: '12:30 pm, 7:00 pm' },
       weeklyWeighIn: { on: true, time: 'Sundays, 8:00 am' },
     });
-    expect(merged.mealLog).toEqual({ ...Reminders.DEFAULTS.mealLog, on: false });
+    expect(merged.mealLog).toEqual({
+      ...Reminders.DEFAULTS.mealLog,
+      on: false,
+    });
     expect(merged.weighIn).toEqual(Reminders.DEFAULTS.weighIn);
   });
 
   it('carries over a setting saved under the old weeklyWeighIn key', () => {
-    const merged = mergeReminders({ weeklyWeighIn: { on: false, weekday: 4, at: 420 } });
+    const merged = mergeReminders({
+      weeklyWeighIn: { on: false, weekday: 4, at: 420 },
+    });
     expect(merged.weighIn).toEqual({ on: false, weekday: 4, at: 420 });
   });
 
@@ -167,36 +215,52 @@ describe('mergeReminders', () => {
 });
 
 describe('water reminders', () => {
-  const water = (over: Partial<ReminderConfig['water']> = {}): ReminderConfig => ({
+  const water = (
+    over: Partial<ReminderConfig['water']> = {},
+  ): ReminderConfig => ({
     ...config(),
     water: { on: true, start: 9 * 60, end: 19 * 60, everyHours: 2, ...over },
   });
 
   it('fires from the start time every N hours until the end time', () => {
     expect(waterTimes(water().water)).toEqual([540, 660, 780, 900, 1020, 1140]);
-    expect(waterTimes(water({ everyHours: 4 }).water)).toEqual([540, 780, 1020]);
+    expect(waterTimes(water({ everyHours: 4 }).water)).toEqual([
+      540, 780, 1020,
+    ]);
     expect(waterTimes(water({ start: 600, end: 600 }).water)).toEqual([600]);
   });
 
   it('plans nothing when the end is before the start', () => {
-    expect(waterTimes(water({ start: 20 * 60, end: 9 * 60 }).water)).toEqual([]);
+    expect(waterTimes(water({ start: 20 * 60, end: 9 * 60 }).water)).toEqual(
+      [],
+    );
   });
 
   it('is only planned while water is tracked and its reminder is on', () => {
     expect(planReminders(water())).toEqual([]);
-    expect(planReminders(water({ on: false }), { trackWater: true })).toEqual([]);
+    expect(planReminders(water({ on: false }), { trackWater: true })).toEqual(
+      [],
+    );
     const plan = planReminders(water(), { trackWater: true });
-    expect(plan.map((r) => r.id)).toEqual([0, 1, 2, 3, 4, 5].map(waterReminderId));
-    expect(plan.every((r) => r.weekday === undefined && r.key === ReminderKey.Water)).toBe(true);
+    expect(plan.map((r) => r.id)).toEqual(
+      [0, 1, 2, 3, 4, 5].map(waterReminderId),
+    );
+    expect(
+      plan.every((r) => r.weekday === undefined && r.key === ReminderKey.Water),
+    ).toBe(true);
   });
 
   it('never plans more reminders than a day can sensibly hold', () => {
-    expect(waterTimes(water({ start: 0, end: 23 * 60, everyHours: 1 }).water).length).toBeLessThanOrEqual(12);
+    expect(
+      waterTimes(water({ start: 0, end: 23 * 60, everyHours: 1 }).water).length,
+    ).toBeLessThanOrEqual(12);
   });
 
   it('is off by default and reads a saved setting back safely', () => {
     expect(Reminders.DEFAULTS.water.on).toBe(false);
-    expect(mergeReminders({ water: { on: true, everyHours: 99, start: 'x' } }).water).toEqual({
+    expect(
+      mergeReminders({ water: { on: true, everyHours: 99, start: 'x' } }).water,
+    ).toEqual({
       on: true,
       start: 9 * 60,
       end: 19 * 60,
@@ -206,7 +270,9 @@ describe('water reminders', () => {
 });
 
 describe('check-in reminder', () => {
-  const mood = (over: Partial<ReminderConfig['mood']> = {}): ReminderConfig => ({
+  const mood = (
+    over: Partial<ReminderConfig['mood']> = {},
+  ): ReminderConfig => ({
     ...config(),
     mood: { on: true, at: 20 * 60 + 30, ...over },
   });
@@ -219,19 +285,32 @@ describe('check-in reminder', () => {
     expect(planReminders(mood())).toEqual([]);
     expect(planReminders(mood({ on: false }), { trackMood: true })).toEqual([]);
     const [r] = planReminders(mood(), { trackMood: true });
-    expect(r).toMatchObject({ id: 'tern-mood', key: 'mood', hour: 20, minute: 30 });
+    expect(r).toMatchObject({
+      id: 'tern-mood',
+      key: 'mood',
+      hour: 20,
+      minute: 30,
+    });
     expect(r.weekday).toBeUndefined();
     expect(Reminders.ALL_IDS).toContain(r.id);
   });
 
   it('is gentle: no scores, streaks or goals in the text', () => {
     const [r] = planReminders(mood(), { trackMood: true });
-    expect(`${r.title} ${r.body}`.toLowerCase()).not.toMatch(/streak|score|goal|behind|miss|stress/);
+    expect(`${r.title} ${r.body}`.toLowerCase()).not.toMatch(
+      /streak|score|goal|behind|miss|stress/,
+    );
   });
 
   it('reads a saved setting back safely', () => {
-    expect(mergeReminders({ mood: { on: true, at: 'x' } }).mood).toEqual({ on: true, at: 20 * 60 });
-    expect(mergeReminders({ mood: { at: 540 } }).mood).toEqual({ on: false, at: 540 });
+    expect(mergeReminders({ mood: { on: true, at: 'x' } }).mood).toEqual({
+      on: true,
+      at: 20 * 60,
+    });
+    expect(mergeReminders({ mood: { at: 540 } }).mood).toEqual({
+      on: false,
+      at: 540,
+    });
   });
 });
 
@@ -241,7 +320,9 @@ describe('upcomingDates', () => {
 
   it('lists a daily reminder from today (if its time is still to come) for the days asked', () => {
     const dates = upcomingDates({ hour: 12, minute: 30 }, now, 3);
-    expect(dates.map((d) => [d.getDate(), d.getHours(), d.getMinutes()])).toEqual([
+    expect(
+      dates.map((d) => [d.getDate(), d.getHours(), d.getMinutes()]),
+    ).toEqual([
       [10, 12, 30],
       [11, 12, 30],
       [12, 12, 30],
@@ -249,11 +330,17 @@ describe('upcomingDates', () => {
   });
 
   it('starts tomorrow once its time has passed today', () => {
-    expect(upcomingDates({ hour: 8, minute: 0 }, now, 2).map((d) => d.getDate())).toEqual([11]);
+    expect(
+      upcomingDates({ hour: 8, minute: 0 }, now, 2).map((d) => d.getDate()),
+    ).toEqual([11]);
   });
 
   it('leaves today out on a rest day, even with its time still to come', () => {
-    expect(upcomingDates({ hour: 12, minute: 30 }, now, 3, true).map((d) => d.getDate())).toEqual([11, 12]);
+    expect(
+      upcomingDates({ hour: 12, minute: 30 }, now, 3, true).map((d) =>
+        d.getDate(),
+      ),
+    ).toEqual([11, 12]);
   });
 
   it('only falls on the weekday for a weekly reminder', () => {
@@ -261,7 +348,12 @@ describe('upcomingDates', () => {
     expect(sundays.map((d) => d.getDay())).toEqual([0, 0]);
     expect(sundays.map((d) => d.getDate())).toEqual([11, 18]);
     // A weekly reminder for today (Saturday), on a rest day, skips today and comes next week.
-    const saturdays = upcomingDates({ hour: 18, minute: 0, weekday: 7 }, now, 14, true);
+    const saturdays = upcomingDates(
+      { hour: 18, minute: 0, weekday: 7 },
+      now,
+      14,
+      true,
+    );
     expect(saturdays.map((d) => d.getDate())).toEqual([17]);
   });
 });
@@ -270,23 +362,32 @@ describe('restDayTriggers', () => {
   // Saturday 10 October 2026, 10:00 (weekday 7).
   const now = new Date(2026, 9, 10, 10, 0);
 
-  it('keeps a weekly repeat for six weekdays and dates today\'s a week out', () => {
+  it("keeps a weekly repeat for six weekdays and dates today's a week out", () => {
     const t = restDayTriggers({ id: 'x', hour: 12, minute: 30 }, now);
     expect(t).toHaveLength(7);
     const dated = t.filter((x) => 'date' in x);
     expect(dated).toHaveLength(1);
-    expect((dated[0] as { date: Date }).date).toEqual(new Date(2026, 9, 17, 12, 30));
-    const weekdays = t.filter((x) => 'weekday' in x).map((x) => (x as { weekday: number }).weekday);
+    expect((dated[0] as { date: Date }).date).toEqual(
+      new Date(2026, 9, 17, 12, 30),
+    );
+    const weekdays = t
+      .filter((x) => 'weekday' in x)
+      .map((x) => (x as { weekday: number }).weekday);
     expect(weekdays.sort()).toEqual([1, 2, 3, 4, 5, 6]);
   });
 
-  it('is empty once today\'s time has passed, or a weekly reminder is not due today', () => {
+  it("is empty once today's time has passed, or a weekly reminder is not due today", () => {
     expect(restDayTriggers({ id: 'x', hour: 8, minute: 0 }, now)).toEqual([]);
-    expect(restDayTriggers({ id: 'x', hour: 12, minute: 0, weekday: 1 }, now)).toEqual([]);
+    expect(
+      restDayTriggers({ id: 'x', hour: 12, minute: 0, weekday: 1 }, now),
+    ).toEqual([]);
   });
 
-  it('is just next week\'s date for a weekly reminder due today', () => {
-    const t = restDayTriggers({ id: 'x', hour: 18, minute: 0, weekday: 7 }, now);
+  it("is just next week's date for a weekly reminder due today", () => {
+    const t = restDayTriggers(
+      { id: 'x', hour: 18, minute: 0, weekday: 7 },
+      now,
+    );
     expect(t).toEqual([{ id: 'x-rest-7', date: new Date(2026, 9, 17, 18, 0) }]);
   });
 });
@@ -301,7 +402,10 @@ describe('rotationDays', () => {
     minute: 0,
     variants: [{ title: 't', body: 'b' }],
   });
-  const fixed = (id: string, key: PlannedReminder['key'] = ReminderKey.Water): PlannedReminder => ({
+  const fixed = (
+    id: string,
+    key: PlannedReminder['key'] = ReminderKey.Water,
+  ): PlannedReminder => ({
     id,
     key,
     title: 't',
@@ -320,21 +424,41 @@ describe('rotationDays', () => {
   });
 
   it('shortens the rotation when a lot of other reminders are scheduled', () => {
-    const many = Array.from({ length: 40 }, (_, i) => fixed(`med-${i}`, 'medication'));
-    const days = rotationDays([rotating('a'), rotating('b'), ...many], NotificationLimits.IOS_PENDING, 14);
+    const many = Array.from({ length: 40 }, (_, i) =>
+      fixed(`med-${i}`, 'medication'),
+    );
+    const days = rotationDays(
+      [rotating('a'), rotating('b'), ...many],
+      NotificationLimits.IOS_PENDING,
+      14,
+    );
     expect(days).toBeLessThan(14);
-    expect(days * 2 + 40 + NotificationLimits.STREAK_RESERVE).toBeLessThanOrEqual(NotificationLimits.IOS_PENDING);
+    expect(
+      days * 2 + 40 + NotificationLimits.STREAK_RESERVE,
+    ).toBeLessThanOrEqual(NotificationLimits.IOS_PENDING);
   });
 
   it('counts a rest day as a week of triggers for each repeating reminder', () => {
-    const plan = [rotating('a'), rotating('b'), ...Array.from({ length: 6 }, (_, i) => fixed(`w${i}`))];
+    const plan = [
+      rotating('a'),
+      rotating('b'),
+      ...Array.from({ length: 6 }, (_, i) => fixed(`w${i}`)),
+    ];
     const normal = rotationDays(plan, NotificationLimits.IOS_PENDING, 14);
     const rest = rotationDays(plan, NotificationLimits.IOS_PENDING, 14, true);
     expect(rest).toBeLessThan(normal);
   });
 
   it('never goes below one day', () => {
-    const many = Array.from({ length: 80 }, (_, i) => fixed(`m${i}`, 'medication'));
-    expect(rotationDays([rotating('a'), ...many], NotificationLimits.IOS_PENDING, 14)).toBe(1);
+    const many = Array.from({ length: 80 }, (_, i) =>
+      fixed(`m${i}`, 'medication'),
+    );
+    expect(
+      rotationDays(
+        [rotating('a'), ...many],
+        NotificationLimits.IOS_PENDING,
+        14,
+      ),
+    ).toBe(1);
   });
 });

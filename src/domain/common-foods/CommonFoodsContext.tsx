@@ -17,10 +17,11 @@ type CommonFoodsContextValue = {
   version: string | null;
 };
 
-const [CommonFoodsContext, useCommonFoods] = createRequiredContext<CommonFoodsContextValue>(
-  'useCommonFoods',
-  'CommonFoodsProvider',
-);
+const [CommonFoodsContext, useCommonFoods] =
+  createRequiredContext<CommonFoodsContextValue>(
+    'useCommonFoods',
+    'CommonFoodsProvider',
+  );
 export { useCommonFoods };
 
 /** Where the downloaded list is kept between launches. */
@@ -60,7 +61,11 @@ export function CommonFoodsProvider({
         const stored: unknown = raw ? JSON.parse(raw) : null;
         if (isStored(stored)) {
           have = stored.version;
-          if (!cancelled) setState({ version: stored.version, index: buildCommonIndex(stored.foods) });
+          if (!cancelled)
+            setState({
+              version: stored.version,
+              index: buildCommonIndex(stored.foods),
+            });
         }
       } catch (e) {
         console.warn('Could not read the saved common foods', e);
@@ -71,7 +76,10 @@ export function CommonFoodsProvider({
         const foods = await repo.loadAll();
         if (cancelled) return;
         setState({ version, index: buildCommonIndex(foods) });
-        await AsyncStorage.setItem(COMMON_FOODS_KEY, JSON.stringify({ version, foods } satisfies Stored));
+        await AsyncStorage.setItem(
+          COMMON_FOODS_KEY,
+          JSON.stringify({ version, foods } satisfies Stored),
+        );
       } catch (e) {
         console.warn('Could not update the common foods', e);
       }
@@ -82,5 +90,9 @@ export function CommonFoodsProvider({
   }, [repo]);
 
   const value = useMemo(() => state, [state]);
-  return <CommonFoodsContext.Provider value={value}>{children}</CommonFoodsContext.Provider>;
+  return (
+    <CommonFoodsContext.Provider value={value}>
+      {children}
+    </CommonFoodsContext.Provider>
+  );
 }

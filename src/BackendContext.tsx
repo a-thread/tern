@@ -117,9 +117,7 @@ export function createRemoteBackend(): Backend {
     waypoints: createSupabaseWaypointsRepository(supabase),
     // Real steps only. With no step source the count stays at zero — mock
     // steps would earn a real account waypoints it didn't earn.
-    steps:
-      createHealthStepsRepository() ??
-      createUnavailableStepsRepository(),
+    steps: createHealthStepsRepository() ?? createUnavailableStepsRepository(),
     restDays: createSupabaseRestDaysRepository(supabase),
     savedMeals: createSupabaseSavedMealsRepository(supabase),
     medication: createSupabaseMedicationRepository(supabase),
@@ -132,7 +130,10 @@ export function createRemoteBackend(): Backend {
   };
 }
 
-const [BackendContext, useBackend] = createRequiredContext<Backend>('useBackend', 'BackendProvider');
+const [BackendContext, useBackend] = createRequiredContext<Backend>(
+  'useBackend',
+  'BackendProvider',
+);
 export { useBackend };
 
 export function BackendProvider({

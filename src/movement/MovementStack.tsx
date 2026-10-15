@@ -1,5 +1,8 @@
 import React from 'react';
-import { createNativeStackNavigator, type NativeStackScreenProps } from '@react-navigation/native-stack';
+import {
+  createNativeStackNavigator,
+  type NativeStackScreenProps,
+} from '@react-navigation/native-stack';
 
 import type { RootStackParamList } from '../navigation/types';
 import type { MovementStackParamList } from './navigation';
@@ -14,7 +17,11 @@ type Props = NativeStackScreenProps<RootStackParamList, 'LogMovement'>;
 export default function MovementStack({ route }: Props) {
   return (
     <Stack.Navigator screenOptions={{ headerShown: false }}>
-      <Stack.Screen name='Exercises' component={ExercisesScreen} initialParams={route.params ?? {}} />
+      <Stack.Screen
+        name='Exercises'
+        component={ExercisesScreen}
+        initialParams={route.params ?? {}}
+      />
       <Stack.Screen name='ExerciseDetail' component={ExerciseDetailScreen} />
     </Stack.Navigator>
   );

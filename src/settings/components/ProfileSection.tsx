@@ -26,7 +26,9 @@ export function ProfileSection() {
     <Group style={{ marginTop: 4 }}>
       <View style={s.row}>
         <View style={s.avatar}>
-          <Text style={s.avatarText}>{(name.trim() || email || '?')[0].toUpperCase()}</Text>
+          <Text style={s.avatarText}>
+            {(name.trim() || email || '?')[0].toUpperCase()}
+          </Text>
         </View>
         <View style={{ flex: 1 }}>
           <TextInput

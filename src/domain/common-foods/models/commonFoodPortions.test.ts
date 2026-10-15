@@ -1,4 +1,9 @@
-import { PortionKind, portionKind, tidyPortionLabel, typicalPortions } from './commonFoodPortions';
+import {
+  PortionKind,
+  portionKind,
+  tidyPortionLabel,
+  typicalPortions,
+} from './commonFoodPortions';
 
 const labels = (ps: { label: string }[]) => ps.map((p) => p.label);
 
@@ -7,15 +12,21 @@ describe('tidyPortionLabel', () => {
     expect(tidyPortionLabel('NLEA serving', 'apple')).toBeNull();
     expect(tidyPortionLabel('single serving package', 'apple')).toBeNull();
     expect(tidyPortionLabel('linear inch', 'banana')).toBeNull();
-    expect(tidyPortionLabel('pint as purchased, yields', 'strawberry')).toBeNull();
+    expect(
+      tidyPortionLabel('pint as purchased, yields', 'strawberry'),
+    ).toBeNull();
   });
 
   it('removes dimensions and names bare sizes and generic items after the food', () => {
-    expect(tidyPortionLabel('large (8" to 8-7/8" long)', 'banana')).toBe('large banana');
+    expect(tidyPortionLabel('large (8" to 8-7/8" long)', 'banana')).toBe(
+      'large banana',
+    );
     expect(tidyPortionLabel('medium', 'apple')).toBe('medium apple');
     expect(tidyPortionLabel('fruit', 'orange')).toBe('orange');
     expect(tidyPortionLabel('berry', 'blueberry')).toBe('blueberry');
-    expect(tidyPortionLabel('medium or regular slice', 'bread')).toBe('medium or regular slice');
+    expect(tidyPortionLabel('medium or regular slice', 'bread')).toBe(
+      'medium or regular slice',
+    );
   });
 });
 
@@ -101,10 +112,15 @@ describe('typicalPortions', () => {
   });
 
   it('adds ounces for cheese and meat, first for cheese and after sizes for a cut', () => {
-    expect(labels(typicalPortions([{ label: 'cup, shredded', grams: 113 }], 'Cheddar cheese', null))).toEqual([
-      'oz',
-      'cup, shredded',
-    ]);
+    expect(
+      labels(
+        typicalPortions(
+          [{ label: 'cup, shredded', grams: 113 }],
+          'Cheddar cheese',
+          null,
+        ),
+      ),
+    ).toEqual(['oz', 'cup, shredded']);
     const breast = typicalPortions(
       [
         { label: 'medium breast', grams: 150 },
@@ -151,7 +167,15 @@ describe('typicalPortions', () => {
   });
 
   it('gives drinks a cup, and never defaults to a whole melon or a dimension', () => {
-    expect(labels(typicalPortions([{ label: 'fl oz', grams: 31 }], 'Orange juice', 'orange juice'))).toEqual(['cup', 'fl oz']);
+    expect(
+      labels(
+        typicalPortions(
+          [{ label: 'fl oz', grams: 31 }],
+          'Orange juice',
+          'orange juice',
+        ),
+      ),
+    ).toEqual(['cup', 'fl oz']);
     const pineapple = typicalPortions(
       [
         { label: 'fruit', grams: 905 },
@@ -193,7 +217,12 @@ describe('typicalPortions', () => {
   });
 
   it('keeps one of each label and at most six', () => {
-    const many = Array.from({ length: 10 }, (_, i) => ({ label: `cup ${i}`, grams: 100 + i }));
-    expect(typicalPortions([...many, { label: 'cup 0', grams: 1 }], 'Rice', 'rice')).toHaveLength(6);
+    const many = Array.from({ length: 10 }, (_, i) => ({
+      label: `cup ${i}`,
+      grams: 100 + i,
+    }));
+    expect(
+      typicalPortions([...many, { label: 'cup 0', grams: 1 }], 'Rice', 'rice'),
+    ).toHaveLength(6);
   });
 });

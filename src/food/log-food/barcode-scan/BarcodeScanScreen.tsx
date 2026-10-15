@@ -168,7 +168,9 @@ export default function BarcodeScanScreen({ navigation, route }: Props) {
             />
             <Pressable
               onPress={() => lookup(code)}
-              disabled={!isValidBarcode(code) || phase.kind === ScanPhaseKind.Looking}
+              disabled={
+                !isValidBarcode(code) || phase.kind === ScanPhaseKind.Looking
+              }
               style={[s.go, !isValidBarcode(code) && { opacity: 0.4 }]}
             >
               <Text style={s.goText}>Look up</Text>

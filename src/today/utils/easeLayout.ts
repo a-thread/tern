@@ -8,7 +8,11 @@ import { LayoutAnimation } from 'react-native';
 export function easeLayout(ms = 260): void {
   try {
     LayoutAnimation.configureNext(
-      LayoutAnimation.create(ms, LayoutAnimation.Types.easeInEaseOut, LayoutAnimation.Properties.opacity),
+      LayoutAnimation.create(
+        ms,
+        LayoutAnimation.Types.easeInEaseOut,
+        LayoutAnimation.Properties.opacity,
+      ),
     );
   } catch {
     // no layout animations here

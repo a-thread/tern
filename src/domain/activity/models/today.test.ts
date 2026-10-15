@@ -1,13 +1,24 @@
 import { type FoodEntry, Meal } from '../../food/models/foodEntry';
 import type { WeightEntry } from '../../weight/models/weightEntry';
-import { buildDays, computeStreak, noStepsThisWeek, type DayRecord, restDaysLeft, weekOf, type BuildDaysInput } from './dayRecord';
+import {
+  buildDays,
+  computeStreak,
+  noStepsThisWeek,
+  type DayRecord,
+  restDaysLeft,
+  weekOf,
+  type BuildDaysInput,
+} from './dayRecord';
 import { suggestGoal } from './stepGoal';
 import { greetingFor } from '@/today/components/StepsHero/models/greeting';
 import { leftToDo, mealForTime, weighInDue } from '@/today/models/leftToDo';
 import { todaySummary } from '@/today/models/todaySummary';
 import { DayState } from '@shared/models/dayState';
 import { Frequency } from '@shared/models/frequency';
-import { goalFor, recordGoalChange } from '../../settings/models/stepGoalHistory';
+import {
+  goalFor,
+  recordGoalChange,
+} from '../../settings/models/stepGoalHistory';
 
 const food = (meal: FoodEntry['meal']): FoodEntry => ({
   id: meal,
@@ -53,7 +64,11 @@ describe('leftToDo', () => {
   });
 
   it('names the next missing meal once some are logged', () => {
-    const [meal] = leftToDo([food(Meal.Breakfast), food(Meal.Lunch)], weighedToday, now);
+    const [meal] = leftToDo(
+      [food(Meal.Breakfast), food(Meal.Lunch)],
+      weighedToday,
+      now,
+    );
     expect(meal).toMatchObject({
       meal: 'dinner',
       title: 'Log dinner',
@@ -67,10 +82,14 @@ describe('leftToDo', () => {
   });
 
   it('counts a skipped meal as done, and moves on to the next one', () => {
-    const [meal] = leftToDo([food(Meal.Breakfast)], weighedToday, now, { skippedMeals: [Meal.Lunch] });
+    const [meal] = leftToDo([food(Meal.Breakfast)], weighedToday, now, {
+      skippedMeals: [Meal.Lunch],
+    });
     expect(meal).toMatchObject({ meal: 'dinner', sub: '2 of 3 meals logged' });
     expect(
-      leftToDo([food(Meal.Breakfast), food(Meal.Dinner)], weighedToday, now, { skippedMeals: [Meal.Lunch] }),
+      leftToDo([food(Meal.Breakfast), food(Meal.Dinner)], weighedToday, now, {
+        skippedMeals: [Meal.Lunch],
+      }),
     ).toEqual([]);
   });
 
@@ -80,7 +99,9 @@ describe('leftToDo', () => {
   });
 
   it('drops the weight row once weighed today, but not for an old weigh-in', () => {
-    expect(leftToDo([], weighedToday, now).map((i) => i.kind)).toEqual(['meal']);
+    expect(leftToDo([], weighedToday, now).map((i) => i.kind)).toEqual([
+      'meal',
+    ]);
     expect(leftToDo([], weighedYesterday, now).map((i) => i.kind)).toEqual([
       'meal',
       'weight',
@@ -181,8 +202,10 @@ describe('buildDays', () => {
 });
 
 describe('computeStreak', () => {
-  const streak = (stepsByDay: Record<string, number>, restDays: string[] = []) =>
-    computeStreak(days({ stepsByDay, restDays: new Set(restDays) }));
+  const streak = (
+    stepsByDay: Record<string, number>,
+    restDays: string[] = [],
+  ) => computeStreak(days({ stepsByDay, restDays: new Set(restDays) }));
 
   it('counts consecutive goal days back from yesterday when today is still in progress', () => {
     expect(
@@ -196,15 +219,16 @@ describe('computeStreak', () => {
 
   it('holds through a rest day without counting it', () => {
     expect(
-      streak(
-        { '2026-09-19': 9000, '2026-09-18': 300, '2026-09-17': 9000 },
-        ['2026-09-18'],
-      ),
+      streak({ '2026-09-19': 9000, '2026-09-18': 300, '2026-09-17': 9000 }, [
+        '2026-09-18',
+      ]),
     ).toBe(2);
   });
 
   it('breaks on a missed day', () => {
-    expect(streak({ '2026-09-19': 9000, '2026-09-18': 5000, '2026-09-17': 9000 })).toBe(1);
+    expect(
+      streak({ '2026-09-19': 9000, '2026-09-18': 5000, '2026-09-17': 9000 }),
+    ).toBe(1);
   });
 
   it('is zero with no data', () => {
@@ -231,7 +255,10 @@ describe('weekOf / restDaysLeft', () => {
   });
 
   it('counts the allowance left this week', () => {
-    const d = days({ stepsByDay: { '2026-09-19': 100 }, restDays: new Set(['2026-09-19']) });
+    const d = days({
+      stepsByDay: { '2026-09-19': 100 },
+      restDays: new Set(['2026-09-19']),
+    });
     expect(restDaysLeft(d, TODAY, 2)).toBe(1);
     expect(restDaysLeft(d, TODAY, 1)).toBe(0);
     expect(restDaysLeft(d, TODAY, 0)).toBe(0);
@@ -330,7 +357,8 @@ describe('suggestGoal', () => {
 describe('weighInDue', () => {
   // `now` is Friday 2026-09-18, which is weekday 6 (1 = Sunday).
   const daily = { frequency: Frequency.Daily, weekday: 1 } as const;
-  const weekly = (weekday: number) => ({ frequency: Frequency.Weekly, weekday }) as const;
+  const weekly = (weekday: number) =>
+    ({ frequency: Frequency.Weekly, weekday }) as const;
   const daysAgo = (n: number): WeightEntry => ({
     ...weighedToday,
     loggedAt: new Date(2026, 8, 18 - n, 7, 0).toISOString(),
@@ -374,21 +402,34 @@ describe('leftToDo with weigh-in frequency and medication', () => {
   ];
 
   it('weekly weigh-ins leave Today quiet on an ordinary day', () => {
-    const items = leftToDo(log, weighedYesterday, now, { weighIn: { frequency: Frequency.Weekly, weekday: 2 } });
+    const items = leftToDo(log, weighedYesterday, now, {
+      weighIn: { frequency: Frequency.Weekly, weekday: 2 },
+    });
     expect(items).toEqual([]);
   });
 
   it('adds a row for each medication not yet taken, after the other rows', () => {
     const items = leftToDo([], weighedToday, now, { medications: meds });
-    expect(items.map((i) => i.kind)).toEqual(['meal', 'medication', 'medication']);
-    expect(items[1]).toEqual({ kind: 'medication', medicationId: 'a', name: 'Vitamin D', at: 480 });
+    expect(items.map((i) => i.kind)).toEqual([
+      'meal',
+      'medication',
+      'medication',
+    ]);
+    expect(items[1]).toEqual({
+      kind: 'medication',
+      medicationId: 'a',
+      name: 'Vitamin D',
+      at: 480,
+    });
   });
 
   it('asks for water only while tracking it and under the goal', () => {
-    expect(leftToDo(log, weighedToday, now, { water: { totalOz: 16, goalOz: 64 } })).toEqual([
-      { kind: 'water', totalOz: 16, goalOz: 64 },
-    ]);
-    expect(leftToDo(log, weighedToday, now, { water: { totalOz: 64, goalOz: 64 } })).toEqual([]);
+    expect(
+      leftToDo(log, weighedToday, now, { water: { totalOz: 16, goalOz: 64 } }),
+    ).toEqual([{ kind: 'water', totalOz: 16, goalOz: 64 }]);
+    expect(
+      leftToDo(log, weighedToday, now, { water: { totalOz: 64, goalOz: 64 } }),
+    ).toEqual([]);
     expect(leftToDo(log, weighedToday, now, { water: null })).toEqual([]);
   });
 
@@ -397,13 +438,24 @@ describe('leftToDo with weigh-in frequency and medication', () => {
       water: { totalOz: 0, goalOz: 64 },
       medications: meds,
     });
-    expect(items.map((i) => i.kind)).toEqual(['water', 'medication', 'medication']);
+    expect(items.map((i) => i.kind)).toEqual([
+      'water',
+      'medication',
+      'medication',
+    ]);
   });
 
   it('adds a check-in row only when asked, before the medication rows', () => {
     expect(leftToDo(log, weighedToday, now, { checkIn: false })).toEqual([]);
-    const items = leftToDo(log, weighedToday, now, { checkIn: true, medications: meds });
-    expect(items.map((i) => i.kind)).toEqual(['checkIn', 'medication', 'medication']);
+    const items = leftToDo(log, weighedToday, now, {
+      checkIn: true,
+      medications: meds,
+    });
+    expect(items.map((i) => i.kind)).toEqual([
+      'checkIn',
+      'medication',
+      'medication',
+    ]);
   });
 
   it('is empty when everything, medication included, is done', () => {
@@ -418,7 +470,10 @@ describe('todaySummary', () => {
       { ...food(Meal.Breakfast), calories: 200, servings: 1.5 },
     ];
     const summary = todaySummary(log, weighedToday, [], false, now);
-    expect(summary.meals).toEqual({ names: ['breakfast', 'dinner'], calories: 900 });
+    expect(summary.meals).toEqual({
+      names: ['breakfast', 'dinner'],
+      calories: 900,
+    });
   });
 
   it('has no meals when nothing is logged', () => {
@@ -426,8 +481,12 @@ describe('todaySummary', () => {
   });
 
   it('only counts a weigh-in from today', () => {
-    expect(todaySummary([], weighedToday, [], false, now).weighedIn).toBe(weighedToday);
-    expect(todaySummary([], weighedYesterday, [], false, now).weighedIn).toBeNull();
+    expect(todaySummary([], weighedToday, [], false, now).weighedIn).toBe(
+      weighedToday,
+    );
+    expect(
+      todaySummary([], weighedYesterday, [], false, now).weighedIn,
+    ).toBeNull();
     expect(todaySummary([], undefined, [], false, now).weighedIn).toBeNull();
   });
 
@@ -438,7 +497,10 @@ describe('todaySummary', () => {
   });
 
   it('carries the check-in from today, or null', () => {
-    expect(todaySummary([], undefined, [], false, now, 0, { mood: 7, stress: 3 }).checkIn).toEqual({
+    expect(
+      todaySummary([], undefined, [], false, now, 0, { mood: 7, stress: 3 })
+        .checkIn,
+    ).toEqual({
       mood: 7,
       stress: 3,
     });

@@ -29,7 +29,12 @@ describe('searchCommonFoods', () => {
 
   it('returns common results tagged with their source and suggested type', () => {
     const [r] = searchCommonFoods(index, 'banana');
-    expect(r).toMatchObject({ id: 'common-banana', source: FoodSource.Common, tier: 1, servingLabel: '100 g' });
+    expect(r).toMatchObject({
+      id: 'common-banana',
+      source: FoodSource.Common,
+      tier: 1,
+      servingLabel: '100 g',
+    });
   });
 
   it('finds nothing for a blank query', () => {

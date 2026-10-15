@@ -25,7 +25,10 @@ export function FoodSummary() {
     return <IntakeBarometer totals={totals} entries={foodLog} />;
   }
 
-  const remainingCalories = Math.max(settings.calorieTarget - totals.calories, 0);
+  const remainingCalories = Math.max(
+    settings.calorieTarget - totals.calories,
+    0,
+  );
   return (
     <View style={s.statRow}>
       {/* With calorie tracking (or calorie numbers) off there is no calorie chip at all. */}
@@ -35,15 +38,34 @@ export function FoodSummary() {
           label={isToday ? 'left today' : 'left'}
         />
       ) : (
-        <Stat value={Math.round(totals.calories).toLocaleString()} label='calories' />
+        <Stat
+          value={Math.round(totals.calories).toLocaleString()}
+          label='calories'
+        />
       )}
-      <Stat value={`${Math.round(totals.protein)}g`} label='protein' color={colors.kelp} />
-      <Stat value={`${Math.round(totals.fat)}g`} label='fat' color={colors.sunDeep} />
+      <Stat
+        value={`${Math.round(totals.protein)}g`}
+        label='protein'
+        color={colors.kelp}
+      />
+      <Stat
+        value={`${Math.round(totals.fat)}g`}
+        label='fat'
+        color={colors.sunDeep}
+      />
     </View>
   );
 }
 
-function Stat({ value, label, color }: { value: string; label: string; color?: string }) {
+function Stat({
+  value,
+  label,
+  color,
+}: {
+  value: string;
+  label: string;
+  color?: string;
+}) {
   return (
     <View style={s.stat}>
       <Text style={[s.statValue, color ? { color } : null]}>{value}</Text>
@@ -62,5 +84,10 @@ const s = StyleSheet.create({
     alignItems: 'center',
   },
   statValue: { fontFamily: font.bold, fontSize: 15, color: colors.ink },
-  statLabel: { fontFamily: font.body, fontSize: 9.5, color: colors.ink2, marginTop: 1 },
+  statLabel: {
+    fontFamily: font.body,
+    fontSize: 9.5,
+    color: colors.ink2,
+    marginTop: 1,
+  },
 });

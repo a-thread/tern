@@ -17,7 +17,9 @@ export default function AddedBanner({
       style={[s.banner, dark ? s.dark : s.light]}
       accessibilityLiveRegion='polite'
     >
-      <Text style={[s.check, { color: dark ? colors.coral : colors.kelp }]}>✓</Text>
+      <Text style={[s.check, { color: dark ? colors.coral : colors.kelp }]}>
+        ✓
+      </Text>
       <Text style={[s.text, dark && { color: '#F2F6F7' }]} numberOfLines={2}>
         {message}
       </Text>
@@ -34,8 +36,16 @@ const s = StyleSheet.create({
     paddingHorizontal: space.md,
     paddingVertical: 9,
   },
-  light: { backgroundColor: colors.kelpTint, marginHorizontal: space.lg, marginBottom: space.sm },
-  dark: { backgroundColor: 'rgba(255,255,255,0.09)', alignSelf: 'stretch', marginTop: space.md },
+  light: {
+    backgroundColor: colors.kelpTint,
+    marginHorizontal: space.lg,
+    marginBottom: space.sm,
+  },
+  dark: {
+    backgroundColor: 'rgba(255,255,255,0.09)',
+    alignSelf: 'stretch',
+    marginTop: space.md,
+  },
   check: { fontFamily: font.bold, fontSize: 13 },
   text: { flex: 1, fontFamily: font.medium, fontSize: 12.5, color: colors.ink },
 });

@@ -3,10 +3,7 @@ import { Platform } from 'react-native';
 import { render, fireEvent, waitFor, act } from '@testing-library/react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
-import {
-  createMemoryBackend,
-  type Backend,
-} from '../../BackendContext';
+import { createMemoryBackend, type Backend } from '../../BackendContext';
 import { ToastProvider } from '@shared/state/ToastContext';
 import { dayKey } from '@shared/utils/date';
 import { FoodProvider } from '../../domain/food/FoodContext';
@@ -51,19 +48,22 @@ async function open(steps: StepsRepository) {
   const backend: Backend = { ...createMemoryBackend(), steps };
   const ui = render(
     <SafeAreaProvider initialMetrics={metrics}>
-        <ToastProvider>
-          <SettingsProvider repo={backend.settings}>
-            <WaypointsProvider repo={backend.waypoints}>
-              <FoodProvider repo={backend.food}>
-                <MovementProvider repo={backend.movement}>
-                  <ActivityProvider steps={backend.steps} restDays={backend.restDays}>
-                    <HealthDataScreen />
-                  </ActivityProvider>
-                </MovementProvider>
-              </FoodProvider>
-            </WaypointsProvider>
-          </SettingsProvider>
-        </ToastProvider>
+      <ToastProvider>
+        <SettingsProvider repo={backend.settings}>
+          <WaypointsProvider repo={backend.waypoints}>
+            <FoodProvider repo={backend.food}>
+              <MovementProvider repo={backend.movement}>
+                <ActivityProvider
+                  steps={backend.steps}
+                  restDays={backend.restDays}
+                >
+                  <HealthDataScreen />
+                </ActivityProvider>
+              </MovementProvider>
+            </FoodProvider>
+          </WaypointsProvider>
+        </SettingsProvider>
+      </ToastProvider>
     </SafeAreaProvider>,
   );
   await act(async () => {}); // let the first load settle
@@ -83,26 +83,34 @@ describe('Health data screen', () => {
     });
 
     it('tapping the Off chip asks for access and says it worked', async () => {
-      const { findByText, getByLabelText } = await open(source(StepsStatus.NeedsPermission, StepsStatus.Connected));
+      const { findByText, getByLabelText } = await open(
+        source(StepsStatus.NeedsPermission, StepsStatus.Connected),
+      );
       fireEvent.press(getByLabelText('Off. Tap to allow access to steps'));
       await findByText(`${name} is connected.`);
     });
 
     it(`says so when ${name} is not available on the device`, async () => {
-      const { findByText, getByLabelText } = await open(source(StepsStatus.Unavailable));
+      const { findByText, getByLabelText } = await open(
+        source(StepsStatus.Unavailable),
+      );
       fireEvent.press(getByLabelText('Off. Tap to allow access to steps'));
       await findByText(`${name} isn't available on this device.`);
     });
   });
 
   it('says so when permission was not granted', async () => {
-    const { findByText, getByLabelText } = await open(source(StepsStatus.NeedsPermission));
+    const { findByText, getByLabelText } = await open(
+      source(StepsStatus.NeedsPermission),
+    );
     fireEvent.press(getByLabelText('Off. Tap to allow access to steps'));
     await findByText('Tern still needs permission to read your steps.');
   });
 
   it('has no Off button once connected, and Sync now confirms with a message', async () => {
-    const { findByText, queryByLabelText, getByText } = await open(source(StepsStatus.Connected));
+    const { findByText, queryByLabelText, getByText } = await open(
+      source(StepsStatus.Connected),
+    );
     expect(queryByLabelText('Off. Tap to allow access to steps')).toBeNull();
     fireEvent.press(getByText('Sync now'));
     await findByText('Steps synced.');

@@ -53,7 +53,9 @@ export function TrendHeader({
       </View>
       {delta ? (
         <View style={[s.delta, { backgroundColor: delta.bg }]}>
-          <Text style={[s.deltaText, { color: delta.color }]}>{delta.text}</Text>
+          <Text style={[s.deltaText, { color: delta.color }]}>
+            {delta.text}
+          </Text>
         </View>
       ) : null}
     </View>
@@ -61,7 +63,11 @@ export function TrendHeader({
 }
 
 const s = StyleSheet.create({
-  top: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' },
+  top: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+  },
   delta: { borderRadius: 8, paddingHorizontal: 8, paddingVertical: 2 },
   deltaText: { fontFamily: font.semibold, fontSize: 11 },
   title: typography.label,

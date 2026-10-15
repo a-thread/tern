@@ -39,7 +39,11 @@ export function bucketSteps(days: DayRecord[], range: TrendRange): StepBar[] {
       label,
       value,
       state:
-        withData.length === 0 ? DayState.None : value >= goal ? DayState.Goal : DayState.Partial,
+        withData.length === 0
+          ? DayState.None
+          : value >= goal
+            ? DayState.Goal
+            : DayState.Partial,
     };
   });
 }

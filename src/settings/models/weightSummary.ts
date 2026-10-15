@@ -6,5 +6,7 @@ import { formatWeight } from '@shared/utils/units';
 export function weightSummary(s: AppSettings): string {
   if (!s.trackWeight) return 'Off';
   const how = s.weighInFrequency === Frequency.Daily ? 'Daily' : 'Weekly';
-  return s.weightGoalLb === null ? how : `${how} · goal ${formatWeight(s.weightGoalLb, s.units, 0)}`;
+  return s.weightGoalLb === null
+    ? how
+    : `${how} · goal ${formatWeight(s.weightGoalLb, s.units, 0)}`;
 }

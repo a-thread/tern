@@ -56,15 +56,18 @@ function DayRingBase({
     inputRange: [0, 1],
     outputRange: [circ, circ * (1 - Math.min(progress, 1))],
   });
-  const stroke = rest ? colors.driftwood : frozen ? colors.glacierDeep : today ? colors.sun : colors.glacier;
+  const stroke = rest
+    ? colors.driftwood
+    : frozen
+      ? colors.glacierDeep
+      : today
+        ? colors.sun
+        : colors.glacier;
   const track = rest ? '#E4DECE' : frozen ? '#D5E6EA' : colors.border;
   return (
     <View style={{ alignItems: 'center', gap: 4 }}>
       <View
-        style={[
-          cs.outline,
-          selected && { borderColor: colors.glacierDeep },
-        ]}
+        style={[cs.outline, selected && { borderColor: colors.glacierDeep }]}
       >
         <Svg
           width={today ? size + 3 : size}
@@ -92,7 +95,12 @@ function DayRingBase({
             transform='rotate(-90 15 15)'
           />
         </Svg>
-        {moved ? <View style={cs.moved} accessibilityLabel='Goal reached by movement' /> : null}
+        {moved ? (
+          <View
+            style={cs.moved}
+            accessibilityLabel='Goal reached by movement'
+          />
+        ) : null}
       </View>
       <Text
         style={[

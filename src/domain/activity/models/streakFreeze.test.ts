@@ -1,6 +1,11 @@
 import { DayState } from '@shared/models/dayState';
 import { addDays } from '@shared/utils/date';
-import { computeStreak, StreakFreezes, withFreezes, type DayRecord } from './dayRecord';
+import {
+  computeStreak,
+  StreakFreezes,
+  withFreezes,
+  type DayRecord,
+} from './dayRecord';
 
 const TODAY = '2026-10-04';
 
@@ -8,7 +13,8 @@ const TODAY = '2026-10-04';
 const record = (states: DayState[]): DayRecord[] =>
   states.map((state, i) => ({
     day: addDays(TODAY, i - (states.length - 1)),
-    steps: state === DayState.Goal ? 9000 : state === DayState.Partial ? 3000 : 0,
+    steps:
+      state === DayState.Goal ? 9000 : state === DayState.Partial ? 3000 : 0,
     goal: 8000,
     minutes: 0,
     movedToGoal: false,
@@ -33,18 +39,24 @@ describe('withFreezes', () => {
   });
 
   it('spends a freeze on a day that would break the streak, which then holds without adding', () => {
-    const { days, streak, freezes } = withFreezes(record([...goals(7), P, G, G]));
+    const { days, streak, freezes } = withFreezes(
+      record([...goals(7), P, G, G]),
+    );
     expect(days[7].state).toBe(DayState.Frozen);
     expect(streak).toBe(9); // 7 + 2 goal days; the frozen day adds nothing
     expect(freezes).toBe(0);
   });
 
   it('covers a day with no steps at all the same way', () => {
-    expect(withFreezes(record([...goals(7), N, G])).days[7].state).toBe(DayState.Frozen);
+    expect(withFreezes(record([...goals(7), N, G])).days[7].state).toBe(
+      DayState.Frozen,
+    );
   });
 
   it('lets the streak end when there is no freeze to spend', () => {
-    const { days, streak, freezes } = withFreezes(record([...goals(5), P, G, G]));
+    const { days, streak, freezes } = withFreezes(
+      record([...goals(5), P, G, G]),
+    );
     expect(days[5].state).toBe(P);
     expect(streak).toBe(2);
     expect(freezes).toBe(0);
@@ -64,7 +76,9 @@ describe('withFreezes', () => {
   });
 
   it('spends one freeze per missed day, and the next miss ends the streak', () => {
-    const { days, streak, freezes } = withFreezes(record([...goals(7), P, P, G]));
+    const { days, streak, freezes } = withFreezes(
+      record([...goals(7), P, P, G]),
+    );
     expect(days[7].state).toBe(DayState.Frozen);
     expect(days[8].state).toBe(P);
     expect(streak).toBe(1);
@@ -79,7 +93,9 @@ describe('withFreezes', () => {
 
   it('earns the next freeze from the streak that carried on through a frozen day', () => {
     // 7 days earns one, a miss spends it, and seven more goal days earn the next.
-    const { streak, freezes } = withFreezes(record([...goals(7), P, ...goals(7)]));
+    const { streak, freezes } = withFreezes(
+      record([...goals(7), P, ...goals(7)]),
+    );
     expect(streak).toBe(14);
     expect(freezes).toBe(1);
   });

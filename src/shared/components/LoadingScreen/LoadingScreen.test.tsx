@@ -9,7 +9,9 @@ afterEach(() => jest.restoreAllMocks());
 
 describe('LoadingScreen', () => {
   it('has one bird that says it is loading, with more crossing the sky for show', async () => {
-    jest.spyOn(AccessibilityInfo, 'isReduceMotionEnabled').mockResolvedValue(false);
+    jest
+      .spyOn(AccessibilityInfo, 'isReduceMotionEnabled')
+      .mockResolvedValue(false);
     const { getAllByRole, UNSAFE_getAllByType } = render(<LoadingScreen />);
     await act(async () => {});
     // Only the main bird is announced; the rest are scenery.
@@ -18,7 +20,9 @@ describe('LoadingScreen', () => {
   });
 
   it('is the one bird, still, when reduce motion is on', async () => {
-    jest.spyOn(AccessibilityInfo, 'isReduceMotionEnabled').mockResolvedValue(true);
+    jest
+      .spyOn(AccessibilityInfo, 'isReduceMotionEnabled')
+      .mockResolvedValue(true);
     const { UNSAFE_getAllByType } = render(<LoadingScreen />);
     await act(async () => {});
     expect(UNSAFE_getAllByType(LoadingBird)).toHaveLength(1);

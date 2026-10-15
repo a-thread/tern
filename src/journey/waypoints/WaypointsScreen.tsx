@@ -9,7 +9,12 @@ import type { RootStackParamList } from '../../navigation/types';
 import { useSettings } from '../../domain/settings/SettingsContext';
 import { useWaypoints } from '../../domain/waypoints/WaypointsContext';
 import { useLastSeenTotal } from './hooks/useLastSeenTotal';
-import { earnedOn, legFor, legProgress, stillOpen } from '../models/waypointSummary';
+import {
+  earnedOn,
+  legFor,
+  legProgress,
+  stillOpen,
+} from '../models/waypointSummary';
 import { PopupCard, popup } from '../components/PopupCard/PopupCard';
 import { FadeIn } from '../components/FadeIn/FadeIn';
 import { colors } from '@shared/theme';
@@ -50,7 +55,9 @@ export default function WaypointsScreen({ route }: Props) {
   const [start, setStart] = useState<number | null>(null);
   useEffect(() => {
     if (lastSeen === undefined || start !== null) return;
-    setStart(Math.min(lastSeen ?? Math.max(waypoints - todayTotal, 0), waypoints));
+    setStart(
+      Math.min(lastSeen ?? Math.max(waypoints - todayTotal, 0), waypoints),
+    );
   }, [lastSeen, start, waypoints, todayTotal]);
 
   return (
@@ -61,7 +68,9 @@ export default function WaypointsScreen({ route }: Props) {
       ) : (
         <CountTo from={start} to={waypoints} />
       )}
-      <Text style={popup.label}>{streak > 0 ? `☀ ${streak}-day streak` : 'Every step counts'}</Text>
+      <Text style={popup.label}>
+        {streak > 0 ? `☀ ${streak}-day streak` : 'Every step counts'}
+      </Text>
 
       {lines.length ? (
         <View style={popup.section}>
@@ -69,7 +78,11 @@ export default function WaypointsScreen({ route }: Props) {
             Today · <Text style={popup.gold}>+{todayTotal}</Text>
           </Text>
           {lines.map((l, i) => (
-            <FadeIn key={l.label} delay={START_MS + 50 + i * LINE_STAGGER_MS} style={popup.line}>
+            <FadeIn
+              key={l.label}
+              delay={START_MS + 50 + i * LINE_STAGGER_MS}
+              style={popup.line}
+            >
               <Text style={popup.lineText}>{l.label}</Text>
               <Text style={[popup.lineText, popup.gold]}>+{l.points}</Text>
             </FadeIn>
@@ -82,13 +95,18 @@ export default function WaypointsScreen({ route }: Props) {
           <Text style={popup.sectionTitle}>Still open today</Text>
           <View style={s.pills}>
             {open.map((o) => (
-              <Text key={o.label} style={s.pill}>{`${o.label} · +${o.points}`}</Text>
+              <Text
+                key={o.label}
+                style={s.pill}
+              >{`${o.label} · +${o.points}`}</Text>
             ))}
           </View>
         </View>
       ) : null}
 
-      {start === null ? null : <Leg events={events} from={start} to={waypoints} />}
+      {start === null ? null : (
+        <Leg events={events} from={start} to={waypoints} />
+      )}
     </PopupCard>
   );
 }
@@ -110,7 +128,15 @@ function CountTo({ from, to }: { from: number; to: number }) {
 }
 
 /** The next stop, and a bar that fills from where it stood last time (the paler part). */
-function Leg({ events, from, to }: { events: Parameters<typeof legFor>[1]; from: number; to: number }) {
+function Leg({
+  events,
+  from,
+  to,
+}: {
+  events: Parameters<typeof legFor>[1];
+  from: number;
+  to: number;
+}) {
   const still = useReduceMotion();
   const leg = legFor(to, events);
   const was = legProgress(leg, from);
@@ -139,18 +165,29 @@ function Leg({ events, from, to }: { events: Parameters<typeof legFor>[1]; from:
       <Text style={popup.sectionTitle}>Next stop</Text>
       <View style={popup.line}>
         <Text style={popup.lineText}>{leg.next.name}</Text>
-        <Text style={popup.soft}>{`${(leg.next.waypoints - to).toLocaleString()} to go`}</Text>
+        <Text
+          style={popup.soft}
+        >{`${(leg.next.waypoints - to).toLocaleString()} to go`}</Text>
       </View>
       <View style={s.bar}>
         <View style={[s.barWas, { width: `${was * 100}%` }]} />
         <Animated.View
-          style={[s.barNow, { width: fill.interpolate({ inputRange: [0, 1], outputRange: ['0%', '100%'] }) }]}
+          style={[
+            s.barNow,
+            {
+              width: fill.interpolate({
+                inputRange: [0, 1],
+                outputRange: ['0%', '100%'],
+              }),
+            },
+          ]}
         />
       </View>
       <Text style={popup.soft}>
         {gained > 0 ? (
           <>
-            Since you last looked: <Text style={popup.gold}>+{gained.toLocaleString()}</Text>
+            Since you last looked:{' '}
+            <Text style={popup.gold}>+{gained.toLocaleString()}</Text>
           </>
         ) : (
           `${leg.fromName} → ${leg.next.name}`
@@ -179,6 +216,19 @@ const s = StyleSheet.create({
     marginTop: 6,
     marginBottom: 5,
   },
-  barWas: { position: 'absolute', left: 0, top: 0, bottom: 0, backgroundColor: 'rgba(242,200,136,0.35)' },
-  barNow: { position: 'absolute', left: 0, top: 0, bottom: 0, backgroundColor: colors.sunLight, borderRadius: 3 },
+  barWas: {
+    position: 'absolute',
+    left: 0,
+    top: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(242,200,136,0.35)',
+  },
+  barNow: {
+    position: 'absolute',
+    left: 0,
+    top: 0,
+    bottom: 0,
+    backgroundColor: colors.sunLight,
+    borderRadius: 3,
+  },
 });

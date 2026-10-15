@@ -52,7 +52,10 @@ export function WeightProvider({
   const { settings } = useSettings();
   const today = useDayKey();
   const weighedToday = useMemo(
-    () => weightEntries.some((e) => isLoggedToday(e.loggedAt, new Date(`${today}T12:00:00`))),
+    () =>
+      weightEntries.some((e) =>
+        isLoggedToday(e.loggedAt, new Date(`${today}T12:00:00`)),
+      ),
     [weightEntries, today],
   );
   useAward(WaypointSource.Weight, weighedToday, settings.trackWeight && ready);
@@ -62,7 +65,8 @@ export function WeightProvider({
       const entry: WeightEntry = { id: newId(), lb, loggedAt };
       // Newest first, wherever a back-dated one lands.
       change(
-        (prev) => [entry, ...prev].sort((a, b) => b.loggedAt.localeCompare(a.loggedAt)),
+        (prev) =>
+          [entry, ...prev].sort((a, b) => b.loggedAt.localeCompare(a.loggedAt)),
         weight.add(entry),
         {
           log: 'Could not save weight entry',
@@ -75,19 +79,40 @@ export function WeightProvider({
 
   const updateWeightEntry = useCallback(
     (id: string, lb: number) => {
-      change((prev) => prev.map((e) => (e.id === id ? { ...e, lb } : e)), weight.update(id, lb), {
-        log: 'Could not update weight entry',
-        toast: "Couldn't save that change — please try again.",
-      });
+      change(
+        (prev) => prev.map((e) => (e.id === id ? { ...e, lb } : e)),
+        weight.update(id, lb),
+        {
+          log: 'Could not update weight entry',
+          toast: "Couldn't save that change — please try again.",
+        },
+      );
     },
     [weight, change],
   );
 
-  const weightTrend = useMemo(() => computeTrend(weightEntries), [weightEntries]);
+  const weightTrend = useMemo(
+    () => computeTrend(weightEntries),
+    [weightEntries],
+  );
 
   const value = useMemo<WeightContextValue>(
-    () => ({ weightEntries, weightTrend, ready, reload, addWeightEntry, updateWeightEntry }),
-    [weightEntries, weightTrend, ready, reload, addWeightEntry, updateWeightEntry],
+    () => ({
+      weightEntries,
+      weightTrend,
+      ready,
+      reload,
+      addWeightEntry,
+      updateWeightEntry,
+    }),
+    [
+      weightEntries,
+      weightTrend,
+      ready,
+      reload,
+      addWeightEntry,
+      updateWeightEntry,
+    ],
   );
 
   return (

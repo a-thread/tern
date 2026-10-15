@@ -2,14 +2,19 @@ import React from 'react';
 
 import { Divider, Row, Stepper, ToggleRow } from '@shared/components/ui';
 import { useSettings } from '@/domain/settings/SettingsContext';
-import { clampMovementGoal, MovementGoal } from '@/domain/settings/models/movementGoal';
+import {
+  clampMovementGoal,
+  MovementGoal,
+} from '@/domain/settings/models/movementGoal';
 
 /** Whether movement is tracked, and how many minutes make a goal day. */
 export function MovementSettingsRows() {
   const { settings, updateSettings } = useSettings();
   const step = (dir: 1 | -1) =>
     updateSettings({
-      movementGoalMinutes: clampMovementGoal(settings.movementGoalMinutes + dir * MovementGoal.STEP),
+      movementGoalMinutes: clampMovementGoal(
+        settings.movementGoalMinutes + dir * MovementGoal.STEP,
+      ),
     });
   return (
     <>

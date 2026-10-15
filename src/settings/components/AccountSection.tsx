@@ -12,12 +12,17 @@ export function AccountSection() {
       {auth ? (
         <View style={s.signOut}>
           {auth.isGuest ? (
-            <Pressable onPress={() => auth.signOut({ toSignUp: true })} hitSlop={8}>
+            <Pressable
+              onPress={() => auth.signOut({ toSignUp: true })}
+              hitSlop={8}
+            >
               <Text style={s.createText}>Create account</Text>
             </Pressable>
           ) : null}
           <Pressable onPress={() => auth.signOut()} hitSlop={8}>
-            <Text style={s.signOutText}>{auth.isGuest ? 'Exit preview' : 'Sign out'}</Text>
+            <Text style={s.signOutText}>
+              {auth.isGuest ? 'Exit preview' : 'Sign out'}
+            </Text>
           </Pressable>
         </View>
       ) : null}
@@ -30,5 +35,11 @@ const s = StyleSheet.create({
   signOut: { alignItems: 'center', gap: space.md, paddingVertical: space.lg },
   createText: { fontFamily: font.bold, fontSize: 14, color: colors.coral },
   signOutText: { fontFamily: font.semibold, fontSize: 14, color: colors.ink2 },
-  version: { fontFamily: font.body, fontSize: 11.5, color: colors.ink3, textAlign: 'center', marginTop: space.md },
+  version: {
+    fontFamily: font.body,
+    fontSize: 11.5,
+    color: colors.ink3,
+    textAlign: 'center',
+    marginTop: space.md,
+  },
 });

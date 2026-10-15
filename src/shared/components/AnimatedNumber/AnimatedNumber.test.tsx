@@ -25,7 +25,9 @@ describe('CountUp', () => {
   });
 
   it('starts over when replayed', () => {
-    const { getByText, rerender } = render(<CountUp target={5000} replayKey={0} />);
+    const { getByText, rerender } = render(
+      <CountUp target={5000} replayKey={0} />,
+    );
     play(2100);
     getByText('5,000');
     rerender(<CountUp target={5000} replayKey={1} />);
@@ -47,7 +49,10 @@ describe('AnimatedNumber', () => {
 });
 
 describe('re-renders of the screen that shows the number', () => {
-  const renderCountWhilePlaying = (screen: () => React.ReactElement, counter: { n: number }) => {
+  const renderCountWhilePlaying = (
+    screen: () => React.ReactElement,
+    counter: { n: number },
+  ) => {
     render(screen());
     counter.n = 0; // ignore the first paint
     play(2100);
@@ -70,6 +75,8 @@ describe('re-renders of the screen that shows the number', () => {
       const steps = useCountUp(6842);
       return <Text>{steps}</Text>;
     }
-    expect(renderCountWhilePlaying(() => <Screen />, counter)).toBeGreaterThan(10);
+    expect(renderCountWhilePlaying(() => <Screen />, counter)).toBeGreaterThan(
+      10,
+    );
   });
 });

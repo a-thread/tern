@@ -1,7 +1,10 @@
 import { Meals } from '../../domain/food/models/meals';
 import { type FoodEntry, Meal } from '../../domain/food/models/foodEntry';
 import { Frequency } from '@shared/models/frequency';
-import { isLoggedToday, type WeightEntry } from '../../domain/weight/models/weightEntry';
+import {
+  isLoggedToday,
+  type WeightEntry,
+} from '../../domain/weight/models/weightEntry';
 
 export type LeftToDoItem =
   | { kind: 'meal'; meal: FoodEntry['meal']; title: string; sub: string }
@@ -16,7 +19,8 @@ type WeighInPlan = { frequency: Frequency; weekday: number };
 /** A medication still to be taken today. */
 type DueMedication = { id: string; name: string; at: number };
 
-const startOfDay = (d: Date) => new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime();
+const startOfDay = (d: Date) =>
+  new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime();
 
 /**
  * Whether Today should ask for a weigh-in. Never once one is logged today.
@@ -94,7 +98,9 @@ export function leftToDo(
   }
 
   const weighIn =
-    options.weighIn === undefined ? { frequency: Frequency.Daily, weekday: 1 } : options.weighIn;
+    options.weighIn === undefined
+      ? { frequency: Frequency.Daily, weekday: 1 }
+      : options.weighIn;
   if (weighIn && weighInDue(lastWeight, now, weighIn)) {
     items.push({ kind: 'weight' });
   }
@@ -106,7 +112,12 @@ export function leftToDo(
   if (options.checkIn) items.push({ kind: 'checkIn' });
 
   for (const m of options.medications ?? []) {
-    items.push({ kind: 'medication', medicationId: m.id, name: m.name, at: m.at });
+    items.push({
+      kind: 'medication',
+      medicationId: m.id,
+      name: m.name,
+      at: m.at,
+    });
   }
 
   return items;

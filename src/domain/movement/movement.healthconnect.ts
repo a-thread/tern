@@ -1,7 +1,12 @@
 import { Platform } from 'react-native';
 import { addDays, dayKey, parseDayKey } from '@shared/utils/date';
 import { healthEnabled } from '../health/healthEnabled';
-import { Activity, isValidMinutes, type MovementEntry, MovementSource } from './models/movementEntry';
+import {
+  Activity,
+  isValidMinutes,
+  type MovementEntry,
+  MovementSource,
+} from './models/movementEntry';
 
 /** Workouts read from somewhere outside Tern (Health Connect, Apple Health). Read-only: never stored. */
 export interface WorkoutsSource {
@@ -71,7 +76,8 @@ export type ExerciseSessionRecord = {
 /** One recorded workout as movement on the day it started; null when it has no usable length. */
 export function sessionToEntry(
   r: ExerciseSessionRecord,
-  nameOf: (type: number | undefined) => string | undefined = (t) => (t === undefined ? undefined : EXERCISE_NAMES[t]),
+  nameOf: (type: number | undefined) => string | undefined = (t) =>
+    t === undefined ? undefined : EXERCISE_NAMES[t],
 ): MovementEntry | null {
   const start = Date.parse(r.startTime);
   const end = Date.parse(r.endTime);
@@ -106,14 +112,21 @@ export function createHealthConnectWorkouts(): WorkoutsSource | null {
   const read = { accessType: 'read', recordType: 'ExerciseSession' };
   // The library's own names when it has them (ExerciseType.WALKING = 79), else the table above.
   const names: Record<number, string> = hc.ExerciseType
-    ? Object.fromEntries(Object.entries(hc.ExerciseType as Record<string, number>).map(([k, v]) => [v, k]))
+    ? Object.fromEntries(
+        Object.entries(hc.ExerciseType as Record<string, number>).map(
+          ([k, v]) => [v, k],
+        ),
+      )
     : EXERCISE_NAMES;
 
   const granted = async () => {
     try {
       await hc.initialize();
-      const list: { accessType: string; recordType: string }[] = await hc.getGrantedPermissions();
-      return list.some((p) => p.recordType === 'ExerciseSession' && p.accessType === 'read');
+      const list: { accessType: string; recordType: string }[] =
+        await hc.getGrantedPermissions();
+      return list.some(
+        (p) => p.recordType === 'ExerciseSession' && p.accessType === 'read',
+      );
     } catch (e) {
       console.warn('Health Connect workout permission check failed', e);
       return false;
@@ -132,15 +145,22 @@ export function createHealthConnectWorkouts(): WorkoutsSource | null {
     },
     getRange: async (from, to) => {
       if (!(await granted())) return [];
-      const res: { records?: ExerciseSessionRecord[] } = await hc.readRecords('ExerciseSession', {
-        timeRangeFilter: {
-          operator: 'between',
-          startTime: parseDayKey(from).toISOString(),
-          endTime: parseDayKey(addDays(to, 1)).toISOString(),
+      const res: { records?: ExerciseSessionRecord[] } = await hc.readRecords(
+        'ExerciseSession',
+        {
+          timeRangeFilter: {
+            operator: 'between',
+            startTime: parseDayKey(from).toISOString(),
+            endTime: parseDayKey(addDays(to, 1)).toISOString(),
+          },
         },
-      });
+      );
       return (res.records ?? [])
-        .map((r) => sessionToEntry(r, (t) => (t === undefined ? undefined : (names[t] ?? EXERCISE_NAMES[t]))))
+        .map((r) =>
+          sessionToEntry(r, (t) =>
+            t === undefined ? undefined : (names[t] ?? EXERCISE_NAMES[t]),
+          ),
+        )
         .filter((e): e is MovementEntry => !!e);
     },
   };

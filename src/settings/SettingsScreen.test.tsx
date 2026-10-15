@@ -4,7 +4,10 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import { BackendProvider, createMemoryBackend } from '../BackendContext';
 import { ToastProvider } from '@shared/state/ToastContext';
-import { SettingsProvider, useSettings } from '../domain/settings/SettingsContext';
+import {
+  SettingsProvider,
+  useSettings,
+} from '../domain/settings/SettingsContext';
 import { DataProvider } from '../domain/settings/DataContext';
 import WaterSettingsScreen from './water/WaterSettingsScreen';
 import SettingsScreen from './SettingsScreen';
@@ -50,18 +53,34 @@ beforeEach(() => mockNavigate.mockClear());
 
 describe('Settings index', () => {
   const props = {
-    navigation: { navigate: mockNavigate, getParent: () => ({ goBack: jest.fn() }) },
+    navigation: {
+      navigate: mockNavigate,
+      getParent: () => ({ goBack: jest.fn() }),
+    },
     route: { key: 'root', name: 'SettingsRoot' },
   } as unknown as React.ComponentProps<typeof SettingsScreen>;
 
   it('lists each section with a summary, and no switches or steppers of its own', async () => {
     const ui = await open(<SettingsScreen {...props} />);
-    await waitFor(() => expect(ui.getByText('Steps and activity')).toBeTruthy());
-    for (const title of ['Food', 'Weight', 'Water', 'Mood and stress', 'Medication', 'Reminders', 'Health data', 'Units']) {
+    await waitFor(() =>
+      expect(ui.getByText('Steps and activity')).toBeTruthy(),
+    );
+    for (const title of [
+      'Food',
+      'Weight',
+      'Water',
+      'Mood and stress',
+      'Medication',
+      'Reminders',
+      'Health data',
+      'Units',
+    ]) {
       expect(ui.getByText(title)).toBeTruthy();
     }
     // Only Units is set right here; everything else is a page away.
-    expect(ui.UNSAFE_queryAllByProps({ accessibilityRole: 'switch' })).toHaveLength(0);
+    expect(
+      ui.UNSAFE_queryAllByProps({ accessibilityRole: 'switch' }),
+    ).toHaveLength(0);
   });
 
   it('opens a section page', async () => {
@@ -74,7 +93,9 @@ describe('Settings index', () => {
   it('keeps summaries in step with the settings', async () => {
     const ui = await open(<SettingsScreen {...props} />);
     await act(async () => update({ trackWater: false }));
-    await waitFor(() => expect(ui.getAllByText('Off').length).toBeGreaterThan(0));
+    await waitFor(() =>
+      expect(ui.getAllByText('Off').length).toBeGreaterThan(0),
+    );
     await act(async () => update({ trackWater: true, waterGoalOz: 80 }));
     await waitFor(() => expect(ui.getByText('80 oz a day')).toBeTruthy());
   });

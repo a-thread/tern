@@ -26,24 +26,52 @@ export type PlannedStreakAlert = ReminderText & { id: string; at: Date };
 
 const atRisk = (n: number, freezes: number): ReminderText[] => {
   const days = `${n}-day`;
-  const freezeLine = freezes > 0 ? ' A streak freeze has your back if not.' : '';
+  const freezeLine =
+    freezes > 0 ? ' A streak freeze has your back if not.' : '';
   return [
-    { title: 'Your streak is waiting', body: `Your ${days} streak is still going. A walk this evening keeps it that way.${freezeLine}` },
-    { title: 'Still time tonight', body: `A short stroll would carry your ${days} streak into tomorrow.${freezeLine}` },
-    { title: 'Evening steps?', body: `You’re ${n} days in. Open Tern to see how today is looking.${freezeLine}` },
-    { title: 'Streak check', body: `Day ${n + 1} is within reach. Even a few minutes outside helps.${freezeLine}` },
+    {
+      title: 'Your streak is waiting',
+      body: `Your ${days} streak is still going. A walk this evening keeps it that way.${freezeLine}`,
+    },
+    {
+      title: 'Still time tonight',
+      body: `A short stroll would carry your ${days} streak into tomorrow.${freezeLine}`,
+    },
+    {
+      title: 'Evening steps?',
+      body: `You’re ${n} days in. Open Tern to see how today is looking.${freezeLine}`,
+    },
+    {
+      title: 'Streak check',
+      body: `Day ${n + 1} is within reach. Even a few minutes outside helps.${freezeLine}`,
+    },
   ];
 };
 
 const ended = (n: number): ReminderText[] => [
-  { title: 'A fresh start', body: `Your ${n}-day streak ended yesterday. Today is a good day to begin the next one.` },
-  { title: 'New streak, new day', body: `${n} days is a real run. Whenever you’re ready, start another today.` },
-  { title: 'Onward', body: `Yesterday’s steps fell short of the goal, and that’s okay. A new streak starts with today’s walk.` },
+  {
+    title: 'A fresh start',
+    body: `Your ${n}-day streak ended yesterday. Today is a good day to begin the next one.`,
+  },
+  {
+    title: 'New streak, new day',
+    body: `${n} days is a real run. Whenever you’re ready, start another today.`,
+  },
+  {
+    title: 'Onward',
+    body: `Yesterday’s steps fell short of the goal, and that’s okay. A new streak starts with today’s walk.`,
+  },
 ];
 
 const frozen = (n: number): ReminderText[] => [
-  { title: 'Freeze used', body: `A streak freeze covered yesterday, so your ${n}-day streak is safe. Today is a fresh chance.` },
-  { title: 'Streak protected', body: `Yesterday was covered by a freeze and your ${n} days still stand.` },
+  {
+    title: 'Freeze used',
+    body: `A streak freeze covered yesterday, so your ${n}-day streak is safe. Today is a fresh chance.`,
+  },
+  {
+    title: 'Streak protected',
+    body: `Yesterday was covered by a freeze and your ${n} days still stand.`,
+  },
 ];
 
 /**
@@ -54,7 +82,13 @@ const frozen = (n: number): ReminderText[] => [
  *  - tomorrow morning, a note on how it turned out if today's goal never gets reached
  *    (a freeze covered it, or the streak ended). Without a freeze left, that's the loss.
  */
-export function planStreakAlerts({ on, streak, freezes, todayOpen, now }: StreakAlertInput): PlannedStreakAlert[] {
+export function planStreakAlerts({
+  on,
+  streak,
+  freezes,
+  todayOpen,
+  now,
+}: StreakAlertInput): PlannedStreakAlert[] {
   if (!on || streak <= 0 || !todayOpen) return [];
   const today = dayKey(now);
   const day = dayNumber(now);
@@ -62,12 +96,20 @@ export function planStreakAlerts({ on, streak, freezes, todayOpen, now }: Streak
 
   const evening = atTime(today, StreakAlerts.AT_RISK_AT);
   if (evening > now) {
-    out.push({ id: StreakAlerts.AT_RISK_ID, at: evening, ...variantFor(atRisk(streak, freezes), day) });
+    out.push({
+      id: StreakAlerts.AT_RISK_ID,
+      at: evening,
+      ...variantFor(atRisk(streak, freezes), day),
+    });
   }
 
   const morning = atTime(addDays(today, 1), StreakAlerts.MORNING_AT);
   const outcome = freezes > 0 ? frozen(streak) : ended(streak);
-  out.push({ id: StreakAlerts.OUTCOME_ID, at: morning, ...variantFor(outcome, day) });
+  out.push({
+    id: StreakAlerts.OUTCOME_ID,
+    at: morning,
+    ...variantFor(outcome, day),
+  });
   return out;
 }
 

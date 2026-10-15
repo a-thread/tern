@@ -5,7 +5,11 @@ import { useDayKey } from '@shared/hooks/useDayKey';
 import { useActivity } from './domain/activity/ActivityContext';
 import { StepsStatus } from './domain/activity/models/stepsStatus';
 import { useSettings } from './domain/settings/SettingsContext';
-import { syncReminders, syncStreakAlerts, SyncResult } from './domain/settings/reminders';
+import {
+  syncReminders,
+  syncStreakAlerts,
+  SyncResult,
+} from './domain/settings/reminders';
 
 /** Keeps the device's scheduled reminders in step with the Settings toggles. Renders nothing. */
 export function RemindersSync() {

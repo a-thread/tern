@@ -11,7 +11,9 @@ export function assertProviderOrder(specs: readonly ProviderSpec[]): void {
   for (const { name, needs } of specs) {
     for (const need of needs) {
       if (!seen.has(need)) {
-        throw new Error(`${name} needs ${need}, which must be listed before it`);
+        throw new Error(
+          `${name} needs ${need}, which must be listed before it`,
+        );
       }
     }
     seen.add(name);

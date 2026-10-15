@@ -1,14 +1,29 @@
 import { addDays } from '@shared/utils/date';
 import { Meal } from './foodEntry';
-import { AdaptiveTarget, completeDays, dailyTrend, estimateBurn, suggestTarget, weeklyEnergy, worthSuggesting } from './energyBalance';
+import {
+  AdaptiveTarget,
+  completeDays,
+  dailyTrend,
+  estimateBurn,
+  suggestTarget,
+  weeklyEnergy,
+  worthSuggesting,
+} from './energyBalance';
 import { Aim } from '../../settings/models/aim';
 
 const TODAY = '2026-10-29';
 const at = (day: string) => `${day}T12:00:00`;
 
 /** Three meals adding up to `kcal`, logged every day for `days` days before today. */
-function eating(kcal: number, days = 30, skip: (i: number) => boolean = () => false) {
-  const byDay: Record<string, { meal: Meal; calories: number; servings: number }[]> = {};
+function eating(
+  kcal: number,
+  days = 30,
+  skip: (i: number) => boolean = () => false,
+) {
+  const byDay: Record<
+    string,
+    { meal: Meal; calories: number; servings: number }[]
+  > = {};
   for (let i = 1; i <= days; i++) {
     if (skip(i)) continue;
     byDay[addDays(TODAY, -i)] = [
@@ -23,7 +38,11 @@ function eating(kcal: number, days = 30, skip: (i: number) => boolean = () => fa
 /** A weigh-in every `every` days, losing `lossPerDay` lb a day, ending at `end` yesterday. */
 function weighing(end: number, lossPerDay: number, every = 1, days = 45) {
   const out: { lb: number; loggedAt: string }[] = [];
-  for (let i = days; i >= 1; i -= every) out.push({ lb: end + lossPerDay * (i - 1), loggedAt: at(addDays(TODAY, -i)) });
+  for (let i = days; i >= 1; i -= every)
+    out.push({
+      lb: end + lossPerDay * (i - 1),
+      loggedAt: at(addDays(TODAY, -i)),
+    });
   return out;
 }
 
@@ -48,7 +67,10 @@ describe('completeDays', () => {
   it('counts days with two meals or every core meal accounted for, never empty days', () => {
     const days = completeDays(
       {
-        a: [{ meal: Meal.Breakfast, calories: 300, servings: 1 }, { meal: Meal.Lunch, calories: 500, servings: 1 }],
+        a: [
+          { meal: Meal.Breakfast, calories: 300, servings: 1 },
+          { meal: Meal.Lunch, calories: 500, servings: 1 },
+        ],
         b: [{ meal: Meal.Dinner, calories: 700, servings: 1 }],
         c: [{ meal: Meal.Dinner, calories: 700, servings: 1 }],
         d: [],
@@ -61,13 +83,21 @@ describe('completeDays', () => {
 
 describe('estimateBurn', () => {
   it('reads burn as intake when weight is steady', () => {
-    const r = estimateBurn({ foodByDay: eating(2100), weighs: weighing(170, 0), today: TODAY });
+    const r = estimateBurn({
+      foodByDay: eating(2100),
+      weighs: weighing(170, 0),
+      today: TODAY,
+    });
     expect(r.status).toBe('ready');
     if (r.status === 'ready') expect(r.kcal).toBe(2100);
   });
 
   it('adds what a falling trend says was burned: 1.2 lb over 3 weeks at 2,050 is about 2,250', () => {
-    const r = estimateBurn({ foodByDay: eating(2050), weighs: weighing(170, 1.2 / 21), today: TODAY });
+    const r = estimateBurn({
+      foodByDay: eating(2050),
+      weighs: weighing(170, 1.2 / 21),
+      today: TODAY,
+    });
     expect(r.status).toBe('ready');
     if (r.status === 'ready') {
       expect(Math.abs(r.kcal - 2250)).toBeLessThan(20);
@@ -78,17 +108,33 @@ describe('estimateBurn', () => {
   });
 
   it('keeps learning without enough logged days', () => {
-    const r = estimateBurn({ foodByDay: eating(2000, 30, (i) => i % 2 === 0), weighs: weighing(170, 0), today: TODAY });
-    expect(r).toMatchObject({ status: 'learning', loggedDays: 11, neededDays: AdaptiveTarget.MIN_LOGGED_DAYS });
+    const r = estimateBurn({
+      foodByDay: eating(2000, 30, (i) => i % 2 === 0),
+      weighs: weighing(170, 0),
+      today: TODAY,
+    });
+    expect(r).toMatchObject({
+      status: 'learning',
+      loggedDays: 11,
+      neededDays: AdaptiveTarget.MIN_LOGGED_DAYS,
+    });
   });
 
   it('keeps learning without weigh-ins spread across the window', () => {
-    const r = estimateBurn({ foodByDay: eating(2000), weighs: weighing(170, 0, 1, 5), today: TODAY });
+    const r = estimateBurn({
+      foodByDay: eating(2000),
+      weighs: weighing(170, 0, 1, 5),
+      today: TODAY,
+    });
     expect(r.status).toBe('learning');
   });
 
   it('leaves unlogged days out instead of counting them as nothing eaten', () => {
-    const r = estimateBurn({ foodByDay: eating(2100, 30, (i) => i % 5 === 0), weighs: weighing(170, 0), today: TODAY });
+    const r = estimateBurn({
+      foodByDay: eating(2100, 30, (i) => i % 5 === 0),
+      weighs: weighing(170, 0),
+      today: TODAY,
+    });
     expect(r.status).toBe('ready');
     if (r.status === 'ready') expect(r.kcal).toBe(2100);
   });

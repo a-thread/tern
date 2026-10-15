@@ -1,6 +1,13 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Icon } from '@shared/components/ui';
-import { Animated, Easing, Pressable, StyleSheet, TextInput, View } from 'react-native';
+import {
+  Animated,
+  Easing,
+  Pressable,
+  StyleSheet,
+  TextInput,
+  View,
+} from 'react-native';
 
 import { colors, font, radius, space } from '@shared/theme';
 
@@ -31,7 +38,11 @@ export function FoodSearchBar({
         style={s.input}
         autoFocus
       />
-      <Pressable style={s.scan} onPress={onScan} accessibilityLabel='Scan a barcode'>
+      <Pressable
+        style={s.scan}
+        onPress={onScan}
+        accessibilityLabel='Scan a barcode'
+      >
         <Icon name='barcode-scan' size={17} color='#fff' />
       </Pressable>
       {busy ? <ProgressLine /> : null}
@@ -45,7 +56,12 @@ function ProgressLine() {
   const t = useRef(new Animated.Value(0)).current;
   useEffect(() => {
     const loop = Animated.loop(
-      Animated.timing(t, { toValue: 1, duration: 1100, easing: Easing.inOut(Easing.quad), useNativeDriver: true }),
+      Animated.timing(t, {
+        toValue: 1,
+        duration: 1100,
+        easing: Easing.inOut(Easing.quad),
+        useNativeDriver: true,
+      }),
     );
     loop.start();
     return () => loop.stop();
@@ -64,7 +80,14 @@ function ProgressLine() {
           s.segment,
           {
             width: segment,
-            transform: [{ translateX: t.interpolate({ inputRange: [0, 1], outputRange: [-segment, width] }) }],
+            transform: [
+              {
+                translateX: t.interpolate({
+                  inputRange: [0, 1],
+                  outputRange: [-segment, width],
+                }),
+              },
+            ],
           },
         ]}
       />
@@ -84,7 +107,13 @@ const s = StyleSheet.create({
     marginHorizontal: space.lg,
     overflow: 'hidden',
   },
-  input: { flex: 1, fontFamily: font.body, fontSize: 14, color: colors.ink, padding: 0 },
+  input: {
+    flex: 1,
+    fontFamily: font.body,
+    fontSize: 14,
+    color: colors.ink,
+    padding: 0,
+  },
   scan: {
     width: 34,
     height: 34,

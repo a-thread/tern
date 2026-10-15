@@ -1,7 +1,20 @@
-import { latestMilestone, migrationProgress, milestonesFor, Milestones } from './milestone';
-import { daysWithWaypoints, type LedgerEvent, WaypointSource } from './waypoint';
+import {
+  latestMilestone,
+  migrationProgress,
+  milestonesFor,
+  Milestones,
+} from './milestone';
+import {
+  daysWithWaypoints,
+  type LedgerEvent,
+  WaypointSource,
+} from './waypoint';
 
-const ev = (day: string, points: number, source: LedgerEvent['source'] = WaypointSource.Steps): LedgerEvent => ({
+const ev = (
+  day: string,
+  points: number,
+  source: LedgerEvent['source'] = WaypointSource.Steps,
+): LedgerEvent => ({
   day,
   points,
   source,
@@ -10,7 +23,11 @@ const ev = (day: string, points: number, source: LedgerEvent['source'] = Waypoin
 describe('milestonesFor', () => {
   it('dates each reached stop by replaying the ledger in day order', () => {
     // Deliberately out of order.
-    const events = [ev('2026-03-03', 100), ev('2026-03-01', 200), ev('2026-03-05', 400)];
+    const events = [
+      ev('2026-03-03', 100),
+      ev('2026-03-01', 200),
+      ev('2026-03-05', 400),
+    ];
     const [first, second, third] = milestonesFor(700, events);
     expect(first).toMatchObject({ reached: true, reachedOn: '2026-03-03' }); // 200+100 >= 250
     expect(second).toMatchObject({ reached: true, reachedOn: '2026-03-05' }); // 700 >= 600
@@ -32,7 +49,11 @@ describe('milestonesFor', () => {
 describe('daysWithWaypoints', () => {
   it('counts distinct days, not events', () => {
     expect(
-      daysWithWaypoints([ev('2026-03-01', 40), ev('2026-03-01', 15, WaypointSource.Meals), ev('2026-03-02', 40)]),
+      daysWithWaypoints([
+        ev('2026-03-01', 40),
+        ev('2026-03-01', 15, WaypointSource.Meals),
+        ev('2026-03-02', 40),
+      ]),
     ).toBe(2);
   });
 });
@@ -55,7 +76,9 @@ describe('latestMilestone', () => {
       lap: 1,
     });
     expect(
-      latestMilestone(Milestones.MIGRATION_LENGTH + Milestones.STOPS[1].waypoints),
+      latestMilestone(
+        Milestones.MIGRATION_LENGTH + Milestones.STOPS[1].waypoints,
+      ),
     ).toMatchObject({ name: Milestones.STOPS[1].name, lap: 2 });
   });
 
@@ -77,14 +100,24 @@ describe('the migration loops', () => {
     const past = milestonesFor(Milestones.MIGRATION_LENGTH + 300, []);
     const next = past.find((m) => !m.reached)!;
     expect(next).toMatchObject({ lap: 2, name: Milestones.STOPS[1].name });
-    expect(next.waypoints).toBe(Milestones.MIGRATION_LENGTH + Milestones.STOPS[1].waypoints);
-    expect(past.filter((m) => m.reached)).toHaveLength(Milestones.STOPS.length + 1);
+    expect(next.waypoints).toBe(
+      Milestones.MIGRATION_LENGTH + Milestones.STOPS[1].waypoints,
+    );
+    expect(past.filter((m) => m.reached)).toHaveLength(
+      Milestones.STOPS.length + 1,
+    );
     expect(new Set(past.map((m) => m.id)).size).toBe(past.length);
   });
 
   it('reports which migration a total is on and how far through it', () => {
     expect(migrationProgress(0)).toEqual({ lap: 1, progress: 0 });
-    expect(migrationProgress(Milestones.MIGRATION_LENGTH / 2)).toEqual({ lap: 1, progress: 0.5 });
-    expect(migrationProgress(Milestones.MIGRATION_LENGTH)).toEqual({ lap: 2, progress: 0 });
+    expect(migrationProgress(Milestones.MIGRATION_LENGTH / 2)).toEqual({
+      lap: 1,
+      progress: 0.5,
+    });
+    expect(migrationProgress(Milestones.MIGRATION_LENGTH)).toEqual({
+      lap: 2,
+      progress: 0,
+    });
   });
 });

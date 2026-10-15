@@ -4,7 +4,15 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 
 import { colors, radius, space, typography } from '@shared/theme';
-import { Group, GroupLabel, IconBadge, PushHeader, ToggleRow, Stepper, Icon } from '@shared/components/ui';
+import {
+  Group,
+  GroupLabel,
+  IconBadge,
+  PushHeader,
+  ToggleRow,
+  Stepper,
+  Icon,
+} from '@shared/components/ui';
 import { useSettings } from '../../domain/settings/SettingsContext';
 import { useActivity } from '../../domain/activity/ActivityContext';
 import { StreakFreezes } from '../../domain/activity/models/dayRecord';
@@ -54,7 +62,12 @@ export default function RestDaysScreen() {
               <Text style={s.rowTitle}>Rest days per week</Text>
               <Text style={s.rowSub}>Unused ones don't carry over</Text>
             </View>
-            <Stepper value={settings.restDaysPerWeek} onDecrement={() => stepAllowance(-1)} onIncrement={() => stepAllowance(1)} valueMinWidth={26} />
+            <Stepper
+              value={settings.restDaysPerWeek}
+              onDecrement={() => stepAllowance(-1)}
+              onIncrement={() => stepAllowance(1)}
+              valueMinWidth={26}
+            />
           </View>
           <ToggleRow
             title='Auto-detect'
@@ -90,7 +103,11 @@ export default function RestDaysScreen() {
         <GroupLabel>Streak freezes</GroupLabel>
         <Group>
           <InfoRow
-            text={freezes === 0 ? 'No freezes right now' : `${freezes} ${freezes === 1 ? 'freeze' : 'freezes'} ready`}
+            text={
+              freezes === 0
+                ? 'No freezes right now'
+                : `${freezes} ${freezes === 1 ? 'freeze' : 'freezes'} ready`
+            }
             sub='Held for the next day that would break your streak'
           />
           <InfoRow
@@ -107,9 +124,10 @@ export default function RestDaysScreen() {
         <View style={s.card}>
           <Text style={s.intro}>
             Running out of rest days won't erase your waypoints or your history
-            — a streak just starts counting again, unless a freeze covers the day. Once a day is over, what it
-            earned is yours for good. (Today's waypoints follow today: remove a
-            meal or a drink and that award steps back until it's there again.)
+            — a streak just starts counting again, unless a freeze covers the
+            day. Once a day is over, what it earned is yours for good. (Today's
+            waypoints follow today: remove a meal or a drink and that award
+            steps back until it's there again.)
           </Text>
         </View>
       </ScrollView>

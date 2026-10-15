@@ -22,7 +22,9 @@ export function computeTrend(
   for (const entry of [...entriesNewestFirst].reverse()) {
     const prev = trend[trend.length - 1];
     const next =
-      prev === undefined ? entry.lb : prev + TrendSmoothing.ALPHA * (entry.lb - prev);
+      prev === undefined
+        ? entry.lb
+        : prev + TrendSmoothing.ALPHA * (entry.lb - prev);
     trend.push(Math.round(next * 100) / 100);
   }
   return maxPoints > 0 ? trend.slice(-maxPoints) : [];

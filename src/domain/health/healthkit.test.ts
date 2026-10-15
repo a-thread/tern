@@ -1,6 +1,10 @@
 import { Platform } from 'react-native';
 
-import { createHealthKitApi, loadHealthKit, type HealthKitModule } from './healthkit';
+import {
+  createHealthKitApi,
+  loadHealthKit,
+  type HealthKitModule,
+} from './healthkit';
 
 const fakeModule = (over: Partial<HealthKitModule> = {}): HealthKitModule => ({
   isHealthDataAvailableAsync: async () => true,
@@ -13,14 +17,28 @@ const fakeModule = (over: Partial<HealthKitModule> = {}): HealthKitModule => ({
 
 describe('createHealthKitApi', () => {
   it('needs authorization only while the permission sheet has not been shown', async () => {
-    expect(await createHealthKitApi(fakeModule({ getRequestStatusForAuthorization: async () => 1 })).needsAuthorization()).toBe(true);
-    expect(await createHealthKitApi(fakeModule({ getRequestStatusForAuthorization: async () => 2 })).needsAuthorization()).toBe(false);
-    expect(await createHealthKitApi(fakeModule({ getRequestStatusForAuthorization: async () => 0 })).needsAuthorization()).toBe(false);
+    expect(
+      await createHealthKitApi(
+        fakeModule({ getRequestStatusForAuthorization: async () => 1 }),
+      ).needsAuthorization(),
+    ).toBe(true);
+    expect(
+      await createHealthKitApi(
+        fakeModule({ getRequestStatusForAuthorization: async () => 2 }),
+      ).needsAuthorization(),
+    ).toBe(false);
+    expect(
+      await createHealthKitApi(
+        fakeModule({ getRequestStatusForAuthorization: async () => 0 }),
+      ).needsAuthorization(),
+    ).toBe(false);
   });
 
   it('asks for steps and workouts in one sheet, and nothing to write', async () => {
     const requestAuthorization = jest.fn(async () => true);
-    await createHealthKitApi(fakeModule({ requestAuthorization })).requestAuthorization();
+    await createHealthKitApi(
+      fakeModule({ requestAuthorization }),
+    ).requestAuthorization();
     expect(requestAuthorization).toHaveBeenCalledWith({
       toRead: ['HKQuantityTypeIdentifierStepCount', 'HKWorkoutTypeIdentifier'],
     });
@@ -31,7 +49,9 @@ describe('createHealthKitApi', () => {
       { startDate: new Date(2026, 9, 7), sumQuantity: { quantity: 8123.4 } },
       { startDate: new Date(2026, 9, 8) }, // a day with nothing recorded
     ]);
-    const api = createHealthKitApi(fakeModule({ queryStatisticsCollectionForQuantity: query }));
+    const api = createHealthKitApi(
+      fakeModule({ queryStatisticsCollectionForQuantity: query }),
+    );
     const from = new Date(2026, 9, 7);
     const to = new Date(2026, 9, 9);
     expect(await api.dailySteps(from, to)).toEqual([
@@ -64,8 +84,15 @@ describe('createHealthKitApi', () => {
         ],
       }),
     );
-    expect(await api.workouts(new Date(2026, 9, 7), new Date(2026, 9, 8))).toEqual([
-      { id: 'abc', start: new Date(2026, 9, 7, 7, 0), end: new Date(2026, 9, 7, 7, 30), activityType: 37 },
+    expect(
+      await api.workouts(new Date(2026, 9, 7), new Date(2026, 9, 8)),
+    ).toEqual([
+      {
+        id: 'abc',
+        start: new Date(2026, 9, 7, 7, 0),
+        end: new Date(2026, 9, 7, 7, 30),
+        activityType: 37,
+      },
     ]);
     expect(dispose).toHaveBeenCalledTimes(1);
   });

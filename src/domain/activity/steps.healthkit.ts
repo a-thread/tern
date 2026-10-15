@@ -19,7 +19,9 @@ export function createHealthKitStepsRepository(
   const status = async (): Promise<StepsStatus> => {
     try {
       if (!(await health.isAvailable())) return StepsStatus.Unavailable;
-      return (await health.needsAuthorization()) ? StepsStatus.NeedsPermission : StepsStatus.Connected;
+      return (await health.needsAuthorization())
+        ? StepsStatus.NeedsPermission
+        : StepsStatus.Connected;
     } catch (e) {
       console.warn('Apple Health status check failed', e);
       return StepsStatus.Unavailable;
@@ -39,7 +41,10 @@ export function createHealthKitStepsRepository(
     getRange: async (from, to) => {
       if ((await status()) !== StepsStatus.Connected) return {};
       // The statistics query de-duplicates iPhone and Apple Watch samples, as the Health app does.
-      const rows = await health.dailySteps(parseDayKey(from), parseDayKey(addDays(to, 1)));
+      const rows = await health.dailySteps(
+        parseDayKey(from),
+        parseDayKey(addDays(to, 1)),
+      );
       const out: Record<string, number> = {};
       for (const r of rows) out[dayKey(r.day)] = Math.round(r.steps);
       return out;

@@ -1,6 +1,15 @@
 import { addDays, dayKey, parseDayKey } from '@shared/utils/date';
-import { loadHealthKit, type HealthKitApi, type HealthKitWorkout } from '../health/healthkit';
-import { Activity, isValidMinutes, MovementSource, type MovementEntry } from './models/movementEntry';
+import {
+  loadHealthKit,
+  type HealthKitApi,
+  type HealthKitWorkout,
+} from '../health/healthkit';
+import {
+  Activity,
+  isValidMinutes,
+  MovementSource,
+  type MovementEntry,
+} from './models/movementEntry';
 import type { WorkoutsSource } from './movement.healthconnect';
 
 /** HKWorkoutActivityType raw values (Apple's numbering) as the activities Tern offers. */
@@ -53,7 +62,8 @@ const ACTIVITY_FOR_TYPE: Record<number, Activity> = {
   79: Activity.Pickleball,
 };
 
-export const activityForWorkoutType = (type: number): Activity => ACTIVITY_FOR_TYPE[type] ?? Activity.Other;
+export const activityForWorkoutType = (type: number): Activity =>
+  ACTIVITY_FOR_TYPE[type] ?? Activity.Other;
 
 /** One HealthKit workout as read-only movement on the day it started; null when it has no usable length. */
 export function workoutToEntry(w: HealthKitWorkout): MovementEntry | null {
@@ -74,13 +84,17 @@ export function workoutToEntry(w: HealthKitWorkout): MovementEntry | null {
  * Workouts from Apple Health on iPhone, read live and never stored. HealthKit asks for steps and
  * workouts in one permission sheet, so connecting either one covers both.
  */
-export function createHealthKitWorkouts(health: HealthKitApi | null = loadHealthKit()): WorkoutsSource | null {
+export function createHealthKitWorkouts(
+  health: HealthKitApi | null = loadHealthKit(),
+): WorkoutsSource | null {
   if (!health) return null;
 
   // "Asked" is as much as HealthKit will tell us; a denied read just returns nothing.
   const asked = async () => {
     try {
-      return (await health.isAvailable()) && !(await health.needsAuthorization());
+      return (
+        (await health.isAvailable()) && !(await health.needsAuthorization())
+      );
     } catch (e) {
       console.warn('Apple Health workout permission check failed', e);
       return false;
@@ -99,8 +113,13 @@ export function createHealthKitWorkouts(health: HealthKitApi | null = loadHealth
     },
     getRange: async (from, to) => {
       if (!(await asked())) return [];
-      const list = await health.workouts(parseDayKey(from), parseDayKey(addDays(to, 1)));
-      return list.map(workoutToEntry).filter((e): e is MovementEntry => e !== null);
+      const list = await health.workouts(
+        parseDayKey(from),
+        parseDayKey(addDays(to, 1)),
+      );
+      return list
+        .map(workoutToEntry)
+        .filter((e): e is MovementEntry => e !== null);
     },
   };
 }

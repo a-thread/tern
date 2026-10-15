@@ -2,13 +2,7 @@ import React, { useState } from 'react';
 import { Pressable, StyleSheet, Text } from 'react-native';
 
 import { colors, font, radius } from '@shared/theme';
-import {
-  Group,
-  GroupLabel,
-  IconBadge,
-  Row,
-  Icon,
-} from '@shared/components/ui';
+import { Group, GroupLabel, IconBadge, Row, Icon } from '@shared/components/ui';
 import { useUnits } from '../../domain/settings/hooks/useUnits';
 import { formatMinutes } from '../../domain/settings/models/reminderPlan';
 import { useMedication } from '../../domain/medication/MedicationContext';

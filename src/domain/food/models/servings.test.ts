@@ -1,4 +1,13 @@
-import { stepServings, formatCount, gramsOf, parseGrams, portionGrams, portionServingLabel, scaleForGrams, Servings } from './servings';
+import {
+  stepServings,
+  formatCount,
+  gramsOf,
+  parseGrams,
+  portionGrams,
+  portionServingLabel,
+  scaleForGrams,
+  Servings,
+} from './servings';
 
 describe('gramsOf', () => {
   it('reads gram-based serving labels', () => {
@@ -25,7 +34,13 @@ describe('gramsOf', () => {
 
 describe('scaleForGrams', () => {
   it('scales nutrition from the base amount to the eaten amount', () => {
-    expect(scaleForGrams({ calories: 407, protein: 11.8, carbs: 68.5, fat: 9.5 }, 100, 40)).toEqual({
+    expect(
+      scaleForGrams(
+        { calories: 407, protein: 11.8, carbs: 68.5, fat: 9.5 },
+        100,
+        40,
+      ),
+    ).toEqual({
       calories: 163,
       protein: 4.7,
       carbs: 27.4,

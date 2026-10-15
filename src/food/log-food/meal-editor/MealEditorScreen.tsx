@@ -23,7 +23,10 @@ import { useToast } from '@shared/state/ToastContext';
 import { TierDot } from '@shared/components/TierDot';
 import { useFoodDisplay } from '@/domain/food/hooks/useFoodDisplay';
 import { useSavedMeals } from '@/domain/saved-meals/SavedMealsContext';
-import { isDraftDirty, scaledTotals } from '@/domain/saved-meals/models/mealDraft';
+import {
+  isDraftDirty,
+  scaledTotals,
+} from '@/domain/saved-meals/models/mealDraft';
 import { SavedMealLimits } from '@/domain/saved-meals/models/savedMeals';
 import { Servings } from '@/domain/food/models/servings';
 import { quantityText } from '@/domain/food/models/measure';

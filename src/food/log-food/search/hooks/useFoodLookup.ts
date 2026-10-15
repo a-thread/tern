@@ -126,7 +126,11 @@ export function useFoodLookup({
       searching
         ? rankFoods(trimmed, [
             { from: FoodSource.Mine, foods: mine },
-            { from: FoodSource.Common, foods: common, aliases: aliasesOf(index) },
+            {
+              from: FoodSource.Common,
+              foods: common,
+              aliases: aliasesOf(index),
+            },
             {
               from: FoodSource.Usda,
               foods: usdaOn ? rowsFor(everyday.state, trimmed) : [],

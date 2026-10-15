@@ -1,10 +1,19 @@
 import React from 'react';
-import { act, fireEvent, render, renderHook, waitFor } from '@testing-library/react-native';
+import {
+  act,
+  fireEvent,
+  render,
+  renderHook,
+  waitFor,
+} from '@testing-library/react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import { createMemoryBackend } from '../BackendContext';
 import { ToastProvider } from '@shared/state/ToastContext';
-import { ViewedDayProvider, useViewedDay } from '@shared/state/ViewedDayContext';
+import {
+  ViewedDayProvider,
+  useViewedDay,
+} from '@shared/state/ViewedDayContext';
 import { addDays, dayKey } from '@shared/utils/date';
 import { FoodProvider } from '../domain/food/FoodContext';
 import { createMemoryFoodRepository } from '../domain/food/food.repository';
@@ -15,7 +24,10 @@ import { MedicationProvider } from '../domain/medication/MedicationContext';
 import { WaterProvider } from '../domain/water/WaterContext';
 import { MoodProvider } from '../domain/mood/MoodContext';
 import { MovementProvider } from '../domain/movement/MovementContext';
-import { ActivityProvider, useActivity } from '../domain/activity/ActivityContext';
+import {
+  ActivityProvider,
+  useActivity,
+} from '../domain/activity/ActivityContext';
 import { type StepsRepository } from '../domain/activity/steps.repository';
 import { StepsStatus } from '../domain/activity/models/stepsStatus';
 import { useRestDay } from './hooks/useRestDay';
@@ -24,7 +36,9 @@ import TodayScreen from './TodayScreen';
 
 // With reduce motion on nothing flies or loops, so the scene is easy to test: it is just
 // there, or not.
-jest.mock('@shared/hooks/useReduceMotion', () => ({ useReduceMotion: () => true }));
+jest.mock('@shared/hooks/useReduceMotion', () => ({
+  useReduceMotion: () => true,
+}));
 jest.mock('@react-navigation/native', () => ({
   ...jest.requireActual('@react-navigation/native'),
   useNavigation: () => ({ navigate: jest.fn(), goBack: jest.fn() }),
@@ -48,7 +62,11 @@ function quietBackend(restDays: string[] = []) {
     connect: async () => StepsStatus.Connected,
     getRange: async () => ({ [dayKey()]: 1200 }),
   };
-  const backend = { ...createMemoryBackend(), food: createMemoryFoodRepository([]), steps };
+  const backend = {
+    ...createMemoryBackend(),
+    food: createMemoryFoodRepository([]),
+    steps,
+  };
   restDays.forEach((d) => backend.restDays.add(d));
   return backend;
 }
@@ -72,7 +90,10 @@ function Providers({
                     <WaterProvider repo={backend.water}>
                       <MoodProvider repo={backend.mood}>
                         <MovementProvider repo={backend.movement}>
-                          <ActivityProvider steps={backend.steps} restDays={backend.restDays}>
+                          <ActivityProvider
+                            steps={backend.steps}
+                            restDays={backend.restDays}
+                          >
                             {children}
                           </ActivityProvider>
                         </MovementProvider>
@@ -122,7 +143,9 @@ describe('Today on a rest day', () => {
       activity.takeRestDay();
     });
     await waitFor(() => expect(ui.getByText('Rest day')).toBeTruthy());
-    expect(ui.getByText('Your streak is safe. Nothing to log today.')).toBeTruthy();
+    expect(
+      ui.getByText('Your streak is safe. Nothing to log today.'),
+    ).toBeTruthy();
     expect(ui.getByText('Reminders are quiet until tomorrow')).toBeTruthy();
     expect(ui.queryByText('Left to do')).toBeNull();
     expect(ui.queryByText('Nutrition today')).toBeNull();
@@ -158,23 +181,40 @@ describe('Today on a rest day', () => {
 describe('useRestDay', () => {
   function setup(backend = quietBackend()) {
     return renderHook(
-      () => ({ rest: useRestDay(), activity: useActivity(), viewed: useViewedDay() }),
-      { wrapper: ({ children }) => <Providers backend={backend}>{children}</Providers> },
+      () => ({
+        rest: useRestDay(),
+        activity: useActivity(),
+        viewed: useViewedDay(),
+      }),
+      {
+        wrapper: ({ children }) => (
+          <Providers backend={backend}>{children}</Providers>
+        ),
+      },
     );
   }
   type Setup = ReturnType<typeof setup>;
-  const ready = (r: Setup) => waitFor(() => expect(r.result.current.activity.ready).toBe(true));
+  const ready = (r: Setup) =>
+    waitFor(() => expect(r.result.current.activity.ready).toBe(true));
 
   it('has the tern fly in only when today has just become a rest day', async () => {
     const r = setup();
     await ready(r);
-    expect(r.result.current.rest).toMatchObject({ isRest: false, showScene: false, entrance: false });
+    expect(r.result.current.rest).toMatchObject({
+      isRest: false,
+      showScene: false,
+      entrance: false,
+    });
 
     await act(async () => {
       r.result.current.activity.takeRestDay();
     });
     await waitFor(() => expect(r.result.current.rest.isRest).toBe(true));
-    expect(r.result.current.rest).toMatchObject({ showScene: true, entrance: true, leaving: false });
+    expect(r.result.current.rest).toMatchObject({
+      showScene: true,
+      entrance: true,
+      leaving: false,
+    });
   });
 
   it('holds the waypoints for resting until the tern has touched down', async () => {
@@ -195,12 +235,16 @@ describe('useRestDay', () => {
   it('never keeps the waypoints waiting for long, whatever happens to the scene', async () => {
     const r = setup();
     await ready(r);
-    jest.useFakeTimers({ doNotFake: ['nextTick', 'setImmediate', 'queueMicrotask'] });
+    jest.useFakeTimers({
+      doNotFake: ['nextTick', 'setImmediate', 'queueMicrotask'],
+    });
     try {
       await act(async () => {
         r.result.current.activity.takeRestDay();
       });
-      await waitFor(() => expect(r.result.current.rest.holdCelebrations).toBe(true));
+      await waitFor(() =>
+        expect(r.result.current.rest.holdCelebrations).toBe(true),
+      );
       act(() => {
         jest.advanceTimersByTime(RestScenes.FLIGHT_MS + 999);
       });
@@ -259,10 +303,16 @@ describe('useRestDay', () => {
       r.result.current.activity.undoRestDay();
     });
     await waitFor(() => expect(r.result.current.rest.isRest).toBe(false));
-    expect(r.result.current.rest).toMatchObject({ showScene: true, leaving: true });
+    expect(r.result.current.rest).toMatchObject({
+      showScene: true,
+      leaving: true,
+    });
 
     act(() => r.result.current.rest.finishLeaving());
-    expect(r.result.current.rest).toMatchObject({ showScene: false, leaving: false });
+    expect(r.result.current.rest).toMatchObject({
+      showScene: false,
+      leaving: false,
+    });
   });
 
   it('stops the tern leaving when the rest day is taken again', async () => {

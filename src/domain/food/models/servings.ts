@@ -14,10 +14,19 @@ export function gramsOf(label: string): number | null {
   return g > 0 ? g : null;
 }
 
-export type Macros = { calories: number; protein: number; carbs: number; fat: number };
+export type Macros = {
+  calories: number;
+  protein: number;
+  carbs: number;
+  fat: number;
+};
 
 /** Nutrition for `grams` of a food whose values are given for `baseGrams`. */
-export function scaleForGrams(per: Macros, baseGrams: number, grams: number): Macros {
+export function scaleForGrams(
+  per: Macros,
+  baseGrams: number,
+  grams: number,
+): Macros {
   const f = grams / baseGrams;
   return {
     calories: Math.round(per.calories * f),

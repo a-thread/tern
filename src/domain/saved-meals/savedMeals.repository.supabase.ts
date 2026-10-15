@@ -34,17 +34,15 @@ export function createSupabaseSavedMealsRepository(
     async save(meal: SavedMeal) {
       // user_id defaults to auth.uid() on insert; the id is chosen by the client.
       await ok(
-        db
-          .from('saved_meals')
-          .upsert(
-            {
-              id: meal.id,
-              name: meal.name,
-              items: meal.items,
-              updated_at: new Date().toISOString(),
-            },
-            { onConflict: 'id' },
-          ),
+        db.from('saved_meals').upsert(
+          {
+            id: meal.id,
+            name: meal.name,
+            items: meal.items,
+            updated_at: new Date().toISOString(),
+          },
+          { onConflict: 'id' },
+        ),
       );
     },
     async remove(id) {

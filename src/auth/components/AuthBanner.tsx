@@ -13,7 +13,9 @@ export function AuthBanner({
 }) {
   if (!message) return null;
   return (
-    <View style={[s.banner, variant === 'error' ? s.bannerError : s.bannerInfo]}>
+    <View
+      style={[s.banner, variant === 'error' ? s.bannerError : s.bannerInfo]}
+    >
       <Text style={s.bannerText}>{message}</Text>
     </View>
   );

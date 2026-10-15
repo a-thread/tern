@@ -81,6 +81,11 @@ describe('the ledger check in the database', () => {
       WaypointSource.Medication,
       WaypointSource.Movement,
     ]);
-    fixed(5, [WaypointSource.Weight, WaypointSource.Breakfast, WaypointSource.Lunch, WaypointSource.Dinner]);
+    fixed(5, [
+      WaypointSource.Weight,
+      WaypointSource.Breakfast,
+      WaypointSource.Lunch,
+      WaypointSource.Dinner,
+    ]);
   });
 });

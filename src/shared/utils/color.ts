@@ -1,5 +1,9 @@
 const channels = (hex: string) =>
-  [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16)) as [number, number, number];
+  [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16)) as [
+    number,
+    number,
+    number,
+  ];
 
 /** Blends two #rrggbb colors; `t` 0 is `a`, 1 is `b`. */
 export function mix(a: string, b: string, t: number): string {

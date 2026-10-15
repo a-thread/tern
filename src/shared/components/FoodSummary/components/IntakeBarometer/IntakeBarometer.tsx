@@ -10,7 +10,14 @@ import {
   type NativeSyntheticEvent,
 } from 'react-native';
 
-import { colors, font, radius, space, tierColors, typography } from '@shared/theme';
+import {
+  colors,
+  font,
+  radius,
+  space,
+  tierColors,
+  typography,
+} from '@shared/theme';
 import { ProgressBar } from '@shared/components/ui';
 import { useSettings } from '@/domain/settings/SettingsContext';
 import { useFoodDisplay } from '@/domain/food/hooks/useFoodDisplay';
@@ -26,7 +33,10 @@ import { percentsFromMacros } from '@/domain/food/models/macroSplit';
 import type { FoodEntry } from '@/domain/food/models/foodEntry';
 import { tierShares } from './models/tierShares';
 import { NovaInfoSheet } from './components/NovaInfoSheet/NovaInfoSheet';
-import { IntakeInfoKind, IntakeInfoSheet } from './components/IntakeInfoSheet/IntakeInfoSheet';
+import {
+  IntakeInfoKind,
+  IntakeInfoSheet,
+} from './components/IntakeInfoSheet/IntakeInfoSheet';
 import { useRootNavigation } from '@/navigation/useAppNavigation';
 import { IntakePage } from './models/intakePage';
 
@@ -105,7 +115,9 @@ export function IntakeBarometer({
         showsHorizontalScrollIndicator={false}
         onMomentumScrollEnd={onScrollEnd}
         scrollEnabled={pages.length > 1}
-        style={heights[pages[page]] ? { height: heights[pages[page]] } : undefined}
+        style={
+          heights[pages[page]] ? { height: heights[pages[page]] } : undefined
+        }
       >
         {pages.map((p) => (
           <View
@@ -113,14 +125,19 @@ export function IntakeBarometer({
             style={{ width: width || undefined, alignSelf: 'flex-start' }}
             onLayout={(e) => {
               const h = Math.ceil(e.nativeEvent.layout.height);
-              setHeights((prev) => (prev[p] === h ? prev : { ...prev, [p]: h }));
+              setHeights((prev) =>
+                prev[p] === h ? prev : { ...prev, [p]: h },
+              );
             }}
           >
             {p === IntakePage.Calories ? (
               <View>
                 <View style={s.titleRow}>
                   <Text style={s.title}>Calories</Text>
-                  <InfoDot label='About your target zone' onPress={() => setInfo(IntakeInfoKind.Calories)} />
+                  <InfoDot
+                    label='About your target zone'
+                    onPress={() => setInfo(IntakeInfoKind.Calories)}
+                  />
                 </View>
                 <View style={s.track}>
                   <View
@@ -164,7 +181,10 @@ export function IntakeBarometer({
               <View>
                 <View style={s.titleRow}>
                   <Text style={s.title}>Processing levels</Text>
-                  <InfoDot label='About NOVA processing levels' onPress={() => setNovaOpen(true)} />
+                  <InfoDot
+                    label='About NOVA processing levels'
+                    onPress={() => setNovaOpen(true)}
+                  />
                 </View>
                 {shares.map((g) => (
                   <View key={g.key} style={{ marginTop: space.sm }}>
@@ -188,11 +208,15 @@ export function IntakeBarometer({
               <View>
                 <View style={s.titleRow}>
                   <Text style={s.title}>Macros</Text>
-                  <InfoDot label='About your macro targets' onPress={() => setInfo(IntakeInfoKind.Macros)} />
+                  <InfoDot
+                    label='About your macro targets'
+                    onPress={() => setInfo(IntakeInfoKind.Macros)}
+                  />
                 </View>
                 {MACROS.map(({ key, label, color }) => {
                   const target = settings.macroTargets[key];
-                  const minimum = key === 'protein' && settings.proteinAsMinimum;
+                  const minimum =
+                    key === 'protein' && settings.proteinAsMinimum;
                   return (
                     <View key={key} style={{ marginTop: space.sm }}>
                       <View style={s.macroTop}>
@@ -207,11 +231,19 @@ export function IntakeBarometer({
                       </View>
                       <View>
                         <ProgressBar
-                          value={minimum ? minimumFill(totals[key], target) : macroFill(totals[key], target)}
+                          value={
+                            minimum
+                              ? minimumFill(totals[key], target)
+                              : macroFill(totals[key], target)
+                          }
                           color={color}
                           height={5}
                         />
-                        {minimum ? <View style={[s.mark, { left: `${MINIMUM_MARK * 100}%` }]} /> : null}
+                        {minimum ? (
+                          <View
+                            style={[s.mark, { left: `${MINIMUM_MARK * 100}%` }]}
+                          />
+                        ) : null}
                       </View>
                     </View>
                   );
@@ -254,7 +286,14 @@ const s = StyleSheet.create({
   title: { fontFamily: font.semibold, fontSize: 13.5, color: colors.ink },
   status: { ...typography.caption, marginTop: 6 },
   pct: { fontFamily: font.body, fontSize: 11.5, color: colors.ink3 },
-  mark: { position: 'absolute', top: -3, width: 2, height: 11, borderRadius: 1, backgroundColor: colors.ink2 },
+  mark: {
+    position: 'absolute',
+    top: -3,
+    width: 2,
+    height: 11,
+    borderRadius: 1,
+    backgroundColor: colors.ink2,
+  },
   titleRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
   info: {
     width: 16,
@@ -265,7 +304,12 @@ const s = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  infoText: { fontFamily: font.semibold, fontSize: 10, color: colors.ink3, lineHeight: 12 },
+  infoText: {
+    fontFamily: font.semibold,
+    fontSize: 10,
+    color: colors.ink3,
+    lineHeight: 12,
+  },
   track: {
     height: 8,
     borderRadius: 4,
@@ -298,10 +342,19 @@ const s = StyleSheet.create({
   ends: { flexDirection: 'row', justifyContent: 'space-between' },
   now: { fontFamily: font.semibold, fontSize: 12, color: colors.ink },
   end: { fontFamily: font.body, fontSize: 11.5, color: colors.ink3 },
-  macroTop: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 6 },
+  macroTop: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 6,
+  },
   macroLabel: { fontFamily: font.body, fontSize: 12.5, color: colors.ink },
   macroSub: typography.caption,
-  dots: { flexDirection: 'row', justifyContent: 'center', gap: 5, marginTop: space.md },
+  dots: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    gap: 5,
+    marginTop: space.md,
+  },
   dot: { width: 5, height: 5, borderRadius: 3, backgroundColor: colors.track },
   dotOn: { backgroundColor: colors.ink },
 });

@@ -1,10 +1,7 @@
 import React from 'react';
 import { renderHook, act, waitFor } from '@testing-library/react-native';
 
-import {
-  createMemoryBackend,
-  type Backend,
-} from '../../BackendContext';
+import { createMemoryBackend, type Backend } from '../../BackendContext';
 import { ToastProvider } from '@shared/state/ToastContext';
 import { dayKey } from '@shared/utils/date';
 import { FoodProvider } from '../food/FoodContext';
@@ -17,18 +14,22 @@ const today = dayKey();
 
 async function setup(backend: Backend = createMemoryBackend()) {
   const wrapper = ({ children }: { children: React.ReactNode }) => (
-      <ToastProvider>
-        <SettingsProvider repo={backend.settings}>
-          <WaypointsProvider repo={backend.waypoints}>
-            <FoodProvider repo={backend.food}>
-              <WaterProvider repo={backend.water}>{children}</WaterProvider>
-            </FoodProvider>
-          </WaypointsProvider>
-        </SettingsProvider>
-      </ToastProvider>
+    <ToastProvider>
+      <SettingsProvider repo={backend.settings}>
+        <WaypointsProvider repo={backend.waypoints}>
+          <FoodProvider repo={backend.food}>
+            <WaterProvider repo={backend.water}>{children}</WaterProvider>
+          </FoodProvider>
+        </WaypointsProvider>
+      </SettingsProvider>
+    </ToastProvider>
   );
   const hook = renderHook(
-    () => ({ water: useWater(), settings: useSettings(), points: useWaypoints() }),
+    () => ({
+      water: useWater(),
+      settings: useSettings(),
+      points: useWaypoints(),
+    }),
     { wrapper },
   );
   await waitFor(() => {
@@ -44,11 +45,18 @@ const turnOn = async (
   goalOz = 32,
 ) =>
   act(async () => {
-    result.current.settings.updateSettings({ trackWater: true, waterGoalOz: goalOz });
+    result.current.settings.updateSettings({
+      trackWater: true,
+      waterGoalOz: goalOz,
+    });
   });
 
-const hasWaterAward = (result: { current: { points: ReturnType<typeof useWaypoints> } }) =>
-  result.current.points.events.some((e) => e.source === WaypointSource.Water && e.day === today);
+const hasWaterAward = (result: {
+  current: { points: ReturnType<typeof useWaypoints> };
+}) =>
+  result.current.points.events.some(
+    (e) => e.source === WaypointSource.Water && e.day === today,
+  );
 
 describe('WaterProvider', () => {
   it('is off until water tracking is turned on, and starts at zero', async () => {
@@ -69,7 +77,9 @@ describe('WaterProvider', () => {
     expect(result.current.water.totalOz).toBe(16.45);
     expect(result.current.water.progress).toBeCloseTo(0.514, 2);
     expect(result.current.water.reached).toBe(false);
-    expect((await backend.water.load(today, today)).map((e) => e.oz)).toEqual([8, 8.45]);
+    expect((await backend.water.load(today, today)).map((e) => e.oz)).toEqual([
+      8, 8.45,
+    ]);
   });
 
   it('refuses an amount it cannot store', async () => {
@@ -92,7 +102,9 @@ describe('WaterProvider', () => {
       result.current.water.addWater(8.4533);
     });
     expect(tooMuch).toBe(false);
-    expect((await backend.water.load(today, today)).map((e) => e.oz)).toEqual([8.45]);
+    expect((await backend.water.load(today, today)).map((e) => e.oz)).toEqual([
+      8.45,
+    ]);
   });
 
   it('undo removes the most recent drink only', async () => {
@@ -109,13 +121,25 @@ describe('WaterProvider', () => {
       result.current.water.undoLast();
     });
     expect(result.current.water.totalOz).toBe(8);
-    expect((await backend.water.load(today, today)).map((e) => e.oz)).toEqual([8]);
+    expect((await backend.water.load(today, today)).map((e) => e.oz)).toEqual([
+      8,
+    ]);
   });
 
   it('picks up what was already logged today, and ignores other days', async () => {
     const backend = createMemoryBackend();
-    await backend.water.add({ id: 'a', oz: 12, loggedOn: today, loggedAt: new Date().toISOString() });
-    await backend.water.add({ id: 'b', oz: 30, loggedOn: '2000-01-01', loggedAt: '2000-01-01T08:00:00.000Z' });
+    await backend.water.add({
+      id: 'a',
+      oz: 12,
+      loggedOn: today,
+      loggedAt: new Date().toISOString(),
+    });
+    await backend.water.add({
+      id: 'b',
+      oz: 30,
+      loggedOn: '2000-01-01',
+      loggedAt: '2000-01-01T08:00:00.000Z',
+    });
     const { result } = await setup(backend);
     expect(result.current.water.totalOz).toBe(12);
   });

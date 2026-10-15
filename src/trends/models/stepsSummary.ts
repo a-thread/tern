@@ -6,7 +6,11 @@ export function longestProtectedRun(days: DayState[]): number {
   let longest = 0;
   let current = 0;
   for (const day of days) {
-    if (day === DayState.Goal || day === DayState.Rest || day === DayState.Frozen) {
+    if (
+      day === DayState.Goal ||
+      day === DayState.Rest ||
+      day === DayState.Frozen
+    ) {
       current += 1;
       longest = Math.max(longest, current);
     } else {
