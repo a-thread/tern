@@ -11,7 +11,12 @@ import { singular } from '../../food/models/measure';
  * Used when the common-foods list is built.
  */
 
-export type PortionKind = 'size' | 'count' | 'volume' | 'weight';
+export enum PortionKind {
+  Size = 'size',
+  Count = 'count',
+  Volume = 'volume',
+  Weight = 'weight',
+}
 
 // Packaging, guidelines, brands and odd measures nobody logs by.
 const JUNK =
@@ -46,10 +51,10 @@ const SERVED = /^(glass|can|bottle|can or bottle|mug)$/i;
 const WHOLE_MAX_GRAMS = 400;
 
 export function portionKind(label: string): PortionKind {
-  if (SIZE.test(label)) return 'size';
-  if (VOLUME.test(label)) return 'volume';
-  if (WEIGHT.test(label)) return 'weight';
-  return 'count';
+  if (SIZE.test(label)) return PortionKind.Size;
+  if (VOLUME.test(label)) return PortionKind.Volume;
+  if (WEIGHT.test(label)) return PortionKind.Weight;
+  return PortionKind.Count;
 }
 
 /**
@@ -120,10 +125,10 @@ export function typicalPortions(
   const isWhole = (p: Portion) => (p.label === noun || p.label === cut) && p.grams <= WHOLE_MAX_GRAMS;
 
   const of = (k: PortionKind) => list.filter((p) => portionKind(p.label) === k);
-  const sizes = of('size').sort((a, b) => sizeRank(a.label) - sizeRank(b.label));
-  const counts = of('count').sort((a, b) => Number(isWhole(b)) - Number(isWhole(a)));
-  const volumes = of('volume').sort((a, b) => volumeRank(a.label, spooned) - volumeRank(b.label, spooned));
-  const weights = of('weight');
+  const sizes = of(PortionKind.Size).sort((a, b) => sizeRank(a.label) - sizeRank(b.label));
+  const counts = of(PortionKind.Count).sort((a, b) => Number(isWhole(b)) - Number(isWhole(a)));
+  const volumes = of(PortionKind.Volume).sort((a, b) => volumeRank(a.label, spooned) - volumeRank(b.label, spooned));
+  const weights = of(PortionKind.Weight);
   if ((ounceFirst || meat) && !weights.some((w) => w.label === 'oz')) weights.unshift(OUNCE);
   // Drinks are logged by the cup: eight fluid ounces when USDA only gives one.
   const flOz = volumes.find((v) => v.label === 'fl oz');

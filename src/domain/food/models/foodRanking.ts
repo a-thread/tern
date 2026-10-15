@@ -1,8 +1,8 @@
 import type { SearchResult } from '../sources/searchResult';
 import { allWordsPrefix, normalizeText, wordsOf } from './foodQuery';
+import { FoodSource } from './foodSource';
 
-/** A food in the one search list, with where it came from. `mine` is your own history. */
-export type FoodSource = 'mine' | 'common' | 'usda' | 'off';
+/** A food in the one search list, with where it came from. */
 export type RankedFood = SearchResult & { from: FoodSource; score: number };
 
 /** How results are scored and merged. */
@@ -12,7 +12,12 @@ export class FoodRanking {
   static readonly NAME_WORDS = 600;
   static readonly WITH_DETAIL = 400;
   static readonly WITH_BRAND = 300;
-  static readonly SOURCE_BONUS: Record<FoodSource, number> = { mine: 150, common: 40, usda: 0, off: 0 };
+  static readonly SOURCE_BONUS: Record<FoodSource, number> = {
+    [FoodSource.Mine]: 150,
+    [FoodSource.Common]: 40,
+    [FoodSource.Usda]: 0,
+    [FoodSource.Off]: 0,
+  };
   /** Rows near the top don't move for a late result unless it beats them by this much. */
   static readonly PIN_MARGIN = 300;
   static readonly PINNED_ROWS = 5;
@@ -66,7 +71,7 @@ export function scoreResult(
   score += FoodRanking.SOURCE_BONUS[from];
   if (r.rank !== undefined) score += Math.max(0, 100 - r.rank / 30);
   if (r.tier !== null) score += 10;
-  if (from === 'off') {
+  if (from === FoodSource.Off) {
     if (q.some((w) => brandWords.some((b) => b.startsWith(w)))) score += 80;
     if (r.calories > 0 && r.protein === 0 && r.carbs === 0 && r.fat === 0) score -= 150;
     if (!r.brand) score -= 40;

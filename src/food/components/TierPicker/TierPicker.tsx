@@ -4,6 +4,7 @@ import { colors, font, radius, tierColors, typography } from '@shared/theme';
 import type { Tier } from '@/domain/food/models/foodEntry';
 import type { SearchResult } from '@/domain/food/sources/searchResult';
 import { TierDot } from '@shared/components/TierDot';
+import { FoodSource } from '@/domain/food/models/foodSource';
 
 const tierPickerOptions: { tier: Tier; label: string }[] = [
   { tier: 1, label: 'Whole' },
@@ -55,9 +56,9 @@ export function TierPicker({
       </View>
       {suggested ? (
         <Text style={s.suggestNote}>
-          {suggestedBy === 'off'
+          {suggestedBy === FoodSource.Off
             ? `Suggested from Open Food Facts processing data (NOVA ${suggested}).`
-            : suggestedBy === 'common'
+            : suggestedBy === FoodSource.Common
               ? `Suggested for this kind of food (NOVA ${suggested}).`
               : 'The type you chose last time.'}{' '}
           You can change it — your choice is remembered for this food.

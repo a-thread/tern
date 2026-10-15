@@ -4,15 +4,15 @@ import { StyleSheet, View } from 'react-native';
 import { colors, tierColors } from '@shared/theme';
 import { Row, Icon } from '@shared/components/ui';
 import type { SearchResult } from '@/domain/food/sources/searchResult';
-import type { FoodSource } from '@/domain/food/models/foodRanking';
 import { useFoodDisplay } from '@/domain/food/hooks/useFoodDisplay';
 import { TierDot } from '@shared/components/TierDot';
+import { FoodSource } from '@/domain/food/models/foodSource';
 
 const SOURCE_TAG: Record<FoodSource, string> = {
-  mine: 'Your food',
-  common: 'Common',
-  usda: 'USDA',
-  off: 'Packaged',
+  [FoodSource.Mine]: 'Your food',
+  [FoodSource.Common]: 'Common',
+  [FoodSource.Usda]: 'USDA',
+  [FoodSource.Off]: 'Packaged',
 };
 
 /**

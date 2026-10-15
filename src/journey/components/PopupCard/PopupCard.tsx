@@ -2,11 +2,8 @@ import React, { useEffect, useRef } from 'react';
 import { Animated, Pressable, StyleSheet, Text, View } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 
-import { font } from '@shared/theme';
+import { colors, font } from '@shared/theme';
 import { useRootNavigation } from '@/navigation/useAppNavigation';
-
-/** Gold for points, the route and links on the dark cards. */
-export const GOLD = '#F2C888';
 
 /** The card's width; the confetti and route are laid out against it. */
 export const CARD_WIDTH = 280;
@@ -74,7 +71,7 @@ const s = StyleSheet.create({
   card: { width: CARD_WIDTH, borderRadius: 20, paddingHorizontal: 20, paddingTop: 22, paddingBottom: 18, alignItems: 'center' },
   close: { position: 'absolute', top: 10, right: 12, padding: 4, zIndex: 1 },
   closeText: { color: 'rgba(255,255,255,0.6)', fontSize: 14 },
-  link: { fontFamily: font.semibold, fontSize: 13, color: GOLD, marginTop: 16 },
+  link: { fontFamily: font.semibold, fontSize: 13, color: colors.sunLight, marginTop: 16 },
   foot: {
     fontFamily: font.body,
     fontSize: 10.5,
@@ -100,6 +97,6 @@ export const popup = StyleSheet.create({
   sectionTitle: { fontFamily: font.body, fontSize: 11, color: 'rgba(255,255,255,0.55)', marginBottom: 6 },
   line: { flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 3 },
   lineText: { fontFamily: font.body, fontSize: 12.5, color: 'rgba(255,255,255,0.88)' },
-  gold: { fontFamily: font.semibold, color: GOLD },
+  gold: { fontFamily: font.semibold, color: colors.sunLight },
   soft: { fontFamily: font.body, fontSize: 11.5, color: 'rgba(255,255,255,0.6)' },
 });

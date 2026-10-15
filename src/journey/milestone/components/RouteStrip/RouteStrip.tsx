@@ -4,7 +4,7 @@ import Svg, { Circle, G, Path } from 'react-native-svg';
 
 import { useReduceMotion } from '@shared/hooks/useReduceMotion';
 import { Milestones } from '@/domain/waypoints/models/milestone';
-import { GOLD } from '@/journey/components/PopupCard/PopupCard';
+import { colors } from '@shared/theme';
 
 const AnimatedCircle = Animated.createAnimatedComponent(Circle);
 
@@ -71,8 +71,8 @@ export function RouteStrip({ from, to, delay = 0 }: { from: number; to: number; 
   return (
     <Svg width={W} height={H} viewBox={`0 0 ${W} ${H}`} style={{ marginTop: 14 }} accessibilityLabel='The route so far'>
       <Path d={pathBetween(0, 1)} stroke='rgba(255,255,255,0.22)' strokeWidth={2} strokeDasharray='3 4' fill='none' />
-      <Path d={pathBetween(0, at)} stroke={GOLD} strokeWidth={2.4} strokeLinecap='round' fill='none' />
-      <Circle cx={pointAt(0).x} cy={pointAt(0).y} r={3} fill={GOLD} />
+      <Path d={pathBetween(0, at)} stroke={colors.sunLight} strokeWidth={2.4} strokeLinecap='round' fill='none' />
+      <Circle cx={pointAt(0).x} cy={pointAt(0).y} r={3} fill={colors.sunLight} />
       {stops.map((f) =>
         Math.abs(f - to) < 1e-6 ? null : (
           <Circle
@@ -80,7 +80,7 @@ export function RouteStrip({ from, to, delay = 0 }: { from: number; to: number; 
             cx={pointAt(f).x}
             cy={pointAt(f).y}
             r={3}
-            fill={f < to ? GOLD : 'rgba(255,255,255,0.35)'}
+            fill={f < to ? colors.sunLight : 'rgba(255,255,255,0.35)'}
           />
         ),
       )}
@@ -90,7 +90,7 @@ export function RouteStrip({ from, to, delay = 0 }: { from: number; to: number; 
         cx={landed.x}
         cy={landed.y}
         r={pop.interpolate({ inputRange: [0, 1], outputRange: [0, 5] })}
-        fill={GOLD}
+        fill={colors.sunLight}
       />
       <G transform={`translate(${bird.x} ${bird.y}) rotate(${angle})`}>
         <Path d='M-7 0 L0 -3.2 L7 0 L0 -1 Z' fill='#FBFAF7' />

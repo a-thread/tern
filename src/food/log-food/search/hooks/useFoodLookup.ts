@@ -27,6 +27,7 @@ import {
   usdaSource,
   type SearchState,
 } from './useFoodSearch';
+import { FoodSource } from '@/domain/food/models/foodSource';
 
 export const FOOD_FILTERS = ['All', 'Meals', 'Recent'] as const;
 export type FoodFilter = (typeof FOOD_FILTERS)[number];
@@ -124,13 +125,13 @@ export function useFoodLookup({
     () =>
       searching
         ? rankFoods(trimmed, [
-            { from: 'mine', foods: mine },
-            { from: 'common', foods: common, aliases: aliasesOf(index) },
+            { from: FoodSource.Mine, foods: mine },
+            { from: FoodSource.Common, foods: common, aliases: aliasesOf(index) },
             {
-              from: 'usda',
+              from: FoodSource.Usda,
               foods: usdaOn ? rowsFor(everyday.state, trimmed) : [],
             },
-            { from: 'off', foods: rowsFor(packaged.state, trimmed) },
+            { from: FoodSource.Off, foods: rowsFor(packaged.state, trimmed) },
           ])
         : [],
     [

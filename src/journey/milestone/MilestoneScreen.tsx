@@ -17,10 +17,10 @@ import { RouteStrip } from './components/RouteStrip/RouteStrip';
 import { FadeIn } from '../components/FadeIn/FadeIn';
 import {
   CARD_WIDTH,
-  GOLD,
   PopupCard,
   popup,
 } from '../components/PopupCard/PopupCard';
+import { colors } from '@shared/theme';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Milestone'>;
 
@@ -88,7 +88,7 @@ export default function MilestoneScreen({ route }: Props) {
       }
     >
       <Animated.View style={{ transform: [{ scale: markScale }] }}>
-        <TernMark size={MARK} color={GOLD} />
+        <TernMark size={MARK} color={colors.sunLight} />
       </Animated.View>
 
       <FadeIn

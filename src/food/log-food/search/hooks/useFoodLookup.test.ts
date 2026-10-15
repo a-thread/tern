@@ -8,6 +8,7 @@ import { commonFoodsSeed } from '@/domain/common-foods/commonFoods.seed';
 import { buildCommonIndex } from '@/domain/common-foods/models/commonFoods';
 import { clearSearchCache, FoodSearch } from './useFoodSearch';
 import { useFoodLookup } from './useFoodLookup';
+import { FoodSource } from '@/domain/food/models/foodSource';
 
 jest.mock('../../sources/openFoodFacts', () => ({
   ...jest.requireActual('../../sources/openFoodFacts'),
@@ -128,15 +129,13 @@ describe('useFoodLookup', () => {
     expect(result.current.pending).toBe(false);
     expect(after.slice(0, before.length)).toEqual(before);
     expect(after).toContain('off-1');
-    expect(result.current.foods.find((f) => f.id === 'off-1')?.from).toBe(
-      'off',
-    );
+    expect(result.current.foods.find((f) => f.id === 'off-1')?.from).toBe(FoodSource.Off);
   });
 
   it('only asks USDA when the phone has fewer than three matches', async () => {
     off.mockResolvedValue([]);
     usda.mockResolvedValue([
-      food('Quinoa, cooked', { id: 'usda-1', source: 'usda' }),
+      food('Quinoa, cooked', { id: 'usda-1', source: FoodSource.Usda }),
     ]);
 
     lookup('egg'); // several common matches

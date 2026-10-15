@@ -2,6 +2,7 @@ import type { Portion, SearchResult } from '../../food/sources/searchResult';
 import type { Tier } from '../../food/models/foodEntry';
 import { allWordsPrefix, wordsOf } from '../../food/models/foodQuery';
 import { scoreResult } from '../../food/models/foodRanking';
+import { FoodSource } from '../../food/models/foodSource';
 
 /**
  * One food from the common-foods list: everyday foods with clean names,
@@ -37,7 +38,7 @@ export function commonFoodToResult(f: CommonFood): SearchResult {
     fat: f.fat,
     tier: f.tier,
     ...(f.portions?.length ? { portions: f.portions } : {}),
-    source: 'common',
+    source: FoodSource.Common,
     rank: f.rank,
   };
 }
@@ -81,7 +82,7 @@ export function searchCommonFoods(
   if (!q.length) return [];
   return index.entries
     .filter((e) => allWordsPrefix(q, e.words))
-    .map((e) => ({ r: e.result, s: scoreResult(query, e.result, 'common', e.food.aliases) }))
+    .map((e) => ({ r: e.result, s: scoreResult(query, e.result, FoodSource.Common, e.food.aliases) }))
     .sort((a, b) => b.s - a.s)
     .slice(0, limit)
     .map((x) => x.r);

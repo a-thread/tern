@@ -1,4 +1,4 @@
-import { portionKind, tidyPortionLabel, typicalPortions } from './commonFoodPortions';
+import { PortionKind, portionKind, tidyPortionLabel, typicalPortions } from './commonFoodPortions';
 
 const labels = (ps: { label: string }[]) => ps.map((p) => p.label);
 
@@ -21,10 +21,10 @@ describe('tidyPortionLabel', () => {
 
 describe('portionKind', () => {
   it('tells sizes, items, volumes and weights apart', () => {
-    expect(portionKind('medium apple')).toBe('size');
-    expect(portionKind('slice')).toBe('count');
-    expect(portionKind('cup, sliced')).toBe('volume');
-    expect(portionKind('oz')).toBe('weight');
+    expect(portionKind('medium apple')).toBe(PortionKind.Size);
+    expect(portionKind('slice')).toBe(PortionKind.Count);
+    expect(portionKind('cup, sliced')).toBe(PortionKind.Volume);
+    expect(portionKind('oz')).toBe(PortionKind.Weight);
   });
 });
 

@@ -5,6 +5,7 @@ import {
   servingPortion,
   type OffProduct,
 } from './openFoodFacts';
+import { FoodSource } from '@/domain/food/models/foodSource';
 
 // Trimmed copies of real Open Food Facts responses.
 const rolledOats: OffProduct = {
@@ -32,7 +33,7 @@ describe('productToResult', () => {
       carbs: 68.5,
       fat: 9.5,
       tier: 1,
-      source: 'off',
+      source: FoodSource.Off,
     });
   });
 

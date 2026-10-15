@@ -27,7 +27,7 @@ import {
   poseAt,
   RestScenes,
   Sprite,
-  type SceneMotion,
+  SceneMotion,
   type ScenePose,
 } from '../../models/restScene';
 
@@ -145,10 +145,10 @@ export function RestScene({
     if (!entrance) setLanded(false);
   }, [entrance]);
   const motion: SceneMotion = leaving
-    ? 'leaving'
+    ? SceneMotion.Leaving
     : entrance && !landed && !reduceMotion
-      ? 'arriving'
-      : 'settled';
+      ? SceneMotion.Arriving
+      : SceneMotion.Settled;
 
   const [now, setNow] = useState(() => Date.now());
   const globalStartRef = useRef(now);
@@ -167,7 +167,7 @@ export function RestScene({
   // A steady clock, only while the screen is showing and motion is allowed.
   useEffect(() => {
     if (!isFocused || reduceMotion) return;
-    const gap = motion === 'settled' ? REST_FRAME_MS : FLIGHT_FRAME_MS;
+    const gap = motion === SceneMotion.Settled ? REST_FRAME_MS : FLIGHT_FRAME_MS;
     let last = 0;
     let frame = requestAnimationFrame(function tick() {
       const t = Date.now();
@@ -184,7 +184,7 @@ export function RestScene({
 
   // The landing is over, or the take-off is.
   useEffect(() => {
-    if (motion === 'arriving' && sinceMs >= RestScenes.FLIGHT_MS) setLanded(true);
+    if (motion === SceneMotion.Arriving && sinceMs >= RestScenes.FLIGHT_MS) setLanded(true);
   }, [motion, sinceMs]);
 
   // The feet touch: whatever waits for the landing (the waypoint feathers) can go.
@@ -193,8 +193,8 @@ export function RestScene({
   useEffect(() => {
     if (!entrance) return;
     const touched =
-      motion === 'settled' ||
-      (motion === 'arriving' && sinceMs >= RestScenes.FLIGHT_MS * RestScenes.TOUCHDOWN_K);
+      motion === SceneMotion.Settled ||
+      (motion === SceneMotion.Arriving && sinceMs >= RestScenes.FLIGHT_MS * RestScenes.TOUCHDOWN_K);
     if (touched) touchdownRef.current?.();
   }, [entrance, motion, sinceMs]);
   useEffect(() => {

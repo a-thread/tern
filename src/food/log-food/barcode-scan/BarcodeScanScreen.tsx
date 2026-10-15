@@ -1,4 +1,4 @@
-import React, { useCallback, useRef, useState } from 'react';
+import React, { useState } from 'react';
 import {
   Linking,
   Pressable,
@@ -8,26 +8,20 @@ import {
   View,
 } from 'react-native';
 import { CameraView, useCameraPermissions } from 'expo-camera';
-import { useFocusEffect } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 
 import { colors, font, space } from '@shared/theme';
 import LoadingBird from '@shared/components/LoadingBird/LoadingBird';
-import { FoodApiError } from '@/domain/food/sources/http';
 import { useSessionAdditions } from '../hooks/useSessionAdditions';
 import { describeAdditions } from '../models/sessionAdditions';
 import AddedBanner from '../components/AddedBanner/AddedBanner';
-import { getProductByBarcode, isValidBarcode } from '../sources/openFoodFacts';
+import { isValidBarcode } from '../sources/openFoodFacts';
+import { useBarcodeLookup } from './hooks/useBarcodeLookup';
+import { ScanPhaseKind } from './models/scanPhase';
 import type { LogFoodStackParamList } from '../navigation';
 
 type Props = NativeStackScreenProps<LogFoodStackParamList, 'BarcodeScan'>;
-
-type Phase =
-  | { kind: 'scanning' }
-  | { kind: 'looking' }
-  | { kind: 'miss'; name?: string }
-  | { kind: 'error' };
 
 /**
  * Reads a barcode with the camera and looks it up on Open Food Facts. A
@@ -38,51 +32,14 @@ export default function BarcodeScanScreen({ navigation, route }: Props) {
   const { meal, pick } = route.params;
   const insets = useSafeAreaInsets();
   const [permission, requestPermission] = useCameraPermissions();
-  const [phase, setPhase] = useState<Phase>({ kind: 'scanning' });
   const [typing, setTyping] = useState(false);
   const [code, setCode] = useState('');
-  // One lookup at a time: the camera fires repeatedly while a code is in view.
-  const busy = useRef(false);
   // Adding a food returns here to scan the next one; confirm it and offer Done.
   const added = useSessionAdditions();
   const addedMessage = pick ? null : describeAdditions(added);
-
-  // Coming back from the details screen (or first arriving) starts a fresh scan.
-  useFocusEffect(
-    useCallback(() => {
-      busy.current = false;
-      setPhase({ kind: 'scanning' });
-    }, []),
+  const { phase, lookup, scanAgain } = useBarcodeLookup((result) =>
+    navigation.navigate('FoodDetail', { meal, result, pick }),
   );
-
-  const lookup = async (raw: string) => {
-    if (busy.current) return;
-    busy.current = true;
-    setPhase({ kind: 'looking' });
-    try {
-      const res = await getProductByBarcode(raw);
-      if (res.status === 'found') {
-        // Stay on "looking" until this screen regains focus (see above).
-        navigation.navigate('FoodDetail', { meal, result: res.result, pick });
-        return;
-      }
-      setPhase({
-        kind: 'miss',
-        name: res.status === 'no-nutrition' ? res.name : undefined,
-      });
-    } catch (e) {
-      console.warn(
-        'Barcode lookup failed',
-        e instanceof FoodApiError ? e.kind : e,
-      );
-      setPhase({ kind: 'error' });
-    }
-  };
-
-  const scanAgain = () => {
-    busy.current = false;
-    setPhase({ kind: 'scanning' });
-  };
 
   const addByHand = (name?: string) =>
     navigation.navigate('ManualFoodEntry', { meal, name, pick });
@@ -114,7 +71,7 @@ export default function BarcodeScanScreen({ navigation, route }: Props) {
                 barcodeTypes: ['ean13', 'ean8', 'upc_a', 'upc_e'],
               }}
               onBarcodeScanned={
-                phase.kind === 'scanning'
+                phase.kind === ScanPhaseKind.Scanning
                   ? ({ data }) => lookup(data)
                   : undefined
               }
@@ -124,7 +81,7 @@ export default function BarcodeScanScreen({ navigation, route }: Props) {
           <View style={[s.corner, s.tr]} />
           <View style={[s.corner, s.bl]} />
           <View style={[s.corner, s.br]} />
-          {phase.kind === 'looking' ? (
+          {phase.kind === ScanPhaseKind.Looking ? (
             <View style={s.overlay}>
               <LoadingBird
                 size={48}
@@ -163,7 +120,7 @@ export default function BarcodeScanScreen({ navigation, route }: Props) {
               </Text>
             </Pressable>
           </View>
-        ) : phase.kind === 'miss' ? (
+        ) : phase.kind === ScanPhaseKind.Miss ? (
           <View style={s.card}>
             <Text style={s.cardTitle}>
               {phase.name
@@ -183,7 +140,7 @@ export default function BarcodeScanScreen({ navigation, route }: Props) {
               </Pressable>
             </View>
           </View>
-        ) : phase.kind === 'error' ? (
+        ) : phase.kind === ScanPhaseKind.Error ? (
           <View style={s.card}>
             <Text style={s.cardTitle}>Couldn't reach Open Food Facts</Text>
             <Text style={s.cardBody}>Check your connection and try again.</Text>
@@ -211,7 +168,7 @@ export default function BarcodeScanScreen({ navigation, route }: Props) {
             />
             <Pressable
               onPress={() => lookup(code)}
-              disabled={!isValidBarcode(code) || phase.kind === 'looking'}
+              disabled={!isValidBarcode(code) || phase.kind === ScanPhaseKind.Looking}
               style={[s.go, !isValidBarcode(code) && { opacity: 0.4 }]}
             >
               <Text style={s.goText}>Look up</Text>

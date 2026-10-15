@@ -1,4 +1,5 @@
 import type { Tier } from '../models/foodEntry';
+import { FoodSource } from '../models/foodSource';
 
 /** A named amount of a food and what it weighs, e.g. "cup" = 158 g. */
 export type Portion = { label: string; grams: number };
@@ -25,7 +26,7 @@ export type SearchResult = {
   servings?: number;
   last?: { unit: string | null; quantity: number };
   /** Where it came from: the common-foods list, Open Food Facts or USDA. Unset for your own foods. */
-  source?: 'common' | 'off' | 'usda';
+  source?: FoodSource.Common | FoodSource.Off | FoodSource.Usda;
   /** The rest of a common food's description, shown under the name: "meat only, cooked, roasted". */
   detail?: string;
   /** How common a food is (1 is the most), used to rank common foods. */

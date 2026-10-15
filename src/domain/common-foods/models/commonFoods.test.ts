@@ -1,5 +1,6 @@
 import { commonFoodsSeed } from '../commonFoods.seed';
 import { buildCommonIndex, searchCommonFoods } from './commonFoods';
+import { FoodSource } from '../../food/models/foodSource';
 
 const index = buildCommonIndex(commonFoodsSeed);
 const names = (q: string) => searchCommonFoods(index, q).map((r) => r.name);
@@ -28,7 +29,7 @@ describe('searchCommonFoods', () => {
 
   it('returns common results tagged with their source and suggested type', () => {
     const [r] = searchCommonFoods(index, 'banana');
-    expect(r).toMatchObject({ id: 'common-banana', source: 'common', tier: 1, servingLabel: '100 g' });
+    expect(r).toMatchObject({ id: 'common-banana', source: FoodSource.Common, tier: 1, servingLabel: '100 g' });
   });
 
   it('finds nothing for a blank query', () => {

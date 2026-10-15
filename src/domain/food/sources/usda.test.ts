@@ -1,4 +1,5 @@
 import { measureToPortion, searchUsdaWithKey, usdaFoodToResult, type UsdaFood } from './usda';
+import { FoodSource } from '../models/foodSource';
 
 // Portion values are real USDA "food details" data (apples, white rice, pita).
 // The search-result shape is written from USDA's documentation; confirm it
@@ -31,7 +32,7 @@ describe('usdaFoodToResult', () => {
       carbs: 13.6,
       fat: 0.1,
       tier: null,
-      source: 'usda',
+      source: FoodSource.Usda,
       portions: [
         { label: 'large (3-1/4" dia)', grams: 216 },
         { label: 'cup slices', grams: 110 },

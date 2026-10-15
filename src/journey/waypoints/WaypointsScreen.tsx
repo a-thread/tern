@@ -10,8 +10,9 @@ import { useSettings } from '../../domain/settings/SettingsContext';
 import { useWaypoints } from '../../domain/waypoints/WaypointsContext';
 import { useLastSeenTotal } from './hooks/useLastSeenTotal';
 import { earnedOn, legFor, legProgress, stillOpen } from '../models/waypointSummary';
-import { PopupCard, GOLD, popup } from '../components/PopupCard/PopupCard';
+import { PopupCard, popup } from '../components/PopupCard/PopupCard';
 import { FadeIn } from '../components/FadeIn/FadeIn';
+import { colors } from '@shared/theme';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Waypoints'>;
 
@@ -179,5 +180,5 @@ const s = StyleSheet.create({
     marginBottom: 5,
   },
   barWas: { position: 'absolute', left: 0, top: 0, bottom: 0, backgroundColor: 'rgba(242,200,136,0.35)' },
-  barNow: { position: 'absolute', left: 0, top: 0, bottom: 0, backgroundColor: GOLD, borderRadius: 3 },
+  barNow: { position: 'absolute', left: 0, top: 0, bottom: 0, backgroundColor: colors.sunLight, borderRadius: 3 },
 });

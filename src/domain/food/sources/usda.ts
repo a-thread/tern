@@ -2,6 +2,7 @@ import { round1, toFiniteNumber } from '@shared/utils/number';
 import { getJson } from './http';
 import { nounFor } from '../models/measure';
 import type { Portion, SearchResult } from './searchResult';
+import { FoodSource } from '../models/foodSource';
 
 /**
  * USDA FoodData Central (public domain): everyday foods with household
@@ -178,7 +179,7 @@ export function usdaFoodToResult(f: UsdaFood): SearchResult | null {
     fat: round1(Math.max(nutrient(list, FAT) ?? 0, 0)),
     tier: null,
     portions: portions.length ? portions : undefined,
-    source: 'usda',
+    source: FoodSource.Usda,
   };
 }
 

@@ -4,13 +4,16 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { BottomSheet } from '@shared/components/ui';
 import { colors, font, space, typography } from '@shared/theme';
 
-export type IntakeInfoKind = 'calories' | 'macros';
+export enum IntakeInfoKind {
+  Calories = 'calories',
+  Macros = 'macros',
+}
 
 const COPY: Record<
   IntakeInfoKind,
   { title: string; lead: string; points: string[]; action?: string }
 > = {
-  calories: {
+  [IntakeInfoKind.Calories]: {
     title: 'About your target zone',
     lead: 'A range to land in over the day, not a line to stay under.',
     points: [
@@ -19,7 +22,7 @@ const COPY: Record<
     ],
     action: 'Change the zone',
   },
-  macros: {
+  [IntakeInfoKind.Macros]: {
     title: 'About your macro targets',
     lead: 'Targets are a reference point, not a limit.',
     points: [

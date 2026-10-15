@@ -3,6 +3,7 @@ import type { Tier } from '@/domain/food/models/foodEntry';
 import { singular } from '@/domain/food/models/measure';
 import { getJson } from '@/domain/food/sources/http';
 import type { Portion, SearchResult } from '@/domain/food/sources/searchResult';
+import { FoodSource } from '@/domain/food/models/foodSource';
 
 /**
  * Open Food Facts client: text search and barcode lookup. Data is used under
@@ -107,7 +108,7 @@ export function productToResult(p: OffProduct): SearchResult | null {
     fat: round1(toFiniteNumber(n['fat_100g']) ?? 0),
     tier,
     portions,
-    source: 'off',
+    source: FoodSource.Off,
   };
 }
 

@@ -26,8 +26,9 @@ import { percentsFromMacros } from '@/domain/food/models/macroSplit';
 import type { FoodEntry } from '@/domain/food/models/foodEntry';
 import { tierShares } from './models/tierShares';
 import { NovaInfoSheet } from './components/NovaInfoSheet/NovaInfoSheet';
-import { IntakeInfoSheet } from './components/IntakeInfoSheet/IntakeInfoSheet';
+import { IntakeInfoKind, IntakeInfoSheet } from './components/IntakeInfoSheet/IntakeInfoSheet';
 import { useRootNavigation } from '@/navigation/useAppNavigation';
+import { IntakePage } from './models/intakePage';
 
 type Totals = { calories: number; protein: number; carbs: number; fat: number };
 
@@ -68,7 +69,8 @@ export function IntakeBarometer({
   const { showCalories, showTiers } = useFoodDisplay();
   const [width, setWidth] = useState(0);
   const [page, setPage] = useState(0);
-  const [info, setInfo] = useState<'nova' | 'calories' | 'macros' | null>(null);
+  const [info, setInfo] = useState<IntakeInfoKind | null>(null);
+  const [novaOpen, setNovaOpen] = useState(false);
   const navigation = useRootNavigation();
   // Each page's own height, so the card is only as tall as the page showing.
   const [heights, setHeights] = useState<Record<string, number>>({});
@@ -76,10 +78,10 @@ export function IntakeBarometer({
   if (!settings.showIntakeBars || !settings.trackCalories) return null;
 
   // Macros first; the processing split only when processing levels are shown; calories last.
-  const pages: ('macros' | 'processing' | 'calories')[] = [
-    'macros',
-    ...(showTiers ? (['processing'] as const) : []),
-    ...(showCalories ? (['calories'] as const) : []),
+  const pages: IntakePage[] = [
+    IntakePage.Macros,
+    ...(showTiers ? [IntakePage.Processing] : []),
+    ...(showCalories ? [IntakePage.Calories] : []),
   ];
   const shares = tierShares(entries);
   const zone = resolveZone(settings.calorieZone, settings.calorieTarget);
@@ -114,11 +116,11 @@ export function IntakeBarometer({
               setHeights((prev) => (prev[p] === h ? prev : { ...prev, [p]: h }));
             }}
           >
-            {p === 'calories' ? (
+            {p === IntakePage.Calories ? (
               <View>
                 <View style={s.titleRow}>
                   <Text style={s.title}>Calories</Text>
-                  <InfoDot label='About your target zone' onPress={() => setInfo('calories')} />
+                  <InfoDot label='About your target zone' onPress={() => setInfo(IntakeInfoKind.Calories)} />
                 </View>
                 <View style={s.track}>
                   <View
@@ -158,11 +160,11 @@ export function IntakeBarometer({
                       : `${status.amount.toLocaleString()} cal past your zone`}
                 </Text>
               </View>
-            ) : p === 'processing' ? (
+            ) : p === IntakePage.Processing ? (
               <View>
                 <View style={s.titleRow}>
                   <Text style={s.title}>Processing levels</Text>
-                  <InfoDot label='About NOVA processing levels' onPress={() => setInfo('nova')} />
+                  <InfoDot label='About NOVA processing levels' onPress={() => setNovaOpen(true)} />
                 </View>
                 {shares.map((g) => (
                   <View key={g.key} style={{ marginTop: space.sm }}>
@@ -186,7 +188,7 @@ export function IntakeBarometer({
               <View>
                 <View style={s.titleRow}>
                   <Text style={s.title}>Macros</Text>
-                  <InfoDot label='About your macro targets' onPress={() => setInfo('macros')} />
+                  <InfoDot label='About your macro targets' onPress={() => setInfo(IntakeInfoKind.Macros)} />
                 </View>
                 {MACROS.map(({ key, label, color }) => {
                   const target = settings.macroTargets[key];
@@ -228,10 +230,10 @@ export function IntakeBarometer({
         </View>
       ) : null}
 
-      <NovaInfoSheet visible={info === 'nova'} onClose={() => setInfo(null)} />
+      <NovaInfoSheet visible={novaOpen} onClose={() => setNovaOpen(false)} />
       <IntakeInfoSheet
-        kind={info === 'macros' ? 'macros' : 'calories'}
-        visible={info === 'calories' || info === 'macros'}
+        kind={info ?? IntakeInfoKind.Calories}
+        visible={info !== null}
         onClose={() => setInfo(null)}
         onAction={() => {
           setInfo(null);

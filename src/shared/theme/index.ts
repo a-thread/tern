@@ -46,6 +46,8 @@ export const colors = {
   sun: '#E0A32E',
   sunTint: '#FAEDD2',
   sunDeep: '#9C7015',
+  /** Gold for points, the route and links on the dark cards. */
+  sunLight: '#F2C888',
 
   // whole foods
   kelp: '#5C6B4E',
