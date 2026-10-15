@@ -10,7 +10,7 @@ import { useSettings } from '@/domain/settings/SettingsContext';
 import { useActivity } from '@/domain/activity/ActivityContext';
 import { factForDay } from './utils/ternFacts';
 import { DayState } from '@shared/models/dayState';
-import { StepsStatus } from '@/domain/activity/steps.repository';
+import { StepsStatus } from '@/domain/activity/models/stepsStatus';
 
 /**
  * This week's seven rings, a fact for the day, and the rest-day link. Tapping a

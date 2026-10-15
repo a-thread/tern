@@ -10,7 +10,7 @@ import { Group, GroupLabel, IconBadge, Chip, FootNote, PushHeader, ToggleRow, Ic
 import { formatLoggedAt } from '../../domain/weight/models/weightEntry';
 import { useActivity, useLastSynced } from '../../domain/activity/ActivityContext';
 import { useSettings } from '../../domain/settings/SettingsContext';
-import { StepsStatus } from '../../domain/activity/steps.repository';
+import { StepsStatus } from '../../domain/activity/models/stepsStatus';
 import { noStepsThisWeek } from '../../domain/activity/models/dayRecord';
 import { useMovement } from '../../domain/movement/MovementContext';
 

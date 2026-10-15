@@ -9,7 +9,7 @@ import { TrendCard, TrendHeader } from './TrendCard';
 import { StepBars } from './StepBars';
 import { useActivity } from '../../domain/activity/ActivityContext';
 import { useSettings } from '../../domain/settings/SettingsContext';
-import { StepsStatus } from '../../domain/activity/steps.repository';
+import { StepsStatus } from '../../domain/activity/models/stepsStatus';
 import { bucketSteps } from '../models/stepBars';
 import { summarizeSteps } from '../models/stepsSummary';
 import type { TrendsStackParamList } from '../navigation';

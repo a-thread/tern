@@ -22,7 +22,7 @@ import { useSettings } from '../../domain/settings/SettingsContext';
 import { bucketSteps } from '../models/stepBars';
 import { longestProtectedRun, summarizeSteps } from '../models/stepsSummary';
 import type { TrendsStackParamList } from '../navigation';
-import { StepsStatus } from '../../domain/activity/steps.repository';
+import { StepsStatus } from '../../domain/activity/models/stepsStatus';
 import { DayState } from '@shared/models/dayState';
 
 type Props = NativeStackScreenProps<TrendsStackParamList, 'StepsDetail'>;

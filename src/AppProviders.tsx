@@ -3,6 +3,7 @@ import LoadingScreen from '@shared/components/LoadingScreen/LoadingScreen';
 import { DayKeyProvider } from '@shared/hooks/useDayKey';
 import { ViewedDayProvider } from '@shared/state/ViewedDayContext';
 import { SettingsProvider, useSettings } from './domain/settings/SettingsContext';
+import { DataProvider } from './domain/settings/DataContext';
 import { RemindersSync } from './RemindersSync';
 import { FoodProvider, useFood } from './domain/food/FoodContext';
 import { SavedMealsProvider } from './domain/saved-meals/SavedMealsContext';
@@ -30,6 +31,11 @@ const PROVIDERS: readonly Entry[] = [
     name: 'settings',
     needs: [],
     wrap: (c, b) => <SettingsProvider repo={b.settings}>{c}</SettingsProvider>,
+  },
+  {
+    name: 'data',
+    needs: [],
+    wrap: (c, b) => <DataProvider repo={b.data}>{c}</DataProvider>,
   },
   {
     name: 'waypoints',

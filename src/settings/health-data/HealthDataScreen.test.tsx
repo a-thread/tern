@@ -13,7 +13,8 @@ import { FoodProvider } from '../../domain/food/FoodContext';
 import { WaypointsProvider } from '../../domain/waypoints/WaypointsContext';
 import { ActivityProvider } from '../../domain/activity/ActivityContext';
 import { MovementProvider } from '../../domain/movement/MovementContext';
-import { StepsRepository, StepsStatus } from '../../domain/activity/steps.repository';
+import { StepsRepository } from '../../domain/activity/steps.repository';
+import { StepsStatus } from '../../domain/activity/models/stepsStatus';
 import { SettingsProvider } from '../../domain/settings/SettingsContext';
 import HealthDataScreen from './HealthDataScreen';
 

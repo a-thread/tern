@@ -14,7 +14,7 @@ import {
   PushHeader,
 } from '@shared/components/ui';
 import type { SettingsStackParamList } from '../navigation/types';
-import { useBackend } from '../BackendContext';
+import { useData } from '../domain/settings/DataContext';
 import { useSettings } from '../domain/settings/SettingsContext';
 import { ProfileSection } from './components/ProfileSection';
 import { SectionRow } from './components/SectionRow';
@@ -40,7 +40,7 @@ type Props = NativeStackScreenProps<SettingsStackParamList, 'SettingsRoot'>;
  */
 export default function SettingsScreen({ navigation }: Props) {
   const insets = useSafeAreaInsets();
-  const { data: dataRepo } = useBackend();
+  const { available: dataAvailable } = useData();
   const { settings } = useSettings();
 
   return (
@@ -142,7 +142,7 @@ export default function SettingsScreen({ navigation }: Props) {
               </IconBadge>
             }
           />
-          {dataRepo ? (
+          {dataAvailable ? (
             <SectionRow
               icon='database-outline'
               color={colors.driftwood}

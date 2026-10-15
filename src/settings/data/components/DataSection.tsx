@@ -5,11 +5,12 @@ import { colors, typography } from '@shared/theme';
 import { Group } from '@shared/components/ui';
 import { useAuth } from '@/domain/auth/AuthContext';
 import { useToast } from '@shared/state/ToastContext';
-import type { DataRepository } from '@/domain/settings/dataRepository';
+import { useData } from '@/domain/settings/DataContext';
 import { confirm } from '@shared/utils/confirm';
 
 /** Export everything Tern holds, or erase it. Only offered for a signed-in account. */
-export function DataSection({ repo }: { repo: DataRepository }) {
+export function DataSection() {
+  const data = useData();
   const auth = useAuth();
   const toast = useToast();
   const [busy, setBusy] = useState(false);
@@ -18,7 +19,7 @@ export function DataSection({ repo }: { repo: DataRepository }) {
     if (busy) return;
     setBusy(true);
     try {
-      const copy = await repo.exportAll();
+      const copy = await data.exportAll();
       await Share.share({ title: 'Tern data', message: JSON.stringify(copy, null, 2) });
     } catch (e) {
       console.warn('Could not export data', e);
@@ -38,7 +39,7 @@ export function DataSection({ repo }: { repo: DataRepository }) {
       onConfirm: async () => {
         setBusy(true);
         try {
-          await repo.deleteAll();
+          await data.deleteAll();
           await auth?.signOut();
         } catch (e) {
           console.warn('Could not delete data', e);
@@ -59,7 +60,7 @@ export function DataSection({ repo }: { repo: DataRepository }) {
       onConfirm: async () => {
         setBusy(true);
         try {
-          await repo.deleteAccount();
+          await data.deleteAccount();
         } catch (e) {
           console.warn('Could not delete account', e);
           toast.show("Couldn't delete your account — please try again.");

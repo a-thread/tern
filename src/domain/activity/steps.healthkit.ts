@@ -1,6 +1,7 @@
 import { addDays, dayKey, parseDayKey } from '@shared/utils/date';
 import { loadHealthKit, type HealthKitApi } from '../health/healthkit';
-import { StepsRepository, StepsStatus } from './steps.repository';
+import { StepsRepository } from './steps.repository';
+import { StepsStatus } from './models/stepsStatus';
 
 /**
  * Steps from Apple Health on iPhone. Needs a custom dev build (Expo Go can't load HealthKit);

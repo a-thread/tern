@@ -1,7 +1,5 @@
 import { foodLog as seed } from './food.mock';
-import type { FoodEntry } from './models/foodEntry';
-
-export type NewFoodEntry = Omit<FoodEntry, 'id'>;
+import type { FoodEntry, NewFoodEntry } from './models/foodEntry';
 
 /**
  * Where food entries are stored. The app talks to this interface only, so

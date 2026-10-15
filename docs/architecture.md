@@ -18,7 +18,7 @@ src/
   auth/                    sign in, create account, forgot and reset password
   movement/  check-in/  log-weight/   modal flows
   domain/<name>/           what several tabs share: a Context, its repository, models
-  shared/                  generic UI and plumbing: components/, hooks/, models/, state/, theme/, utils/
+  shared/                  used by more than one tab, generic or not: components/, hooks/, models/, state/, theme/, utils/
 ```
 
 Inside a screen the same shape repeats: `<Name>Screen.tsx`, then `components/<Name>/<Name>.tsx`
@@ -36,9 +36,9 @@ their common parent's `components/`; something used from two tabs moves to `doma
 | State | `domain/<name>/*Context.tsx`     | Composes a repository, owns the actions, exposes what the UI reads.                 |
 | UI    | screens, `components/`, `hooks/` | Reads the Context, wires the view. No business rules.                               |
 
-Dependencies point down: `shared` → `domain` → screens → `app`. A screen never imports another
+Dependencies point down: `domain` → `shared` → screens → `app`. `shared/` may read `domain/` (`FoodSummary` and `WaterCard` do); `domain/` never imports `shared/components`. A screen never imports another
 tab's folder. If two tabs need something it moves to `domain/` (data and rules) or `shared/`
-(generic UI), which means "used by more than one component or util", not "might be reused".
+(UI or plumbing), which means "used by more than one component or util", not "might be reused".
 
 ### Domain
 

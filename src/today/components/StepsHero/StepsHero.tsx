@@ -8,7 +8,7 @@ import { CountUp } from '@shared/components/AnimatedNumber/AnimatedNumber';
 import { useSettings } from '@/domain/settings/SettingsContext';
 import { useActivity } from '@/domain/activity/ActivityContext';
 import { greetingFor } from './models/greeting';
-import { StepsStatus } from '@/domain/activity/steps.repository';
+import { StepsStatus } from '@/domain/activity/models/stepsStatus';
 import { useViewedDay } from '@shared/state/ViewedDayContext';
 import { addDays, formatLongDate } from '@shared/utils/date';
 import { DayState } from '@shared/models/dayState';

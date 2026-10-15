@@ -7,8 +7,8 @@ import { usePersist } from '@shared/hooks/usePersist';
 import { useAward } from '../waypoints/hooks/useAward';
 import { allMealsLogged } from './models/meals';
 import { newId } from '@shared/utils/id';
-import { Meal, type FoodEntry } from './models/foodEntry';
-import type { FoodRepository, NewFoodEntry } from './food.repository';
+import { Meal, type FoodEntry, type NewFoodEntry } from './models/foodEntry';
+import type { FoodRepository } from './food.repository';
 import { WaypointSource } from '../waypoints/models/waypoint';
 
 type FoodContextValue = {

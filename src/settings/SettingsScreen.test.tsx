@@ -5,6 +5,7 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { BackendProvider, createMemoryBackend } from '../BackendContext';
 import { ToastProvider } from '@shared/state/ToastContext';
 import { SettingsProvider, useSettings } from '../domain/settings/SettingsContext';
+import { DataProvider } from '../domain/settings/DataContext';
 import WaterSettingsScreen from './water/WaterSettingsScreen';
 import SettingsScreen from './SettingsScreen';
 
@@ -32,8 +33,10 @@ async function open(screen: React.ReactElement) {
       <ToastProvider>
         <BackendProvider backend={backend}>
           <SettingsProvider repo={backend.settings}>
-            <Grab />
-            {screen}
+            <DataProvider repo={backend.data}>
+              <Grab />
+              {screen}
+            </DataProvider>
           </SettingsProvider>
         </BackendProvider>
       </ToastProvider>

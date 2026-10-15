@@ -1,7 +1,8 @@
 import { Platform } from 'react-native';
 import { addDays, dayKey, parseDayKey } from '@shared/utils/date';
 import { healthEnabled } from '../health/healthEnabled';
-import { StepsRepository, StepsStatus } from './steps.repository';
+import { StepsRepository } from './steps.repository';
+import { StepsStatus } from './models/stepsStatus';
 
 /**
  * Steps from Android Health Connect.

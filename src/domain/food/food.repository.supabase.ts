@@ -1,8 +1,8 @@
 import type { TernClient } from '@shared/backend/supabase';
 import { ok, rows } from '@shared/backend/query';
-import type { FoodEntry, Tier } from './models/foodEntry';
+import type { FoodEntry, NewFoodEntry, Tier } from './models/foodEntry';
 import { parseMeasure } from './models/measure';
-import type { FoodRepository, NewFoodEntry } from './food.repository';
+import type { FoodRepository } from './food.repository';
 
 type FoodRow = {
   id: string;

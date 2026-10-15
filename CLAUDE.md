@@ -22,7 +22,7 @@ src/
     components/ hooks/ models/ utils/       used by 2+ screens of this tab
   domain/<name>/                data and rules used across tabs: <Name>Context.tsx, <name>.repository.ts,
                                 .repository.supabase.ts, .mock.ts, models/, hooks/, sources/
-  shared/                       generic building blocks used across tabs: components/ (ui/, charts…),
+  shared/                       anything used by more than one tab or feature (UI, hooks, utils), generic or not: components/ (ui/, charts…),
                                 hooks/, models/, state/, theme/, backend/, utils/
 ```
 
@@ -34,7 +34,7 @@ src/
 3. **Used by several components of the same screen or tab** → the closest common parent's
    `components/`, `hooks/`, `models/` or `utils/`.
 4. **Used across tabs** → `domain/<name>/` if it is about the app's data or rules (a Context, a
-   repository, a model, a hook that reads them), `shared/` if it is generic UI or plumbing.
+   repository, a model, a hook that reads them), `shared/` if it is UI or plumbing several tabs use (it may read `domain/`, e.g. `FoodSummary`).
 5. `shared/` means used by **more than one component or util**. One consumer means it moves next to
    that consumer. When a second tab starts using something, promote it then, not before.
 6. Models, hooks and utils ship alongside the components that use them, the same way.
@@ -54,7 +54,7 @@ src/
 - Components inside a screen read their Context directly; **props are for `shared/` components**.
 - State that belongs to one flow is provided at that flow's navigator; only app-wide state is
   mounted in `AppProviders`.
-- Dependencies point down: `shared` → `domain` → screens → `app`. A screen never imports another tab's
+- Dependencies point down: `domain` → `shared` → screens → `app`. `shared/` may read `domain/`; `domain/` never imports `shared/components`. A screen never imports another tab's
   folder; if two tabs need something, it goes to `domain/` or `shared/`.
 
 ## Conventions

@@ -3,7 +3,7 @@ import { useEffect, useRef } from 'react';
 import { useToast } from '@shared/state/ToastContext';
 import { useDayKey } from '@shared/hooks/useDayKey';
 import { useActivity } from './domain/activity/ActivityContext';
-import { StepsStatus } from './domain/activity/steps.repository';
+import { StepsStatus } from './domain/activity/models/stepsStatus';
 import { useSettings } from './domain/settings/SettingsContext';
 import { syncReminders, syncStreakAlerts, SyncResult } from './domain/settings/reminders';
 

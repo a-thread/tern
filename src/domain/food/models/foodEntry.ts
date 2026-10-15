@@ -31,6 +31,9 @@ export type FoodEntry = {
   measure?: Measure;
 };
 
+/** A food entry before it has an id: what a caller hands to be stored. */
+export type NewFoodEntry = Omit<FoodEntry, 'id'>;
+
 /** Anything with a per-serving nutrition and a serving count: a log entry or a saved-meal item. */
 type Servable = Pick<
   FoodEntry,

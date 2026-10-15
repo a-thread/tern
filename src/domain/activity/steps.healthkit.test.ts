@@ -1,6 +1,6 @@
 import type { HealthKitApi } from '../health/healthkit';
 import { createHealthKitStepsRepository } from './steps.healthkit';
-import { StepsStatus } from './steps.repository';
+import { StepsStatus } from './models/stepsStatus';
 
 const api = (over: Partial<HealthKitApi> = {}): HealthKitApi => ({
   isAvailable: async () => true,

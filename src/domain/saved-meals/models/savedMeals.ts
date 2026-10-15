@@ -1,6 +1,5 @@
 import { cleanSpaces, sameName } from '@shared/utils/text';
-import { dayTotals, type FoodEntry } from '../../food/models/foodEntry';
-import type { NewFoodEntry } from '../../food/food.repository';
+import { dayTotals, type FoodEntry, type NewFoodEntry } from '../../food/models/foodEntry';
 import { amountOf, scaleMeasure } from '../../food/models/measure';
 
 /** One food in a saved meal: a log entry without its id or which meal it was in. */
