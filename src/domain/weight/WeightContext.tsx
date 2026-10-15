@@ -1,7 +1,10 @@
-import React, { useCallback, useMemo } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import type { WeightRepository } from './weight.repository';
 import { createRequiredContext } from '@shared/state/createRequiredContext';
 import { useSyncedList } from '@shared/hooks/useSyncedList';
+import { useLoader } from '@shared/hooks/useLoader';
+import { usePersist } from '@shared/hooks/usePersist';
+import { dayKey } from '@shared/utils/date';
 import { newId } from '@shared/utils/id';
 import { computeTrend } from './models/weightTrend';
 import { isLoggedToday, type WeightEntry } from './models/weightEntry';
@@ -22,6 +25,10 @@ type WeightContextValue = {
   addWeightEntry: (lb: number, loggedAt?: string) => void;
   /** Corrects an existing weigh-in in place, keeping when it was logged. */
   updateWeightEntry: (id: string, lb: number) => void;
+  /** Whether `day` (YYYY-MM-DD) was marked "not weighing in". */
+  isWeighInSkipped: (day: string) => boolean;
+  /** Marks `day` as not weighing in (or takes the mark back). It earns nothing and is not a weigh-in. */
+  setWeighInSkipped: (day: string, skipped: boolean) => void;
 };
 
 const [WeightContext, useWeight] = createRequiredContext<WeightContextValue>(
@@ -39,12 +46,44 @@ export function WeightProvider({
 }) {
   const {
     entries: weightEntries,
-    ready,
-    reload,
+    ready: entriesReady,
+    reload: reloadEntries,
     change,
   } = useSyncedList(
     useCallback(() => weight.load(), [weight]),
     'Could not load weight entries',
+  );
+
+  const [skippedDays, setSkippedDays] = useState<string[]>([]);
+  const { ready: skippedReady, reload: reloadSkipped } = useLoader(
+    useCallback(() => weight.loadSkipped(), [weight]),
+    setSkippedDays,
+    'Could not load skipped weigh-ins',
+  );
+  const persistSkipped = usePersist(reloadSkipped);
+  const ready = entriesReady && skippedReady;
+  const reload = useCallback(
+    () => Promise.all([reloadEntries(), reloadSkipped()]),
+    [reloadEntries, reloadSkipped],
+  );
+
+  const isWeighInSkipped = useCallback(
+    (day: string) => skippedDays.includes(day),
+    [skippedDays],
+  );
+
+  const setWeighInSkipped = useCallback(
+    (day: string, skipped: boolean) => {
+      setSkippedDays((prev) => {
+        const rest = prev.filter((d) => d !== day);
+        return skipped ? [...rest, day] : rest;
+      });
+      persistSkipped(weight.setSkipped(day, skipped), {
+        log: 'Could not save skipped weigh-in',
+        toast: "Couldn't save that change — please try again.",
+      });
+    },
+    [weight, persistSkipped],
   );
 
   // A weigh-in earns its waypoint for being logged, whatever it says. Taken back if today's is
@@ -63,6 +102,9 @@ export function WeightProvider({
   const addWeightEntry = useCallback(
     (lb: number, loggedAt: string = new Date().toISOString()) => {
       const entry: WeightEntry = { id: newId(), lb, loggedAt };
+      // A day with a weigh-in on it isn't skipped any more.
+      const day = dayKey(new Date(loggedAt));
+      if (skippedDays.includes(day)) setWeighInSkipped(day, false);
       // Newest first, wherever a back-dated one lands.
       change(
         (prev) =>
@@ -74,7 +116,7 @@ export function WeightProvider({
         },
       );
     },
-    [weight, change],
+    [weight, change, skippedDays, setWeighInSkipped],
   );
 
   const updateWeightEntry = useCallback(
@@ -104,6 +146,8 @@ export function WeightProvider({
       reload,
       addWeightEntry,
       updateWeightEntry,
+      isWeighInSkipped,
+      setWeighInSkipped,
     }),
     [
       weightEntries,
@@ -112,6 +156,8 @@ export function WeightProvider({
       reload,
       addWeightEntry,
       updateWeightEntry,
+      isWeighInSkipped,
+      setWeighInSkipped,
     ],
   );
 

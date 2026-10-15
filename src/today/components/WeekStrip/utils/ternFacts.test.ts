@@ -3,7 +3,7 @@ import { addDays } from '@shared/utils/date';
 
 describe('TERN_FACTS', () => {
   it('has plenty of distinct, short facts', () => {
-    expect(TERN_FACTS.length).toBeGreaterThanOrEqual(20);
+    expect(TERN_FACTS.length).toBeGreaterThanOrEqual(365);
     expect(new Set(TERN_FACTS).size).toBe(TERN_FACTS.length);
     for (const fact of TERN_FACTS) {
       expect(fact.trim()).toBe(fact);

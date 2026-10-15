@@ -34,5 +34,25 @@ export function createSupabaseWeightRepository(
     async update(id, lb) {
       await ok(db.from('weight_entries').update({ lb }).eq('id', id));
     },
+    async loadSkipped() {
+      const data = await rows<{ day: string }>(
+        db
+          .from('skipped_weigh_ins')
+          .select('day')
+          .order('day', { ascending: false })
+          .limit(30),
+      );
+      return data.map((r) => r.day);
+    },
+    async setSkipped(day, skipped) {
+      // Primary key (user, day): marking twice is harmless.
+      await ok(
+        skipped
+          ? db
+              .from('skipped_weigh_ins')
+              .upsert({ day }, { onConflict: 'user_id,day', ignoreDuplicates: true })
+          : db.from('skipped_weigh_ins').delete().eq('day', day),
+      );
+    },
   };
 }

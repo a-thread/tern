@@ -93,6 +93,11 @@ describe('leftToDo', () => {
     ).toEqual([]);
   });
 
+  it('stops asking for a weigh-in once it is skipped for the day', () => {
+    const log = [food(Meal.Breakfast), food(Meal.Lunch), food(Meal.Dinner)];
+    expect(leftToDo(log, undefined, now, { weighInSkipped: true })).toEqual([]);
+  });
+
   it('never asks for a weigh-in when weight is not tracked', () => {
     const log = [food(Meal.Breakfast), food(Meal.Lunch), food(Meal.Dinner)];
     expect(leftToDo(log, undefined, now, { weighIn: null })).toEqual([]);

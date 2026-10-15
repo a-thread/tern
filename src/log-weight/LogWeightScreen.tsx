@@ -32,8 +32,13 @@ const MAX_LB = 1100;
 
 export default function LogWeightScreen({ navigation }: Props) {
   const insets = useSafeAreaInsets();
-  const { weightEntries, weightTrend, addWeightEntry, updateWeightEntry } =
-    useWeight();
+  const {
+    weightEntries,
+    weightTrend,
+    addWeightEntry,
+    updateWeightEntry,
+    setWeighInSkipped,
+  } = useWeight();
   // The viewed day: today, or yesterday when filling it in from a past day.
   const { day, today, isToday } = useViewedDay();
   // Opening this after weighing in that day edits that weigh-in rather than stacking a second one.
@@ -97,6 +102,11 @@ export default function LogWeightScreen({ navigation }: Props) {
     if (todaysEntry) updateWeightEntry(todaysEntry.id, fromDisplay(weight));
     else
       addWeightEntry(fromDisplay(weight), isToday ? undefined : atTimeOn(day));
+    navigation.goBack();
+  };
+
+  const skip = () => {
+    setWeighInSkipped(day, true);
     navigation.goBack();
   };
 
@@ -169,6 +179,18 @@ export default function LogWeightScreen({ navigation }: Props) {
           Day-to-day changes are mostly water. Tern tracks your weekly average
           instead.
         </Text>
+
+        {!todaysEntry ? (
+          <Pressable
+            onPress={skip}
+            style={s.skip}
+            hitSlop={8}
+            accessibilityRole='button'
+            accessibilityLabel={`Skip weighing in ${dayWord(day, today).toLowerCase()}`}
+          >
+            <Text style={s.skipText}>{`Skip ${dayWord(day, today)}`}</Text>
+          </Pressable>
+        ) : null}
 
         {weekAvgLb !== null ? (
           <>
@@ -277,6 +299,8 @@ const s = StyleSheet.create({
     lineHeight: 17,
     paddingHorizontal: 12,
   },
+  skip: { alignSelf: 'center', paddingVertical: space.sm, marginTop: space.sm },
+  skipText: { fontFamily: font.semibold, fontSize: 13.5, color: colors.coral },
   weekCard: {
     backgroundColor: colors.card,
     borderRadius: radius.lg,

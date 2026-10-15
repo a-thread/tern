@@ -42,6 +42,7 @@ tables. With no keys configured, the app runs on local mock data instead.
 | `tern.food_entries`    | each logged food, by day and meal                                      |
 | `tern.skipped_meals`   | core meals marked "nothing today" (one row per day and meal)           |
 | `tern.weight_entries`  | each weigh-in, in pounds (kg is a display setting)                     |
+| `tern.skipped_weigh_ins` | days marked "not weighing in" (one row per day)                     |
 | `tern.waypoint_events` | the waypoints ledger: one row per award                                |
 | `tern.rest_days`       | the days you chose to rest (one row per day)                           |
 | `tern.saved_meals`     | named groups of foods you saved (a snapshot of the items and portions) |

@@ -12,6 +12,7 @@ export type TernExport = {
   waterEntries: unknown[];
   moodCheckins: unknown[];
   skippedMeals: unknown[];
+  skippedWeighIns: unknown[];
   movementEntries: unknown[];
 };
 

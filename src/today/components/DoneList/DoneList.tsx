@@ -7,6 +7,7 @@ import { useUnits } from '@/domain/settings/hooks/useUnits';
 import { useFoodDisplay } from '@/domain/food/hooks/useFoodDisplay';
 import { useMedication } from '@/domain/medication/MedicationContext';
 import { useWater } from '@/domain/water/WaterContext';
+import { useWeight } from '@/domain/weight/WeightContext';
 import WaterSheet from '../WaterSheet';
 import {
   movementSummary,
@@ -32,6 +33,7 @@ export function DoneList({
   const navigation = useRootNavigation();
   const {
     summary,
+    weighInSkipped,
     mealsDone,
     waterDone,
     anythingDone,
@@ -48,6 +50,7 @@ export function DoneList({
   const { showCalories } = useFoodDisplay();
   const water = useWater();
   const { setTaken } = useMedication();
+  const { setWeighInSkipped } = useWeight();
   const [waterOpen, setWaterOpen] = useState(false);
   const fromHealthApp = movementOnDay.some((e) => isFromHealthApp(e.source));
 
@@ -85,6 +88,16 @@ export function DoneList({
             onPress={
               editable ? () => navigation.navigate('LogWeight') : undefined
             }
+          />
+        ) : null}
+        {weighInSkipped && !summary.weighedIn ? (
+          <Row
+            key='done-weight-skipped'
+            title='Skipped weigh-in'
+            icon={<DoneBadge />}
+            // Mirrors "Skip" on the Log weight screen: the row is the action, and it puts the weigh-in back.
+            right={editable ? <Text style={s.markText}>Undo</Text> : undefined}
+            onPress={editable ? () => setWeighInSkipped(day, false) : undefined}
           />
         ) : null}
         {summary.checkIn ? (

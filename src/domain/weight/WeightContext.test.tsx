@@ -89,3 +89,47 @@ describe('editing a weigh-in', () => {
     expect(result.current.points.waypoints).toBe(points);
   });
 });
+
+describe('skipping a weigh-in', () => {
+  const day = '2026-10-14';
+
+  it('marks a day as skipped and takes the mark back', async () => {
+    const { result } = await setup();
+    expect(result.current.weight.isWeighInSkipped(day)).toBe(false);
+
+    await act(async () => result.current.weight.setWeighInSkipped(day, true));
+    expect(result.current.weight.isWeighInSkipped(day)).toBe(true);
+
+    await act(async () => result.current.weight.setWeighInSkipped(day, false));
+    expect(result.current.weight.isWeighInSkipped(day)).toBe(false);
+  });
+
+  it('is remembered from storage', async () => {
+    const backend = {
+      ...unweighed(),
+      weight: createMemoryWeightRepository([], [day]),
+    };
+    const { result } = await setup(backend);
+    expect(result.current.weight.isWeighInSkipped(day)).toBe(true);
+  });
+
+  it('is not a weigh-in: no entry and no waypoint', async () => {
+    const { result } = await setup();
+    const before = result.current.points.waypoints;
+
+    await act(async () => result.current.weight.setWeighInSkipped(day, true));
+
+    expect(result.current.weight.weightEntries).toHaveLength(0);
+    expect(result.current.points.waypoints).toBe(before);
+  });
+
+  it('is cleared when a weight is logged that day', async () => {
+    const { result } = await setup();
+    const loggedAt = `${day}T09:00:00`;
+    await act(async () => result.current.weight.setWeighInSkipped(day, true));
+
+    await act(async () => result.current.weight.addWeightEntry(163.4, loggedAt));
+
+    expect(result.current.weight.isWeighInSkipped(day)).toBe(false);
+  });
+});

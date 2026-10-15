@@ -34,7 +34,7 @@ export function useDayItems() {
   const { day, isToday, editable } = useViewedDay();
   // Food, water and the check-in already follow the viewed day.
   const { foodLog, skippedMeals } = useFood();
-  const { weightEntries } = useWeight();
+  const { weightEntries, isWeighInSkipped } = useWeight();
   const { settings } = useSettings();
   const water = useWater();
   const mood = useMood();
@@ -79,6 +79,8 @@ export function useDayItems() {
     : weightEntries.find((e) => dayKey(new Date(e.loggedAt)) <= day);
   const now = isToday ? new Date() : lateOn(day);
   const checkIn = mood.enabled ? mood.onDay : undefined;
+  // Only meaningful while weight is tracked and nothing was weighed in that day.
+  const weighInSkipped = settings.trackWeight && isWeighInSkipped(day);
 
   const openItems = !editable
     ? []
@@ -89,6 +91,7 @@ export function useDayItems() {
               weekday: settings.reminders.weighIn.weekday,
             }
           : null,
+        weighInSkipped,
         skippedMeals,
         medications: isToday ? meds.due : [],
         water: water.enabled
@@ -120,6 +123,7 @@ export function useDayItems() {
   const anythingDone =
     mealsDone.length > 0 ||
     summary.weighedIn !== null ||
+    weighInSkipped ||
     summary.checkIn !== null ||
     takenMedications.length > 0 ||
     waterDone ||
@@ -133,6 +137,7 @@ export function useDayItems() {
     steps,
     openItems,
     summary,
+    weighInSkipped,
     mealsDone,
     waterDone,
     anythingDone,
