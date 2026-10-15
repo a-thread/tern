@@ -1,6 +1,6 @@
 # Tern facts: sources
 
-Citations for `src/today/components/WeekStrip/utils/ternFacts.ts` (252 facts). Each fact is listed under the source that supports it. The final section lists facts with no recorded source.
+Citations for `src/today/components/WeekStrip/utils/ternFacts.ts` (232 facts). Each fact is listed under the source that supports it. The last two sections list the uncited facts kept as common knowledge, and the facts removed from the app until a source confirms them.
 
 Egevang 2010 and Fijn 2013 are the primary papers. Henri et al. 2020 is a peer-reviewed interview study. BirdLife and MassWildlife are institutional pages. Wikipedia, the National Wildlife Federation and National Geographic are secondary sources. The tour operators’ pages (Secret Atlas, Oceanwide, Polar Latitudes, Natural Habitat) are the weakest.
 
@@ -420,41 +420,49 @@ Read.
 
 - In Greenlandic the Arctic tern is imeqqutaalaq, a word that traces back to Proto-Inuit and survives in Inupiaq, Inuinnaqtun and Inuktitut.
 
-## 24. No recorded source (34 facts)
+## 24. Common knowledge, no citation (14 facts)
 
-These were written without a source I can point to. Most are common knowledge about terns or seabirds. Check them against Cornell Birds of the World, the BTO or the RSPB before relying on any of them.
+These are in the app without a citation. They are general bird or geography facts rather than specific claims about Arctic terns.
 
 - Terns preen every day, running each feather through the bill to keep it flat and clean.
-- In a typical clutch, the second chick hatches after the first and is smaller.
-- Terns leave a beach in late summer, and the quiet that follows is a sign that the journey has begun.
-- Many terns patrol the water’s edge, working up and down a coast as they look for fish.
 - Gulls scavenge and swim, while terns mostly fish on the wing and rarely settle on the water.
 - Near the equator the winds fall light in a belt called the doldrums, and terns pass through it on the way south and north.
 - A gland near the tail makes oil that terns spread over their feathers with the bill to keep them in good shape.
 - Arctic summers are short but bright, and the sea teems with life.
-- Terns can bring a catch to the nest from several kilometres away.
-- When one parent is fishing, the other stays to guard the eggs or chicks.
 - Arctic terns can fish in cold water, since their feathers keep them warm even in a dive.
 - Terns have a thin, pointed bill, built for catching fish near the surface rather than tearing food apart.
-- Eggs are laid a day or two apart, and the chicks hatch in the same order.
-- Terns give a loud alarm call when a predator approaches, and the whole colony rises into the air.
-- A tern’s long tail streamers help it steer and brake in the air.
 - At the June solstice, places north of the Arctic Circle see the Sun stay above the horizon for a full day.
 - The lifetime of a geolocator tag is about a year or more, so it has to be recovered when the bird returns to the colony.
-- In the far north in summer the Sun barely sets, so tern parents can fish at nearly any hour.
 - You can report a ringed bird to the ringing scheme on the ring, and you’ll learn where it was ringed.
-- When a threat comes near, tern chicks crouch and freeze, and the parents deal with the threat.
-- Most migrating birds fly a few thousand kilometres. The Arctic tern flies tens of thousands.
-- Nests in the middle of a colony are the safest, since predators have to pass through the whole defense to reach them.
-- When a tag is recovered, the story of a whole year of travel is read out in minutes.
-- Young terns call to their parents and are fed in flight.
-- On Maine’s Eastern Egg Rock, researchers used decoys and recorded calls to bring back terns and puffins that gulls had driven out.
-- When it rains, a parent covers small chicks to keep them warm and dry.
-- When terns take off together, the sudden whirl of white wings can confuse a predator.
-- Terns sometimes abandon a colony in the middle of the season if a predator keeps coming back.
 - Terns incubate with a bare patch of skin on the belly, called a brood patch, that passes warmth to the eggs.
 - At the December solstice, places south of the Antarctic Circle see the same thing.
 - In the south, the terns share the waters with penguins, petrels and albatrosses.
+- A hatching chick uses a small egg tooth on its bill to break through the shell. The tooth falls off later.
+
+## 25. Removed, pending review (20 facts)
+
+These are not in the app. No source we have supports them. Add one back to `ternFacts.ts` once a source confirms it, then cite it above.
+
+- In the far north in summer the Sun barely sets, so tern parents can fish at nearly any hour.
+- When a tag is recovered, the story of a whole year of travel is read out in minutes.
+- Most migrating birds fly a few thousand kilometres. The Arctic tern flies tens of thousands.
+- A tern’s long tail streamers help it steer and brake in the air.
+- In a typical clutch, the second chick hatches after the first and is smaller.
+  - Lead: Pettingill 1939, History of One Hundred Nests of Arctic Tern, The Auk 56:420–428 (https://sora.unm.edu/sites/default/files/journals/auk/v056n04/p0420-p0428.pdf). Not yet read past the opening.
+- Terns leave a beach in late summer, and the quiet that follows is a sign that the journey has begun.
+- Many terns patrol the water’s edge, working up and down a coast as they look for fish.
+- Terns can bring a catch to the nest from several kilometres away.
+- When one parent is fishing, the other stays to guard the eggs or chicks.
+- Eggs are laid a day or two apart, and the chicks hatch in the same order.
+  - Lead: Pettingill 1939 (as above). Not yet read past the opening.
+- Terns give a loud alarm call when a predator approaches, and the whole colony rises into the air.
+- When a threat comes near, tern chicks crouch and freeze, and the parents deal with the threat.
+- Nests in the middle of a colony are the safest, since predators have to pass through the whole defense to reach them.
+- Young terns call to their parents and are fed in flight.
+- On Maine’s Eastern Egg Rock, researchers used decoys and recorded calls to bring back terns and puffins that gulls had driven out.
+  - Lead: Audubon Project Puffin pages on Eastern Egg Rock. Only a search snippet seen so far.
+- When it rains, a parent covers small chicks to keep them warm and dry.
+- When terns take off together, the sudden whirl of white wings can confuse a predator.
+- Terns sometimes abandon a colony in the middle of the season if a predator keeps coming back.
 - When a parent returns with a fish, the chicks beg with a high, thin call.
 - On hot days, parents stand over the eggs and chicks to shade them.
-- A hatching chick uses a small egg tooth on its bill to break through the shell. The tooth falls off later.
