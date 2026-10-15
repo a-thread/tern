@@ -6,25 +6,18 @@ import {
   type ReminderText,
 } from './mealMessages';
 
-/**
- * What gets scheduled for each reminder. Kept separate from the notification
- * calls so the schedule is easy to read and test. Times are minutes since
- * local midnight; weekdays are 1 = Sunday … 7 = Saturday (the notification
- * API's numbering).
- */
+/** Reminder schedule; times are minutes since midnight, weekdays 1–7 (Sunday–Saturday). */
 export type ReminderConfig = {
   mealLog: { on: boolean; midday: number; evening: number };
-  /** `weekday` only matters when weighing in weekly. */
+  /** Used for weekly weigh-ins. */
   weighIn: { on: boolean; weekday: number; at: number };
-  /** Drink-water nudges every `everyHours` from `start` to `end` (minutes since midnight). */
+  /** Water reminders from `start` to `end` at `everyHours` intervals. */
   water: { on: boolean; start: number; end: number; everyHours: number };
-  /** A daily nudge to check in on mood and stress. */
+  /** Daily mood check-in. */
   mood: { on: boolean; at: number };
-  /** Heads-up notifications when a streak is at risk, and how it turned out. */
+  /** Streak status notifications. */
   streak: { on: boolean };
 };
-
-/** How often the person weighs in: it sets the reminder and how often Today asks. */
 
 /** Defaults and limits for reminders. */
 export class Reminders {
@@ -40,7 +33,7 @@ export class Reminders {
 
   static readonly WATER_EVERY_HOURS = { min: 1, max: 4 };
 
-  /** The fixed reminder ids this app schedules. Medication reminders add `tern-med-<id>`. */
+  /** Fixed ids; medication reminders use `tern-med-<id>`. */
   static readonly ALL_IDS = [
     'tern-meals-midday',
     'tern-meals-evening',
@@ -60,7 +53,7 @@ export enum ReminderKey {
 }
 
 export type PlannedReminder = {
-  /** Stable, so re-syncing replaces rather than duplicates. */
+  /** Stable id used to replace reminders on re-sync. */
   id: string;
   key: ReminderKey | 'medication';
   title: string;
@@ -69,41 +62,81 @@ export type PlannedReminder = {
   minute: number;
   /** Omitted for a daily reminder. */
   weekday?: number;
-  /** Alternate wording; scheduling rotates through these day by day. */
+  /** Wording rotated each day. */
   variants?: readonly ReminderText[];
 };
 
-/** What the phone lets Tern keep scheduled. iOS silently drops everything past the 64 soonest. */
+/** Pending notification limits. iOS keeps only the 64 soonest. */
 export class NotificationLimits {
   static readonly IOS_PENDING = 64;
-  /** Room kept for streak alerts, which are scheduled separately. */
+  /** Reserved for separately scheduled streak alerts. */
   static readonly STREAK_RESERVE = 4;
-  /** A repeating reminder that goes quiet for a rest day becomes up to this many triggers. */
+  /** Triggers needed to silence a repeating reminder for a rest day. */
   static readonly REST_DAY_TRIGGERS = 7;
 }
 
-/**
- * How many days ahead the reminders with rotating wording (the meal ones, one notification per
- * day) can be scheduled without the plan going over `limit` pending notifications. Between one
- * day and `maxDays`; everything else in the plan counts as one notification (or the rest-day
- * set of weekly repeats), and streak alerts get a reserve.
- */
+/** Items completed today; related reminders stay quiet until tomorrow. */
+export type DoneToday = {
+  /** Rest day; medication reminders still fire. */
+  rest: boolean;
+  /** Core meals logged or marked "nothing today". */
+  meals: boolean;
+  /** Weighed in, or the weigh-in skipped. */
+  weighIn: boolean;
+  /** The water goal is reached. */
+  water: boolean;
+  /** Today's check-in is done. */
+  mood: boolean;
+  /** Ids of the medications taken today. */
+  medications: readonly string[];
+};
+
+export const NOTHING_DONE: DoneToday = {
+  rest: false,
+  meals: false,
+  weighIn: false,
+  water: false,
+  mood: false,
+  medications: [],
+};
+
+/** Whether `r` should stay quiet today. */
+export function isQuietToday(
+  r: Pick<PlannedReminder, 'id' | 'key'>,
+  done: DoneToday,
+): boolean {
+  // Each medication reminder represents a dose, so only taking it quiets it.
+  if (r.key === 'medication') {
+    return done.medications.some((id) => medicationReminderId(id) === r.id);
+  }
+  if (done.rest) return true;
+  switch (r.key) {
+    case ReminderKey.Meals:
+      return done.meals;
+    case ReminderKey.WeighIn:
+      return done.weighIn;
+    case ReminderKey.Water:
+      return done.water;
+    case ReminderKey.Mood:
+      return done.mood;
+    default:
+      return false;
+  }
+}
+
+/** Maximum rotation schedule length within the notification limit and streak reserve. */
 export function rotationDays(
   plan: readonly PlannedReminder[],
   limit: number,
   maxDays: number,
-  restToday = false,
+  quiet?: (r: PlannedReminder) => boolean,
 ): number {
   const rotating = plan.filter((r) => r.variants).length;
   if (rotating === 0) return maxDays;
   const fixed = plan
     .filter((r) => !r.variants)
     .reduce(
-      (n, r) =>
-        n +
-        (restToday && r.key !== 'medication'
-          ? NotificationLimits.REST_DAY_TRIGGERS
-          : 1),
+      (n, r) => n + (quiet?.(r) ? NotificationLimits.REST_DAY_TRIGGERS : 1),
       0,
     );
   const budget = limit - NotificationLimits.STREAK_RESERVE - fixed;
@@ -121,17 +154,17 @@ const at = (minutes: number) => ({
 export type PlanExtras = {
   weighInFrequency?: Frequency;
   medications?: readonly Medication[];
-  /** Water reminders only make sense while water tracking is on. */
+  /** Enable water reminders only when tracking water. */
   trackWater?: boolean;
-  /** The check-in reminder only makes sense while mood tracking is on. */
+  /** Enable mood reminders only when tracking mood. */
   trackMood?: boolean;
-  /** The weigh-in reminder only makes sense while weight tracking is on. */
+  /** Enable weigh-in reminders only when tracking weight. */
   trackWeight?: boolean;
 };
 
 export const waterReminderId = (index: number) => `tern-water-${index}`;
 
-/** The times of day (minutes) a water reminder fires: start, then every N hours until end. */
+/** Water reminder times in minutes, from start through end. */
 export function waterTimes(w: ReminderConfig['water']): number[] {
   const step = Math.max(1, Math.round(w.everyHours)) * 60;
   const times: number[] = [];
@@ -140,7 +173,7 @@ export function waterTimes(w: ReminderConfig['water']): number[] {
   return times;
 }
 
-/** The reminders to have scheduled for this configuration. */
+/** Build reminders for this configuration. */
 export function planReminders(
   c: ReminderConfig,
   {
@@ -219,12 +252,12 @@ export function planReminders(
   return plan;
 }
 
-/** Moves a time of day by `deltaMinutes`, wrapping around midnight. */
+/** Shift a time by `deltaMinutes`, wrapping at midnight. */
 export function stepMinutes(minutes: number, deltaMinutes: number): number {
   return (((minutes + deltaMinutes) % 1440) + 1440) % 1440;
 }
 
-/** Moves a weekday (1–7) by `delta` days, wrapping. */
+/** Shift a weekday (1–7), wrapping around the week. */
 export function stepWeekday(weekday: number, delta: number): number {
   return ((((weekday - 1 + delta) % 7) + 7) % 7) + 1;
 }
@@ -247,7 +280,7 @@ const WEEKDAYS_PLURAL = [
 ];
 export const weekdayPlural = (weekday: number) => WEEKDAYS_PLURAL[weekday - 1];
 
-/** How each reminder's schedule reads in Settings. */
+/** Format reminder schedules for Settings. */
 export function describeReminders(
   c: ReminderConfig,
   weighInFrequency: Frequency = Reminders.DEFAULT_WEIGH_IN_FREQUENCY,
@@ -264,7 +297,7 @@ export function describeReminders(
   };
 }
 
-/** Saved reminder settings merged over the defaults; older saves (a text `time`, or the `weeklyWeighIn` key) still work. */
+/** Merge saved settings with defaults, supporting legacy keys. */
 export function mergeReminders(saved: unknown): ReminderConfig {
   const s = (saved ?? {}) as {
     mealLog?: Partial<ReminderConfig['mealLog']>;
@@ -311,11 +344,7 @@ export function mergeReminders(saved: unknown): ReminderConfig {
   };
 }
 
-/**
- * The one-off times `r` fires over the next `days` days from `now` (today included, if its time
- * hasn't passed), left out for today when `skipToday`: how a rest day goes quiet for a reminder
- * that would otherwise repeat on its own. A weekly reminder only falls on its weekday.
- */
+/** Upcoming reminder times, optionally skipping today; weekly reminders use their weekday. */
 export function upcomingDates(
   r: Pick<PlannedReminder, 'hour' | 'minute' | 'weekday'>,
   now: Date,
@@ -332,24 +361,19 @@ export function upcomingDates(
       r.minute,
     );
     if (date <= now) continue;
-    // Weekdays here run 1 = Sunday … 7 = Saturday, like the settings.
+    // Match settings: 1 = Sunday through 7 = Saturday.
     if (r.weekday && date.getDay() + 1 !== r.weekday) continue;
     out.push(date);
   }
   return out;
 }
 
-/** A replacement trigger for a reminder on a rest day: a weekly repeat, or a single date. */
+/** Replacement trigger used to silence a reminder on a rest day. */
 export type RestTrigger =
-  { id: string; weekday: number } | { id: string; date: Date };
+  | { id: string; weekday: number }
+  | { id: string; date: Date };
 
-/**
- * How a reminder that repeats by itself goes quiet for the rest of today, when a repeating
- * trigger can't skip a day: every other weekday keeps a weekly repeat, and today's weekday is a
- * single date a week from now. Only that one weekday needs the next sync to repeat again, so a
- * missed sync costs at most one day a week, not every day. Empty when today's time has passed,
- * or a weekly reminder isn't due today: the usual trigger is already right.
- */
+/** Replacement triggers that silence a repeating reminder for the rest of a rest day. */
 export function restDayTriggers(
   r: Pick<PlannedReminder, 'id' | 'hour' | 'minute' | 'weekday'>,
   now: Date,

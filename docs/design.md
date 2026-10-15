@@ -38,7 +38,9 @@ These are deliberate and worth preserving as the app grows:
    freeze does the same job for a day a rest day couldn't cover, and renders in blue.
    A rest day is a real day off, not just a day without a step goal: Today shows a calm
    scene (a tern landing on driftwood at dusk) instead of the sky card and the to-do list,
-   and every reminder goes quiet until tomorrow except medication, which stays on. Logging
+   and every reminder goes quiet until tomorrow except medication, which stays on. Reminders
+   are also quiet for anything already done that day: every meal logged, a weigh-in (or a
+   skipped one), the water goal, the check-in, or a dose taken. Logging
    remains one tap away and nothing is hidden or locked. A rest day with little logged is
    left out of the adaptive target like any lightly logged day.
 4. **Weight is shown as a trend with a visible fluctuation band.** Day-to-day deltas are

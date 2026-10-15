@@ -3,11 +3,14 @@ import * as Notifications from 'expo-notifications';
 
 import { dayNumber, variantFor } from './models/mealMessages';
 import {
+  isQuietToday,
   NotificationLimits,
+  NOTHING_DONE,
   planReminders,
   restDayTriggers,
   rotationDays,
   upcomingDates,
+  type DoneToday,
   type PlanExtras,
   type PlannedReminder,
   type ReminderConfig,
@@ -20,10 +23,7 @@ import {
 
 const CHANNEL_ID = 'reminders';
 
-/**
- * Reminders with alternate wording are scheduled one day at a time this far
- * ahead, so the message can change daily. Reopening the app tops it up.
- */
+/** Days of rotating reminders to schedule; reopening the app tops them up. */
 const ROTATE_DAYS = 14;
 
 Notifications.setNotificationHandler({
@@ -54,7 +54,7 @@ async function ensurePermission(): Promise<boolean> {
   return true;
 }
 
-/** Cancels scheduled notifications, keeping (or only taking) the streak ones. */
+/** Cancel scheduled notifications, preserving the selected group. */
 async function cancelScheduled(streak: boolean) {
   const scheduled =
     await Notifications.getAllScheduledNotificationsAsync().catch(() => []);
@@ -69,7 +69,7 @@ async function cancelScheduled(streak: boolean) {
   );
 }
 
-/** The one-off dates a rotating reminder fires on, each with that day's wording. */
+/** Build dated reminders with wording chosen for each day. */
 function rotated(
   r: PlannedReminder,
   now: Date,
@@ -82,38 +82,29 @@ function rotated(
   });
 }
 
-/**
- * Syncs scheduled reminders with the enabled settings. On a rest day (`restToday`) nothing more
- * fires today, except medication, which stays on: a day off from logging isn't a day off from a
- * dose. Meal reminders are already scheduled day by day, so today is simply left out. The others
- * repeat by themselves, so they become weekly repeats for the other six weekdays plus one date
- * a week out for today's weekday (see `restDayTriggers`), and go back to repeating at the next
- * sync (tomorrow, or on undo).
- */
+/** Sync reminders, skipping today for goals already met. Resumes at the next sync. */
 export async function syncReminders(
   config: ReminderConfig,
   extras?: PlanExtras,
-  restToday = false,
+  done: DoneToday = NOTHING_DONE,
 ): Promise<SyncResult> {
   const plan = planReminders(config, extras);
 
-  // Everything scheduled here is one of Tern's reminders (meals, weigh-in and a
-  // variable number of medications), so start clean each time. Streak alerts
-  // have their own sync and are left alone.
+  // Replace Tern reminders; streak alerts sync separately.
   await cancelScheduled(false);
   if (plan.length === 0) return SyncResult.Ok;
   if (!(await ensurePermission())) return SyncResult.Denied;
 
   const now = new Date();
-  // iOS drops everything past its 64 soonest notifications, so the rotation shortens to fit.
+  // Keep rotating reminders within iOS's 64-notification limit.
   const days = rotationDays(
     plan,
     Platform.OS === 'ios' ? NotificationLimits.IOS_PENDING : Infinity,
     ROTATE_DAYS,
-    restToday,
+    (r) => isQuietToday(r, done),
   );
   for (const r of plan) {
-    const quiet = restToday && r.key !== 'medication';
+    const quiet = isQuietToday(r, done);
     if (r.variants) {
       for (const d of rotated(r, now, quiet, days)) {
         await Notifications.scheduleNotificationAsync({
@@ -128,7 +119,7 @@ export async function syncReminders(
       }
       continue;
     }
-    // Today's time still to come, on a rest day: a repeating trigger can't skip a day.
+    // Repeating triggers cannot skip today, so use one-off rest-day triggers.
     const restTriggers = quiet ? restDayTriggers(r, now) : [];
     if (restTriggers.length) {
       for (const t of restTriggers) {
@@ -175,11 +166,7 @@ export async function syncReminders(
   return SyncResult.Ok;
 }
 
-/**
- * Replaces the streak notifications with what `planStreakAlerts` says is due now.
- * Needs no permission prompt of its own: it only schedules if the permission
- * was already granted, so a streak never triggers the first ask.
- */
+/** Sync streak alerts only when notification permission is already granted. */
 export async function syncStreakAlerts(input: StreakAlertInput): Promise<void> {
   await cancelScheduled(true);
   const plan = planStreakAlerts(input);

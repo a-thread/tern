@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { Group, GroupLabel, Row } from '@shared/components/ui';
+import { FootNote, Group, GroupLabel, Row } from '@shared/components/ui';
 import type { SettingsStackParamList } from '../../navigation/types';
 import { useSettings } from '../../domain/settings/SettingsContext';
 import { SettingsPage } from '../components/SettingsPage';
@@ -72,6 +72,12 @@ export default function RemindersSettingsScreen() {
           off('Mood and stress', 'MoodSettings')
         )}
       </Group>
+
+      <FootNote>
+        A reminder stays quiet once you've already done what it's for today,
+        like logging every meal, weighing in, reaching your water goal, checking
+        in or taking a medication.
+      </FootNote>
     </SettingsPage>
   );
 }

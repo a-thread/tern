@@ -3,6 +3,7 @@ import { useEffect, useRef } from 'react';
 import { useToast } from '@shared/state/ToastContext';
 import { useDayKey } from '@shared/hooks/useDayKey';
 import { useActivity } from './domain/activity/ActivityContext';
+import { useDoneToday } from './useDoneToday';
 import { StepsStatus } from './domain/activity/models/stepsStatus';
 import { useSettings } from './domain/settings/SettingsContext';
 import {
@@ -11,7 +12,7 @@ import {
   SyncResult,
 } from './domain/settings/reminders';
 
-/** Keeps the device's scheduled reminders in step with the Settings toggles. Renders nothing. */
+/** Syncs scheduled reminders with settings. */
 export function RemindersSync() {
   const { settings, ready } = useSettings();
   const toast = useToast();
@@ -25,14 +26,12 @@ export function RemindersSync() {
     trackMood,
     trackWeight,
   } = settings;
-  // A rest day is quiet: nothing more fires today (see `syncReminders`). Undoing it, or the
-  // next day, brings them back.
-  const restToday = activity.todayRestCounts;
-  // Reschedule when a toggle, a time, the weigh-in frequency or a medication reminder changes.
-  // The day is part of it: meal reminders are scheduled day by day, so a new day tops them up.
+  // Completed goals stay quiet until undone or a new day begins.
+  const { done, ready: doneReady } = useDoneToday();
+  // Reschedule when reminder settings or today's completion state changes.
   const key = JSON.stringify({
     today,
-    restToday,
+    done,
     reminders,
     weighInFrequency,
     medications,
@@ -49,8 +48,8 @@ export function RemindersSync() {
     medications.some((m) => m.remind);
 
   useEffect(() => {
-    // Wait for the rest days too, so a quiet day isn't scheduled loud for a moment first.
-    if (!ready || !activity.ready) return;
+    // Wait until completion state is ready before scheduling.
+    if (!ready || !doneReady) return;
     if (key === lastKey.current) return;
     const firstRun = lastKey.current === null;
     lastKey.current = key;
@@ -64,7 +63,7 @@ export function RemindersSync() {
         trackMood,
         trackWeight,
       },
-      restToday,
+      done,
     )
       .then((result) => {
         if (result === SyncResult.Denied && anyOn && !firstRun) {
@@ -74,17 +73,14 @@ export function RemindersSync() {
         }
       })
       .catch((e) => console.warn('Could not schedule reminders', e));
-    // `key` captures every field of `reminders`.
+    // `key` captures all reminder fields.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [ready, activity.ready, key, toast]);
+  }, [ready, doneReady, key, toast]);
 
-  // Streak alerts follow today's steps, so they're re-planned whenever those change: once the
-  // goal is reached (or a rest day taken) they're cleared. They're only offered while steps can
-  // actually be read, otherwise "not reached yet" would just mean "not seen yet".
+  // Plan streak alerts only when steps are readable; clear them at the goal or on rest days.
   const stepsReadable =
     activity.status === StepsStatus.Connected && settings.healthData.readSteps;
-  // (A chosen rest day, not `todayRestCounts`: a goal reached by movement ends the rest day but
-  // the alert is moot either way, and `todayIsRest` keeps the two from flickering.)
+  // Use the chosen rest day to avoid flicker when movement reaches the goal.
   const todayOpen =
     stepsReadable &&
     !activity.todayIsRest &&

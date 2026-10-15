@@ -1,4 +1,6 @@
 import {
+  isQuietToday,
+  NOTHING_DONE,
   rotationDays,
   NotificationLimits,
   type PlannedReminder,
@@ -445,7 +447,12 @@ describe('rotationDays', () => {
       ...Array.from({ length: 6 }, (_, i) => fixed(`w${i}`)),
     ];
     const normal = rotationDays(plan, NotificationLimits.IOS_PENDING, 14);
-    const rest = rotationDays(plan, NotificationLimits.IOS_PENDING, 14, true);
+    const rest = rotationDays(
+      plan,
+      NotificationLimits.IOS_PENDING,
+      14,
+      () => true,
+    );
     expect(rest).toBeLessThan(normal);
   });
 
@@ -460,5 +467,46 @@ describe('rotationDays', () => {
         14,
       ),
     ).toBe(1);
+  });
+});
+
+describe('isQuietToday', () => {
+  const meals = { id: 'tern-meals-midday', key: ReminderKey.Meals };
+  const weighIn = { id: 'tern-weigh-in', key: ReminderKey.WeighIn };
+  const water = { id: 'tern-water-0', key: ReminderKey.Water };
+  const mood = { id: 'tern-mood', key: ReminderKey.Mood };
+  const dose = (id: string) => ({
+    id: medicationReminderId(id),
+    key: 'medication' as const,
+  });
+
+  it('is never quiet when nothing is done', () => {
+    for (const r of [meals, weighIn, water, mood, dose('a')]) {
+      expect(isQuietToday(r, NOTHING_DONE)).toBe(false);
+    }
+  });
+
+  it('quietens each reminder only for its own goal', () => {
+    expect(isQuietToday(meals, { ...NOTHING_DONE, meals: true })).toBe(true);
+    expect(isQuietToday(weighIn, { ...NOTHING_DONE, meals: true })).toBe(false);
+    expect(isQuietToday(weighIn, { ...NOTHING_DONE, weighIn: true })).toBe(
+      true,
+    );
+    expect(isQuietToday(water, { ...NOTHING_DONE, water: true })).toBe(true);
+    expect(isQuietToday(mood, { ...NOTHING_DONE, mood: true })).toBe(true);
+    expect(isQuietToday(mood, { ...NOTHING_DONE, water: true })).toBe(false);
+  });
+
+  it('quietens a dose only when that medication was taken', () => {
+    const done = { ...NOTHING_DONE, medications: ['a'] };
+    expect(isQuietToday(dose('a'), done)).toBe(true);
+    expect(isQuietToday(dose('b'), done)).toBe(false);
+  });
+
+  it('quietens everything but medication on a rest day', () => {
+    const rest = { ...NOTHING_DONE, rest: true };
+    for (const r of [meals, weighIn, water, mood])
+      expect(isQuietToday(r, rest)).toBe(true);
+    expect(isQuietToday(dose('a'), rest)).toBe(false);
   });
 });

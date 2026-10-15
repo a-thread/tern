@@ -1,7 +1,12 @@
 import * as Notifications from 'expo-notifications';
 
 import { Frequency } from '@shared/models/frequency';
-import { Reminders, type ReminderConfig } from './models/reminderPlan';
+import {
+  medicationReminderId,
+  NOTHING_DONE,
+  Reminders,
+  type ReminderConfig,
+} from './models/reminderPlan';
 import { syncReminders } from './reminders';
 
 jest.mock('expo-notifications', () => ({
@@ -39,6 +44,8 @@ const med = {
   weekday: 1,
 } as const;
 
+const REST = { ...NOTHING_DONE, rest: true };
+
 describe('syncReminders on a rest day', () => {
   beforeEach(() => {
     jest.useFakeTimers().setSystemTime(new Date(2026, 9, 10, 10, 0));
@@ -52,7 +59,7 @@ describe('syncReminders on a rest day', () => {
   });
 
   it('replaces the repeating trigger with six weekly repeats and one date, leaving today out', async () => {
-    await syncReminders(config, { trackMood: true }, true);
+    await syncReminders(config, { trackMood: true }, REST);
     expect(ids()).toHaveLength(7);
     expect(ids().every((id) => id.startsWith('tern-mood-rest-'))).toBe(true);
     const dates = schedule.mock.calls.filter(
@@ -66,7 +73,7 @@ describe('syncReminders on a rest day', () => {
     await syncReminders(
       { ...config, mood: { on: true, at: 8 * 60 } },
       { trackMood: true },
-      true,
+      REST,
     );
     expect(ids()).toEqual(['tern-mood']);
   });
@@ -75,8 +82,85 @@ describe('syncReminders on a rest day', () => {
     await syncReminders(
       { ...config, mood: { on: false, at: 0 } },
       { medications: [med] },
-      true,
+      REST,
     );
     expect(schedule.mock.calls.map(([r]) => r.trigger.type)).toEqual(['daily']);
+  });
+});
+
+describe('syncReminders when the goal is already met', () => {
+  beforeEach(() => {
+    jest.useFakeTimers().setSystemTime(new Date(2026, 9, 10, 10, 0));
+    schedule.mockClear();
+  });
+  afterEach(() => jest.useRealTimers());
+
+  it('quietens the check-in once it is done today, and no other reminder', async () => {
+    await syncReminders(
+      { ...config, water: { ...config.water, on: true, everyHours: 4 } },
+      { trackMood: true, trackWater: true },
+      { ...NOTHING_DONE, mood: true },
+    );
+    expect(ids().filter((id) => id.startsWith('tern-mood'))).toHaveLength(7);
+    expect(ids().filter((id) => id.startsWith('tern-water'))).toEqual([
+      'tern-water-0',
+      'tern-water-1',
+      'tern-water-2',
+    ]);
+  });
+
+  it('quietens the water reminders once the goal is reached', async () => {
+    await syncReminders(
+      {
+        ...config,
+        mood: { on: false, at: 0 },
+        water: { ...config.water, on: true, everyHours: 4 },
+      },
+      { trackWater: true },
+      { ...NOTHING_DONE, water: true },
+    );
+    // 9:00 has passed (it is 10:00), so it keeps repeating; 13:00 and 17:00 skip today.
+    expect(ids().filter((id) => id === 'tern-water-0')).toHaveLength(1);
+    expect(
+      ids().filter((id) => id.startsWith('tern-water-1-rest-')),
+    ).toHaveLength(7);
+    expect(
+      ids().filter((id) => id.startsWith('tern-water-2-rest-')),
+    ).toHaveLength(7);
+  });
+
+  it('leaves today out of the meal reminders once every meal is logged', async () => {
+    const meals = {
+      ...config,
+      mood: { on: false, at: 0 },
+      mealLog: { on: true, midday: 12 * 60, evening: 19 * 60 },
+    };
+    await syncReminders(meals);
+    const usual = schedule.mock.calls.filter(
+      ([r]) => r.trigger.date.getDate() === 10,
+    );
+    expect(usual).toHaveLength(2);
+
+    schedule.mockClear();
+    await syncReminders(meals, undefined, { ...NOTHING_DONE, meals: true });
+    expect(
+      schedule.mock.calls.some(([r]) => r.trigger.date.getDate() === 10),
+    ).toBe(false);
+    expect(
+      schedule.mock.calls.some(([r]) => r.trigger.date.getDate() === 11),
+    ).toBe(true);
+  });
+
+  it('quietens only the medication that was taken', async () => {
+    const other = { ...med, id: 'o', name: 'Zinc' };
+    await syncReminders(
+      { ...config, mood: { on: false, at: 0 } },
+      { medications: [med, other] },
+      { ...NOTHING_DONE, medications: ['m'] },
+    );
+    expect(
+      ids().filter((id) => id.startsWith(medicationReminderId('m'))),
+    ).toHaveLength(7);
+    expect(ids()).toContain(medicationReminderId('o'));
   });
 });
