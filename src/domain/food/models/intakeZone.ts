@@ -1,16 +1,12 @@
-export type CalorieZone = { min: number; max: number };
+import { type CalorieZone, CalorieZoneLimits } from '../../settings/models/calorieZone';
 
 export class IntakeZones {
-  static readonly STEP = 10;
-  static readonly MIN_GAP = 100;
-  static readonly FLOOR = 800;
-  static readonly CEILING = 6000;
   /** The default zone sits this share either side of the calorie target. */
   static readonly DEFAULT_SPREAD = 0.15;
 }
 
 const snap = (n: number) =>
-  Math.round(n / IntakeZones.STEP) * IntakeZones.STEP;
+  Math.round(n / CalorieZoneLimits.STEP) * CalorieZoneLimits.STEP;
 
 /** A zone around the calorie target, used until the person sets their own. */
 export function defaultZone(calorieTarget: number): CalorieZone {
@@ -18,21 +14,6 @@ export function defaultZone(calorieTarget: number): CalorieZone {
     min: snap(calorieTarget * (1 - IntakeZones.DEFAULT_SPREAD)),
     max: snap(calorieTarget * (1 + IntakeZones.DEFAULT_SPREAD)),
   };
-}
-
-export function sanitizeCalorieZone(value: unknown): CalorieZone | null {
-  if (!value || typeof value !== 'object') return null;
-  const { min, max } = value as Partial<CalorieZone>;
-  if (
-    typeof min !== 'number' ||
-    typeof max !== 'number' ||
-    !Number.isFinite(min) ||
-    !Number.isFinite(max) ||
-    max - min < IntakeZones.MIN_GAP
-  ) {
-    return null;
-  }
-  return { min, max };
 }
 
 export function resolveZone(
@@ -48,17 +29,17 @@ export function nudgeZone(
   end: 'min' | 'max',
   direction: 1 | -1,
 ): CalorieZone {
-  const delta = direction * IntakeZones.STEP;
+  const delta = direction * CalorieZoneLimits.STEP;
   if (end === 'min') {
     const min = Math.min(
-      Math.max(zone.min + delta, IntakeZones.FLOOR),
-      zone.max - IntakeZones.MIN_GAP,
+      Math.max(zone.min + delta, CalorieZoneLimits.FLOOR),
+      zone.max - CalorieZoneLimits.MIN_GAP,
     );
     return { min, max: zone.max };
   }
   const max = Math.max(
-    Math.min(zone.max + delta, IntakeZones.CEILING),
-    zone.min + IntakeZones.MIN_GAP,
+    Math.min(zone.max + delta, CalorieZoneLimits.CEILING),
+    zone.min + CalorieZoneLimits.MIN_GAP,
   );
   return { min: zone.min, max };
 }

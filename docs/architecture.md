@@ -49,6 +49,11 @@ sometimes `<name>.mock.ts`, and its `models/`. The domains are `food`, `saved-me
 days), `waypoints`, `settings`, `auth` and `health` (the HealthKit wrapper both step and workout adapters use). Third-party read APIs (USDA, Open Food Facts) sit in
 `domain/food/sources/`.
 
+`settings` sits below the other domains: it owns the types and limits of its own fields (`Aim`, `CalorieZone`,
+`StepGoal`, `MovementGoal`, `WaterGoal`, `Medication`) and imports from no feature domain, while food, activity,
+movement, water and medication read `SettingsContext` and import those types from it. `saved-meals` likewise owns
+`mealDraft`, so `food` no longer imports it back.
+
 Only `BackendContext` builds repositories. `AppProviders` hands each to its provider as a
 `repo` prop, so nothing below `app/` knows whether it got Supabase or the in-memory version, and a
 screen that wants history asks its Context (`loadHistory`, `loadRange`).

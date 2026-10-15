@@ -1,21 +1,7 @@
 import { addDays, dayKey } from '@shared/utils/date';
 import { allMealsLogged } from './meals';
 import type { FoodEntry } from './foodEntry';
-
-/** Which way someone wants their weight to go, for the adaptive target. */
-export enum Aim {
-  Lose = 'lose',
-  LoseSlowly = 'loseSlowly',
-  Maintain = 'maintain',
-  Gain = 'gain',
-}
-
-export const AIM_LABEL: Record<Aim, string> = {
-  [Aim.Lose]: 'Lose',
-  [Aim.LoseSlowly]: 'Lose slowly',
-  [Aim.Maintain]: 'Maintain',
-  [Aim.Gain]: 'Gain',
-};
+import { Aim } from '../../settings/models/aim';
 
 /**
  * The adaptive target: what someone really burns, worked out from what they

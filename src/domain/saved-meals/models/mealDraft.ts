@@ -1,6 +1,6 @@
-import { dayTotals } from './foodEntry';
-import { stepServings } from './servings';
-import { amountOf, stepMeasure } from './measure';
+import { dayTotals } from '../../food/models/foodEntry';
+import { stepServings } from '../../food/models/servings';
+import { amountOf, stepMeasure } from '../../food/models/measure';
 import {
   cleanName,
   findMealByName,
@@ -9,7 +9,7 @@ import {
   type SavedMeal,
   type SavedMealItem,
   SavedMealLimits,
-} from '../../saved-meals/models/savedMeals';
+} from './savedMeals';
 
 /** How a saved or recent meal can be scaled when it is logged. */
 export class MealScale {

@@ -1,4 +1,4 @@
-import { clampWaterGoal, dayTotal, isValidDrink, lastDrink, totalsByDay, waterProgress, type WaterEntry, WaterLimits } from './waterEntry';
+import { dayTotal, isValidDrink, lastDrink, totalsByDay, waterProgress, type WaterEntry, WaterLimits } from './waterEntry';
 import { averageDaily, bucketWater } from '@/trends/components/WaterTrendCard/models/waterBars';
 import { TrendRange } from '@/trends/models/trendRange';
 
@@ -52,12 +52,6 @@ describe('goal helpers', () => {
     expect(waterProgress(16, 64)).toBe(0.25);
     expect(waterProgress(100, 64)).toBe(1);
     expect(waterProgress(16, 0)).toBe(0);
-  });
-
-  it('keeps a goal within sensible bounds', () => {
-    expect(clampWaterGoal(3)).toBe(16);
-    expect(clampWaterGoal(9999)).toBe(200);
-    expect(clampWaterGoal(64.004)).toBe(64);
   });
 });
 

@@ -1,12 +1,13 @@
 import { type FoodEntry, Meal } from '../../food/models/foodEntry';
 import type { WeightEntry } from '../../weight/models/weightEntry';
 import { buildDays, computeStreak, noStepsThisWeek, type DayRecord, restDaysLeft, weekOf, type BuildDaysInput } from './dayRecord';
-import { goalFor, recordGoalChange, suggestGoal } from './stepGoal';
+import { suggestGoal } from './stepGoal';
 import { greetingFor } from '@/today/components/StepsHero/models/greeting';
 import { leftToDo, mealForTime, weighInDue } from '@/today/models/leftToDo';
 import { todaySummary } from '@/today/models/todaySummary';
 import { DayState } from '@shared/models/dayState';
 import { Frequency } from '@shared/models/frequency';
+import { goalFor, recordGoalChange } from '../../settings/models/stepGoalHistory';
 
 const food = (meal: FoodEntry['meal']): FoodEntry => ({
   id: meal,

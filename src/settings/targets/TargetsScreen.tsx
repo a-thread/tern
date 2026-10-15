@@ -18,11 +18,8 @@ import {
 import { useSettings } from '../../domain/settings/SettingsContext';
 import { AdaptiveTargetCard } from './components/AdaptiveTargetCard';
 import { useSliderValue } from '../hooks/useSliderValue';
-import {
-  nudgeZone,
-  resolveZone,
-  type CalorieZone,
-} from '../../domain/food/models/intakeZone';
+import { nudgeZone, resolveZone } from '../../domain/food/models/intakeZone';
+import { type CalorieZone } from '../../domain/settings/models/calorieZone';
 import {
   gramRange,
   isValidSplit,

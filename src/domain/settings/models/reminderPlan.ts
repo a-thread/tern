@@ -1,4 +1,4 @@
-import type { Medication } from '../../medication/models/medication';
+import { type Medication } from './medication';
 import { Frequency } from '@shared/models/frequency';
 import {
   DINNER_MESSAGES,
@@ -99,7 +99,11 @@ export function rotationDays(
   const fixed = plan
     .filter((r) => !r.variants)
     .reduce(
-      (n, r) => n + (restToday && r.key !== 'medication' ? NotificationLimits.REST_DAY_TRIGGERS : 1),
+      (n, r) =>
+        n +
+        (restToday && r.key !== 'medication'
+          ? NotificationLimits.REST_DAY_TRIGGERS
+          : 1),
       0,
     );
   const budget = limit - NotificationLimits.STREAK_RESERVE - fixed;
@@ -320,7 +324,13 @@ export function upcomingDates(
 ): Date[] {
   const out: Date[] = [];
   for (let i = skipToday ? 1 : 0; i < days; i++) {
-    const date = new Date(now.getFullYear(), now.getMonth(), now.getDate() + i, r.hour, r.minute);
+    const date = new Date(
+      now.getFullYear(),
+      now.getMonth(),
+      now.getDate() + i,
+      r.hour,
+      r.minute,
+    );
     if (date <= now) continue;
     // Weekdays here run 1 = Sunday … 7 = Saturday, like the settings.
     if (r.weekday && date.getDay() + 1 !== r.weekday) continue;
@@ -330,7 +340,9 @@ export function upcomingDates(
 }
 
 /** A replacement trigger for a reminder on a rest day: a weekly repeat, or a single date. */
-export type RestTrigger = { id: string; weekday: number } | { id: string; date: Date };
+export type RestTrigger =
+  | { id: string; weekday: number }
+  | { id: string; date: Date };
 
 /**
  * How a reminder that repeats by itself goes quiet for the rest of today, when a repeating
@@ -345,11 +357,18 @@ export function restDayTriggers(
 ): RestTrigger[] {
   if (!upcomingDates(r, now, 1).length) return [];
   const today = now.getDay() + 1;
-  const nextWeek = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 7, r.hour, r.minute);
+  const nextWeek = new Date(
+    now.getFullYear(),
+    now.getMonth(),
+    now.getDate() + 7,
+    r.hour,
+    r.minute,
+  );
   const out: RestTrigger[] = [{ id: `${r.id}-rest-${today}`, date: nextWeek }];
   if (!r.weekday) {
     for (let weekday = 1; weekday <= 7; weekday++) {
-      if (weekday !== today) out.push({ id: `${r.id}-rest-${weekday}`, weekday });
+      if (weekday !== today)
+        out.push({ id: `${r.id}-rest-${weekday}`, weekday });
     }
   }
   return out;

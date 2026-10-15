@@ -1,9 +1,9 @@
 import type { Units } from '@shared/utils/units';
-import type { GoalChange } from '../../activity/models/stepGoal';
-import type { Medication } from '../../medication/models/medication';
-import { WaterLimits } from '../../water/models/waterEntry';
-import { MovementLimits } from '../../movement/models/movementEntry';
-import { Aim } from '../../food/models/energyBalance';
+import { type GoalChange } from './stepGoalHistory';
+import { type Medication } from './medication';
+import { WaterGoal } from './waterGoal';
+import { MovementGoal } from './movementGoal';
+import { Aim } from './aim';
 import { settingsSeed } from '../settings.mock';
 import { Frequency } from '@shared/models/frequency';
 import { type ReminderConfig, Reminders } from './reminderPlan';
@@ -97,10 +97,10 @@ export const initialSettings: AppSettings = {
   weighInFrequency: Reminders.DEFAULT_WEIGH_IN_FREQUENCY,
   medications: [],
   trackWater: false,
-  waterGoalOz: WaterLimits.DEFAULT_GOAL_OZ,
+  waterGoalOz: WaterGoal.DEFAULT_OZ,
   trackMood: false,
   trackMovement: false,
-  movementGoalMinutes: MovementLimits.DEFAULT_GOAL,
+  movementGoalMinutes: MovementGoal.DEFAULT,
   adaptTarget: false,
   aim: Aim.LoseSlowly,
   lastSuggestionWeek: null,

@@ -4,7 +4,7 @@ import { useFood } from '../../domain/food/FoodContext';
 import { useWeight } from '../../domain/weight/WeightContext';
 import { useSettings } from '../../domain/settings/SettingsContext';
 import { useMedication } from '../../domain/medication/MedicationContext';
-import type { Medication } from '../../domain/medication/models/medication';
+import { type Medication } from '../../domain/settings/models/medication';
 import { useWater } from '../../domain/water/WaterContext';
 import { useMood } from '../../domain/mood/MoodContext';
 import { leftToDo } from '../models/leftToDo';
@@ -15,7 +15,8 @@ import { entriesOn } from '../../domain/movement/models/movementEntry';
 import { useViewedDay } from '@shared/state/ViewedDayContext';
 import { dayKey, parseDayKey } from '@shared/utils/date';
 
-const capitalize = (word: string) => word.charAt(0).toUpperCase() + word.slice(1);
+const capitalize = (word: string) =>
+  word.charAt(0).toUpperCase() + word.slice(1);
 
 /** Late on `day`: the moment a past day is judged from (every meal's time has come). */
 const lateOn = (day: string) => {
@@ -58,11 +59,15 @@ export function useDayItems() {
 
   const record = week.find((d) => d.day === day);
   const steps = isToday ? todaySteps : (record?.steps ?? 0);
-  const stepGoal = isToday ? settings.stepGoal : (record?.goal ?? settings.stepGoal);
+  const stepGoal = isToday
+    ? settings.stepGoal
+    : (record?.goal ?? settings.stepGoal);
   const stepsReached = steps / stepGoal >= 1;
   // A goal day reached by movement rather than steps.
   const movedToGoal = isToday
-    ? movement.enabled && !stepsReached && movement.todayGoalMinutes >= settings.movementGoalMinutes
+    ? movement.enabled &&
+      !stepsReached &&
+      movement.todayGoalMinutes >= settings.movementGoalMinutes
     : (record?.movedToGoal ?? false);
   const reached = stepsReached || movedToGoal;
   const movementOnDay = entriesOn(movement.entries, day);
@@ -79,11 +84,16 @@ export function useDayItems() {
     ? []
     : leftToDo(foodLog, lastWeight, now, {
         weighIn: settings.trackWeight
-          ? { frequency: settings.weighInFrequency, weekday: settings.reminders.weighIn.weekday }
+          ? {
+              frequency: settings.weighInFrequency,
+              weekday: settings.reminders.weighIn.weekday,
+            }
           : null,
         skippedMeals,
         medications: isToday ? meds.due : [],
-        water: water.enabled ? { totalOz: water.totalOz, goalOz: water.goalOz } : null,
+        water: water.enabled
+          ? { totalOz: water.totalOz, goalOz: water.goalOz }
+          : null,
         checkIn: mood.enabled && !checkIn,
       });
 

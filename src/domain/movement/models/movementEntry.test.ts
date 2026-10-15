@@ -2,7 +2,6 @@ import {
   Activity,
   activityShare,
   ACTIVITY_INFO,
-  clampMovementGoal,
   distanceFromDisplay,
   formatDistance,
   searchActivities,
@@ -73,8 +72,6 @@ describe('movementEntry', () => {
     expect(isValidMinutes(0)).toBe(false);
     expect(isValidMinutes(601)).toBe(false);
     expect(isValidMinutes(2.5)).toBe(false);
-    expect(clampMovementGoal(5)).toBe(10);
-    expect(clampMovementGoal(500)).toBe(120);
   });
 
   it('shares minutes by activity, biggest first', () => {

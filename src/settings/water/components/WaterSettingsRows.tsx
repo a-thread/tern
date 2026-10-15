@@ -4,7 +4,7 @@ import { Divider, ToggleRow } from '@shared/components/ui';
 import { useSettings } from '@/domain/settings/SettingsContext';
 import { useUnits } from '@/domain/settings/hooks/useUnits';
 import TimeStepperRow from '../../components/TimeStepperRow';
-import { clampWaterGoal } from '@/domain/water/models/waterEntry';
+import { clampWaterGoal } from '@/domain/settings/models/waterGoal';
 
 /** Whether water is tracked, and the daily goal. */
 export function WaterSettingsRows() {

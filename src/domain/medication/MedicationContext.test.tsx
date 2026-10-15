@@ -11,7 +11,7 @@ import { SettingsProvider, useSettings } from '../settings/SettingsContext';
 import { WaypointsProvider, useWaypoints } from '../waypoints/WaypointsContext';
 import { MedicationProvider, useMedication } from './MedicationContext';
 import { Frequency } from '@shared/models/frequency';
-import { newMedication } from './models/medication';
+import { newMedication } from '../settings/models/medication';
 
 const today = dayKey();
 const vitaminD = newMedication('Vitamin D', 'med-d');

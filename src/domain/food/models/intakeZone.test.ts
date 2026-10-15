@@ -1,14 +1,4 @@
-import {
-  defaultZone,
-  MINIMUM_MARK,
-  minimumFill,
-  zoneStatus,
-  macroFill,
-  nudgeZone,
-  resolveZone,
-  sanitizeCalorieZone,
-  zoneScale,
-} from './intakeZone';
+import { defaultZone, MINIMUM_MARK, minimumFill, zoneStatus, macroFill, nudgeZone, resolveZone, zoneScale } from './intakeZone';
 
 describe('intakeZone', () => {
   it('derives a snapped zone around the target', () => {
@@ -21,16 +11,6 @@ describe('intakeZone', () => {
       max: 2000,
     });
     expect(resolveZone(null, 2000)).toEqual({ min: 1700, max: 2300 });
-  });
-
-  it('rejects malformed saved zones', () => {
-    expect(sanitizeCalorieZone(undefined)).toBeNull();
-    expect(sanitizeCalorieZone({ min: 2000, max: 1900 })).toBeNull();
-    expect(sanitizeCalorieZone({ min: 'a', max: 2000 })).toBeNull();
-    expect(sanitizeCalorieZone({ min: 1500, max: 2000 })).toEqual({
-      min: 1500,
-      max: 2000,
-    });
   });
 
   it('keeps a minimum gap when nudging ends', () => {

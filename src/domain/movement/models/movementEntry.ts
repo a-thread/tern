@@ -134,12 +134,6 @@ export class MovementLimits {
   static readonly MAX_MINUTES = 600;
   /** What a new entry starts at. */
   static readonly DEFAULT_MINUTES = 30;
-  /** How the goal stepper moves. */
-  static readonly STEP = 5;
-  /** Minutes in a day that make it a goal day, until changed in settings. */
-  static readonly DEFAULT_GOAL = 30;
-  static readonly GOAL_MIN = 10;
-  static readonly GOAL_MAX = 120;
   /** The longest distance an entry can hold: 300 km. */
   static readonly MAX_DISTANCE_M = 300_000;
 }
@@ -155,9 +149,6 @@ export const isValidMinutes = (m: number) =>
 
 export const clampMinutes = (m: number) =>
   Math.min(Math.max(Math.round(m), MovementLimits.MIN_MINUTES), MovementLimits.MAX_MINUTES);
-
-export const clampMovementGoal = (m: number) =>
-  Math.min(Math.max(Math.round(m), MovementLimits.GOAL_MIN), MovementLimits.GOAL_MAX);
 
 /** Movement can be logged by hand for today and yesterday, never further back or ahead. */
 export const isLoggableDay = isTodayOrYesterday;

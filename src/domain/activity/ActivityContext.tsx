@@ -1,4 +1,11 @@
-import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import React, {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+} from 'react';
 import { AppState } from 'react-native';
 
 import { createRequiredContext } from '@shared/state/createRequiredContext';
@@ -8,8 +15,14 @@ import { usePersist } from '@shared/hooks/usePersist';
 import { addDays } from '@shared/utils/date';
 import { useSettings } from '../settings/SettingsContext';
 import { useAward } from '../waypoints/hooks/useAward';
-import { buildDays, restDaysLeft, weekOf, withFreezes, type DayRecord } from './models/dayRecord';
-import { goalFor } from './models/stepGoal';
+import {
+  buildDays,
+  restDaysLeft,
+  weekOf,
+  withFreezes,
+  type DayRecord,
+} from './models/dayRecord';
+import { goalFor } from '../settings/models/stepGoalHistory';
 import { StepsRepository } from './steps.repository';
 import { StepsStatus } from './models/stepsStatus';
 import type { RestDaysRepository } from './restDays.repository';
@@ -56,10 +69,11 @@ type ActivityContextValue = {
   undoRestDay: () => void;
 };
 
-const [ActivityContext, useActivity] = createRequiredContext<ActivityContextValue>(
-  'useActivity',
-  'ActivityProvider',
-);
+const [ActivityContext, useActivity] =
+  createRequiredContext<ActivityContextValue>(
+    'useActivity',
+    'ActivityProvider',
+  );
 export { useActivity };
 const LastSyncedContext = createContext<Date | null>(null);
 
@@ -161,7 +175,10 @@ export function ActivityProvider({
 
   // Freezes are played forward through the record: a day that would have broken the streak
   // is marked frozen when one was there to spend.
-  const { days, streak, freezes } = useMemo(() => withFreezes(recorded), [recorded]);
+  const { days, streak, freezes } = useMemo(
+    () => withFreezes(recorded),
+    [recorded],
+  );
   const week = useMemo(() => weekOf(days, today), [days, today]);
   const restLeft = restDaysLeft(days, today, settings.restDaysPerWeek);
   const todaySteps = stepsByDay[today] ?? 0;
@@ -171,7 +188,8 @@ export function ActivityProvider({
   // these can run freely; they wait for today's ledger so a stale one never decides.
   // Like meals and water, they follow the day as it stands now, not its high-water mark.
   const goalReachedToday = todaySteps >= settings.stepGoal;
-  const movedToGoalToday = movementGoal > 0 && movement.todayGoalMinutes >= movementGoal;
+  const movedToGoalToday =
+    movementGoal > 0 && movement.todayGoalMinutes >= movementGoal;
   // Steps are only judged while they can be read: with Health Connect
   // disconnected or "read steps" switched off, what was earned stays put.
   const stepsReadable = status === StepsStatus.Connected && readSteps;
@@ -189,7 +207,8 @@ export function ActivityProvider({
   // A day is either a goal day or a rest day, never both: a rest day taken
   // early earns its waypoints only if the goal isn't reached after all. So
   // taking one "just in case" is never better than waiting to see.
-  const restCounts = todayIsRest && !((stepsReadable && goalReachedToday) || movedToGoalToday);
+  const restCounts =
+    todayIsRest && !((stepsReadable && goalReachedToday) || movedToGoalToday);
   useAward(WaypointSource.Rest, restCounts, ready);
 
   // A streak milestone pays a one-time bonus on the day the streak gets there, so it needs
@@ -217,7 +236,10 @@ export function ActivityProvider({
     persist(restRepo.remove(today), REST_FAILURE);
   }, [today, restRepo, persist]);
 
-  const refresh = useCallback(async () => (await load())?.status ?? 'failed', [load]);
+  const refresh = useCallback(
+    async () => (await load())?.status ?? 'failed',
+    [load],
+  );
 
   const connect = useCallback(async (): Promise<StepsStatus> => {
     const granted = await stepsRepo.connect();

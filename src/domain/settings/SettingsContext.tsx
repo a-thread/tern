@@ -1,18 +1,28 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 import type { SettingsRepository } from './settings.repository';
 import { createRequiredContext } from '@shared/state/createRequiredContext';
 import { useAuth } from '../auth/AuthContext';
 import { useToast } from '@shared/state/ToastContext';
 import { dayKey } from '@shared/utils/date';
-import { recordGoalChange } from '../activity/models/stepGoal';
-import { mergeMedications } from '../medication/models/medication';
-import { clampWaterGoal, WaterLimits } from '../water/models/waterEntry';
+import { recordGoalChange } from './models/stepGoalHistory';
+import { mergeMedications } from './models/medication';
+import { clampWaterGoal, WaterGoal } from './models/waterGoal';
 import { mergeReminders, Reminders } from './models/reminderPlan';
-import { initialSettings, changesAnything, type AppSettings } from './models/appSettings';
+import {
+  initialSettings,
+  changesAnything,
+  type AppSettings,
+} from './models/appSettings';
 import { Frequency } from '@shared/models/frequency';
-import { sanitizeCalorieZone } from '../food/models/intakeZone';
-import { clampMovementGoal, MovementLimits } from '../movement/models/movementEntry';
-import { Aim } from '../food/models/energyBalance';
+import { sanitizeCalorieZone } from './models/calorieZone';
+import { clampMovementGoal, MovementGoal } from './models/movementGoal';
+import { Aim } from './models/aim';
 
 type SettingsContextValue = {
   settings: AppSettings;
@@ -20,10 +30,11 @@ type SettingsContextValue = {
   updateSettings: (patch: Partial<AppSettings>) => void;
 };
 
-const [SettingsContext, useSettings] = createRequiredContext<SettingsContextValue>(
-  'useSettings',
-  'SettingsProvider',
-);
+const [SettingsContext, useSettings] =
+  createRequiredContext<SettingsContextValue>(
+    'useSettings',
+    'SettingsProvider',
+  );
 export { useSettings };
 
 export function SettingsProvider({
@@ -66,12 +77,18 @@ export function SettingsProvider({
           trackMood: saved?.trackMood === true,
           trackMovement: saved?.trackMovement === true,
           movementGoalMinutes:
-            typeof saved?.movementGoalMinutes === 'number' && Number.isFinite(saved.movementGoalMinutes)
+            typeof saved?.movementGoalMinutes === 'number' &&
+            Number.isFinite(saved.movementGoalMinutes)
               ? clampMovementGoal(saved.movementGoalMinutes)
-              : MovementLimits.DEFAULT_GOAL,
+              : MovementGoal.DEFAULT,
           adaptTarget: saved?.adaptTarget === true,
-          aim: Object.values(Aim).includes(saved?.aim as Aim) ? (saved!.aim as Aim) : Aim.LoseSlowly,
-          lastSuggestionWeek: typeof saved?.lastSuggestionWeek === 'string' ? saved.lastSuggestionWeek : null,
+          aim: Object.values(Aim).includes(saved?.aim as Aim)
+            ? (saved!.aim as Aim)
+            : Aim.LoseSlowly,
+          lastSuggestionWeek:
+            typeof saved?.lastSuggestionWeek === 'string'
+              ? saved.lastSuggestionWeek
+              : null,
           // A setting added later inside health data takes its default.
           healthData: { ...initialSettings.healthData, ...saved?.healthData },
           trackWeight: saved?.trackWeight !== false,
@@ -92,7 +109,7 @@ export function SettingsProvider({
             typeof saved?.waterGoalOz === 'number' &&
             Number.isFinite(saved.waterGoalOz)
               ? clampWaterGoal(saved.waterGoalOz)
-              : WaterLimits.DEFAULT_GOAL_OZ,
+              : WaterGoal.DEFAULT_OZ,
         };
         const name = signedUpNameRef.current?.trim();
         // Only when never set — clearing the name in Settings must stick.

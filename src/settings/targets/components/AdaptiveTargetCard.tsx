@@ -5,7 +5,8 @@ import { colors, font, radius, space, typography } from '@shared/theme';
 import { BottomSheet, FootNote, Group, GroupLabel, ProgressBar, SegmentedControl, ToggleRow } from '@shared/components/ui';
 import { useSettings } from '@/domain/settings/SettingsContext';
 import { useAdaptiveTarget } from '@/domain/food/hooks/useAdaptiveTarget';
-import { AdaptiveTarget, Aim, AIM_LABEL } from '@/domain/food/models/energyBalance';
+import { AdaptiveTarget } from '@/domain/food/models/energyBalance';
+import { Aim, AIM_LABEL } from '@/domain/settings/models/aim';
 
 const AIMS = Object.values(Aim);
 

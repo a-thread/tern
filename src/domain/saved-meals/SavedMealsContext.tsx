@@ -14,7 +14,7 @@ import {
   stepItemServings,
   validateDraft,
   type MealDraft,
-} from '../food/models/mealDraft';
+} from './models/mealDraft';
 import {
   cleanName,
   findMealByName,

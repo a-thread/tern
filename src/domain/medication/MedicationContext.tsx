@@ -10,7 +10,7 @@ import { useSettings } from '../settings/SettingsContext';
 import { useAward } from '../waypoints/hooks/useAward';
 import { WaypointSource } from '../waypoints/models/waypoint';
 import { dueMeds, takenMeds } from './models/schedule';
-import type { Medication } from './models/medication';
+import { type Medication } from '../settings/models/medication';
 
 type MedicationContextValue = {
   /** False until today's doses have loaded once. */

@@ -3,12 +3,6 @@ export type WaterEntry = { id: string; oz: number; loggedOn: string; loggedAt: s
 
 /** What a drink and a daily water goal can be. */
 export class WaterLimits {
-  static readonly DEFAULT_GOAL_OZ = 64;
-
-  static readonly MIN_GOAL_OZ = 16;
-
-  static readonly MAX_GOAL_OZ = 200;
-
   /** The largest single drink the database accepts (a little over 5 litres). */
   static readonly MAX_DRINK_OZ = 170;
 
@@ -39,10 +33,6 @@ export function totalsByDay(entries: readonly WaterEntry[]): Record<string, numb
 export function waterProgress(oz: number, goalOz: number): number {
   return goalOz > 0 ? Math.min(oz / goalOz, 1) : 0;
 }
-
-/** Keeps a goal within what makes sense. */
-export const clampWaterGoal = (oz: number) =>
-  Math.min(Math.max(round2(oz), WaterLimits.MIN_GOAL_OZ), WaterLimits.MAX_GOAL_OZ);
 
 /** The most recent drink logged on a day, if any. */
 export function lastDrink(entries: readonly WaterEntry[], day: string): WaterEntry | undefined {

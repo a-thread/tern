@@ -2,8 +2,8 @@ import { act, renderHook, waitFor } from '@testing-library/react-native';
 
 import { addDays, weekStartKey } from '@shared/utils/date';
 import { Meal } from '../models/foodEntry';
-import { Aim } from '../models/energyBalance';
 import { useAdaptiveTarget } from './useAdaptiveTarget';
+import { Aim } from '../../settings/models/aim';
 
 const TODAY = '2026-10-29';
 

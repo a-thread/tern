@@ -14,7 +14,7 @@ import {
   type SavedMealItem,
 } from '@/domain/saved-meals/models/savedMeals';
 import { loggedAsResult } from '../../models/recentFoods';
-import { scaledTotals, stepScale } from '@/domain/food/models/mealDraft';
+import { scaledTotals, stepScale } from '@/domain/saved-meals/models/mealDraft';
 import type { LogFoodStackParamList } from '../../navigation';
 import ItemRow from '@/food/components/ItemRow/ItemRow';
 

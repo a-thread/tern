@@ -1,4 +1,4 @@
-import type { Medication } from './medication';
+import { type Medication } from '../../settings/models/medication';
 import { Frequency } from '@shared/models/frequency';
 
 /** Whether a medication is scheduled on a weekday (1 = Sunday … 7 = Saturday). */

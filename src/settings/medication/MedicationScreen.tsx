@@ -28,7 +28,7 @@ import {
   validateMedName,
   type Medication,
   MedicationLimits,
-} from '../../domain/medication/models/medication';
+} from '../../domain/settings/models/medication';
 import { useSettings } from '../../domain/settings/SettingsContext';
 import TimeStepperRow from '../components/TimeStepperRow';
 import {

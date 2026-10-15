@@ -4,9 +4,15 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 
 import { colors, font, radius, space, typography } from '@shared/theme';
-import { Group, GroupLabel, PushHeader, ToggleRow } from '@shared/components/ui';
+import {
+  Group,
+  GroupLabel,
+  PushHeader,
+  ToggleRow,
+} from '@shared/components/ui';
 import { useActivity } from '../../domain/activity/ActivityContext';
-import { suggestGoal, StepGoal } from '../../domain/activity/models/stepGoal';
+import { suggestGoal } from '../../domain/activity/models/stepGoal';
+import { StepGoal } from '../../domain/settings/models/stepGoalHistory';
 import { useSettings } from '../../domain/settings/SettingsContext';
 import { useSliderValue } from '../hooks/useSliderValue';
 
