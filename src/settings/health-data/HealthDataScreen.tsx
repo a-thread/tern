@@ -46,15 +46,26 @@ export default function HealthDataScreen() {
   const [busy, setBusy] = useState(false);
   const healthApp = healthAppName();
 
-  /** Asks for access to steps (the health app's permission prompt) and says how it went. */
+  /**
+   * Asks for access to steps (the health app's permission prompt), and to workouts when they
+   * count as movement, and says how it went.
+   */
   const requestAccess = async () => {
     if (busy) return;
     setBusy(true);
     try {
       const result = await connect();
+      const wantsWorkouts =
+        settings.trackMovement && hd.readWorkouts && movement.workoutsAvailable;
+      const workoutsAllowed =
+        result !== StepsStatus.Connected ||
+        !wantsWorkouts ||
+        (await movement.connectWorkouts());
       toast.show(
         result === StepsStatus.Connected
-          ? `${healthApp} is connected.`
+          ? workoutsAllowed
+            ? `${healthApp} is connected.`
+            : `${healthApp} is connected. Allow Tern to read workouts in ${healthApp} to count them.`
           : result === StepsStatus.Unavailable
             ? `${healthApp} isn't available on this device.`
             : 'Tern still needs permission to read your steps.',

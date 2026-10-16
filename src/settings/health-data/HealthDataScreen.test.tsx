@@ -13,6 +13,7 @@ import { MovementProvider } from '../../domain/movement/MovementContext';
 import { StepsRepository } from '../../domain/activity/steps.repository';
 import { StepsStatus } from '../../domain/activity/models/stepsStatus';
 import { SettingsProvider } from '../../domain/settings/SettingsContext';
+import type { WorkoutsSource } from '../../domain/movement/movement.healthconnect';
 import HealthDataScreen from './HealthDataScreen';
 
 jest.mock('@react-navigation/native', () => ({
@@ -44,15 +45,42 @@ function source(initial: StepsStatus, afterConnect: StepsStatus = initial) {
   return repo;
 }
 
-async function open(steps: StepsRepository) {
-  const backend: Backend = { ...createMemoryBackend(), steps };
+/** A workout source that is granted once connect(true) is called, if `grants`. */
+function workoutSource(grants = true) {
+  let granted = false;
+  const src: WorkoutsSource & { asked: number } = {
+    asked: 0,
+    connect: async (ask = false) => {
+      if (ask) {
+        src.asked++;
+        granted = grants;
+      }
+      return granted;
+    },
+    getRange: async () => [],
+  };
+  return src;
+}
+
+async function open(
+  steps: StepsRepository,
+  {
+    workouts,
+    trackMovement = false,
+  }: { workouts?: WorkoutsSource; trackMovement?: boolean } = {},
+) {
+  const backend: Backend = {
+    ...createMemoryBackend(),
+    steps,
+    settings: { load: async () => ({ trackMovement }), save: async () => {} },
+  };
   const ui = render(
     <SafeAreaProvider initialMetrics={metrics}>
       <ToastProvider>
         <SettingsProvider repo={backend.settings}>
           <WaypointsProvider repo={backend.waypoints}>
             <FoodProvider repo={backend.food}>
-              <MovementProvider repo={backend.movement}>
+              <MovementProvider repo={backend.movement} workouts={workouts}>
                 <ActivityProvider
                   steps={backend.steps}
                   restDays={backend.restDays}
@@ -96,6 +124,49 @@ describe('Health data screen', () => {
       );
       fireEvent.press(getByLabelText('Off. Tap to allow access to steps'));
       await findByText(`${name} isn't available on this device.`);
+    });
+  });
+
+  describe('connecting with movement tracked', () => {
+    const connected = () =>
+      source(StepsStatus.NeedsPermission, StepsStatus.Connected);
+    beforeEach(() => {
+      jest.replaceProperty(Platform, 'OS', 'android');
+    });
+    afterEach(() => {
+      jest.restoreAllMocks();
+    });
+
+    it('also asks to read workouts', async () => {
+      const workouts = workoutSource();
+      const { findByText, getByLabelText } = await open(connected(), {
+        workouts,
+        trackMovement: true,
+      });
+      fireEvent.press(getByLabelText('Off. Tap to allow access to steps'));
+      await findByText('Health Connect is connected.');
+      expect(workouts.asked).toBe(1);
+    });
+
+    it('says so when workouts were refused', async () => {
+      const { findByText, getByLabelText } = await open(connected(), {
+        workouts: workoutSource(false),
+        trackMovement: true,
+      });
+      fireEvent.press(getByLabelText('Off. Tap to allow access to steps'));
+      await findByText(
+        'Health Connect is connected. Allow Tern to read workouts in Health Connect to count them.',
+      );
+    });
+
+    it('does not ask for workouts when movement is off', async () => {
+      const workouts = workoutSource();
+      const { findByText, getByLabelText } = await open(connected(), {
+        workouts,
+      });
+      fireEvent.press(getByLabelText('Off. Tap to allow access to steps'));
+      await findByText('Health Connect is connected.');
+      expect(workouts.asked).toBe(0);
     });
   });
 

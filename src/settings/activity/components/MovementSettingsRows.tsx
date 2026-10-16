@@ -1,7 +1,10 @@
 import React from 'react';
 
 import { Divider, Row, Stepper, ToggleRow } from '@shared/components/ui';
+import { useToast } from '@shared/state/ToastContext';
+import { healthAppName } from '@shared/utils/healthApp';
 import { useSettings } from '@/domain/settings/SettingsContext';
+import { useMovement } from '@/domain/movement/MovementContext';
 import {
   clampMovementGoal,
   MovementGoal,
@@ -10,6 +13,19 @@ import {
 /** Whether movement is tracked, and how many minutes make a goal day. */
 export function MovementSettingsRows() {
   const { settings, updateSettings } = useSettings();
+  const movement = useMovement();
+  const toast = useToast();
+  /** Turning movement on also asks to read workouts, when they count as movement. */
+  const toggle = async (v: boolean) => {
+    updateSettings({ trackMovement: v });
+    if (!v || !settings.healthData.readWorkouts || !movement.workoutsAvailable)
+      return;
+    if (!(await movement.connectWorkouts())) {
+      toast.show(
+        `Allow Tern to read workouts in ${healthAppName()} to count them.`,
+      );
+    }
+  };
   const step = (dir: 1 | -1) =>
     updateSettings({
       movementGoalMinutes: clampMovementGoal(
@@ -22,7 +38,7 @@ export function MovementSettingsRows() {
         title='Track movement'
         sub='Swims, rides, lifting, classes: no calories, just minutes'
         on={settings.trackMovement}
-        onToggle={(v) => updateSettings({ trackMovement: v })}
+        onToggle={toggle}
       />
       {settings.trackMovement ? (
         <>
