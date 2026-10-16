@@ -1,0 +1,29 @@
+Copyright (c) 2026 Aiden Threadgoode. All rights reserved.
+
+This repository contains the source code, text, artwork, icons and design of the
+Tern app (the "Software"). The Software is proprietary. It is published so that
+it can be read and reviewed, not reused.
+
+You may view the Software and fork this repository on GitHub solely to propose
+changes back to it through a pull request.
+
+You may not, without prior written permission from the copyright holder, copy,
+modify, distribute, sublicense, sell, publish, or create derivative works of the
+Software or any part of it, or use it to build or publish another app or service.
+
+Contributions. By submitting a pull request, issue, or other contribution to this
+repository, you grant the copyright holder a perpetual, worldwide, irrevocable,
+royalty-free license to use, modify, relicense and distribute that contribution
+as part of the Software, and you confirm you have the right to grant it.
+
+Third-party material. Open-source dependencies keep their own licenses. Food data
+from Open Food Facts is available under the Open Database License (ODbL), and
+data from USDA FoodData Central is in the public domain. Nothing here restricts
+your rights to that material.
+
+"Tern" and the Tern logo are trademarks of Aiden Threadgoode. This license grants
+no right to use them.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED. IN NO EVENT SHALL THE COPYRIGHT HOLDER BE LIABLE FOR ANY CLAIM, DAMAGES
+OR OTHER LIABILITY ARISING FROM THE SOFTWARE OR ITS USE.
