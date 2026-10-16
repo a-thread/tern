@@ -20,3 +20,6 @@ coverage/
 
 # Built common-foods list (scripts/buildCommonFoods.ts); published to Supabase, not committed.
 /build/
+
+# Local folder for docs that shouldn't be committed
+docs/internal/*
