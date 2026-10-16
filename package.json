@@ -55,6 +55,7 @@
     "typescript": "~5.9.2"
   },
   "private": true,
+  "license": "UNLICENSED",
   "jest": {
     "preset": "jest-expo",
     "setupFiles": [

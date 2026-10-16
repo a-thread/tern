@@ -126,7 +126,8 @@ Release steps and required secrets are in [docs/RELEASING.md](docs/RELEASING.md)
 
 ## Contributing
 
-Issues and pull requests are welcome.
+Issues and pull requests are welcome. Tern isn't open source: by opening a pull request
+you agree to the contribution terms in [LICENSE](LICENSE).
 
 1. Fork the repo and create a branch from `main`.
 2. Make your change, with tests where the logic is pure (`models/` is the usual place).
@@ -155,3 +156,8 @@ Android is the tested platform. iPhone support (Apple Health steps and workouts,
 the code and config but hasn't run on a real iPhone yet; see [docs/healthkit.md](docs/healthkit.md) for
 what is verified and what is waiting on an Apple Developer account.
 Tern is a tracking tool, not medical advice.
+
+## License
+
+© 2026 Aiden Threadgoode. All rights reserved. The code is published to read, not to
+reuse; see [LICENSE](LICENSE). Dependencies and food data keep their own licenses.
