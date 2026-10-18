@@ -1,5 +1,6 @@
 import type { NavigatorScreenParams } from '@react-navigation/native';
 import type { FoodEntry } from '../domain/food/models/foodEntry';
+import { TabParamList } from './tabs/types';
 
 export type SettingsStackParamList = {
   SettingsRoot: undefined;
@@ -40,13 +41,6 @@ export type RootStackParamList = {
   /** Passing a stop: `waypoints` is the stop's running total. */
   Milestone: { waypoints: number };
   RestDay: RestDayParams;
-};
-
-export type TabParamList = {
-  Today: undefined;
-  Food: undefined;
-  Trends: undefined;
-  Journey: undefined;
 };
 
 declare global {

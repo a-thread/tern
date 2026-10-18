@@ -111,3 +111,7 @@ export const streakBonus = (days: number): number =>
 /** What a rule pays out; 0 for a source that has no rule. */
 export const pointsFor = (source: WaypointSource): number =>
   WaypointRules.ALL.find((r) => r.id === source)?.points ?? 0;
+
+/** How a rule is named in its celebration; empty for a source that has no rule. */
+export const labelFor = (source: WaypointSource): string =>
+  WaypointRules.ALL.find((r) => r.id === source)?.label ?? '';

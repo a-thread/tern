@@ -1,85 +1,31 @@
 import React from 'react';
-import { Icon } from '@shared/components/ui';
-import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { colors, font } from '@shared/theme';
-import TernMark from '@shared/components/TernMark';
-import TodayScreen from '../today/TodayScreen';
 import RestDayScreen from '../today/rest-day/RestDayScreen';
-import FoodScreen from '../food/FoodScreen';
 import LogFoodStack from '../food/log-food/LogFoodStack';
 import EditFoodEntryScreen from '../food/edit-food/EditFoodEntryScreen';
 import SaveMealScreen from '../food/save-meal/SaveMealScreen';
 import LogWeightScreen from '../log-weight/LogWeightScreen';
 import CheckInScreen from '../check-in/CheckInScreen';
 import MovementStack from '../movement/MovementStack';
-import TrendsStack from '../trends/TrendsStack';
-import JourneyScreen from '../journey/JourneyScreen';
+
 import WaypointsScreen from '../journey/waypoints/WaypointsScreen';
 import MilestoneScreen from '../journey/milestone/MilestoneScreen';
 import SettingsStack from '../settings/SettingsStack';
-import type { RootStackParamList, TabParamList } from './types';
+import type { RootStackParamList } from './types';
+import Tabs from './tabs/Tabs';
 
-const Tab = createBottomTabNavigator<TabParamList>();
 const RootStack = createNativeStackNavigator<RootStackParamList>();
-
-function Tabs() {
-  // The app draws edge-to-edge, so the bar must make room for the system
-  // navigation area itself (a fixed height would sit under it).
-  const insets = useSafeAreaInsets();
-  const bottomPad = Math.max(insets.bottom, 10);
-  return (
-    <Tab.Navigator
-      screenOptions={{
-        headerShown: false,
-        freezeOnBlur: true,
-        tabBarActiveTintColor: colors.coral,
-        tabBarInactiveTintColor: colors.ink3,
-        tabBarStyle: {
-          backgroundColor: 'rgba(255,255,255,0.94)',
-          borderTopColor: colors.border,
-          height: 54 + bottomPad,
-          paddingTop: 8,
-          paddingBottom: bottomPad,
-        },
-        tabBarLabelStyle: { fontFamily: font.medium, fontSize: 10 },
-      }}
-    >
-      <Tab.Screen
-        name='Today'
-        component={TodayScreen}
-        options={{ tabBarIcon: ({ color }) => <HomeIcon color={color} /> }}
-      />
-      <Tab.Screen
-        name='Food'
-        component={FoodScreen}
-        options={{ tabBarIcon: ({ color }) => <FoodIcon color={color} /> }}
-      />
-      <Tab.Screen
-        name='Trends'
-        component={TrendsStack}
-        options={{ tabBarIcon: ({ color }) => <ChartIcon color={color} /> }}
-      />
-      <Tab.Screen
-        name='Journey'
-        component={JourneyScreen}
-        options={{
-          tabBarIcon: ({ color }) => <TernMark size={21} color={color} />,
-        }}
-      />
-    </Tab.Navigator>
-  );
-}
 
 export default function RootNavigator() {
   return (
     <RootStack.Navigator
       screenOptions={{ headerShown: false, freezeOnBlur: true }}
     >
+      {/* Primary Pages grouped by Tab */}
       <RootStack.Screen name='Tabs' component={Tabs} />
 
+      {/* Sub Pages displayed as modals for fluid transitions */}
       <RootStack.Group screenOptions={{ presentation: 'modal' }}>
         <RootStack.Screen name='LogFood' component={LogFoodStack} />
         <RootStack.Screen name='LogWeight' component={LogWeightScreen} />
@@ -90,6 +36,7 @@ export default function RootNavigator() {
         <RootStack.Screen name='Settings' component={SettingsStack} />
       </RootStack.Group>
 
+      {/* Actual modals */}
       <RootStack.Group
         screenOptions={{
           presentation: 'transparentModal',
@@ -104,15 +51,3 @@ export default function RootNavigator() {
     </RootStack.Navigator>
   );
 }
-
-const HomeIcon = ({ color }: { color: string }) => (
-  <Icon name='home-outline' size={23} color={color} />
-);
-
-const FoodIcon = ({ color }: { color: string }) => (
-  <Icon name='silverware-fork-knife' size={23} color={color} />
-);
-
-const ChartIcon = ({ color }: { color: string }) => (
-  <Icon name='chart-bar' size={23} color={color} />
-);

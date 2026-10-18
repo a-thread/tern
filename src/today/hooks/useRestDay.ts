@@ -17,7 +17,7 @@ import { RestScenes } from '../models/restScene';
  * `holdCelebrations` is true while the tern is still flying in: the waypoints for resting wait for
  * its landing (`markTouchedDown`, called by the scene), and are never held for long.
  */
-export function useRestDay(): {
+export type RestDay = {
   isRest: boolean;
   record: DayRecord | undefined;
   showScene: boolean;
@@ -26,7 +26,9 @@ export function useRestDay(): {
   finishLeaving: () => void;
   holdCelebrations: boolean;
   markTouchedDown: () => void;
-} {
+};
+
+export function useRestDay(): RestDay {
   const { day, isToday } = useViewedDay();
   const { week, ready } = useActivity();
   const record = week.find((d) => d.day === day);

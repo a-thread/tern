@@ -18,7 +18,10 @@ import ResetPasswordScreen from './auth/reset-password/ResetPasswordScreen';
  * keys, the app runs on local mock data.
  */
 export default function AuthGate({ children }: { children: React.ReactNode }) {
+  // if any config keys are missing, we'll save locally
   if (!isBackendConfigured) return <LocalBackend>{children}</LocalBackend>;
+
+  // otherwise use auth
   return (
     <AuthProvider>
       <RequireSession>{children}</RequireSession>
@@ -46,11 +49,12 @@ function RequireSession({ children }: { children: React.ReactNode }) {
   }, [signedIn, inPreview]);
 
   if (auth.loading) return <Spinner />;
+
   // Arriving from a reset link: they're signed in, but must choose a new password first.
   if (signedIn && auth.passwordRecoveryPending) return <ResetPasswordScreen />;
   if (!backend) return <AuthFlow />;
 
-  // Keyed so signing out and in as someone else remounts every provider with fresh state.
+  // Keyed by userId to refresh on identity changes
   return (
     <BackendProvider key={userId ?? 'preview'} backend={backend}>
       {children}

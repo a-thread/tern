@@ -80,9 +80,7 @@ export type Backend = {
   water: WaterRepository;
   mood: MoodRepository;
   movement: MovementRepository;
-  /** Workouts read from Health Connect or Apple Health; null where neither is available. */
   workouts: WorkoutsSource | null;
-  /** The shared common-foods list that search uses on the phone. */
   commonFoods: CommonFoodsRepository;
   /** Export and erase, for signed-in accounts. Absent in local mode, where nothing is stored. */
   data?: DataRepository;
@@ -115,8 +113,6 @@ export function createRemoteBackend(): Backend {
     weight: createSupabaseWeightRepository(supabase),
     settings: createSupabaseSettingsRepository(supabase),
     waypoints: createSupabaseWaypointsRepository(supabase),
-    // Real steps only. With no step source the count stays at zero — mock
-    // steps would earn a real account waypoints it didn't earn.
     steps: createHealthStepsRepository() ?? createUnavailableStepsRepository(),
     restDays: createSupabaseRestDaysRepository(supabase),
     savedMeals: createSupabaseSavedMealsRepository(supabase),
