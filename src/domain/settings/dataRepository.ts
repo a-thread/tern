@@ -11,6 +11,7 @@ export type TernExport = {
   medicationDoses: unknown[];
   waterEntries: unknown[];
   moodCheckins: unknown[];
+  mealCheckins: unknown[];
   skippedMeals: unknown[];
   skippedWeighIns: unknown[];
   movementEntries: unknown[];

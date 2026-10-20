@@ -52,8 +52,8 @@ export default function TrendsScreen() {
         <StepsTrendCard range={range} />
         {/* weight: gone when weight isn't tracked */}
         {settings.trackWeight ? <WeightTrendCard range={range} /> : null}
-        {/* nutrition: part of "Track calories & macros", so gone when that is off */}
-        {settings.trackCalories ? (
+        {/* nutrition: gone when neither calories nor macros are tracked */}
+        {settings.trackCalories || settings.trackMacros ? (
           <CaloriesTrendCard range={range} refreshKey={refreshKey} />
         ) : null}
         {settings.adaptTarget &&

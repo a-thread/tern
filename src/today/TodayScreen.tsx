@@ -9,6 +9,7 @@ import { useTodayRefresh } from './hooks/useTodayRefresh';
 import { useRestDay } from './hooks/useRestDay';
 import { useRestReveal } from './hooks/useRestReveal';
 import { useFlightKey } from './hooks/useFlightKey';
+import { useWaterSheet, WaterSheetContext } from './hooks/useWaterSheet';
 import { TodayHeader } from './components/TodayHeader';
 import { StepsHero } from './components/StepsHero/StepsHero';
 import { RestDayHero } from './components/RestDayHero';
@@ -16,6 +17,7 @@ import { WeekStrip } from './components/WeekStrip/WeekStrip';
 import { RestDayLists } from './components/RestDayLists';
 import { DayLists } from './components/DayLists';
 import { CelebrationBurst } from './components/CelebrationBurst';
+import WaterSheet from './components/WaterSheet';
 
 /**
  * The Today tab: steps, the week, what is left to do and what is done, and the waypoint
@@ -30,39 +32,51 @@ export default function TodayScreen() {
   const { calm, reveal } = useRestReveal(rest.isRest, rest.leaving);
   const { replayKey, flightKey } = useFlightKey();
 
-  // The waypoints for resting wait for the tern to land.
+  const waterSheet = useWaterSheet();
+
+  // The waypoints for resting wait for the tern to land, and every award waits for the
+  // water sheet to close: nothing may open over its modal.
   const { rootRef, heroRef, chipRef, playing, finish } = useCelebrationPlayback(
-    rest.holdCelebrations,
+    rest.holdCelebrations || waterSheet.showing,
   );
-  useMilestoneReward(playing !== null);
+  useMilestoneReward(playing !== null || waterSheet.showing);
 
   return (
-    <View
-      ref={rootRef}
-      collapsable={false}
-      style={[s.root, { paddingTop: insets.top }]}
-    >
-      <TodayHeader chipRef={chipRef} />
-
-      <ScrollView
-        refreshControl={refreshControl}
-        contentContainerStyle={s.content}
+    <WaterSheetContext.Provider value={waterSheet.open}>
+      <View
+        ref={rootRef}
+        collapsable={false}
+        style={[s.root, { paddingTop: insets.top }]}
       >
-        {rest.showScene ? (
-          <RestDayHero heroRef={heroRef} rest={rest} />
-        ) : (
-          <StepsHero heroRef={heroRef} replayKey={flightKey} />
-        )}
-        <WeekStrip replayKey={replayKey} />
-        {calm ? (
-          <RestDayLists onReveal={reveal} leaving={rest.leaving} />
-        ) : (
-          <DayLists resting={rest.isRest} />
-        )}
-      </ScrollView>
+        <TodayHeader chipRef={chipRef} />
 
-      {playing ? <CelebrationBurst playing={playing} onDone={finish} /> : null}
-    </View>
+        <ScrollView
+          refreshControl={refreshControl}
+          contentContainerStyle={s.content}
+        >
+          {rest.showScene ? (
+            <RestDayHero heroRef={heroRef} rest={rest} />
+          ) : (
+            <StepsHero heroRef={heroRef} replayKey={flightKey} />
+          )}
+          <WeekStrip replayKey={replayKey} />
+          {calm ? (
+            <RestDayLists onReveal={reveal} leaving={rest.leaving} />
+          ) : (
+            <DayLists resting={rest.isRest} />
+          )}
+        </ScrollView>
+
+        {playing ? (
+          <CelebrationBurst playing={playing} onDone={finish} />
+        ) : null}
+      </View>
+      <WaterSheet
+        visible={waterSheet.visible}
+        onClose={waterSheet.close}
+        onHidden={waterSheet.hidden}
+      />
+    </WaterSheetContext.Provider>
   );
 }
 

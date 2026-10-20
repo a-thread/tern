@@ -53,6 +53,11 @@ import {
 } from './domain/mood/mood.repository';
 import { createSupabaseMoodRepository } from './domain/mood/mood.repository.supabase';
 import {
+  createMemoryMealCheckInsRepository,
+  type MealCheckInsRepository,
+} from './domain/meal-check-ins/mealCheckIns.repository';
+import { createSupabaseMealCheckInsRepository } from './domain/meal-check-ins/mealCheckIns.repository.supabase';
+import {
   createMemoryCommonFoodsRepository,
   type CommonFoodsRepository,
 } from './domain/common-foods/commonFoods.repository';
@@ -79,6 +84,7 @@ export type Backend = {
   medication: MedicationRepository;
   water: WaterRepository;
   mood: MoodRepository;
+  mealCheckIns: MealCheckInsRepository;
   movement: MovementRepository;
   workouts: WorkoutsSource | null;
   commonFoods: CommonFoodsRepository;
@@ -99,6 +105,7 @@ export function createMemoryBackend(): Backend {
     medication: createMemoryMedicationRepository(),
     water: createMemoryWaterRepository(),
     mood: createMemoryMoodRepository(),
+    mealCheckIns: createMemoryMealCheckInsRepository(),
     commonFoods: createMemoryCommonFoodsRepository(),
     movement: createMemoryMovementRepository(),
     workouts: null,
@@ -119,6 +126,7 @@ export function createRemoteBackend(): Backend {
     medication: createSupabaseMedicationRepository(supabase),
     water: createSupabaseWaterRepository(supabase),
     mood: createSupabaseMoodRepository(supabase),
+    mealCheckIns: createSupabaseMealCheckInsRepository(supabase),
     commonFoods: createSupabaseCommonFoodsRepository(supabase),
     movement: createSupabaseMovementRepository(supabase),
     workouts: createHealthWorkouts(),

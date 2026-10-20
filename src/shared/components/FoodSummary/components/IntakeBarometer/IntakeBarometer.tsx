@@ -78,7 +78,8 @@ export function IntakeBarometer({
   entries: readonly FoodEntry[];
 }) {
   const { settings } = useSettings();
-  const { showCalories, showTiers } = useFoodDisplay();
+  const { showCalories, showMacros, showTiers, tracksIntake } =
+    useFoodDisplay();
   const [width, setWidth] = useState(0);
   const [page, setPage] = useState(0);
   const [info, setInfo] = useState<IntakeInfoKind | null>(null);
@@ -89,14 +90,16 @@ export function IntakeBarometer({
   // Each page's own height, so the card is only as tall as the page showing.
   const [heights, setHeights] = useState<Record<string, number>>({});
 
-  if (!settings.showIntakeBars || !settings.trackCalories) return null;
+  if (!settings.showIntakeBars || !tracksIntake) return null;
 
-  // Macros first; the processing split only when processing levels are shown; calories last.
+  // Macros first (while tracked); the processing split only when processing levels are shown;
+  // calories last.
   const pages: IntakePage[] = [
-    IntakePage.Macros,
+    ...(showMacros ? [IntakePage.Macros] : []),
     ...(showTiers ? [IntakePage.Processing] : []),
     ...(showCalories ? [IntakePage.Calories] : []),
   ];
+  if (!pages.length) return null;
   const shares = tierShares(entries);
   const zone = resolveZone(settings.calorieZone, settings.calorieTarget);
   const scale = zoneScale(totals.calories, zone);

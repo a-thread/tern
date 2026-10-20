@@ -9,12 +9,14 @@ import WaterCard from '@shared/components/WaterCard/WaterCard';
 export default function WaterSheet({
   visible,
   onClose,
+  onHidden,
 }: {
   visible: boolean;
   onClose: () => void;
+  onHidden: () => void;
 }) {
   return (
-    <BottomSheet visible={visible} onClose={onClose}>
+    <BottomSheet visible={visible} onClose={onClose} onHidden={onHidden}>
       <View style={s.top}>
         <Pressable onPress={onClose} hitSlop={10} accessibilityLabel='Close'>
           <Text style={s.close}>×</Text>

@@ -45,3 +45,32 @@ describe('useFoodDisplay showCalories', () => {
     expect(result.current.display.showCalories).toBe(true);
   });
 });
+
+describe('useFoodDisplay macros', () => {
+  it('tracks macros apart from calories', async () => {
+    const { result } = await setup();
+    act(() => result.current.settings.updateSettings({ trackCalories: false }));
+    expect(result.current.display.showMacros).toBe(true);
+    expect(result.current.display.tracksIntake).toBe(true);
+
+    act(() =>
+      result.current.settings.updateSettings({
+        trackCalories: true,
+        trackMacros: false,
+      }),
+    );
+    expect(result.current.display.showMacros).toBe(false);
+    expect(result.current.display.showCalories).toBe(true);
+  });
+
+  it('has no intake to show when neither is tracked', async () => {
+    const { result } = await setup();
+    act(() =>
+      result.current.settings.updateSettings({
+        trackCalories: false,
+        trackMacros: false,
+      }),
+    );
+    expect(result.current.display.tracksIntake).toBe(false);
+  });
+});

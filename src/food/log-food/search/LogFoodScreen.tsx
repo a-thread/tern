@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { View, Text, ScrollView, StyleSheet, Pressable } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
+import { StackActions } from '@react-navigation/native';
 
 import { colors, font, space } from '@shared/theme';
 import { SheetNav, FootNote, SegmentedControl } from '@shared/components/ui';
@@ -11,6 +12,7 @@ import type { SavedMeal } from '@/domain/saved-meals/models/savedMeals';
 import { describeAdditions } from '../models/sessionAdditions';
 import { useFood } from '@/domain/food/FoodContext';
 import { useSavedMeals } from '@/domain/saved-meals/SavedMealsContext';
+import { useMealCheckIns } from '@/domain/meal-check-ins/MealCheckInsContext';
 import { useSessionAdditions } from '../hooks/useSessionAdditions';
 import {
   FOOD_FILTERS,
@@ -59,6 +61,18 @@ export default function LogFoodScreen({ navigation, route }: Props) {
   const inMealCount = pickMode
     ? (draft?.items.length ?? 0)
     : foodLog.filter((f) => f.meal === meal).length;
+  // Once food is in, offer the meal check-in (while it's on and not yet done for this meal).
+  const mealCheckIns = useMealCheckIns();
+  const offerCheckIn =
+    addedMessage !== null &&
+    mealCheckIns.enabled &&
+    !mealCheckIns.forMeal(meal);
+  // Takes the place of Add food, so closing the check-in lands back where logging began.
+  const checkInOnMeal = () =>
+    navigation
+      .getParent()
+      ?.dispatch(StackActions.replace('MealCheckIn', { meal }));
+
   const reviewMeal = () =>
     pickMode
       ? navigation.goBack()
@@ -116,6 +130,16 @@ export default function LogFoodScreen({ navigation, route }: Props) {
       />
 
       {addedMessage ? <AddedBanner message={addedMessage} /> : null}
+      {offerCheckIn ? (
+        <Pressable
+          onPress={checkInOnMeal}
+          hitSlop={8}
+          style={s.checkIn}
+          accessibilityRole='button'
+        >
+          <Text style={s.ghostText}>{`Done eating? Check in on ${meal}`}</Text>
+        </Pressable>
+      ) : null}
 
       <ScrollView
         contentContainerStyle={{
@@ -179,5 +203,6 @@ export default function LogFoodScreen({ navigation, route }: Props) {
 const s = StyleSheet.create({
   seg: { marginHorizontal: space.lg, marginVertical: space.md },
   ghostBtn: { alignItems: 'center', paddingVertical: 11, marginTop: 4 },
+  checkIn: { alignItems: 'center', paddingBottom: space.sm },
   ghostText: { fontFamily: font.semibold, fontSize: 13.5, color: colors.coral },
 });

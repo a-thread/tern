@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { colors, typography } from '@shared/theme';
-import { Group, GroupLabel, ToggleRow } from '@shared/components/ui';
+import { FootNote, Group, GroupLabel, ToggleRow } from '@shared/components/ui';
 import { useSettings } from '@/domain/settings/SettingsContext';
 import {
   macrosFromPercents,
@@ -67,6 +67,12 @@ export function MacrosTab() {
           </View>
         </Pressable>
       </Group>
+      {/* Gram targets come from the split and a day's calories, even while calories aren't tracked. */}
+      {settings.trackCalories ? null : (
+        <FootNote>
+          {`Gram targets assume about ${settings.calorieTarget.toLocaleString()} calories a day: ${settings.macroTargets.protein}g protein, ${settings.macroTargets.carbs}g carbs, ${settings.macroTargets.fat}g fat.`}
+        </FootNote>
+      )}
 
       {settings.showIntakeBars ? (
         <>

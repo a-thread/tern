@@ -2,7 +2,6 @@ import React from 'react';
 
 import { useViewedDay } from '@shared/state/ViewedDayContext';
 import { FoodSummary } from '@shared/components/FoodSummary/FoodSummary';
-import { useSettings } from '@/domain/settings/SettingsContext';
 import { LeftToDoList } from './LeftToDoList';
 import { DoneList } from './DoneList/DoneList';
 import { TargetSuggestionCard } from './TargetSuggestionCard';
@@ -13,13 +12,13 @@ import { TargetSuggestionCard } from './TargetSuggestionCard';
  */
 export function DayLists({ resting }: { resting: boolean }) {
   const { isToday } = useViewedDay();
-  const { settings } = useSettings();
 
   return (
     <>
       <LeftToDoList />
       <DoneList />
-      {settings.trackCalories ? <FoodSummary /> : null}
+      {/* Empty while neither calories nor macros are tracked. */}
+      <FoodSummary />
       {isToday && !resting ? <TargetSuggestionCard /> : null}
     </>
   );

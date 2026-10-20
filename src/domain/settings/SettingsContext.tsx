@@ -75,6 +75,7 @@ export function SettingsProvider({
           medications: mergeMedications(saved?.medications),
           trackWater: saved?.trackWater === true,
           trackMood: saved?.trackMood === true,
+          checkInAfterMeals: saved?.checkInAfterMeals === true,
           trackMovement: saved?.trackMovement === true,
           movementGoalMinutes:
             typeof saved?.movementGoalMinutes === 'number' &&
@@ -93,6 +94,11 @@ export function SettingsProvider({
           healthData: { ...initialSettings.healthData, ...saved?.healthData },
           trackWeight: saved?.trackWeight !== false,
           showIntakeBars: saved?.showIntakeBars === true,
+          // Before macros had their own switch, "Track calories & macros" covered both.
+          trackMacros:
+            typeof saved?.trackMacros === 'boolean'
+              ? saved.trackMacros
+              : saved?.trackCalories !== false,
           proteinAsMinimum: saved?.proteinAsMinimum !== false,
           calorieZone: sanitizeCalorieZone(saved?.calorieZone),
           celebratedMilestone:

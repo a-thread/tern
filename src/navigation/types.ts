@@ -31,6 +31,8 @@ export type RootStackParamList = {
   LogFood: { meal: FoodEntry['meal'] };
   LogWeight: undefined;
   CheckIn: undefined;
+  /** How a meal sat, on the viewed day. */
+  MealCheckIn: { meal: FoodEntry['meal'] };
   /** The movement logging flow; `day` is today unless logging for yesterday. */
   LogMovement: { day?: string } | undefined;
   EditFood: { entryId: string };

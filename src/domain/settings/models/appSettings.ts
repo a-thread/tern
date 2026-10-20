@@ -24,7 +24,10 @@ export type AppSettings = {
   suggestStepAdjustments: boolean;
   calorieTarget: number;
   macroTargets: { protein: number; carbs: number; fat: number };
+  /** Calorie targets and calorie numbers. Independent of macros: either can be tracked alone. */
   trackCalories: boolean;
+  /** Protein, carb and fat targets and amounts. Independent of calories. */
+  trackMacros: boolean;
   /** Optional intake bars on the Food page; off by default so it stays out of the way. */
   showIntakeBars: boolean;
   /** Calorie "target zone" for the intake bar; null derives one from calorieTarget. */
@@ -54,6 +57,8 @@ export type AppSettings = {
   waterGoalOz: number;
   /** Optional daily mood and stress check-in; off by default so it stays out of the way. */
   trackMood: boolean;
+  /** Optional check-in after each meal (fullness and how you feel); off by default. */
+  checkInAfterMeals: boolean;
   /** Optional movement logging; off by default so it stays out of the way. */
   trackMovement: boolean;
   /** Minutes of movement in a day that make it a goal day, like reaching the step goal. */
@@ -81,6 +86,7 @@ export const initialSettings: AppSettings = {
   calorieTarget: settingsSeed.calorieTarget,
   macroTargets: { ...settingsSeed.macroTargets },
   trackCalories: true,
+  trackMacros: true,
   showIntakeBars: false,
   calorieZone: null,
   proteinAsMinimum: true,
@@ -99,6 +105,7 @@ export const initialSettings: AppSettings = {
   trackWater: false,
   waterGoalOz: WaterGoal.DEFAULT_OZ,
   trackMood: false,
+  checkInAfterMeals: false,
   trackMovement: false,
   movementGoalMinutes: MovementGoal.DEFAULT,
   adaptTarget: false,

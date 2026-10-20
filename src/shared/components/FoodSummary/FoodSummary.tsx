@@ -11,19 +11,20 @@ import { IntakeBarometer } from './components/IntakeBarometer/IntakeBarometer';
 
 /**
  * The viewed day's intake at a glance: the swipeable intake card, or, with that switched off in
- * Settings, a row of calories (or calories left), protein and fat. Heads the Food screen and sits
- * on Today.
+ * Settings, a row of calories (or calories left), protein and fat, each only while it is tracked.
+ * Heads the Food screen and sits on Today.
  */
 export function FoodSummary() {
   const { isToday } = useViewedDay();
   const { foodLog } = useFood();
   const { settings } = useSettings();
-  const { showCalories } = useFoodDisplay();
+  const { showCalories, showMacros, tracksIntake } = useFoodDisplay();
   const totals = dayTotals(foodLog);
 
-  if (settings.showIntakeBars && settings.trackCalories) {
+  if (settings.showIntakeBars && tracksIntake) {
     return <IntakeBarometer totals={totals} entries={foodLog} />;
   }
+  if (!showCalories && !showMacros) return null;
 
   const remainingCalories = Math.max(
     settings.calorieTarget - totals.calories,
@@ -43,16 +44,20 @@ export function FoodSummary() {
           label='calories'
         />
       )}
-      <Stat
-        value={`${Math.round(totals.protein)}g`}
-        label='protein'
-        color={colors.kelp}
-      />
-      <Stat
-        value={`${Math.round(totals.fat)}g`}
-        label='fat'
-        color={colors.sunDeep}
-      />
+      {showMacros ? (
+        <>
+          <Stat
+            value={`${Math.round(totals.protein)}g`}
+            label='protein'
+            color={colors.kelp}
+          />
+          <Stat
+            value={`${Math.round(totals.fat)}g`}
+            label='fat'
+            color={colors.sunDeep}
+          />
+        </>
+      ) : null}
     </View>
   );
 }

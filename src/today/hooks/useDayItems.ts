@@ -102,7 +102,8 @@ export function useDayItems() {
 
   const summary = todaySummary(
     foodLog,
-    lastWeight,
+    // With weight off, a weigh-in logged earlier doesn't show in the day's lists.
+    settings.trackWeight ? lastWeight : undefined,
     takenMedications.map((m) => m.name),
     reached,
     now,

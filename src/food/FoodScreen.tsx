@@ -35,6 +35,8 @@ import { useFood } from '../domain/food/FoodContext';
 import { useFoodDisplay } from '../domain/food/hooks/useFoodDisplay';
 import WaterCard from '@shared/components/WaterCard/WaterCard';
 import { useWater } from '../domain/water/WaterContext';
+import { useMealCheckIns } from '../domain/meal-check-ins/MealCheckInsContext';
+import { MealCheckInRow } from './components/MealCheckInRow/MealCheckInRow';
 import { TierDot } from '@shared/components/TierDot';
 import { FoodSummary } from '@shared/components/FoodSummary/FoodSummary';
 import { useRootNavigation } from '../navigation/useAppNavigation';
@@ -57,7 +59,12 @@ export default function FoodScreen() {
   const { settings } = useSettings();
   const { showCalories } = useFoodDisplay();
   const water = useWater();
-  const refreshControl = usePullToRefresh([reloadFood, water.reload]);
+  const mealCheckIns = useMealCheckIns();
+  const refreshControl = usePullToRefresh([
+    reloadFood,
+    water.reload,
+    mealCheckIns.reload,
+  ]);
 
   return (
     <View
@@ -106,6 +113,11 @@ export default function FoodScreen() {
             const core = Meals.CORE.includes(key);
             const skipped = skippedMeals.includes(key);
             const name = label.toLowerCase();
+            // A meal with food in it can be checked in on (a past day shows only one that was).
+            const showCheckIn =
+              mealCheckIns.enabled &&
+              items.length > 0 &&
+              (editable || mealCheckIns.forMeal(key) !== undefined);
             // Before yesterday a day is only looked at: meals with nothing in them are left out.
             if (!editable && !items.length && !skipped) return null;
             return (
@@ -156,6 +168,9 @@ export default function FoodScreen() {
                         />
                       ),
                     ),
+                    ...(showCheckIn
+                      ? [<MealCheckInRow key='check-in' meal={key} />]
+                      : []),
                     ...(editable
                       ? [
                           <AddRow

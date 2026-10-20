@@ -25,11 +25,20 @@ const TAB_LABEL: Record<Tab, string> = {
   [Tab.Macros]: 'Macros',
 };
 
+/** Settings › Targets: calories and macros, each tracked on its own switch, and their targets. */
 export default function TargetsScreen() {
   const navigation = useNavigation();
   const insets = useSafeAreaInsets();
   const { settings, updateSettings } = useSettings();
-  const [tab, setTab] = useState<Tab>(Tab.Calories);
+  const [picked, setPicked] = useState<Tab>(Tab.Calories);
+  const { trackCalories, trackMacros } = settings;
+
+  // With only one of the two tracked there is nothing to switch between.
+  const tab = !trackMacros
+    ? Tab.Calories
+    : !trackCalories
+      ? Tab.Macros
+      : picked;
 
   return (
     <View
@@ -49,22 +58,30 @@ export default function TargetsScreen() {
       >
         <Group style={{ marginTop: 6 }}>
           <ToggleRow
-            title='Track calories & macros'
-            sub='Off logs meals with no targets at all'
-            on={settings.trackCalories}
+            title='Track calories'
+            sub='A daily calorie target and calorie counts'
+            on={trackCalories}
             onToggle={(v) => updateSettings({ trackCalories: v })}
+          />
+          <ToggleRow
+            title='Track macros'
+            sub='Protein, carb and fat targets'
+            on={trackMacros}
+            onToggle={(v) => updateSettings({ trackMacros: v })}
           />
         </Group>
 
-        {settings.trackCalories ? (
+        {trackCalories || trackMacros ? (
           <>
-            <SegmentedControl
-              style={{ marginTop: space.md }}
-              options={TABS}
-              value={tab}
-              onChange={setTab}
-              label={(t) => TAB_LABEL[t]}
-            />
+            {trackCalories && trackMacros ? (
+              <SegmentedControl
+                style={{ marginTop: space.md }}
+                options={TABS}
+                value={tab}
+                onChange={setPicked}
+                label={(t) => TAB_LABEL[t]}
+              />
+            ) : null}
 
             {tab === Tab.Calories ? <CaloriesTab /> : <MacrosTab />}
 

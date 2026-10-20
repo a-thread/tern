@@ -89,9 +89,11 @@ export function CaloriesTab() {
           {CalorieSlider.MAX.toLocaleString()}
         </Text>
       </View>
-      <FootNote>
-        Your macro percentages stay the same when you change calories.
-      </FootNote>
+      {settings.trackMacros ? (
+        <FootNote>
+          Your macro percentages stay the same when you change calories.
+        </FootNote>
+      ) : null}
 
       {settings.showIntakeBars ? (
         <>

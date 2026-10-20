@@ -14,6 +14,8 @@ import { FoodProvider } from '../domain/food/FoodContext';
 import { WaypointsProvider } from '../domain/waypoints/WaypointsContext';
 import { SettingsProvider } from '../domain/settings/SettingsContext';
 import { WaterProvider } from '../domain/water/WaterContext';
+import { MealCheckInsProvider } from '../domain/meal-check-ins/MealCheckInsContext';
+import { initialSettings } from '../domain/settings/models/appSettings';
 import FoodScreen from './FoodScreen';
 
 jest.mock('@react-navigation/native', () => ({
@@ -33,8 +35,10 @@ function Grab({ into }: { into: { current: ViewedDay | null } }) {
   return null;
 }
 
-async function open() {
+async function open({ checkInAfterMeals = false } = {}) {
   const backend = createMemoryBackend();
+  if (checkInAfterMeals)
+    await backend.settings.save({ ...initialSettings, checkInAfterMeals });
   const viewed: { current: ViewedDay | null } = { current: null };
   const ui = render(
     <SafeAreaProvider initialMetrics={metrics}>
@@ -44,8 +48,10 @@ async function open() {
             <ViewedDayProvider>
               <FoodProvider repo={backend.food}>
                 <WaterProvider repo={backend.water}>
-                  <Grab into={viewed} />
-                  <FoodScreen />
+                  <MealCheckInsProvider repo={backend.mealCheckIns}>
+                    <Grab into={viewed} />
+                    <FoodScreen />
+                  </MealCheckInsProvider>
                 </WaterProvider>
               </FoodProvider>
             </ViewedDayProvider>
@@ -96,5 +102,17 @@ describe('FoodScreen', () => {
       expect(ui.getAllByText('Add food').length).toBeGreaterThan(0),
     );
     expect(ui.getByText(formatLongDate(today))).toBeTruthy();
+  });
+
+  it('offers no meal check-in until it is turned on', async () => {
+    const ui = await open();
+    expect(ui.queryByText('How was it?')).toBeNull();
+  });
+
+  it('offers a check-in under each meal with food once it is on', async () => {
+    const ui = await open({ checkInAfterMeals: true });
+    await waitFor(() =>
+      expect(ui.getAllByText('How was it?').length).toBeGreaterThan(0),
+    );
   });
 });

@@ -9,5 +9,9 @@ export function useFoodDisplay() {
     // No calorie numbers anywhere once calorie tracking is off: there is nothing
     // to count, so the separate "show calorie counts" switch has nothing to decide.
     showCalories: settings.trackCalories && settings.showCalories,
+    /** Protein, carbs and fat; tracked on their own switch, apart from calories. */
+    showMacros: settings.trackMacros,
+    /** Either calories or macros are tracked, so there is an intake summary to show. */
+    tracksIntake: settings.trackCalories || settings.trackMacros,
   };
 }

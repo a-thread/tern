@@ -47,7 +47,22 @@ describe('settings index summaries', () => {
     expect(foodSummary(on)).toMatch(/^2,100 cal · \d+ \/ \d+ \/ \d+$/);
     const [p, c, f] = foodSummary(on).split(' · ')[1].split(' / ').map(Number);
     expect(p + c + f).toBe(100);
-    expect(foodSummary(with_({ trackCalories: false }))).toBe('Calories off');
+    expect(
+      foodSummary(with_({ trackCalories: false, trackMacros: false })),
+    ).toBe('Calories off');
+  });
+
+  it('sums up only what is tracked when calories and macros differ', () => {
+    const base = {
+      calorieTarget: 2100,
+      macroTargets: { protein: 150, carbs: 225, fat: 70 },
+    };
+    expect(
+      foodSummary(with_({ ...base, trackCalories: true, trackMacros: false })),
+    ).toBe('2,100 cal');
+    expect(
+      foodSummary(with_({ ...base, trackCalories: false, trackMacros: true })),
+    ).toMatch(/^Macros \d+ \/ \d+ \/ \d+$/);
   });
 
   it('sums up weight with how often and the goal, in the chosen units', () => {

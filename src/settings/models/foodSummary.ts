@@ -1,9 +1,16 @@
 import type { AppSettings } from '../../domain/settings/models/appSettings';
 import { percentsFromMacros } from '../../domain/food/models/macroSplit';
 
-/** The Settings index line for food: "2,100 cal · 30 / 40 / 30" (protein / carbs / fat), or "Calories off". */
+/**
+ * The Settings index line for food: "2,100 cal · 30 / 40 / 30" (protein / carbs / fat), just
+ * the calories or just the split when only one is tracked, or "Calories off".
+ */
 export function foodSummary(s: AppSettings): string {
-  if (!s.trackCalories) return 'Calories off';
   const split = percentsFromMacros(s.macroTargets);
-  return `${s.calorieTarget.toLocaleString('en-US')} cal · ${split.protein} / ${split.carbs} / ${split.fat}`;
+  const macros = `${split.protein} / ${split.carbs} / ${split.fat}`;
+  const calories = `${s.calorieTarget.toLocaleString('en-US')} cal`;
+  if (s.trackCalories && s.trackMacros) return `${calories} · ${macros}`;
+  if (s.trackCalories) return calories;
+  if (s.trackMacros) return `Macros ${macros}`;
+  return 'Calories off';
 }

@@ -75,3 +75,18 @@ describe('skipping the weigh-in', () => {
     expect(result.current.items.summary.weighedIn).toBeNull();
   });
 });
+
+describe('with weight tracking off', () => {
+  it('leaves a weigh-in logged today out of the day lists', async () => {
+    const { result } = await setup();
+    await act(async () => result.current.weight.addWeightEntry(160));
+    expect(result.current.items.summary.weighedIn).not.toBeNull();
+
+    await act(async () =>
+      result.current.settings.updateSettings({ trackWeight: false }),
+    );
+
+    expect(result.current.items.summary.weighedIn).toBeNull();
+    expect(hasWeightRow(result.current.items)).toBe(false);
+  });
+});

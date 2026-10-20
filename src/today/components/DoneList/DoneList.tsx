@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { StyleSheet, Text } from 'react-native';
 
 import { colors, font } from '@shared/theme';
@@ -8,7 +8,7 @@ import { useFoodDisplay } from '@/domain/food/hooks/useFoodDisplay';
 import { useMedication } from '@/domain/medication/MedicationContext';
 import { useWater } from '@/domain/water/WaterContext';
 import { useWeight } from '@/domain/weight/WeightContext';
-import WaterSheet from '../WaterSheet';
+import { useOpenWaterSheet } from '../../hooks/useWaterSheet';
 import {
   movementSummary,
   isFromHealthApp,
@@ -51,7 +51,7 @@ export function DoneList({
   const water = useWater();
   const { setTaken } = useMedication();
   const { setWeighInSkipped } = useWeight();
-  const [waterOpen, setWaterOpen] = useState(false);
+  const openWaterSheet = useOpenWaterSheet();
   const fromHealthApp = movementOnDay.some((e) => isFromHealthApp(e.source));
 
   // An older day with nothing on it says so; today and yesterday have "Left to do" above.
@@ -129,7 +129,7 @@ export function DoneList({
             sub={`${formatVolume(summary.waterOz)} of ${formatVolume(water.goalOz)}`}
             icon={<DoneBadge />}
             chevron={editable}
-            onPress={editable ? () => setWaterOpen(true) : undefined}
+            onPress={editable ? openWaterSheet : undefined}
           />
         ) : null}
         {movementOnDay.length ? (
@@ -167,7 +167,6 @@ export function DoneList({
           />
         ) : null}
       </Group>
-      <WaterSheet visible={waterOpen} onClose={() => setWaterOpen(false)} />
     </>
   );
 }

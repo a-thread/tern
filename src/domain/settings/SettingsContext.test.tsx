@@ -189,3 +189,27 @@ describe('water settings', () => {
     expect(result.current.settings.waterGoalOz).toBe(200);
   });
 });
+
+describe('loading macro tracking', () => {
+  async function load(saved: Record<string, unknown>) {
+    const repo = { load: async () => saved, save: async () => {} };
+    const wrapper = ({ children }: { children: React.ReactNode }) => (
+      <SettingsProvider repo={repo}>{children}</SettingsProvider>
+    );
+    const hook = renderHook(() => useSettings(), { wrapper });
+    await waitFor(() => expect(hook.result.current.ready).toBe(true));
+    return hook.result.current.settings;
+  }
+
+  it('follows the old combined switch when macros were never set on their own', async () => {
+    expect((await load({ trackCalories: false })).trackMacros).toBe(false);
+    expect((await load({ trackCalories: true })).trackMacros).toBe(true);
+    expect((await load({})).trackMacros).toBe(true);
+  });
+
+  it('keeps its own value once saved', async () => {
+    const s = await load({ trackCalories: false, trackMacros: true });
+    expect(s.trackCalories).toBe(false);
+    expect(s.trackMacros).toBe(true);
+  });
+});

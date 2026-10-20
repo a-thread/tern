@@ -27,6 +27,10 @@ import {
 import { WaterProvider, useWater } from './domain/water/WaterContext';
 import { MoodProvider, useMood } from './domain/mood/MoodContext';
 import {
+  MealCheckInsProvider,
+  useMealCheckIns,
+} from './domain/meal-check-ins/MealCheckInsContext';
+import {
   MovementProvider,
   useMovement,
 } from './domain/movement/MovementContext';
@@ -102,6 +106,13 @@ const PROVIDERS: readonly Entry[] = [
     wrap: (c, b) => <MoodProvider repo={b.mood}>{c}</MoodProvider>,
   },
   {
+    name: 'mealCheckIns',
+    needs: ['settings'],
+    wrap: (c, b) => (
+      <MealCheckInsProvider repo={b.mealCheckIns}>{c}</MealCheckInsProvider>
+    ),
+  },
+  {
     name: 'movement',
     needs: ['settings', 'waypoints'],
     wrap: (c, b) => (
@@ -152,6 +163,7 @@ function LoadGate({ children }: { children: React.ReactNode }) {
     useMedication().ready,
     useWater().ready,
     useMood().ready,
+    useMealCheckIns().ready,
     useMovement().ready,
     useWaypoints().ready,
     useActivity().ready,

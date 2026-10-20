@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Pressable, StyleSheet, Text } from 'react-native';
 
 import { colors, font, radius } from '@shared/theme';
@@ -7,7 +7,7 @@ import { useUnits } from '../../domain/settings/hooks/useUnits';
 import { formatMinutes } from '../../domain/settings/models/reminderPlan';
 import { useMedication } from '../../domain/medication/MedicationContext';
 import { useWater } from '../../domain/water/WaterContext';
-import WaterSheet from './WaterSheet';
+import { useOpenWaterSheet } from '../hooks/useWaterSheet';
 import { formatLoggedAt } from '../../domain/weight/models/weightEntry';
 import { useDayItems } from '../hooks/useDayItems';
 import { useRootNavigation } from '../../navigation/useAppNavigation';
@@ -22,7 +22,7 @@ export function LeftToDoList() {
   const { formatWeight, formatVolume, quickWaterOz } = useUnits();
   const water = useWater();
   const { setTaken } = useMedication();
-  const [waterOpen, setWaterOpen] = useState(false);
+  const openWaterSheet = useOpenWaterSheet();
 
   if (!openItems.length) return null;
   return (
@@ -35,7 +35,7 @@ export function LeftToDoList() {
               key='water'
               title='Water'
               sub={`${formatVolume(item.totalOz)} of ${formatVolume(item.goalOz)}`}
-              onPress={() => setWaterOpen(true)}
+              onPress={openWaterSheet}
               icon={
                 <IconBadge bg={colors.waterTint}>
                   <Icon name='water-outline' size={16} color={colors.water} />
@@ -125,7 +125,6 @@ export function LeftToDoList() {
           ),
         )}
       </Group>
-      <WaterSheet visible={waterOpen} onClose={() => setWaterOpen(false)} />
     </>
   );
 }

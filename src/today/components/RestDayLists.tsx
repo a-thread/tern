@@ -5,7 +5,6 @@ import { colors, font, space } from '@shared/theme';
 import { useViewedDay } from '@shared/state/ViewedDayContext';
 import { FoodSummary } from '@shared/components/FoodSummary/FoodSummary';
 import { useFood } from '@/domain/food/FoodContext';
-import { useSettings } from '@/domain/settings/SettingsContext';
 import { DoneList } from './DoneList/DoneList';
 
 /**
@@ -21,7 +20,6 @@ export function RestDayLists({
 }) {
   const { editable } = useViewedDay();
   const { foodLog } = useFood();
-  const { settings } = useSettings();
 
   return (
     <>
@@ -36,7 +34,7 @@ export function RestDayLists({
         </Pressable>
       ) : null}
       <DoneList quietWhenEmpty />
-      {foodLog.length > 0 && settings.trackCalories ? <FoodSummary /> : null}
+      {foodLog.length > 0 ? <FoodSummary /> : null}
     </>
   );
 }

@@ -114,7 +114,7 @@ export default function FoodDisplayScreen() {
             under Settings → Calorie & macro targets.
           </FootNote>
         )}
-        {settings.trackCalories ? (
+        {settings.trackCalories || settings.trackMacros ? (
           <>
             <GroupLabel>Intake bars</GroupLabel>
             <Group>

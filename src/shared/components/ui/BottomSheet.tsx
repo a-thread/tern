@@ -26,10 +26,13 @@ const FADE_OUT_MS = 160;
 export function BottomSheet({
   visible,
   onClose,
+  onHidden,
   children,
 }: {
   visible: boolean;
   onClose: () => void;
+  /** Called once the close animation has finished and the modal is gone. */
+  onHidden?: () => void;
   children: React.ReactNode;
 }) {
   const insets = useSafeAreaInsets();
@@ -38,6 +41,8 @@ export function BottomSheet({
   const [mounted, setMounted] = useState(visible);
   const fade = useRef(new Animated.Value(0)).current;
   const slide = useRef(new Animated.Value(0)).current;
+  const onHiddenRef = useRef(onHidden);
+  onHiddenRef.current = onHidden;
 
   useEffect(() => {
     if (visible) {
@@ -71,7 +76,9 @@ export function BottomSheet({
           useNativeDriver: true,
         }),
       ]).start(({ finished }) => {
-        if (finished) setMounted(false);
+        if (!finished) return;
+        setMounted(false);
+        onHiddenRef.current?.();
       });
     }
   }, [visible, fade, slide]);

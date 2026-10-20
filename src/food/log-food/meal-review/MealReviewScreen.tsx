@@ -25,7 +25,7 @@ export default function MealReviewScreen({ navigation, route }: Props) {
   const { meal } = route.params;
   const insets = useSafeAreaInsets();
   const { foodLog, removeFoodEntry } = useFood();
-  const { showCalories } = useFoodDisplay();
+  const { showCalories, showMacros } = useFoodDisplay();
   // Editing and saving live on the root stack, above this one.
   const root =
     navigation.getParent<NativeStackNavigationProp<RootStackParamList>>();
@@ -60,7 +60,7 @@ export default function MealReviewScreen({ navigation, route }: Props) {
           </Text>
         </View>
 
-        {entries.length ? (
+        {entries.length && showMacros ? (
           <View style={s.macros}>
             <Macro value={totals.protein} label='protein' />
             <Macro value={totals.carbs} label='carbs' />
