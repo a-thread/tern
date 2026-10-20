@@ -60,9 +60,9 @@ export default function CheckInScreen({ navigation }: Props) {
   const { entries, onDay: todays, checkIn, clearDay } = useMood();
   const dayLabel = dayWord(today, realToday);
 
-  const last = entries[entries.length - 1];
-  const start = (m: MoodMetric) =>
-    todays?.[m] ?? last?.[m] ?? MoodScale.DEFAULT;
+  // A new check-in starts in the middle, not at the last one, so yesterday's score doesn't
+  // anchor today's. Editing the day's own check-in starts from what was saved.
+  const start = (m: MoodMetric) => todays?.[m] ?? MoodScale.DEFAULT;
   const [scores, setScores] = useState({
     mood: start(MoodMetric.Mood),
     stress: start(MoodMetric.Stress),

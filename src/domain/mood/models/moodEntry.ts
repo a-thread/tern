@@ -12,7 +12,7 @@ export class MoodScale {
 
   static readonly MAX = 10;
 
-  /** Where the ruler starts when nothing has been logged yet. */
+  /** Where the ruler starts for a new check-in: the middle, so the last score never anchors it. */
   static readonly DEFAULT = 5;
 
   static readonly MOOD_WORDS = [
