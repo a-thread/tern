@@ -18,7 +18,7 @@ import {
   tierColors,
   typography,
 } from '@shared/theme';
-import { ProgressBar } from '@shared/components/ui';
+import { GroupLabel, ProgressBar } from '@shared/components/ui';
 import { useSettings } from '@/domain/settings/SettingsContext';
 import { useFoodDisplay } from '@/domain/food/hooks/useFoodDisplay';
 import {
@@ -39,6 +39,8 @@ import {
 } from './components/IntakeInfoSheet/IntakeInfoSheet';
 import { useRootNavigation } from '@/navigation/useAppNavigation';
 import { IntakePage } from './models/intakePage';
+import { useViewedDay } from '@/shared/state/ViewedDayContext';
+import { dayWord } from '@/shared/utils/date';
 
 type Totals = { calories: number; protein: number; carbs: number; fat: number };
 
@@ -82,6 +84,8 @@ export function IntakeBarometer({
   const [info, setInfo] = useState<IntakeInfoKind | null>(null);
   const [novaOpen, setNovaOpen] = useState(false);
   const navigation = useRootNavigation();
+  const { day, today } = useViewedDay();
+
   // Each page's own height, so the card is only as tall as the page showing.
   const [heights, setHeights] = useState<Record<string, number>>({});
 
@@ -106,173 +110,182 @@ export function IntakeBarometer({
   };
 
   return (
-    <View style={s.card}>
-      {/* Measured on the scroller itself (inside the card padding), so each page is exactly one viewport wide. */}
-      <ScrollView
-        horizontal
-        pagingEnabled
-        onLayout={onLayout}
-        showsHorizontalScrollIndicator={false}
-        onMomentumScrollEnd={onScrollEnd}
-        scrollEnabled={pages.length > 1}
-        style={
-          heights[pages[page]] ? { height: heights[pages[page]] } : undefined
-        }
-      >
-        {pages.map((p) => (
-          <View
-            key={p}
-            style={{ width: width || undefined, alignSelf: 'flex-start' }}
-            onLayout={(e) => {
-              const h = Math.ceil(e.nativeEvent.layout.height);
-              setHeights((prev) =>
-                prev[p] === h ? prev : { ...prev, [p]: h },
-              );
-            }}
-          >
-            {p === IntakePage.Calories ? (
-              <View>
-                <View style={s.titleRow}>
-                  <Text style={s.title}>Calories</Text>
-                  <InfoDot
-                    label='About your target zone'
-                    onPress={() => setInfo(IntakeInfoKind.Calories)}
-                  />
-                </View>
-                <View style={s.track}>
-                  <View
-                    style={[
-                      s.zone,
-                      {
-                        left: `${scale.zoneStart * 100}%`,
-                        width: `${(scale.zoneEnd - scale.zoneStart) * 100}%`,
-                      },
-                    ]}
-                  />
-                  <View
-                    style={[
-                      s.fill,
-                      { width: `${Math.max(scale.fill, 0.02) * 100}%` },
-                    ]}
-                  />
-                  <Text
-                    style={[s.zoneLabel, { left: `${scale.zoneStart * 100}%` }]}
-                  >
-                    Target zone
-                  </Text>
-                </View>
-                <View style={s.ends}>
-                  <Text style={s.now}>
-                    {Math.round(totals.calories).toLocaleString()} cal
-                  </Text>
-                  <Text style={s.end}>
-                    {zone.min.toLocaleString()} – {zone.max.toLocaleString()}
-                  </Text>
-                </View>
-                <Text style={s.status}>
-                  {status.kind === 'in'
-                    ? 'Within your zone'
-                    : status.kind === 'below'
-                      ? `${status.amount.toLocaleString()} cal to reach your zone`
-                      : `${status.amount.toLocaleString()} cal past your zone`}
-                </Text>
-              </View>
-            ) : p === IntakePage.Processing ? (
-              <View>
-                <View style={s.titleRow}>
-                  <Text style={s.title}>Processing levels</Text>
-                  <InfoDot
-                    label='About NOVA processing levels'
-                    onPress={() => setNovaOpen(true)}
-                  />
-                </View>
-                {shares.map((g) => (
-                  <View key={g.key} style={{ marginTop: space.sm }}>
-                    <View style={s.macroTop}>
-                      <Text style={s.macroLabel}>{g.label}</Text>
-                      <Text style={s.macroSub}>
-                        {showCalories
-                          ? `${Math.round(g.calories).toLocaleString()} cal · ${Math.round(g.share * 100)}%`
-                          : `${Math.round(g.share * 100)}%`}
-                      </Text>
-                    </View>
-                    <ProgressBar
-                      value={g.share}
-                      color={tierColors[g.tiers[0]]}
-                      height={5}
+    <>
+      <GroupLabel>{dayWord(day, today) + "'s Nutrition"}</GroupLabel>
+      <View style={s.card}>
+        {/* Measured on the scroller itself (inside the card padding), so each page is exactly one viewport wide. */}
+        <ScrollView
+          horizontal
+          pagingEnabled
+          onLayout={onLayout}
+          showsHorizontalScrollIndicator={false}
+          onMomentumScrollEnd={onScrollEnd}
+          scrollEnabled={pages.length > 1}
+          style={
+            heights[pages[page]] ? { height: heights[pages[page]] } : undefined
+          }
+        >
+          {pages.map((p) => (
+            <View
+              key={p}
+              style={{ width: width || undefined, alignSelf: 'flex-start' }}
+              onLayout={(e) => {
+                const h = Math.ceil(e.nativeEvent.layout.height);
+                setHeights((prev) =>
+                  prev[p] === h ? prev : { ...prev, [p]: h },
+                );
+              }}
+            >
+              {p === IntakePage.Calories ? (
+                <View>
+                  <View style={s.titleRow}>
+                    <Text style={s.title}>Calories</Text>
+                    <InfoDot
+                      label='About your target zone'
+                      onPress={() => setInfo(IntakeInfoKind.Calories)}
                     />
                   </View>
-                ))}
-              </View>
-            ) : (
-              <View>
-                <View style={s.titleRow}>
-                  <Text style={s.title}>Macros</Text>
-                  <InfoDot
-                    label='About your macro targets'
-                    onPress={() => setInfo(IntakeInfoKind.Macros)}
-                  />
+                  <View style={s.track}>
+                    <View
+                      style={[
+                        s.zone,
+                        {
+                          left: `${scale.zoneStart * 100}%`,
+                          width: `${(scale.zoneEnd - scale.zoneStart) * 100}%`,
+                        },
+                      ]}
+                    />
+                    <View
+                      style={[
+                        s.fill,
+                        { width: `${Math.max(scale.fill, 0.02) * 100}%` },
+                      ]}
+                    />
+                    <Text
+                      style={[
+                        s.zoneLabel,
+                        { left: `${scale.zoneStart * 100}%` },
+                      ]}
+                    >
+                      Target zone
+                    </Text>
+                  </View>
+                  <View style={s.ends}>
+                    <Text style={s.now}>
+                      {Math.round(totals.calories).toLocaleString()} cal
+                    </Text>
+                    <Text style={s.end}>
+                      {zone.min.toLocaleString()} – {zone.max.toLocaleString()}
+                    </Text>
+                  </View>
+                  <Text style={s.status}>
+                    {status.kind === 'in'
+                      ? 'Within your zone'
+                      : status.kind === 'below'
+                        ? `${status.amount.toLocaleString()} cal to reach your zone`
+                        : `${status.amount.toLocaleString()} cal past your zone`}
+                  </Text>
                 </View>
-                {MACROS.map(({ key, label, color }) => {
-                  const target = settings.macroTargets[key];
-                  const minimum =
-                    key === 'protein' && settings.proteinAsMinimum;
-                  return (
-                    <View key={key} style={{ marginTop: space.sm }}>
+              ) : p === IntakePage.Processing ? (
+                <View>
+                  <View style={s.titleRow}>
+                    <Text style={s.title}>Processing levels</Text>
+                    <InfoDot
+                      label='About NOVA processing levels'
+                      onPress={() => setNovaOpen(true)}
+                    />
+                  </View>
+                  {shares.map((g) => (
+                    <View key={g.key} style={{ marginTop: space.sm }}>
                       <View style={s.macroTop}>
-                        <Text style={s.macroLabel}>
-                          {label}
-                          {minimum ? ' (min)' : ''}
-                          <Text style={s.pct}>{`  ${splitPct[key]}%`}</Text>
-                        </Text>
+                        <Text style={s.macroLabel}>{g.label}</Text>
                         <Text style={s.macroSub}>
-                          {Math.round(totals[key])} / {target} g
+                          {showCalories
+                            ? `${Math.round(g.calories).toLocaleString()} cal · ${Math.round(g.share * 100)}%`
+                            : `${Math.round(g.share * 100)}%`}
                         </Text>
                       </View>
-                      <View>
-                        <ProgressBar
-                          value={
-                            minimum
-                              ? minimumFill(totals[key], target)
-                              : macroFill(totals[key], target)
-                          }
-                          color={color}
-                          height={5}
-                        />
-                        {minimum ? (
-                          <View
-                            style={[s.mark, { left: `${MINIMUM_MARK * 100}%` }]}
-                          />
-                        ) : null}
-                      </View>
+                      <ProgressBar
+                        value={g.share}
+                        color={tierColors[g.tiers[0]]}
+                        height={5}
+                      />
                     </View>
-                  );
-                })}
-              </View>
-            )}
-          </View>
-        ))}
-      </ScrollView>
-
-      {pages.length > 1 ? (
-        <View style={s.dots}>
-          {pages.map((p, i) => (
-            <View key={p} style={[s.dot, i === page && s.dotOn]} />
+                  ))}
+                </View>
+              ) : (
+                <View>
+                  <View style={s.titleRow}>
+                    <Text style={s.title}>Macros</Text>
+                    <InfoDot
+                      label='About your macro targets'
+                      onPress={() => setInfo(IntakeInfoKind.Macros)}
+                    />
+                  </View>
+                  {MACROS.map(({ key, label, color }) => {
+                    const target = settings.macroTargets[key];
+                    const minimum =
+                      key === 'protein' && settings.proteinAsMinimum;
+                    return (
+                      <View key={key} style={{ marginTop: space.sm }}>
+                        <View style={s.macroTop}>
+                          <Text style={s.macroLabel}>
+                            {label}
+                            {minimum ? ' (min)' : ''}
+                            <Text style={s.pct}>{`  ${splitPct[key]}%`}</Text>
+                          </Text>
+                          <Text style={s.macroSub}>
+                            {Math.round(totals[key])} / {target} g
+                          </Text>
+                        </View>
+                        <View>
+                          <ProgressBar
+                            value={
+                              minimum
+                                ? minimumFill(totals[key], target)
+                                : macroFill(totals[key], target)
+                            }
+                            color={color}
+                            height={5}
+                          />
+                          {minimum ? (
+                            <View
+                              style={[
+                                s.mark,
+                                { left: `${MINIMUM_MARK * 100}%` },
+                              ]}
+                            />
+                          ) : null}
+                        </View>
+                      </View>
+                    );
+                  })}
+                </View>
+              )}
+            </View>
           ))}
-        </View>
-      ) : null}
+        </ScrollView>
 
-      <NovaInfoSheet visible={novaOpen} onClose={() => setNovaOpen(false)} />
-      <IntakeInfoSheet
-        kind={info ?? IntakeInfoKind.Calories}
-        visible={info !== null}
-        onClose={() => setInfo(null)}
-        onAction={() => {
-          setInfo(null);
-          navigation.navigate('Settings', { screen: 'Targets' });
-        }}
-      />
-    </View>
+        {pages.length > 1 ? (
+          <View style={s.dots}>
+            {pages.map((p, i) => (
+              <View key={p} style={[s.dot, i === page && s.dotOn]} />
+            ))}
+          </View>
+        ) : null}
+
+        <NovaInfoSheet visible={novaOpen} onClose={() => setNovaOpen(false)} />
+        <IntakeInfoSheet
+          kind={info ?? IntakeInfoKind.Calories}
+          visible={info !== null}
+          onClose={() => setInfo(null)}
+          onAction={() => {
+            setInfo(null);
+            navigation.navigate('Settings', { screen: 'Targets' });
+          }}
+        />
+      </View>
+    </>
   );
 }
 

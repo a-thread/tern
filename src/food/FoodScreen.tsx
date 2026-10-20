@@ -84,7 +84,7 @@ export default function FoodScreen() {
         refreshControl={refreshControl}
         contentContainerStyle={{
           paddingHorizontal: space.lg,
-          paddingBottom: 100,
+          paddingBottom: 40,
         }}
       >
         <FoodSummary />
