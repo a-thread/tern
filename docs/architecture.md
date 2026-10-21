@@ -115,9 +115,11 @@ The phone's data is protected two ways. `tern.db` lives in the app's files, whic
 Auto Backup copies to the person's Google account (`android.allowBackup` is set explicitly
 in `app.json` so it isn't switched off by accident; Auto Backup holds up to 25 MB per app)
 and iCloud backs up on iPhone. And Settings › Your data exports a `.json` file that
-"Restore from a file" adds back. A restore merges: rows already here win, rows that don't
-fit their table are skipped, and settings are replaced. Only the phone offers it, since an
-account's ledger only accepts today's awards.
+"Restore from a file" adds back. A restore merges: rows already here win, and rows that
+don't fit their table are skipped. On the phone the file's settings replace the saved
+ones; an account keeps its own. An account restores through the `import_my_data`
+function, since its tables otherwise only accept today's waypoints, rest days and
+movement.
 
 ## Tern Plus
 
@@ -131,6 +133,23 @@ comes before the account, and `identify` ties an anonymous purchase to the accou
 they sign in. Without a RevenueCat key the memory version stands in and buying is free. The
 `preview` build sets `EXPO_PUBLIC_PLUS_UNLOCKED`, which turns Plus on with nothing bought,
 for testers who install the APK directly (see [RELEASING.md](RELEASING.md)).
+
+Where the log lives follows Plus, decided in `AuthGate` with the moves in
+[`accountMoves.ts`](../src/accountMoves.ts):
+
+- **Signed in with Plus:** the account. Anything on the phone is uploaded into it first
+  (`import_my_data`, merging), then the phone's copy is cleared. A failed upload clears
+  nothing and is tried again on the next launch.
+- **Signed in, Plus ended:** the phone. The account's log is copied down once per account
+  (a `meta` row remembers it, so a second launch doesn't bring back what was since removed),
+  and the app carries on from the phone. "Delete my data" reaches both copies. Renewing
+  uploads everything back.
+- **Store unreachable:** the account, with nothing moved. A status is only acted on once
+  the store has answered for this account (`checkedFor`), not the phone's from before.
+- A log copied down from one account is never uploaded into another (a shared phone).
+
+Accounts made before Plus have no entitlement, so they count as ended until they subscribe
+or are granted `plus` in RevenueCat.
 
 The paywall check is in the app only, so for now it decides what's offered, not what's
 allowed: a Supabase project still accepts any signed-in user. Enforcing it needs a

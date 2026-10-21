@@ -9,15 +9,19 @@ import { useData } from '@/domain/settings/DataContext';
 import { confirm } from '@shared/utils/confirm';
 import { parseTernExport } from '@/domain/settings/models/ternExport';
 import { pickExport, shareExport } from '../utils/backupFile';
+import { usePlusLapsed } from '../../hooks/usePlusLapsed';
 
 /**
- * Export everything Tern holds, restore it from an export, or erase it: from the account when
- * signed in, from the phone otherwise. Restoring is offered on the phone only.
+ * Export everything Tern holds, restore it from an export, or erase it: in the account when
+ * signed in with Tern Plus, on the phone otherwise. Once Plus has ended, erasing reaches both.
  */
 export function DataSection() {
   const data = useData();
   const auth = useAuth();
   const signedIn = Boolean(auth?.session);
+  const lapsed = usePlusLapsed();
+  // Where a restore lands: the phone, unless signed in with Plus (then the account).
+  const onPhone = !signedIn || lapsed;
   const toast = useToast();
   const [busy, setBusy] = useState(false);
 
@@ -52,8 +56,9 @@ export function DataSection() {
     }
     confirm({
       title: 'Restore from this file?',
-      message:
-        "Everything in the export is added to this phone. Anything already here stays, and your settings are replaced by the file's.",
+      message: onPhone
+        ? "Everything in the export is added to this phone. Anything already here stays, and your settings are replaced by the file's."
+        : 'Everything in the export is added to your account. Anything already there stays, and so do your settings.',
       action: 'Restore',
       destructive: false,
       onConfirm: async () => {

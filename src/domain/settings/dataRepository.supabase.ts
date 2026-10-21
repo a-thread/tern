@@ -84,5 +84,13 @@ export function createSupabaseDataRepository(db: TernClient): DataRepository {
       // removing the login cascades to every row of the account.
       await ok(db.rpc('delete_my_account'));
     },
+
+    async importAll(copy) {
+      // Server-side function (supabase/migrations/20261022000000_import_my_data.sql): it
+      // adds past days too, which the tables only accept from it.
+      const { data, error } = await db.rpc('import_my_data', { copy });
+      if (error) throw error;
+      return Number(data ?? 0);
+    },
   };
 }

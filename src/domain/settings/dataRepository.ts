@@ -9,9 +9,9 @@ export interface DataRepository {
   deleteAccount(): Promise<void>;
   /**
    * Adds everything in an export, keeping what is already here: a row with the same key
-   * (the same entry, or the same day's rest day) is left as it is. Saved settings are
-   * replaced by the file's. Resolves to how many rows were added. Only the phone's
-   * database offers it; an account's ledger only accepts today's awards.
+   * (the same entry, or the same day's rest day) is left as it is, and one that doesn't
+   * fit is skipped. Resolves to how many rows were added. On the phone the file's settings
+   * replace the saved ones; an account keeps its own if it has any.
    */
   importAll?(copy: TernExport): Promise<number>;
 }

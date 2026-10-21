@@ -31,10 +31,21 @@ const SAMPLE_PLANS: PlanOption[] = [
   { id: 'sample_monthly', plan: Plan.Monthly, price: '$3.99' },
 ];
 
-/** In memory: used without RevenueCat keys and in tests. Buying works and costs nothing. */
+const SIGNED_IN_PLUS: SubscriptionStatus = {
+  active: true,
+  renews: true,
+  expiresAt: null,
+};
+
+/**
+ * In memory: used without RevenueCat keys and in tests. Buying works and costs nothing.
+ * With `accountsHavePlus`, any signed-in account counts as having Plus, so developing
+ * against Supabase without RevenueCat doesn't treat every account as lapsed.
+ */
 export function createMemorySubscriptionRepository(
   initial: SubscriptionStatus = NO_SUBSCRIPTION,
   plans: PlanOption[] = SAMPLE_PLANS,
+  { accountsHavePlus = false }: { accountsHavePlus?: boolean } = {},
 ): SubscriptionRepository {
   let current = initial;
   return {
@@ -47,7 +58,8 @@ export function createMemorySubscriptionRepository(
       return current;
     },
     restore: async () => current,
-    identify: async () => current,
+    identify: async (userId) =>
+      userId && accountsHavePlus ? SIGNED_IN_PLUS : current,
     onChange: () => () => {},
   };
 }

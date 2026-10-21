@@ -105,6 +105,14 @@ erases every `tern.*` row for the account and signs you out, keeping the login.
 function (`20260922000000_delete_account.sql`; run it in the SQL Editor). The public
 instructions Google Play asks for are at `docs/delete-account.html`.
 
+**Restore from a file**, and moving a phone's log into an account when someone takes out
+Tern Plus, go through `tern.import_my_data(copy jsonb)`
+(`20261022000000_import_my_data.sql`). It adds an export's rows to the caller's account,
+keeping anything already there and skipping rows that don't fit, and lets the "only
+today" triggers on waypoints, rest days and movement stand aside for that one transaction
+so past days can come in. Points must still match their source. Run it in the SQL Editor
+before shipping a build with Tern Plus, or subscribers' phone logs can't be uploaded.
+
 ## Step goal
 
 Changing the step goal applies from that day on (`stepGoalHistory` in your

@@ -15,6 +15,14 @@ type SubscriptionContextValue = {
   ready: boolean;
   /** Tern Plus is on, so an account can be made and synced. */
   active: boolean;
+  /**
+   * Who the store was last asked about: the signed-in account's id, or null for the phone;
+   * undefined before the first answer. It lags a sign-in until the store has looked the
+   * account up, so `active` is only acted on once this matches the account.
+   */
+  checkedFor: string | null | undefined;
+  /** The store answered that check. False when it couldn't be reached: `active` is then unknown, not false. */
+  known: boolean;
   status: SubscriptionStatus;
   /** What can be bought, yearly first; empty when the store has nothing to offer. */
   plans: PlanOption[];
@@ -45,21 +53,30 @@ export function SubscriptionProvider({
   children: React.ReactNode;
 }) {
   const [status, setStatus] = useState<SubscriptionStatus>(NO_SUBSCRIPTION);
+  const [checked, setChecked] = useState<{
+    for: string | null | undefined;
+    known: boolean;
+  }>({ for: undefined, known: false });
   const [plans, setPlans] = useState<PlanOption[]>([]);
 
   // Identifying first means the status read is the account's, not the phone's.
   const { ready } = useLoader(
     useCallback(async () => {
-      const identified = await repo.identify(userId);
+      const identified = await repo.identify(userId).catch((e) => {
+        // Unknown, not "no Plus": nothing is moved on a status the store didn't give.
+        console.warn('Could not reach the store for Tern Plus', e);
+        return null;
+      });
       const offered = await repo.plans().catch((e) => {
         // A store that can't be reached doesn't stop the status from counting.
         console.warn('Could not load Tern Plus plans', e);
         return [];
       });
-      return { identified, offered };
+      return { identified, offered, userId };
     }, [repo, userId]),
-    ({ identified, offered }) => {
-      setStatus(identified);
+    ({ identified, offered, userId: forUser }) => {
+      setStatus(identified ?? NO_SUBSCRIPTION);
+      setChecked({ for: forUser, known: identified !== null });
       setPlans(sortPlans(offered));
     },
     'Could not load Tern Plus',
@@ -84,8 +101,17 @@ export function SubscriptionProvider({
   }, [repo]);
 
   const value = useMemo(
-    () => ({ ready, active: status.active, status, plans, purchase, restore }),
-    [ready, status, plans, purchase, restore],
+    () => ({
+      ready,
+      active: status.active,
+      checkedFor: checked.for,
+      known: checked.known,
+      status,
+      plans,
+      purchase,
+      restore,
+    }),
+    [ready, status, checked, plans, purchase, restore],
   );
   return (
     <SubscriptionContext.Provider value={value}>

@@ -9,6 +9,8 @@ import {
   useSettings,
 } from '../domain/settings/SettingsContext';
 import { DataProvider } from '../domain/settings/DataContext';
+import { createMemorySubscriptionRepository } from '../domain/subscription/subscription.repository';
+import { SubscriptionProvider } from '../domain/subscription/SubscriptionContext';
 import WaterSettingsScreen from './water/WaterSettingsScreen';
 import SettingsScreen from './SettingsScreen';
 
@@ -34,14 +36,19 @@ async function open(screen: React.ReactElement) {
   const ui = render(
     <SafeAreaProvider initialMetrics={metrics}>
       <ToastProvider>
-        <BackendProvider backend={backend}>
-          <SettingsProvider repo={backend.settings}>
-            <DataProvider repo={backend.data}>
-              <Grab />
-              {screen}
-            </DataProvider>
-          </SettingsProvider>
-        </BackendProvider>
+        <SubscriptionProvider
+          repo={createMemorySubscriptionRepository()}
+          userId={null}
+        >
+          <BackendProvider backend={backend}>
+            <SettingsProvider repo={backend.settings}>
+              <DataProvider repo={backend.data}>
+                <Grab />
+                {screen}
+              </DataProvider>
+            </SettingsProvider>
+          </BackendProvider>
+        </SubscriptionProvider>
       </ToastProvider>
     </SafeAreaProvider>,
   );

@@ -7,7 +7,7 @@ import type { TernExport } from './models/ternExport';
 type DataContextValue = {
   /** Export and erase are offered: true for an account or the phone's database, false for in-memory sample data. */
   available: boolean;
-  /** Restoring from an export is offered: the phone's database only. */
+  /** Restoring from an export is offered: the phone's database, or an account (through `import_my_data`). */
   canImport: boolean;
   /** A copy of everything Tern holds for the account. */
   exportAll: () => Promise<TernExport>;

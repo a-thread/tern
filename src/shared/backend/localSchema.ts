@@ -11,7 +11,9 @@ export class LocalSchema {
 
   static readonly MIGRATIONS: readonly string[] = [
     // 1: everything the app stores
-    `CREATE TABLE settings (
+    `CREATE TABLE meta (key TEXT PRIMARY KEY NOT NULL, value TEXT NOT NULL);
+
+     CREATE TABLE settings (
        id INTEGER PRIMARY KEY CHECK (id = 1),
        data TEXT NOT NULL,
        updated_at TEXT NOT NULL

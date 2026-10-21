@@ -189,7 +189,12 @@ export function createSubscriptionRepository(): SubscriptionRepository {
       expiresAt: null,
     });
   }
-  return createStoreSubscriptionRepository() ?? createMemorySubscriptionRepository();
+  return (
+    createStoreSubscriptionRepository() ??
+    createMemorySubscriptionRepository(undefined, undefined, {
+      accountsHavePlus: true,
+    })
+  );
 }
 
 /** Repositories bound to the signed-in user's Supabase session. */

@@ -6,12 +6,14 @@ import { Group } from '@shared/components/ui';
 import { useAuth } from '../../domain/auth/AuthContext';
 import { AccountLimits } from '../../domain/auth/validation';
 import { useSettings } from '../../domain/settings/SettingsContext';
+import { usePlusLapsed } from '../hooks/usePlusLapsed';
 
 /** Who is signed in: an avatar, the first name (editable) and the account line. */
 export function ProfileSection() {
   const { settings, updateSettings } = useSettings();
   const auth = useAuth();
   const email = auth?.session?.user.email;
+  const lapsed = usePlusLapsed();
 
   // Edited locally and saved on blur, so each keystroke isn't a settings write.
   const [name, setName] = useState(settings.firstName);
@@ -46,8 +48,13 @@ export function ProfileSection() {
             style={s.nameInput}
           />
           <Text style={s.sub}>
-            {email ??
-              (auth ? 'Saved on this phone only' : 'Sample data · nothing is saved')}
+            {email
+              ? lapsed
+                ? `${email} · Tern Plus ended, so your log is kept on this phone`
+                : email
+              : auth
+                ? 'Saved on this phone only'
+                : 'Sample data · nothing is saved'}
           </Text>
         </View>
       </View>
