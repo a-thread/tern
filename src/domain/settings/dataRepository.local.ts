@@ -1,5 +1,6 @@
 import type { LocalDb, SqlValue } from '@shared/backend/localDb';
 import { LocalSchema } from '@shared/backend/localSchema';
+import { LocalMetaKey, setLocalMeta } from '@shared/backend/localMeta';
 import type { DataRepository } from './dataRepository';
 import {
   EXPORT_LISTS,
@@ -164,6 +165,9 @@ export function createLocalDataRepository(db: LocalDb): DataRepository {
       for (const table of LocalSchema.DATA_TABLES) {
         await db.run(`DELETE FROM ${table}`);
       }
+      // The account log copied down is gone with the rest, so the phone no longer holds
+      // anyone else's: what's logged from here can go into whichever account signs in.
+      await setLocalMeta(db, LocalMetaKey.COPIED_FROM_ACCOUNT, null);
     });
 
   return {

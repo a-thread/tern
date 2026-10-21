@@ -59,6 +59,17 @@ describe('moveToAccount', () => {
     expect(await restDays(s.phoneRest)).toEqual(['2026-10-18']);
   });
 
+  it("uploads again once another account's copy has been deleted from the phone", async () => {
+    const s = await sides();
+    await s.accountRest.add('2026-10-18');
+    await copyToPhone(s.account, s.phone, s.phoneDb, 'someone-else');
+    await s.phone.deleteAll();
+    expect(await copiedFrom(s.phoneDb)).toBeNull();
+    await s.phoneRest.add('2026-10-20'); // logged on the phone afterwards
+    const mine = createLocalDataRepository(await createMigratedSqlJsDb());
+    expect(await moveToAccount(s.phone, mine, s.phoneDb, 'me')).toBe(1);
+  });
+
   it('takes back its own copied log on renewing, and forgets the copy', async () => {
     const s = await sides();
     await s.accountRest.add('2026-10-18');
