@@ -8,7 +8,7 @@ import { useToast } from '@shared/state/ToastContext';
 import { useData } from '@/domain/settings/DataContext';
 import { confirm } from '@shared/utils/confirm';
 import { parseTernExport } from '@/domain/settings/models/ternExport';
-import { pickExport, shareExport } from '../utils/backupFile';
+import { ExportOutcome, pickExport, saveExport } from '../utils/backupFile';
 import { usePlusLapsed } from '../../hooks/usePlusLapsed';
 
 /**
@@ -29,7 +29,8 @@ export function DataSection() {
     if (busy) return;
     setBusy(true);
     try {
-      await shareExport(await data.exportAll());
+      const { outcome, savedAs } = await saveExport(await data.exportAll());
+      if (outcome === ExportOutcome.Saved) toast.show(`Saved ${savedAs}.`);
     } catch (e) {
       console.warn('Could not export data', e);
       toast.show("Couldn't export your data — please try again.");
@@ -133,7 +134,7 @@ export function DataSection() {
       <Pressable style={s.row} onPress={exportData} disabled={busy}>
         <View style={{ flex: 1 }}>
           <Text style={s.title}>Export my data</Text>
-          <Text style={s.sub}>A copy of everything Tern holds, as JSON</Text>
+          <Text style={s.sub}>Save a file of everything, to restore from later</Text>
         </View>
       </Pressable>
       {data.canImport ? (

@@ -34,8 +34,12 @@ export default function AuthFlow() {
   };
 
   if (screen === Screen.SignUp) {
-    // Wait for the status, so someone who has Plus never sees the paywall flash by.
-    if (!subscription.ready) return <LoadingScreen />;
+    // Wait for the store to answer for this phone (`checkedFor` null), not the account that
+    // just signed out: until then `active` can still be that account's, and a stale "yes"
+    // would skip the paywall. It also means someone with Plus never sees the paywall flash by.
+    if (!subscription.ready || subscription.checkedFor !== null) {
+      return <LoadingScreen />;
+    }
     if (!subscription.active) {
       return (
         <PaywallScreen

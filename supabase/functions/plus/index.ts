@@ -37,7 +37,14 @@ async function lookUp(userId: string): Promise<void> {
     { headers: { Authorization: `Bearer ${Deno.env.get('REVENUECAT_SECRET_KEY')}` } },
   );
   if (!res.ok) throw new Error(`RevenueCat answered ${res.status} for ${userId}`);
-  const plus = plusFrom((await res.json()) as Subscriber);
+  const subscriber = (await res.json()) as Subscriber;
+  const plus = plusFrom(subscriber);
+  // What RevenueCat said, for the logs: which entitlements it has, and the decision.
+  console.log(
+    `lookUp ${userId}: entitlements [${Object.keys(subscriber.subscriber?.entitlements ?? {}).join(', ')}] → ${
+      plus.entitled ? `plus until ${plus.expiresAt ?? 'no end'}` : 'no plus'
+    }`,
+  );
 
   // A grant made by hand outlives whatever the store says.
   const { data: existing, error: readError } = await db
@@ -46,7 +53,10 @@ async function lookUp(userId: string): Promise<void> {
     .eq('user_id', userId)
     .maybeSingle();
   if (readError) throw readError;
-  if (existing?.source === 'manual') return;
+  if (existing?.source === 'manual') {
+    console.log(`lookUp ${userId}: has a manual grant, left as it is`);
+    return;
+  }
 
   if (plus.entitled) {
     const { error } = await db.from('entitlements').upsert({
@@ -72,6 +82,7 @@ async function caller(req: Request): Promise<string | null> {
   const token = req.headers.get('Authorization')?.replace(/^Bearer\s+/i, '');
   if (!token) return null;
   const { data, error } = await db.auth.getUser(token);
+  if (error) console.log(`app call refused: ${error.message}`);
   return error || !isAccountId(data.user?.id) ? null : data.user!.id;
 }
 
@@ -82,12 +93,20 @@ Deno.serve(async (req) => {
     const secret = Deno.env.get('REVENUECAT_WEBHOOK_SECRET') ?? '';
     if (isWebhookAuthorized(req.headers.get('Authorization'), secret)) {
       const body = (await req.json()) as { event?: WebhookEvent };
-      for (const userId of accountsIn(body.event ?? {})) await lookUp(userId);
+      const accounts = accountsIn(body.event ?? {});
+      console.log(
+        `webhook ${body.event?.type ?? '?'} for ${body.event?.app_user_id ?? '?'}: accounts [${accounts.join(', ')}]`,
+      );
+      for (const userId of accounts) await lookUp(userId);
       return new Response('ok');
     }
 
     const userId = await caller(req);
-    if (!userId) return new Response('Unauthorized', { status: 401 });
+    if (!userId) {
+      console.log('app call without a valid sign-in: 401');
+      return new Response('Unauthorized', { status: 401 });
+    }
+    console.log(`app call for ${userId}`);
     await lookUp(userId);
     const { data } = await db
       .from('entitlements')
