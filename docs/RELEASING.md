@@ -24,6 +24,20 @@ Expo owner `purlieus-systems`.
 4. Follow the build on expo.dev; promote it in the Play Console.
 
 Test build: Actions > Build > Run workflow > `preview` / `android` gives an installable APK.
+Tern Plus is unlocked in it (`EXPO_PUBLIC_PLUS_UNLOCKED`), since Play Billing can't sell to an
+app that wasn't installed from Play; Settings says "test build" at the foot. A test fails if
+`production` ever sets it.
+
+## Testers and Tern Plus
+
+- **Preview APK:** Plus is already on, with nothing bought. Send the APK.
+- **Play internal testing** (the production build, installed from Play): add the tester's
+  Google account under Play Console > Settings > License testing. Their purchases are test
+  purchases that charge nothing (subscriptions renew every few minutes and end after a few
+  renewals), and RevenueCat grants `plus` from them as usual, marked as sandbox.
+- **TestFlight:** purchases there are sandbox purchases and charge nothing.
+- **One account, by hand:** in RevenueCat, open the customer (their Tern user id once signed
+  in) and grant the `plus` entitlement as a promotional one, for a set time or for good.
 Tick "submit" (production only) to send the build to the store once step 5 above is done.
 
 ## iPhone

@@ -42,6 +42,7 @@ inform you, with no verdict attached.
 | Backend    | [Supabase](https://supabase.com) (Postgres, auth, row-level security)    |
 | Steps      | Android Health Connect via `react-native-health-connect`                 |
 | Food data  | Open Food Facts, USDA FoodData Central                                   |
+| Purchases  | [RevenueCat](https://www.revenuecat.com) (`react-native-purchases`)      |
 | Tests      | Jest, `jest-expo`, React Native Testing Library                          |
 | Builds     | EAS Build, triggered from GitHub Actions                                 |
 
@@ -77,6 +78,7 @@ Copy [.env.example](.env.example) to `.env` (gitignored). Every variable is opti
 | `EXPO_PUBLIC_SUPABASE_ANON_KEY` | Supabase anon key. Safe to ship, since RLS protects the data.      |
 | `EXPO_PUBLIC_HEALTH`            | Set to `1` in a dev build to read Health Connect or Apple Health.  |
 | `EXPO_PUBLIC_USDA_API_KEY`      | Enables everyday-food search. Blank falls back to Open Food Facts. |
+| `EXPO_PUBLIC_REVENUECAT_ANDROID_KEY` / `_IOS_KEY` | Tern Plus through RevenueCat (dev build). Blank simulates buying, free. |
 
 To run against your own backend, follow [supabase/README.md](supabase/README.md) to create
 a project and apply the migrations in [supabase/migrations/](supabase/migrations).

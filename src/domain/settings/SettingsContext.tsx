@@ -21,7 +21,7 @@ import {
 } from './models/appSettings';
 import { Frequency } from '@shared/models/frequency';
 import { sanitizeCalorieZone } from './models/calorieZone';
-import { clampMovementGoal, MovementGoal } from './models/movementGoal';
+import { clampMovementGoal } from './models/movementGoal';
 import { Aim } from './models/aim';
 
 type SettingsContextValue = {
@@ -37,15 +37,18 @@ const [SettingsContext, useSettings] =
   );
 export { useSettings };
 
+/** `defaults` is what anything never saved starts as (`phoneSettings` on the phone). */
 export function SettingsProvider({
   repo,
+  defaults = initialSettings,
   children,
 }: {
   repo: SettingsRepository;
+  defaults?: AppSettings;
   children: React.ReactNode;
 }) {
   const toast = useToast();
-  const [settings, setSettings] = useState<AppSettings>(initialSettings);
+  const [settings, setSettings] = useState<AppSettings>(defaults);
   const [ready, setReady] = useState(false);
   const latest = useRef(settings);
   latest.current = settings;
@@ -63,8 +66,11 @@ export function SettingsProvider({
       .load()
       .then((saved) => {
         if (cancelled) return;
+        // A switch counts only as a real true or false; anything else takes the default.
+        const flag = (value: unknown, fallback: boolean) =>
+          typeof value === 'boolean' ? value : fallback;
         const loaded = {
-          ...initialSettings,
+          ...defaults,
           ...saved,
           // Older saves stored reminder times as text; fall back per field.
           reminders: mergeReminders(saved?.reminders),
@@ -73,16 +79,16 @@ export function SettingsProvider({
               ? Frequency.Daily
               : Reminders.DEFAULT_WEIGH_IN_FREQUENCY,
           medications: mergeMedications(saved?.medications),
-          trackWater: saved?.trackWater === true,
-          trackMood: saved?.trackMood === true,
-          checkInAfterMeals: saved?.checkInAfterMeals === true,
-          trackMovement: saved?.trackMovement === true,
+          trackWater: flag(saved?.trackWater, defaults.trackWater),
+          trackMood: flag(saved?.trackMood, defaults.trackMood),
+          checkInAfterMeals: flag(saved?.checkInAfterMeals, defaults.checkInAfterMeals),
+          trackMovement: flag(saved?.trackMovement, defaults.trackMovement),
           movementGoalMinutes:
             typeof saved?.movementGoalMinutes === 'number' &&
             Number.isFinite(saved.movementGoalMinutes)
               ? clampMovementGoal(saved.movementGoalMinutes)
-              : MovementGoal.DEFAULT,
-          adaptTarget: saved?.adaptTarget === true,
+              : defaults.movementGoalMinutes,
+          adaptTarget: flag(saved?.adaptTarget, defaults.adaptTarget),
           aim: Object.values(Aim).includes(saved?.aim as Aim)
             ? (saved!.aim as Aim)
             : Aim.LoseSlowly,
@@ -91,15 +97,18 @@ export function SettingsProvider({
               ? saved.lastSuggestionWeek
               : null,
           // A setting added later inside health data takes its default.
-          healthData: { ...initialSettings.healthData, ...saved?.healthData },
-          trackWeight: saved?.trackWeight !== false,
-          showIntakeBars: saved?.showIntakeBars === true,
+          healthData: { ...defaults.healthData, ...saved?.healthData },
+          trackWeight: flag(saved?.trackWeight, defaults.trackWeight),
+          trackCalories: flag(saved?.trackCalories, defaults.trackCalories),
+          showIntakeBars: flag(saved?.showIntakeBars, defaults.showIntakeBars),
           // Before macros had their own switch, "Track calories & macros" covered both.
-          trackMacros:
-            typeof saved?.trackMacros === 'boolean'
-              ? saved.trackMacros
-              : saved?.trackCalories !== false,
-          proteinAsMinimum: saved?.proteinAsMinimum !== false,
+          trackMacros: flag(
+            saved?.trackMacros,
+            typeof saved?.trackCalories === 'boolean'
+              ? saved.trackCalories
+              : defaults.trackMacros,
+          ),
+          proteinAsMinimum: flag(saved?.proteinAsMinimum, defaults.proteinAsMinimum),
           calorieZone: sanitizeCalorieZone(saved?.calorieZone),
           celebratedMilestone:
             typeof saved?.celebratedMilestone === 'number' &&
@@ -132,7 +141,7 @@ export function SettingsProvider({
     return () => {
       cancelled = true;
     };
-  }, [repo]);
+  }, [repo, defaults]);
 
   const updateSettings = useCallback(
     (patch: Partial<AppSettings>) => {

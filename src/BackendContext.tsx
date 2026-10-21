@@ -72,6 +72,10 @@ import { createHealthWorkouts } from './domain/movement/movement.health';
 import type { DataRepository } from './domain/settings/dataRepository';
 import { createSupabaseDataRepository } from './domain/settings/dataRepository.supabase';
 import type { LocalDb } from '@shared/backend/localDb';
+import {
+  type AppSettings,
+  phoneSettings,
+} from './domain/settings/models/appSettings';
 import { createLocalFoodRepository } from './domain/food/food.repository.local';
 import { createLocalWeightRepository } from './domain/weight/weight.repository.local';
 import { createLocalSettingsRepository } from './domain/settings/settings.repository.local';
@@ -84,6 +88,12 @@ import { createLocalMoodRepository } from './domain/mood/mood.repository.local';
 import { createLocalMealCheckInsRepository } from './domain/meal-check-ins/mealCheckIns.repository.local';
 import { createLocalMovementRepository } from './domain/movement/movement.repository.local';
 import { createLocalDataRepository } from './domain/settings/dataRepository.local';
+import {
+  createMemorySubscriptionRepository,
+  type SubscriptionRepository,
+} from './domain/subscription/subscription.repository';
+import { createStoreSubscriptionRepository } from './domain/subscription/subscription.revenuecat';
+import { plusUnlocked } from './domain/subscription/plusUnlocked';
 
 /** Every repository the app persists through. Contexts read these; they never touch Supabase directly. */
 export type Backend = {
@@ -101,6 +111,8 @@ export type Backend = {
   movement: MovementRepository;
   workouts: WorkoutsSource | null;
   commonFoods: CommonFoodsRepository;
+  /** What never-saved settings start as; the app's usual defaults when absent. */
+  settingsDefaults?: AppSettings;
   /** Export and erase. Absent in the memory preview, where nothing is stored. */
   data?: DataRepository;
 };
@@ -132,6 +144,8 @@ export function createBlankMemoryBackend(): Backend {
     food: createMemoryFoodRepository([]),
     weight: createMemoryWeightRepository([]),
     waypoints: createMemoryWaypointsRepository(0, []),
+    // Stands in for the phone's database when it can't be opened, so it starts like one.
+    settingsDefaults: phoneSettings,
   };
 }
 
@@ -157,7 +171,25 @@ export function createLocalBackend(db: LocalDb): Backend {
     movement: createLocalMovementRepository(db),
     workouts: createHealthWorkouts(),
     data: createLocalDataRepository(db),
+    settingsDefaults: phoneSettings,
   };
+}
+
+/**
+ * Tern Plus. Not part of `Backend`: it outlives signing in and out, since buying comes
+ * before the account. Already on in a test build that unlocks it (`plusUnlocked`). Otherwise
+ * the store's through RevenueCat when there's a key for this platform, or in memory, where
+ * buying is free (development and Expo Go).
+ */
+export function createSubscriptionRepository(): SubscriptionRepository {
+  if (plusUnlocked()) {
+    return createMemorySubscriptionRepository({
+      active: true,
+      renews: false,
+      expiresAt: null,
+    });
+  }
+  return createStoreSubscriptionRepository() ?? createMemorySubscriptionRepository();
 }
 
 /** Repositories bound to the signed-in user's Supabase session. */

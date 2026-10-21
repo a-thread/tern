@@ -3,6 +3,7 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { colors, font, space } from '@shared/theme';
 import { useAuth } from '../../domain/auth/AuthContext';
+import { plusUnlocked } from '../../domain/subscription/plusUnlocked';
 
 /** Signing in or out, and the app version, at the foot of Settings. */
 export function AccountSection() {
@@ -39,7 +40,9 @@ export function AccountSection() {
           )}
         </View>
       ) : null}
-      <Text style={s.version}>Tern 1.0.0</Text>
+      <Text style={s.version}>
+        {plusUnlocked() ? 'Tern 1.0.0 · test build, Tern Plus unlocked' : 'Tern 1.0.0'}
+      </Text>
     </>
   );
 }

@@ -105,6 +105,11 @@ passes each repository to its provider, so nothing else knows which it got.
 
 On the phone, common foods are the bundled seed, since the shared table needs a sign-in,
 and "Delete my data" or a restore remounts every provider so nothing shows stale data.
+`<name>.repository.local.ts` takes a `LocalDb`
+([`shared/backend/localDb.ts`](../src/shared/backend/localDb.ts)), the schema is
+[`localSchema.ts`](../src/shared/backend/localSchema.ts) (append-only, like the Supabase
+migrations), and tests run the same cases against the memory and local versions using
+sql.js, so no native module is needed.
 
 The phone's data is protected two ways. `tern.db` lives in the app's files, which Android
 Auto Backup copies to the person's Google account (`android.allowBackup` is set explicitly
@@ -113,11 +118,23 @@ and iCloud backs up on iPhone. And Settings › Your data exports a `.json` file
 "Restore from a file" adds back. A restore merges: rows already here win, rows that don't
 fit their table are skipped, and settings are replaced. Only the phone offers it, since an
 account's ledger only accepts today's awards.
-`<name>.repository.local.ts` takes a `LocalDb`
-([`shared/backend/localDb.ts`](../src/shared/backend/localDb.ts)), the schema is
-[`localSchema.ts`](../src/shared/backend/localSchema.ts) (append-only, like the Supabase
-migrations), and tests run the same cases against the memory and local versions using
-sql.js, so no native module is needed.
+
+## Tern Plus
+
+Everything in Tern is free; Tern Plus is the account, which syncs and backs up. Making an
+account goes through the paywall (`auth/paywall/`); signing in to an existing one doesn't.
+The store is the source of truth: [`SubscriptionContext`](../src/domain/subscription/SubscriptionContext.tsx)
+reads the `plus` entitlement from RevenueCat ([`subscription.revenuecat.ts`](../src/domain/subscription/subscription.revenuecat.ts),
+behind a small `PurchasesApi` so it tests without the native module), and nothing about it
+is stored in Supabase. It's mounted in `AuthGate` above the sign-in screens, since buying
+comes before the account, and `identify` ties an anonymous purchase to the account once
+they sign in. Without a RevenueCat key the memory version stands in and buying is free. The
+`preview` build sets `EXPO_PUBLIC_PLUS_UNLOCKED`, which turns Plus on with nothing bought,
+for testers who install the APK directly (see [RELEASING.md](RELEASING.md)).
+
+The paywall check is in the app only, so for now it decides what's offered, not what's
+allowed: a Supabase project still accepts any signed-in user. Enforcing it needs a
+RevenueCat webhook that records the entitlement server-side for row-level security to check.
 
 Setting a project up, and what each table holds, is in
 [supabase/README.md](../supabase/README.md). `supabase/migrations/` is the schema of

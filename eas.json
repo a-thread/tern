@@ -26,7 +26,8 @@
         "buildType": "apk"
       },
       "env": {
-        "EXPO_PUBLIC_HEALTH": "1"
+        "EXPO_PUBLIC_HEALTH": "1",
+        "EXPO_PUBLIC_PLUS_UNLOCKED": "1"
       }
     },
     "production": {

@@ -81,6 +81,8 @@ YOUR DATA IS YOURS
 • Export everything Tern holds as a file, and restore from it on a new phone.
 • Delete your data, or your whole account, from Settings.
 • No account needed. Everything stays on your phone unless you choose to sign in.
+• Optional Tern Plus adds an account that syncs and backs up your log. Every
+feature is free without it.
 
 Nutrition information comes from Open Food Facts and USDA FoodData Central.
 

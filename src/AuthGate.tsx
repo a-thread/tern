@@ -11,24 +11,48 @@ import {
   createLocalBackend,
   createMemoryBackend,
   createRemoteBackend,
+  createSubscriptionRepository,
 } from './BackendContext';
 import { AuthProvider, useAuth } from './domain/auth/AuthContext';
+import { SubscriptionProvider } from './domain/subscription/SubscriptionContext';
 import AuthFlow from './auth/AuthFlow';
 import ResetPasswordScreen from './auth/reset-password/ResetPasswordScreen';
 
 /**
- * Decides where the app's data comes from. Signed in, every repository is bound to that
+ * Decides where the app's data comes from, under Tern Plus (which outlives signing in and out). Signed in, every repository is bound to that
  * session. Otherwise the app runs on the phone's own database, with no account needed;
  * signing in is something chosen from Settings. Without Supabase keys (development), the
  * app runs on in-memory sample data.
  */
 export default function AuthGate({ children }: { children: React.ReactNode }) {
-  if (!isBackendConfigured) return <SampleBackend>{children}</SampleBackend>;
+  if (!isBackendConfigured) {
+    return (
+      <Plus userId={null}>
+        <SampleBackend>{children}</SampleBackend>
+      </Plus>
+    );
+  }
 
   return (
     <AuthProvider>
       <RequireSession>{children}</RequireSession>
     </AuthProvider>
+  );
+}
+
+/** Tern Plus, above the sign-in screens: buying comes before making an account. */
+function Plus({
+  userId,
+  children,
+}: {
+  userId: string | null;
+  children: React.ReactNode;
+}) {
+  const [repo] = useState(createSubscriptionRepository);
+  return (
+    <SubscriptionProvider repo={repo} userId={userId}>
+      {children}
+    </SubscriptionProvider>
   );
 }
 
@@ -38,6 +62,16 @@ function SampleBackend({ children }: { children: React.ReactNode }) {
 }
 
 function RequireSession({ children }: { children: React.ReactNode }) {
+  const auth = useAuth()!;
+  const userId = auth.session?.user.id;
+  return (
+    <Plus userId={userId ?? null}>
+      <ChooseBackend>{children}</ChooseBackend>
+    </Plus>
+  );
+}
+
+function ChooseBackend({ children }: { children: React.ReactNode }) {
   const auth = useAuth()!;
   const userId = auth.session?.user.id;
   const signedIn = Boolean(userId);

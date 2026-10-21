@@ -3,7 +3,73 @@ import { renderHook, act, waitFor } from '@testing-library/react-native';
 
 import { createMemoryBackend } from '../../BackendContext';
 import { SettingsProvider, useSettings } from './SettingsContext';
-import { changesAnything } from './models/appSettings';
+import {
+  type AppSettings,
+  changesAnything,
+  initialSettings,
+  phoneSettings,
+} from './models/appSettings';
+import { createMemorySettingsRepository } from './settings.repository';
+
+/** Settings as loaded over `defaults`, from `saved` (null: never saved). */
+async function loadWith(defaults: AppSettings, saved: Partial<AppSettings> | null) {
+  const repo = createMemorySettingsRepository();
+  if (saved) await repo.save(saved as AppSettings);
+  const wrapper = ({ children }: { children: React.ReactNode }) => (
+    <SettingsProvider repo={repo} defaults={defaults}>
+      {children}
+    </SettingsProvider>
+  );
+  const { result } = renderHook(() => useSettings(), { wrapper });
+  await waitFor(() => expect(result.current.ready).toBe(true));
+  return result.current.settings;
+}
+
+describe('defaults on the phone, with no account', () => {
+  it('start with movement (60 minutes), macros, water and mood on, and calories and weight off', async () => {
+    const s = await loadWith(phoneSettings, null);
+    expect(s).toMatchObject({
+      trackMovement: true,
+      movementGoalMinutes: 60,
+      trackMacros: true,
+      trackCalories: false,
+      trackWeight: false,
+      trackWater: true,
+      trackMood: true,
+    });
+  });
+
+  it('give way to anything already chosen', async () => {
+    const s = await loadWith(phoneSettings, {
+      trackWeight: true,
+      trackCalories: true,
+      trackWater: false,
+      trackMood: false,
+      trackMovement: false,
+      movementGoalMinutes: 30,
+    });
+    expect(s).toMatchObject({
+      trackWeight: true,
+      trackCalories: true,
+      trackWater: false,
+      trackMood: false,
+      trackMovement: false,
+      movementGoalMinutes: 30,
+    });
+  });
+
+  it('leave an account on the usual defaults', async () => {
+    const s = await loadWith(initialSettings, null);
+    expect(s).toMatchObject({
+      trackMovement: false,
+      movementGoalMinutes: 30,
+      trackCalories: true,
+      trackWeight: true,
+      trackWater: false,
+      trackMood: false,
+    });
+  });
+});
 
 async function setup() {
   const backend = createMemoryBackend();
