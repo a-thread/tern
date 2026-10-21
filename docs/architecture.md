@@ -102,6 +102,13 @@ Supabase one; [`src/BackendContext.tsx`](../src/BackendContext.tsx)
 chooses between them and `AppProviders` passes each repository to its provider, so nothing
 else knows which it got.
 
+An on-device SQLite version is being added domain by domain (weight so far), for a free
+tier that never leaves the phone: `<name>.repository.local.ts` takes a `LocalDb`
+([`shared/backend/localDb.ts`](../src/shared/backend/localDb.ts)), the schema is
+[`localSchema.ts`](../src/shared/backend/localSchema.ts) (append-only, like the Supabase
+migrations), and tests run the same cases against the memory and local versions using
+sql.js, so no native module is needed.
+
 Setting a project up, and what each table holds, is in
 [supabase/README.md](../supabase/README.md). `supabase/migrations/` is the schema of
 record.
