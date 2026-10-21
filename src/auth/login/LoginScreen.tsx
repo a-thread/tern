@@ -69,8 +69,8 @@ export default function LoginScreen({
         <LinkButton label='Forgot password?' onPress={onForgotPassword} />
         <LinkButton label='Create an account' onPress={onCreateAccount} />
         <LinkButton
-          label='Continue without an account'
-          onPress={auth.continueAsGuest}
+          label='Not now, keep using this phone'
+          onPress={auth.closeSignIn}
         />
       </LinkColumn>
     </AuthLayout>

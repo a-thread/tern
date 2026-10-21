@@ -30,7 +30,8 @@ inform you, with no verdict attached.
   Food Facts), scan barcodes, save meals, or re-log yesterday's dinner in a tap.
 - **Steps from Health Connect.** Read on the device and never uploaded.
 - **Your data is yours.** No ads, nothing sold. Export everything as JSON, or delete your
-  data or account from Settings. A guest preview works without an account.
+  data or account from Settings. No account is needed: without one, everything is kept
+  on the phone.
 
 ## Tech stack
 

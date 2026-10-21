@@ -4,26 +4,39 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { colors, font, space } from '@shared/theme';
 import { useAuth } from '../../domain/auth/AuthContext';
 
-/** Signing out (or leaving the preview), and the app version, at the foot of Settings. */
+/** Signing in or out, and the app version, at the foot of Settings. */
 export function AccountSection() {
   const auth = useAuth();
   return (
     <>
       {auth ? (
         <View style={s.signOut}>
-          {auth.isGuest ? (
+          {auth.session ? (
             <Pressable
-              onPress={() => auth.signOut({ toSignUp: true })}
+              onPress={() => auth.signOut()}
               hitSlop={8}
+              accessibilityRole='button'
             >
-              <Text style={s.createText}>Create account</Text>
+              <Text style={s.signOutText}>Sign out</Text>
             </Pressable>
-          ) : null}
-          <Pressable onPress={() => auth.signOut()} hitSlop={8}>
-            <Text style={s.signOutText}>
-              {auth.isGuest ? 'Exit preview' : 'Sign out'}
-            </Text>
-          </Pressable>
+          ) : (
+            <>
+              <Pressable
+                onPress={() => auth.openSignIn({ toSignUp: true })}
+                hitSlop={8}
+                accessibilityRole='button'
+              >
+                <Text style={s.createText}>Create account</Text>
+              </Pressable>
+              <Pressable
+                onPress={() => auth.openSignIn()}
+                hitSlop={8}
+                accessibilityRole='button'
+              >
+                <Text style={s.signOutText}>Sign in</Text>
+              </Pressable>
+            </>
+          )}
         </View>
       ) : null}
       <Text style={s.version}>Tern 1.0.0</Text>

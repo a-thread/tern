@@ -96,15 +96,15 @@ Every context loads its data and saves edits the same way, so that part is share
 
 ## Storage
 
-Supabase, reached through one repository per domain. Each has an in-memory
-implementation — used in the preview, when there are no keys, and in every test — and a
-Supabase one; [`src/BackendContext.tsx`](../src/BackendContext.tsx)
-chooses between them and `AppProviders` passes each repository to its provider, so nothing
-else knows which it got.
+One repository per domain, in three versions: Supabase for a signed-in account, SQLite on
+the phone for everyone else, and in memory for development without keys and for every
+test. [`src/BackendContext.tsx`](../src/BackendContext.tsx) builds each set and
+[`src/AuthGate.tsx`](../src/AuthGate.tsx) picks one: signed in gets Supabase, otherwise the
+phone's database (signing in is offered from Settings, never required). `AppProviders`
+passes each repository to its provider, so nothing else knows which it got.
 
-There is also an on-device SQLite version of every repository, for a free tier that never
-leaves the phone. `createLocalBackend(db)` assembles it, though nothing chooses it yet.
-Common foods are the bundled seed there, since the shared table needs a sign-in.
+On the phone, common foods are the bundled seed, since the shared table needs a sign-in,
+and "Delete my data" remounts every provider so nothing shows what was erased.
 `<name>.repository.local.ts` takes a `LocalDb`
 ([`shared/backend/localDb.ts`](../src/shared/backend/localDb.ts)), the schema is
 [`localSchema.ts`](../src/shared/backend/localSchema.ts) (append-only, like the Supabase

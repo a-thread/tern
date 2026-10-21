@@ -5,7 +5,7 @@ import { useData } from '@/domain/settings/DataContext';
 import { SettingsPage } from '../components/SettingsPage';
 import { DataSection } from './components/DataSection';
 
-/** Settings › Your data: export it, or delete it and the account. Only reachable when signed in. */
+/** Settings › Your data: export it, or delete it (and the account, when signed in). */
 export default function DataSettingsScreen() {
   const { available } = useData();
   return (
@@ -13,7 +13,7 @@ export default function DataSettingsScreen() {
       {available ? (
         <DataSection />
       ) : (
-        <FootNote>Nothing is stored in preview.</FootNote>
+        <FootNote>Sample data isn't stored, so there's nothing to export.</FootNote>
       )}
     </SettingsPage>
   );

@@ -1,9 +1,14 @@
-import React, { useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import LoadingScreen from '@shared/components/LoadingScreen/LoadingScreen';
 
 import { isBackendConfigured } from '@shared/backend/supabase';
+import { openLocalDb } from '@shared/backend/localDb.expo';
+import { useToast } from '@shared/state/ToastContext';
 import {
+  type Backend,
   BackendProvider,
+  createBlankMemoryBackend,
+  createLocalBackend,
   createMemoryBackend,
   createRemoteBackend,
 } from './BackendContext';
@@ -12,16 +17,14 @@ import AuthFlow from './auth/AuthFlow';
 import ResetPasswordScreen from './auth/reset-password/ResetPasswordScreen';
 
 /**
- * Decides where the app's data comes from. With Supabase keys configured,
- * you must sign in (or choose to preview without an account) before
- * anything renders, and every repository is bound to that session. Without
- * keys, the app runs on local mock data.
+ * Decides where the app's data comes from. Signed in, every repository is bound to that
+ * session. Otherwise the app runs on the phone's own database, with no account needed;
+ * signing in is something chosen from Settings. Without Supabase keys (development), the
+ * app runs on in-memory sample data.
  */
 export default function AuthGate({ children }: { children: React.ReactNode }) {
-  // if any config keys are missing, we'll save locally
-  if (!isBackendConfigured) return <LocalBackend>{children}</LocalBackend>;
+  if (!isBackendConfigured) return <SampleBackend>{children}</SampleBackend>;
 
-  // otherwise use auth
   return (
     <AuthProvider>
       <RequireSession>{children}</RequireSession>
@@ -29,7 +32,7 @@ export default function AuthGate({ children }: { children: React.ReactNode }) {
   );
 }
 
-function LocalBackend({ children }: { children: React.ReactNode }) {
+function SampleBackend({ children }: { children: React.ReactNode }) {
   const [backend] = useState(createMemoryBackend);
   return <BackendProvider backend={backend}>{children}</BackendProvider>;
 }
@@ -38,30 +41,74 @@ function RequireSession({ children }: { children: React.ReactNode }) {
   const auth = useAuth()!;
   const userId = auth.session?.user.id;
   const signedIn = Boolean(userId);
-  const inPreview = !signedIn && auth.isGuest;
+  const remote = useMemo(
+    () => (signedIn ? createRemoteBackend() : null),
+    [signedIn],
+  );
 
-  // A real user gets repositories bound to their session; a preview gets a
-  // fresh in-memory backend (mock data that is never saved).
-  const backend = useMemo(() => {
-    if (signedIn) return createRemoteBackend();
-    if (inPreview) return createMemoryBackend();
-    return null;
-  }, [signedIn, inPreview]);
-
-  if (auth.loading) return <Spinner />;
+  if (auth.loading) return <LoadingScreen />;
 
   // Arriving from a reset link: they're signed in, but must choose a new password first.
   if (signedIn && auth.passwordRecoveryPending) return <ResetPasswordScreen />;
-  if (!backend) return <AuthFlow />;
+  if (remote) {
+    // Keyed by userId to refresh on identity changes
+    return (
+      <BackendProvider key={userId} backend={remote}>
+        {children}
+      </BackendProvider>
+    );
+  }
+  if (auth.signingIn) return <AuthFlow />;
+  return <PhoneBackend>{children}</PhoneBackend>;
+}
 
-  // Keyed by userId to refresh on identity changes
+/** The free tier: everything in the phone's database, opened once and kept across sign-ins. */
+function PhoneBackend({ children }: { children: React.ReactNode }) {
+  const toast = useToast();
+  const [backend, setBackend] = useState<Backend | null>(null);
+  // Bumped after "Delete my data", so every Context reloads from the now-empty database.
+  const [generation, setGeneration] = useState(0);
+  const restart = useCallback(() => setGeneration((g) => g + 1), []);
+
+  useEffect(() => {
+    let live = true;
+    openLocalDb().then(
+      (db) => {
+        if (!live) return;
+        const local = createLocalBackend(db);
+        const data = local.data!;
+        setBackend({
+          ...local,
+          data: {
+            ...data,
+            deleteAll: async () => {
+              await data.deleteAll();
+              restart();
+            },
+            deleteAccount: async () => {
+              await data.deleteAccount();
+              restart();
+            },
+          },
+        });
+      },
+      (error) => {
+        if (!live) return;
+        // Rare (a full or damaged disk). Say so rather than lose what they log without a word.
+        console.warn('Could not open the local database', error);
+        toast.show("Couldn't open Tern's storage on this phone. Nothing will be saved for now.");
+        setBackend(createBlankMemoryBackend());
+      },
+    );
+    return () => {
+      live = false;
+    };
+  }, [restart, toast]);
+
+  if (!backend) return <LoadingScreen />;
   return (
-    <BackendProvider key={userId ?? 'preview'} backend={backend}>
+    <BackendProvider key={`phone-${generation}`} backend={backend}>
       {children}
     </BackendProvider>
   );
-}
-
-function Spinner() {
-  return <LoadingScreen />;
 }

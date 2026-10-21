@@ -4,7 +4,7 @@ import { createRequiredContext } from '@shared/state/createRequiredContext';
 import type { DataRepository, TernExport } from './dataRepository';
 
 type DataContextValue = {
-  /** Export and erase are offered: true for a signed-in account, false in local mode where nothing is stored. */
+  /** Export and erase are offered: true for an account or the phone's database, false for in-memory sample data. */
   available: boolean;
   /** A copy of everything Tern holds for the account. */
   exportAll: () => Promise<TernExport>;

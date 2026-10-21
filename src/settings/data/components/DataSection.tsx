@@ -8,10 +8,11 @@ import { useToast } from '@shared/state/ToastContext';
 import { useData } from '@/domain/settings/DataContext';
 import { confirm } from '@shared/utils/confirm';
 
-/** Export everything Tern holds, or erase it. Only offered for a signed-in account. */
+/** Export everything Tern holds, or erase it: from the account when signed in, from the phone otherwise. */
 export function DataSection() {
   const data = useData();
   const auth = useAuth();
+  const signedIn = Boolean(auth?.session);
   const toast = useToast();
   const [busy, setBusy] = useState(false);
 
@@ -36,14 +37,14 @@ export function DataSection() {
     if (busy) return;
     confirm({
       title: 'Delete all your data?',
-      message:
-        "This erases your food log, saved meals, weigh-ins, water, movement, medication and mood history, waypoints, rest days and settings from Tern. It can't be undone. You'll be signed out, and your login stays so you can start fresh.",
+      message: `This erases your food log, saved meals, weigh-ins, water, movement, medication and mood history, waypoints, rest days and settings from ${signedIn ? 'Tern' : 'this phone'}. It can't be undone. ${signedIn ? "You'll be signed out, and your login stays so you can start fresh." : 'Tern starts fresh.'}`,
       action: 'Delete',
       onConfirm: async () => {
         setBusy(true);
         try {
+          // On the phone, Tern reloads itself once the data is gone.
           await data.deleteAll();
-          await auth?.signOut();
+          if (signedIn) await auth?.signOut();
         } catch (e) {
           console.warn('Could not delete data', e);
           toast.show("Couldn't delete your data — please try again.");
@@ -94,12 +95,14 @@ export function DataSection() {
           <Text style={s.sub}>Erase your log, weigh-ins and waypoints</Text>
         </View>
       </Pressable>
-      <Pressable style={s.row} onPress={deleteAccount} disabled={busy}>
-        <View style={{ flex: 1 }}>
-          <Text style={[s.title, s.danger]}>Delete my account</Text>
-          <Text style={s.sub}>Remove your login and everything in it</Text>
-        </View>
-      </Pressable>
+      {signedIn ? (
+        <Pressable style={s.row} onPress={deleteAccount} disabled={busy}>
+          <View style={{ flex: 1 }}>
+            <Text style={[s.title, s.danger]}>Delete my account</Text>
+            <Text style={s.sub}>Remove your login and everything in it</Text>
+          </View>
+        </Pressable>
+      ) : null}
     </Group>
   );
 }

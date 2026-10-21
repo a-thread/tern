@@ -125,6 +125,16 @@ export function createMemoryBackend(): Backend {
   };
 }
 
+/** In memory with nothing in it: no sample log, weigh-ins or waypoints. */
+export function createBlankMemoryBackend(): Backend {
+  return {
+    ...createMemoryBackend(),
+    food: createMemoryFoodRepository([]),
+    weight: createMemoryWeightRepository([]),
+    waypoints: createMemoryWaypointsRepository(0, []),
+  };
+}
+
 /**
  * Everything stored on the phone, in `db` (`openLocalDb()`): the free tier, with no account.
  * Steps and workouts still come from the phone's health app. The common-foods list is the

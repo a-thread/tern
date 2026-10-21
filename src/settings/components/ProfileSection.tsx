@@ -46,9 +46,8 @@ export function ProfileSection() {
             style={s.nameInput}
           />
           <Text style={s.sub}>
-            {auth?.isGuest
-              ? 'Preview · nothing is saved, this resets when you exit'
-              : (email ?? 'Local profile')}
+            {email ??
+              (auth ? 'Saved on this phone only' : 'Sample data · nothing is saved')}
           </Text>
         </View>
       </View>
