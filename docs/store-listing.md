@@ -78,7 +78,7 @@ never mention what you missed, and you can turn them off any time.
 
 YOUR DATA IS YOURS
 • No ads, and your data is never sold.
-• Export everything Tern holds, as JSON.
+• Export everything Tern holds as a file, and restore from it on a new phone.
 • Delete your data, or your whole account, from Settings.
 • No account needed. Everything stays on your phone unless you choose to sign in.
 

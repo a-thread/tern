@@ -37,7 +37,7 @@ type Props = NativeStackScreenProps<SettingsStackParamList, 'SettingsRoot'>;
  */
 export default function SettingsScreen({ navigation }: Props) {
   const insets = useSafeAreaInsets();
-  const { available: dataAvailable } = useData();
+  const { available: dataAvailable, canImport } = useData();
   const { settings } = useSettings();
 
   return (
@@ -145,7 +145,7 @@ export default function SettingsScreen({ navigation }: Props) {
               color={colors.driftwood}
               tint={colors.driftwoodTint}
               title='Your data'
-              summary='Export or delete'
+              summary={canImport ? 'Export, restore or delete' : 'Export or delete'}
               onPress={() => navigation.navigate('DataSettings')}
             />
           ) : null}

@@ -66,7 +66,7 @@ function RequireSession({ children }: { children: React.ReactNode }) {
 function PhoneBackend({ children }: { children: React.ReactNode }) {
   const toast = useToast();
   const [backend, setBackend] = useState<Backend | null>(null);
-  // Bumped after "Delete my data", so every Context reloads from the now-empty database.
+  // Bumped after "Delete my data" or a restore, so every Context reloads from the database.
   const [generation, setGeneration] = useState(0);
   const restart = useCallback(() => setGeneration((g) => g + 1), []);
 
@@ -88,6 +88,11 @@ function PhoneBackend({ children }: { children: React.ReactNode }) {
             deleteAccount: async () => {
               await data.deleteAccount();
               restart();
+            },
+            importAll: async (copy) => {
+              const added = await data.importAll!(copy);
+              restart();
+              return added;
             },
           },
         });

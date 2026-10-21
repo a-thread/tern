@@ -1,21 +1,4 @@
-/** Everything Tern holds about one person, as stored (weights are in pounds). */
-export type TernExport = {
-  exportedAt: string;
-  weightUnit: 'lb';
-  settings: unknown;
-  food: unknown[];
-  weight: unknown[];
-  waypoints: unknown[];
-  restDays: unknown[];
-  savedMeals: unknown[];
-  medicationDoses: unknown[];
-  waterEntries: unknown[];
-  moodCheckins: unknown[];
-  mealCheckins: unknown[];
-  skippedMeals: unknown[];
-  skippedWeighIns: unknown[];
-  movementEntries: unknown[];
-};
+import type { TernExport } from './models/ternExport';
 
 /** Whole-account operations: a copy of your data, and erasing it. */
 export interface DataRepository {
@@ -24,4 +7,11 @@ export interface DataRepository {
   deleteAll(): Promise<void>;
   /** Deletes the account itself, and with it everything stored for it. */
   deleteAccount(): Promise<void>;
+  /**
+   * Adds everything in an export, keeping what is already here: a row with the same key
+   * (the same entry, or the same day's rest day) is left as it is. Saved settings are
+   * replaced by the file's. Resolves to how many rows were added. Only the phone's
+   * database offers it; an account's ledger only accepts today's awards.
+   */
+  importAll?(copy: TernExport): Promise<number>;
 }

@@ -1,6 +1,7 @@
 import type { TernClient } from '@shared/backend/supabase';
 import { ok, rows } from '@shared/backend/query';
-import type { DataRepository, TernExport } from './dataRepository';
+import type { DataRepository } from './dataRepository';
+import type { TernExport } from './models/ternExport';
 
 const TABLES = {
   food: 'food_entries',

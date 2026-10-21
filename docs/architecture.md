@@ -104,7 +104,15 @@ phone's database (signing in is offered from Settings, never required). `AppProv
 passes each repository to its provider, so nothing else knows which it got.
 
 On the phone, common foods are the bundled seed, since the shared table needs a sign-in,
-and "Delete my data" remounts every provider so nothing shows what was erased.
+and "Delete my data" or a restore remounts every provider so nothing shows stale data.
+
+The phone's data is protected two ways. `tern.db` lives in the app's files, which Android
+Auto Backup copies to the person's Google account (`android.allowBackup` is set explicitly
+in `app.json` so it isn't switched off by accident; Auto Backup holds up to 25 MB per app)
+and iCloud backs up on iPhone. And Settings › Your data exports a `.json` file that
+"Restore from a file" adds back. A restore merges: rows already here win, rows that don't
+fit their table are skipped, and settings are replaced. Only the phone offers it, since an
+account's ledger only accepts today's awards.
 `<name>.repository.local.ts` takes a `LocalDb`
 ([`shared/backend/localDb.ts`](../src/shared/backend/localDb.ts)), the schema is
 [`localSchema.ts`](../src/shared/backend/localSchema.ts) (append-only, like the Supabase

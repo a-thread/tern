@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Pressable, Share, StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { colors, typography } from '@shared/theme';
 import { Group } from '@shared/components/ui';
@@ -7,8 +7,13 @@ import { useAuth } from '@/domain/auth/AuthContext';
 import { useToast } from '@shared/state/ToastContext';
 import { useData } from '@/domain/settings/DataContext';
 import { confirm } from '@shared/utils/confirm';
+import { parseTernExport } from '@/domain/settings/models/ternExport';
+import { pickExport, shareExport } from '../utils/backupFile';
 
-/** Export everything Tern holds, or erase it: from the account when signed in, from the phone otherwise. */
+/**
+ * Export everything Tern holds, restore it from an export, or erase it: from the account when
+ * signed in, from the phone otherwise. Restoring is offered on the phone only.
+ */
 export function DataSection() {
   const data = useData();
   const auth = useAuth();
@@ -20,17 +25,54 @@ export function DataSection() {
     if (busy) return;
     setBusy(true);
     try {
-      const copy = await data.exportAll();
-      await Share.share({
-        title: 'Tern data',
-        message: JSON.stringify(copy, null, 2),
-      });
+      await shareExport(await data.exportAll());
     } catch (e) {
       console.warn('Could not export data', e);
       toast.show("Couldn't export your data — please try again.");
     } finally {
       setBusy(false);
     }
+  };
+
+  const restoreData = async () => {
+    if (busy) return;
+    let text: string | null;
+    try {
+      text = await pickExport();
+    } catch (e) {
+      console.warn('Could not read the chosen file', e);
+      toast.show("Couldn't open that file — please try again.");
+      return;
+    }
+    if (text === null) return;
+    const parsed = parseTernExport(text);
+    if (!parsed.ok) {
+      toast.show(parsed.message);
+      return;
+    }
+    confirm({
+      title: 'Restore from this file?',
+      message:
+        "Everything in the export is added to this phone. Anything already here stays, and your settings are replaced by the file's.",
+      action: 'Restore',
+      destructive: false,
+      onConfirm: async () => {
+        setBusy(true);
+        try {
+          // Tern reloads itself once the rows are in.
+          const added = await data.importAll(parsed.copy);
+          toast.show(
+            added
+              ? `Restored ${added} ${added === 1 ? 'entry' : 'entries'}.`
+              : 'Everything in that file was already here.',
+          );
+        } catch (e) {
+          console.warn('Could not restore data', e);
+          toast.show("Couldn't restore that file — nothing was changed.");
+          setBusy(false);
+        }
+      },
+    });
   };
 
   const deleteData = () => {
@@ -89,6 +131,19 @@ export function DataSection() {
           <Text style={s.sub}>A copy of everything Tern holds, as JSON</Text>
         </View>
       </Pressable>
+      {data.canImport ? (
+        <Pressable
+          style={s.row}
+          onPress={restoreData}
+          disabled={busy}
+          accessibilityRole='button'
+        >
+          <View style={{ flex: 1 }}>
+            <Text style={s.title}>Restore from a file</Text>
+            <Text style={s.sub}>Add back everything in a Tern export</Text>
+          </View>
+        </Pressable>
+      ) : null}
       <Pressable style={s.row} onPress={deleteData} disabled={busy}>
         <View style={{ flex: 1 }}>
           <Text style={[s.title, s.danger]}>Delete my data</Text>

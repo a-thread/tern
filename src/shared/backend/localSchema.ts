@@ -18,7 +18,7 @@ export class LocalSchema {
      );
 
      CREATE TABLE food_entries (
-       id TEXT PRIMARY KEY,
+       id TEXT PRIMARY KEY NOT NULL,
        logged_on TEXT NOT NULL,
        meal TEXT NOT NULL,
        name TEXT NOT NULL,
@@ -42,7 +42,7 @@ export class LocalSchema {
      );
 
      CREATE TABLE saved_meals (
-       id TEXT PRIMARY KEY,
+       id TEXT PRIMARY KEY NOT NULL,
        name TEXT NOT NULL,
        items TEXT NOT NULL,
        created_at TEXT NOT NULL,
@@ -50,12 +50,12 @@ export class LocalSchema {
      );
 
      CREATE TABLE weight_entries (
-       id TEXT PRIMARY KEY,
+       id TEXT PRIMARY KEY NOT NULL,
        lb REAL NOT NULL,
        logged_at TEXT NOT NULL
      );
      CREATE INDEX weight_entries_logged_at ON weight_entries (logged_at);
-     CREATE TABLE skipped_weigh_ins (day TEXT PRIMARY KEY);
+     CREATE TABLE skipped_weigh_ins (day TEXT PRIMARY KEY NOT NULL);
 
      CREATE TABLE waypoint_events (
        source TEXT NOT NULL,
@@ -65,7 +65,7 @@ export class LocalSchema {
      );
      CREATE INDEX waypoint_events_day ON waypoint_events (day);
 
-     CREATE TABLE rest_days (day TEXT PRIMARY KEY);
+     CREATE TABLE rest_days (day TEXT PRIMARY KEY NOT NULL);
 
      CREATE TABLE medication_doses (
        medication_id TEXT NOT NULL,
@@ -74,7 +74,7 @@ export class LocalSchema {
      );
 
      CREATE TABLE water_entries (
-       id TEXT PRIMARY KEY,
+       id TEXT PRIMARY KEY NOT NULL,
        oz REAL NOT NULL,
        logged_on TEXT NOT NULL,
        logged_at TEXT NOT NULL
@@ -82,7 +82,7 @@ export class LocalSchema {
      CREATE INDEX water_entries_logged_on ON water_entries (logged_on);
 
      CREATE TABLE mood_checkins (
-       day TEXT PRIMARY KEY,
+       day TEXT PRIMARY KEY NOT NULL,
        mood INTEGER NOT NULL,
        stress INTEGER NOT NULL,
        updated_at TEXT NOT NULL
@@ -99,7 +99,7 @@ export class LocalSchema {
      );
 
      CREATE TABLE movement_entries (
-       id TEXT PRIMARY KEY,
+       id TEXT PRIMARY KEY NOT NULL,
        day TEXT NOT NULL,
        activity TEXT NOT NULL,
        minutes INTEGER NOT NULL,
