@@ -102,8 +102,10 @@ Supabase one; [`src/BackendContext.tsx`](../src/BackendContext.tsx)
 chooses between them and `AppProviders` passes each repository to its provider, so nothing
 else knows which it got.
 
-An on-device SQLite version is being added domain by domain (weight so far), for a free
-tier that never leaves the phone: `<name>.repository.local.ts` takes a `LocalDb`
+There is also an on-device SQLite version of every repository, for a free tier that never
+leaves the phone. `createLocalBackend(db)` assembles it, though nothing chooses it yet.
+Common foods are the bundled seed there, since the shared table needs a sign-in.
+`<name>.repository.local.ts` takes a `LocalDb`
 ([`shared/backend/localDb.ts`](../src/shared/backend/localDb.ts)), the schema is
 [`localSchema.ts`](../src/shared/backend/localSchema.ts) (append-only, like the Supabase
 migrations), and tests run the same cases against the memory and local versions using

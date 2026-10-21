@@ -1,16 +1,12 @@
-import { migrateLocalDb } from '@shared/backend/localDb';
-import { createSqlJsDb } from '@shared/backend/localDb.sqljs';
+import { createMigratedSqlJsDb } from '@shared/backend/localDb.sqljs';
 import { createLocalWeightRepository } from './weight.repository.local';
 import {
   createMemoryWeightRepository,
   type WeightRepository,
 } from './weight.repository';
 
-async function local(): Promise<WeightRepository> {
-  const db = await createSqlJsDb();
-  await migrateLocalDb(db);
-  return createLocalWeightRepository(db);
-}
+const local = async (): Promise<WeightRepository> =>
+  createLocalWeightRepository(await createMigratedSqlJsDb());
 
 const memory = async (): Promise<WeightRepository> =>
   createMemoryWeightRepository([]);
@@ -52,8 +48,7 @@ describe.each([
 
 describe('local weight repository', () => {
   it('keeps what was written when the repository is created again over the same database', async () => {
-    const db = await createSqlJsDb();
-    await migrateLocalDb(db);
+    const db = await createMigratedSqlJsDb();
     await createLocalWeightRepository(db).add({
       id: 'a',
       lb: 180.4,

@@ -1,5 +1,5 @@
 import initSqlJs from 'sql.js';
-import type { LocalDb } from './localDb';
+import { migrateLocalDb, type LocalDb } from './localDb';
 
 /**
  * A `LocalDb` over sql.js, SQLite compiled to WebAssembly, for tests. Same SQL engine as
@@ -23,4 +23,11 @@ export async function createSqlJsDb(): Promise<LocalDb> {
       return out;
     },
   };
+}
+
+/** A fresh test database with the app's schema, as a phone has it after opening. */
+export async function createMigratedSqlJsDb(): Promise<LocalDb> {
+  const db = await createSqlJsDb();
+  await migrateLocalDb(db);
+  return db;
 }

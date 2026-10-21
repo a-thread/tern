@@ -71,6 +71,19 @@ import type { WorkoutsSource } from './domain/movement/movement.healthconnect';
 import { createHealthWorkouts } from './domain/movement/movement.health';
 import type { DataRepository } from './domain/settings/dataRepository';
 import { createSupabaseDataRepository } from './domain/settings/dataRepository.supabase';
+import type { LocalDb } from '@shared/backend/localDb';
+import { createLocalFoodRepository } from './domain/food/food.repository.local';
+import { createLocalWeightRepository } from './domain/weight/weight.repository.local';
+import { createLocalSettingsRepository } from './domain/settings/settings.repository.local';
+import { createLocalWaypointsRepository } from './domain/waypoints/waypoints.repository.local';
+import { createLocalRestDaysRepository } from './domain/activity/restDays.repository.local';
+import { createLocalSavedMealsRepository } from './domain/saved-meals/savedMeals.repository.local';
+import { createLocalMedicationRepository } from './domain/medication/medication.repository.local';
+import { createLocalWaterRepository } from './domain/water/water.repository.local';
+import { createLocalMoodRepository } from './domain/mood/mood.repository.local';
+import { createLocalMealCheckInsRepository } from './domain/meal-check-ins/mealCheckIns.repository.local';
+import { createLocalMovementRepository } from './domain/movement/movement.repository.local';
+import { createLocalDataRepository } from './domain/settings/dataRepository.local';
 
 /** Every repository the app persists through. Contexts read these; they never touch Supabase directly. */
 export type Backend = {
@@ -88,7 +101,7 @@ export type Backend = {
   movement: MovementRepository;
   workouts: WorkoutsSource | null;
   commonFoods: CommonFoodsRepository;
-  /** Export and erase, for signed-in accounts. Absent in local mode, where nothing is stored. */
+  /** Export and erase. Absent in the memory preview, where nothing is stored. */
   data?: DataRepository;
 };
 
@@ -109,6 +122,31 @@ export function createMemoryBackend(): Backend {
     commonFoods: createMemoryCommonFoodsRepository(),
     movement: createMemoryMovementRepository(),
     workouts: null,
+  };
+}
+
+/**
+ * Everything stored on the phone, in `db` (`openLocalDb()`): the free tier, with no account.
+ * Steps and workouts still come from the phone's health app. The common-foods list is the
+ * bundled seed for now, since the shared table is readable only when signed in.
+ */
+export function createLocalBackend(db: LocalDb): Backend {
+  return {
+    food: createLocalFoodRepository(db),
+    weight: createLocalWeightRepository(db),
+    settings: createLocalSettingsRepository(db),
+    waypoints: createLocalWaypointsRepository(db),
+    steps: createHealthStepsRepository() ?? createUnavailableStepsRepository(),
+    restDays: createLocalRestDaysRepository(db),
+    savedMeals: createLocalSavedMealsRepository(db),
+    medication: createLocalMedicationRepository(db),
+    water: createLocalWaterRepository(db),
+    mood: createLocalMoodRepository(db),
+    mealCheckIns: createLocalMealCheckInsRepository(db),
+    commonFoods: createMemoryCommonFoodsRepository(),
+    movement: createLocalMovementRepository(db),
+    workouts: createHealthWorkouts(),
+    data: createLocalDataRepository(db),
   };
 }
 
