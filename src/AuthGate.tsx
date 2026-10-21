@@ -11,6 +11,7 @@ import {
   createLocalBackend,
   createMemoryBackend,
   createRemoteBackend,
+  createServerPlusGrant,
   createSubscriptionRepository,
 } from './BackendContext';
 import { AuthProvider, useAuth } from './domain/auth/AuthContext';
@@ -51,7 +52,10 @@ export default function AuthGate({ children }: { children: React.ReactNode }) {
   );
 }
 
-/** Tern Plus, above the sign-in screens: buying comes before making an account. */
+/**
+ * Tern Plus, above the sign-in screens: buying comes before making an account. Signed in,
+ * the server is asked too, so Plus granted by hand (testers, grandfathered accounts) counts.
+ */
 function Plus({
   userId,
   children,
@@ -60,8 +64,13 @@ function Plus({
   children: React.ReactNode;
 }) {
   const [repo] = useState(createSubscriptionRepository);
+  const [serverGrant] = useState(createServerPlusGrant);
   return (
-    <SubscriptionProvider repo={repo} userId={userId}>
+    <SubscriptionProvider
+      repo={repo}
+      userId={userId}
+      serverGrant={userId ? serverGrant : undefined}
+    >
       {children}
     </SubscriptionProvider>
   );
@@ -131,7 +140,11 @@ function ChooseBackend({ children }: { children: React.ReactNode }) {
   );
 }
 
-/** Signed in with Plus. Whatever is on the phone goes into the account before it shows. */
+/**
+ * Signed in with Plus. The server's record of Plus is brought up to date first (it's what
+ * lets the account be written to), then whatever is on the phone goes into the account
+ * before it shows.
+ */
 function AccountBackend({
   userId,
   backend,
@@ -149,7 +162,16 @@ function AccountBackend({
   useEffect(() => {
     if (!moveIn) return;
     let live = true;
-    openLocalDb()
+    const sync = async () => {
+      try {
+        await backend.syncPlus?.();
+      } catch (e) {
+        // Usually the webhook has already done it; if not, a refused write says so later.
+        console.warn('Could not bring the server up to date with Tern Plus', e);
+      }
+    };
+    sync()
+      .then(() => openLocalDb())
       .then((db) =>
         moveToAccount(createLocalBackend(db).data!, backend.data!, db, userId),
       )

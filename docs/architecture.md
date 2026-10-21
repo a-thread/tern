@@ -148,12 +148,23 @@ Where the log lives follows Plus, decided in `AuthGate` with the moves in
   the store has answered for this account (`checkedFor`), not the phone's from before.
 - A log copied down from one account is never uploaded into another (a shared phone).
 
-Accounts made before Plus have no entitlement, so they count as ended until they subscribe
-or are granted `plus` in RevenueCat.
+When the store says no for a signed-in account, the app asks the server too
+(`serverGrant` on `SubscriptionProvider`), so an account granted Plus by hand in
+`tern.entitlements` (testers, grandfathered accounts) counts as having it, and the store's
+"no" doesn't take it away mid-session. It's lapsed only when both say no; if the server
+can't be reached, the status is unknown and nothing is moved.
 
-The paywall check is in the app only, so for now it decides what's offered, not what's
-allowed: a Supabase project still accepts any signed-in user. Enforcing it needs a
-RevenueCat webhook that records the entitlement server-side for row-level security to check.
+The server enforces it too. `tern.entitlements` records who has Plus, written only by the
+`plus` Edge Function ([`supabase/functions/plus/`](../supabase/functions/plus/)) or by hand.
+Every table of the log can be read and deleted by its owner, but only added to or changed
+while `tern.has_plus()` is true (with a day's slack past the expiry, for a renewal that
+reaches the server late). So a lapsed account can still be copied down, exported and
+erased. The function asks RevenueCat for the current state on every call rather than
+trusting the event, and is called two ways: by RevenueCat's webhook, and by the app
+(`Backend.syncPlus`) each time an account with Plus opens, before anything is moved in,
+since RevenueCat doesn't always send an event when a purchase made before sign-up is tied
+to the new account. Its logic is in `entitlement.ts`, tested with the app; `index.ts` is
+the Deno wrapper, left out of typecheck and lint.
 
 Setting a project up, and what each table holds, is in
 [supabase/README.md](../supabase/README.md). `supabase/migrations/` is the schema of

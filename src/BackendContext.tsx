@@ -94,6 +94,7 @@ import {
 } from './domain/subscription/subscription.repository';
 import { createStoreSubscriptionRepository } from './domain/subscription/subscription.revenuecat';
 import { plusUnlocked } from './domain/subscription/plusUnlocked';
+import { createSupabasePlusSync } from './domain/subscription/entitlement.supabase';
 
 /** Every repository the app persists through. Contexts read these; they never touch Supabase directly. */
 export type Backend = {
@@ -111,6 +112,11 @@ export type Backend = {
   movement: MovementRepository;
   workouts: WorkoutsSource | null;
   commonFoods: CommonFoodsRepository;
+  /**
+   * Brings the server's record of Tern Plus up to date with the store, before an account
+   * with Plus is written to. Only an account has one.
+   */
+  syncPlus?: () => Promise<boolean>;
   /** What never-saved settings start as; the app's usual defaults when absent. */
   settingsDefaults?: AppSettings;
   /** Export and erase. Absent in the memory preview, where nothing is stored. */
@@ -197,6 +203,14 @@ export function createSubscriptionRepository(): SubscriptionRepository {
   );
 }
 
+/**
+ * Asks the server whether the signed-in account has Tern Plus, counting grants made by
+ * hand; undefined without Supabase. Bound to the session, like the remote backend.
+ */
+export function createServerPlusGrant(): (() => Promise<boolean>) | undefined {
+  return supabase ? createSupabasePlusSync(supabase) : undefined;
+}
+
 /** Repositories bound to the signed-in user's Supabase session. */
 export function createRemoteBackend(): Backend {
   if (!supabase) throw new Error('Supabase is not configured');
@@ -216,6 +230,7 @@ export function createRemoteBackend(): Backend {
     movement: createSupabaseMovementRepository(supabase),
     workouts: createHealthWorkouts(),
     data: createSupabaseDataRepository(supabase),
+    syncPlus: createSupabasePlusSync(supabase),
   };
 }
 

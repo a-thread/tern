@@ -8,9 +8,10 @@ import { SubscriptionProvider, useSubscription } from './SubscriptionContext';
 function setup(
   repo = createMemorySubscriptionRepository(),
   userId: string | null = null,
+  serverGrant?: () => Promise<boolean>,
 ) {
   const wrapper = ({ children }: { children: React.ReactNode }) => (
-    <SubscriptionProvider repo={repo} userId={userId}>
+    <SubscriptionProvider repo={repo} userId={userId} serverGrant={serverGrant}>
       {children}
     </SubscriptionProvider>
   );
@@ -57,6 +58,46 @@ describe('SubscriptionContext', () => {
     const { result } = setup(repo, 'user-1');
     await waitFor(() => expect(result.current.active).toBe(true));
     expect(identify).toHaveBeenCalledWith('user-1');
+  });
+
+  it('counts Plus granted on the server when the store has no purchase', async () => {
+    const repo = createMemorySubscriptionRepository();
+    let listener: (s: { active: boolean; renews: boolean; expiresAt: null }) => void = () => {};
+    repo.onChange = (l) => {
+      listener = l;
+      return () => {};
+    };
+    const { result } = setup(repo, 'user-1', async () => true);
+    await waitFor(() => expect(result.current.active).toBe(true));
+    expect(result.current.known).toBe(true);
+    // The store saying "no" later doesn't take a grant away.
+    act(() => listener({ active: false, renews: false, expiresAt: null }));
+    expect(result.current.active).toBe(true);
+  });
+
+  it('is lapsed only when the store and the server both say no', async () => {
+    const { result } = setup(createMemorySubscriptionRepository(), 'user-1', async () => false);
+    await waitFor(() => expect(result.current.checkedFor).toBe('user-1'));
+    expect(result.current.active).toBe(false);
+    expect(result.current.known).toBe(true);
+  });
+
+  it("treats a server that can't be reached as unknown, not lapsed", async () => {
+    const warn = jest.spyOn(console, 'warn').mockImplementation(() => {});
+    const { result } = setup(createMemorySubscriptionRepository(), 'user-1', async () => {
+      throw new Error('offline');
+    });
+    await waitFor(() => expect(result.current.checkedFor).toBe('user-1'));
+    expect(result.current.known).toBe(false);
+    warn.mockRestore();
+  });
+
+  it('does not ask the server when the store already has Plus', async () => {
+    const serverGrant = jest.fn(async () => false);
+    const repo = createMemorySubscriptionRepository({ active: true, renews: true, expiresAt: null });
+    const { result } = setup(repo, 'user-1', serverGrant);
+    await waitFor(() => expect(result.current.active).toBe(true));
+    expect(serverGrant).not.toHaveBeenCalled();
   });
 
   it('still counts the status when the plans cannot be loaded', async () => {

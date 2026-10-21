@@ -168,6 +168,44 @@ describe('AuthGate signed in', () => {
     ).toBeTruthy();
   });
 
+  it('brings the server up to date with Plus before moving anything in', async () => {
+    mockPlus = createMemorySubscriptionRepository(PLUS);
+    await createLocalBackend(mockPhoneDb).restDays.add('2026-10-17');
+    const order: string[] = [];
+    const importAll = mockAccount.data!.importAll!;
+    mockAccount = {
+      ...mockAccount,
+      syncPlus: async () => {
+        order.push('sync');
+        return true;
+      },
+      data: {
+        ...mockAccount.data!,
+        importAll: async (copy) => {
+          order.push('move');
+          return importAll(copy);
+        },
+      },
+    };
+    render(app());
+    await screen.findByText('1 rest days');
+    expect(order).toEqual(['sync', 'move']);
+  });
+
+  it('still opens the account when the server could not be brought up to date', async () => {
+    mockPlus = createMemorySubscriptionRepository(PLUS);
+    mockAccount = {
+      ...mockAccount,
+      syncPlus: async () => {
+        throw new Error('offline');
+      },
+    };
+    const warn = jest.spyOn(console, 'warn').mockImplementation(() => {});
+    render(app());
+    expect(await screen.findByText('0 rest days')).toBeTruthy();
+    warn.mockRestore();
+  });
+
   it("once Plus has ended, copies the account's log onto the phone and carries on there", async () => {
     mockPlus = createMemorySubscriptionRepository(NO_PLUS);
     await mockAccount.restDays.add('2026-10-18');

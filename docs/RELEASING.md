@@ -27,6 +27,7 @@ Test build: Actions > Build > Run workflow > `preview` / `android` gives an inst
 Tern Plus is unlocked in it (`EXPO_PUBLIC_PLUS_UNLOCKED`), since Play Billing can't sell to an
 app that wasn't installed from Play; Settings says "test build" at the foot. A test fails if
 `production` ever sets it.
+Tick "submit" (production only) to send the build to the store once step 5 above is done.
 
 ## Testers and Tern Plus
 
@@ -37,8 +38,18 @@ app that wasn't installed from Play; Settings says "test build" at the foot. A t
   renewals), and RevenueCat grants `plus` from them as usual, marked as sandbox.
 - **TestFlight:** purchases there are sandbox purchases and charge nothing.
 - **One account, by hand:** in RevenueCat, open the customer (their Tern user id once signed
-  in) and grant the `plus` entitlement as a promotional one, for a set time or for good.
-Tick "submit" (production only) to send the build to the store once step 5 above is done.
+  in) and grant the `plus` entitlement as a promotional one, for a set time or for good. The
+  app asks the server to look the account up each time it opens, so the grant reaches
+  Supabase too.
+
+The server checks Plus as well (see [supabase/README.md](../supabase/README.md#tern-plus)): an
+account can only be written to with a `tern.entitlements` row. Store and promotional
+purchases get one automatically. **Preview APK testers don't**, since nothing was bought:
+once they've made an account, grant them Plus in RevenueCat as above, or add the row by hand:
+
+```sql
+insert into tern.entitlements (user_id, source) values ('<their user id>', 'manual');
+```
 
 ## iPhone
 

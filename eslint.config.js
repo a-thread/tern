@@ -3,7 +3,9 @@ const globals = require('globals');
 
 module.exports = [
   ...expoConfig,
-  { ignores: ['dist/*', 'android/*', 'ios/*', '.expo/*'] },
+  // Edge Function entry points run on Deno (npm: imports, the Deno global); their logic
+  // lives beside them in plain modules that are linted and tested like the app.
+  { ignores: ['dist/*', 'android/*', 'ios/*', '.expo/*', 'supabase/functions/**/index.ts'] },
   {
     languageOptions: { globals: { ...globals.jest } },
     rules: {

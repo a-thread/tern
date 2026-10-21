@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { createRequiredContext } from '@shared/state/createRequiredContext';
 import { useLoader } from '@shared/hooks/useLoader';
@@ -39,17 +39,26 @@ const [SubscriptionContext, useSubscription] =
   );
 export { useSubscription };
 
+/** Plus granted by the server rather than bought: a manual grant, for testers and grandfathered accounts. */
+const GRANTED: SubscriptionStatus = { active: true, renews: false, expiresAt: null };
+
 /**
  * Tern Plus. App-wide, above the sign-in screens, since buying comes before making an
  * account. `userId` ties purchases to the signed-in account; null while on the phone.
+ *
+ * `serverGrant` asks the server whether the signed-in account has Plus. It's asked only
+ * when the store says no, so an account given Plus by hand (no purchase behind it) counts
+ * too, and a later "no" from the store doesn't take it away.
  */
 export function SubscriptionProvider({
   repo,
   userId,
+  serverGrant,
   children,
 }: {
   repo: SubscriptionRepository;
   userId: string | null;
+  serverGrant?: () => Promise<boolean>;
   children: React.ReactNode;
 }) {
   const [status, setStatus] = useState<SubscriptionStatus>(NO_SUBSCRIPTION);
@@ -58,23 +67,39 @@ export function SubscriptionProvider({
     known: boolean;
   }>({ for: undefined, known: false });
   const [plans, setPlans] = useState<PlanOption[]>([]);
+  const granted = useRef(false);
 
   // Identifying first means the status read is the account's, not the phone's.
   const { ready } = useLoader(
     useCallback(async () => {
-      const identified = await repo.identify(userId).catch((e) => {
+      let identified = await repo.identify(userId).catch((e) => {
         // Unknown, not "no Plus": nothing is moved on a status the store didn't give.
         console.warn('Could not reach the store for Tern Plus', e);
         return null;
       });
+      let byGrant = false;
+      if (identified && !identified.active && userId && serverGrant) {
+        const server = await serverGrant().catch((e) => {
+          console.warn('Could not ask the server about Tern Plus', e);
+          return null;
+        });
+        if (server) {
+          identified = GRANTED;
+          byGrant = true;
+        } else if (server === null) {
+          // The store says no but the server couldn't say: unknown, so nothing is moved.
+          identified = null;
+        }
+      }
       const offered = await repo.plans().catch((e) => {
         // A store that can't be reached doesn't stop the status from counting.
         console.warn('Could not load Tern Plus plans', e);
         return [];
       });
-      return { identified, offered, userId };
-    }, [repo, userId]),
-    ({ identified, offered, userId: forUser }) => {
+      return { identified, offered, userId, byGrant };
+    }, [repo, userId, serverGrant]),
+    ({ identified, offered, userId: forUser, byGrant }) => {
+      granted.current = byGrant;
       setStatus(identified ?? NO_SUBSCRIPTION);
       setChecked({ for: forUser, known: identified !== null });
       setPlans(sortPlans(offered));
@@ -82,7 +107,15 @@ export function SubscriptionProvider({
     'Could not load Tern Plus',
   );
 
-  useEffect(() => repo.onChange(setStatus), [repo]);
+  useEffect(
+    () =>
+      repo.onChange((next) => {
+        // The store has no purchase for a granted account, so its "no" changes nothing.
+        if (granted.current && !next.active) return;
+        setStatus(next);
+      }),
+    [repo],
+  );
 
   const purchase = useCallback(
     async (id: string) => {
