@@ -27,6 +27,19 @@ describe('migrateLocalDb', () => {
     expect(await db.all('SELECT * FROM b')).toEqual([]);
   });
 
+  it('gives a phone that ran step 1 before it had the meta table one', async () => {
+    const db = await createSqlJsDb();
+    // Step 1 as an early build shipped it: everything but meta.
+    const earlyStep1 = LocalSchema.MIGRATIONS[0].replace(/CREATE TABLE meta \([^;]*\);/, '');
+    await migrateLocalDb(db, [earlyStep1]);
+    expect(await db.all("SELECT name FROM sqlite_master WHERE name = 'meta'")).toEqual([]);
+
+    await migrateLocalDb(db);
+    expect(await version(db)).toBe(LocalSchema.MIGRATIONS.length);
+    await db.run("INSERT INTO meta (key, value) VALUES ('k', 'v')");
+    expect(await db.all('SELECT value FROM meta')).toEqual([{ value: 'v' }]);
+  });
+
   it('leaves the version alone when a migration fails', async () => {
     const db = await createSqlJsDb();
     await expect(

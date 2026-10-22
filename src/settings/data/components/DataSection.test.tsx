@@ -14,25 +14,42 @@ import {
 import { DataSection } from './DataSection';
 
 jest.mock('../utils/backupFile', () => ({}));
+let mockSignedIn = true;
 jest.mock('@/domain/auth/AuthContext', () => ({
-  useAuth: () => ({ session: { user: { id: 'me' } }, signOut: jest.fn() }),
+  useAuth: () => ({
+    session: mockSignedIn ? { user: { id: 'me' } } : null,
+    signOut: jest.fn(),
+  }),
 }));
 
 const repo: DataRepository = {
   exportAll: jest.fn(),
   deleteAll: jest.fn(),
   deleteAccount: jest.fn(),
+  importAll: jest.fn(),
 };
 
-/** Shows once the store has answered for the account, so the test asks after that. */
+const PLUS: SubscriptionStatus = {
+  active: true,
+  renews: true,
+  expiresAt: '2026-11-21T12:00:00.000Z',
+};
+const NONE: SubscriptionStatus = { active: false, renews: false, expiresAt: null };
+
+/** Shows once the store has answered for whoever is here, so the test asks after that. */
 function Checked() {
-  return useSubscription().checkedFor === 'me' ? <Text>checked</Text> : null;
+  return useSubscription().checkedFor === (mockSignedIn ? 'me' : null) ? (
+    <Text>checked</Text>
+  ) : null;
 }
 
-async function deleteAccountWith(status: SubscriptionStatus) {
+async function show(status: SubscriptionStatus) {
   render(
     <ToastProvider>
-      <SubscriptionProvider repo={createMemorySubscriptionRepository(status)} userId='me'>
+      <SubscriptionProvider
+        repo={createMemorySubscriptionRepository(status)}
+        userId={mockSignedIn ? 'me' : null}
+      >
         <DataProvider repo={repo}>
           <Checked />
           <DataSection />
@@ -41,6 +58,10 @@ async function deleteAccountWith(status: SubscriptionStatus) {
     </ToastProvider>,
   );
   await screen.findByText('checked');
+}
+
+async function deleteAccountWith(status: SubscriptionStatus) {
+  await show(status);
   fireEvent.press(screen.getByText('Delete my account'));
   const [, message, buttons] = jest.mocked(Alert.alert).mock.calls[0];
   return { message: message!, labels: (buttons ?? []).map((b) => b.text) };
@@ -50,8 +71,40 @@ async function deleteAccountWith(status: SubscriptionStatus) {
 beforeAll(() => {
   Object.defineProperty(Platform, 'OS', { get: () => 'android', configurable: true });
 });
-beforeEach(() => jest.spyOn(Alert, 'alert').mockImplementation(() => {}));
+beforeEach(() => {
+  mockSignedIn = true;
+  jest.spyOn(Alert, 'alert').mockImplementation(() => {});
+});
 afterEach(() => jest.restoreAllMocks());
+
+describe('the rows, by where the data is', () => {
+  it('with a synced account, every row says exactly what it touches', async () => {
+    await show(PLUS);
+    expect(screen.getByText('Save a file of everything, to restore from later')).toBeTruthy();
+    expect(
+      screen.getByText("Add back what's in a Tern export. Anything already here stays."),
+    ).toBeTruthy();
+    expect(
+      screen.getByText("Erase everything you've logged. Your account and Tern Plus stay."),
+    ).toBeTruthy();
+    expect(screen.getByText('Close your account and erase all your data')).toBeTruthy();
+  });
+
+  it('once Tern Plus has ended, keeps it short and leaves out deleting the data alone', async () => {
+    await show(NONE);
+    expect(screen.getByText('Save a file of everything')).toBeTruthy();
+    expect(screen.getByText("Add back what's in a Tern export")).toBeTruthy();
+    expect(screen.queryByText('Delete my data')).toBeNull();
+    expect(screen.getByText('Delete my account')).toBeTruthy();
+  });
+
+  it('without an account, offers deleting what is on this phone, and no account to delete', async () => {
+    mockSignedIn = false;
+    await show(NONE);
+    expect(screen.getByText('Erase everything on this phone')).toBeTruthy();
+    expect(screen.queryByText('Delete my account')).toBeNull();
+  });
+});
 
 describe('Delete my account', () => {
   it("warns that it doesn't cancel a subscription that will charge again, and offers the store", async () => {

@@ -193,7 +193,7 @@ function AccountBackend({
         // Nothing on the phone was cleared, so it's tried again next time.
         console.warn("Could not move the phone's log into the account", e);
         toast.show(
-          "Couldn't move this phone's log into your account yet. It's safe on the phone, and Tern will try again.",
+          "Couldn't move this phone's data into your account yet. It's safe on the phone, and Tern will try again.",
         );
       })
       .finally(() => live && setReady(true));
@@ -234,14 +234,14 @@ function PhoneBackend({
         try {
           if (await copyToPhone(account, local.data!, db, lapsedFor)) {
             toast.show(
-              'Tern Plus has ended, so your log is kept on this phone now. Renew in Settings to sync it again.',
+              'Tern Plus has ended, so your data is kept on this phone now. Renew in Settings › Your data to sync it again.',
             );
           }
         } catch (e) {
           // Carry on with what the phone has; the copy is tried again next time.
           console.warn("Could not copy the account's log onto the phone", e);
           toast.show(
-            "Tern Plus has ended, and your account's log couldn't be copied onto this phone yet. Tern will try again.",
+            "Tern Plus has ended, and your account's data couldn't be copied onto this phone yet. Tern will try again.",
           );
         }
       }

@@ -51,7 +51,7 @@ export default function CreateAccountScreen({
   return (
     <AuthLayout
       title="Let's get started"
-      subtitle='Your account keeps your log synced and backed up.'
+      subtitle='Your account keeps your data synced and backed up.'
     >
       <AuthBanner variant='error' message={error || null} />
 
