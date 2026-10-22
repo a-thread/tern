@@ -33,6 +33,46 @@ tables. With no keys configured, the app runs on local mock data instead.
    (e.g. Lichen's web URL) are unaffected. Without them the links fall back to
    the project's Site URL instead of opening Tern.
 6. Restart Expo with `npx expo start --clear` so the new env vars are picked up.
+7. **Tern Plus** (before shipping a build with it). See [Tern Plus](#tern-plus) below.
+
+## Tern Plus
+
+[`20261023000000_plus_entitlements.sql`](migrations/20261023000000_plus_entitlements.sql)
+makes an account writable only while it has Plus. Reading and deleting stay open. **Once
+it runs, no account can save anything until it has a `tern.entitlements` row**, so set up
+the function first and grant anyone who should keep access (below).
+
+1. **Deploy the function** (Supabase CLI, logged in and linked to the project):
+
+   ```bash
+   supabase functions deploy plus --no-verify-jwt
+   ```
+
+   `--no-verify-jwt` because RevenueCat sends no Supabase token; the function checks the
+   app's token itself and RevenueCat's shared secret.
+2. **Set its secrets:** a long random string for the webhook, and RevenueCat's **secret** API
+   key (_Project settings → API keys_, starts `sk_`; never put it in the app).
+
+   ```bash
+   supabase secrets set REVENUECAT_WEBHOOK_SECRET=<random string> REVENUECAT_SECRET_KEY=sk_...
+   ```
+
+3. **Point RevenueCat at it:** _Integrations → Webhooks → Add_, URL
+   `https://<project-ref>.supabase.co/functions/v1/plus`, and the same random string as the
+   _Authorization header value_. Send a test event; the function answers `ok`.
+4. **Run the migration.**
+5. **Grant by hand** anyone RevenueCat has no purchase for: accounts made before Plus, and
+   testers on the preview APK. A manual row has no expiry and the function never changes it.
+
+   ```sql
+   -- One account:
+   insert into tern.entitlements (user_id, source) values ('<user id>', 'manual');
+   -- Every account that exists today (grandfathering):
+   insert into tern.entitlements (user_id, source)
+   select id, 'manual' from auth.users on conflict do nothing;
+   ```
+
+   Take a grant back with `delete from tern.entitlements where user_id = '<user id>';`.
 
 ## What's stored
 
@@ -104,6 +144,14 @@ erases every `tern.*` row for the account and signs you out, keeping the login.
 **Delete my account** removes the login too, through the `tern.delete_my_account()`
 function (`20260922000000_delete_account.sql`; run it in the SQL Editor). The public
 instructions Google Play asks for are at `docs/delete-account.html`.
+
+**Restore from a file**, and moving a phone's log into an account when someone takes out
+Tern Plus, go through `tern.import_my_data(copy jsonb)`
+(`20261022000000_import_my_data.sql`). It adds an export's rows to the caller's account,
+keeping anything already there and skipping rows that don't fit, and lets the "only
+today" triggers on waypoints, rest days and movement stand aside for that one transaction
+so past days can come in. Points must still match their source. Run it in the SQL Editor
+before shipping a build with Tern Plus, or subscribers' phone logs can't be uploaded.
 
 ## Step goal
 

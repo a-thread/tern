@@ -49,7 +49,11 @@ const PROVIDERS: readonly Entry[] = [
   {
     name: 'settings',
     needs: [],
-    wrap: (c, b) => <SettingsProvider repo={b.settings}>{c}</SettingsProvider>,
+    wrap: (c, b) => (
+      <SettingsProvider repo={b.settings} defaults={b.settingsDefaults}>
+        {c}
+      </SettingsProvider>
+    ),
   },
   {
     name: 'data',

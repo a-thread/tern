@@ -15,19 +15,22 @@ type AuthContextValue = {
   /** True while the stored session is being restored on launch. */
   loading: boolean;
   session: Session | null;
-  /** Trying the app without an account: mock data, kept in memory only. */
-  isGuest: boolean;
+  /** The sign-in screens are open. Without an account the app runs on this phone's data. */
+  signingIn: boolean;
   /** Set when a password-reset link was opened; the app then asks for a new password. */
   passwordRecoveryPending: boolean;
-  /** Where the sign-in flow should open (after "Create account" from preview). */
+  /** Where the sign-in flow should open (after "Create account" in Settings). */
   startOnSignUp: boolean;
-  continueAsGuest: () => void;
+  /** Opens the sign-in screens, or the create-account one. */
+  openSignIn: (options?: { toSignUp?: boolean }) => void;
+  /** Leaves the sign-in screens for this phone's data. */
+  closeSignIn: () => void;
   signIn: (email: string, password: string) => Promise<void>;
   signUp: (email: string, password: string, firstName: string) => Promise<void>;
   sendPasswordReset: (email: string) => Promise<void>;
   updatePassword: (password: string) => Promise<void>;
-  /** Ends the session — or, for a guest, just leaves the preview. */
-  signOut: (options?: { toSignUp?: boolean }) => Promise<void>;
+  /** Ends the session; the app goes back to this phone's data. */
+  signOut: () => Promise<void>;
 };
 
 const AuthContext = createContext<AuthContextValue | null>(null);
@@ -36,7 +39,7 @@ const AuthContext = createContext<AuthContextValue | null>(null);
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
-  const [isGuest, setIsGuest] = useState(false);
+  const [signingIn, setSigningIn] = useState(false);
   const [passwordRecoveryPending, setRecovery] = useState(false);
   const [startOnSignUp, setStartOnSignUp] = useState(false);
 
@@ -73,7 +76,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const redirectTo = Linking.createURL('/');
 
-  const continueAsGuest = useCallback(() => setIsGuest(true), []);
+  const openSignIn = useCallback((options?: { toSignUp?: boolean }) => {
+    setStartOnSignUp(Boolean(options?.toSignUp));
+    setSigningIn(true);
+  }, []);
+  const closeSignIn = useCallback(() => setSigningIn(false), []);
+
+  // Once signed in (by password or an email link) the sign-in screens are done.
+  useEffect(() => {
+    if (session) setSigningIn(false);
+  }, [session]);
 
   const signIn = useCallback(async (email: string, password: string) => {
     const { error } = await supabase!.auth.signInWithPassword({
@@ -116,26 +128,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setRecovery(false);
   }, []);
 
-  const signOut = useCallback(
-    async (options?: { toSignUp?: boolean }) => {
-      setStartOnSignUp(Boolean(options?.toSignUp));
-      if (isGuest) {
-        setIsGuest(false);
-        return;
-      }
-      await supabase!.auth.signOut();
-    },
-    [isGuest],
-  );
+  const signOut = useCallback(async () => {
+    await supabase!.auth.signOut();
+  }, []);
 
   const value = useMemo(
     () => ({
       loading,
       session,
-      isGuest,
+      signingIn,
       passwordRecoveryPending,
       startOnSignUp,
-      continueAsGuest,
+      openSignIn,
+      closeSignIn,
       signIn,
       signUp,
       sendPasswordReset,
@@ -145,10 +150,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     [
       loading,
       session,
-      isGuest,
+      signingIn,
       passwordRecoveryPending,
       startOnSignUp,
-      continueAsGuest,
+      openSignIn,
+      closeSignIn,
       signIn,
       signUp,
       sendPasswordReset,

@@ -6,8 +6,12 @@ import { Group } from '@shared/components/ui';
 import { useAuth } from '../../domain/auth/AuthContext';
 import { AccountLimits } from '../../domain/auth/validation';
 import { useSettings } from '../../domain/settings/SettingsContext';
+import { PlusRow } from './PlusRow/PlusRow';
 
-/** Who is signed in: an avatar, the first name (editable) and the account line. */
+/**
+ * Who is signed in: an avatar, the first name (editable) and the account line, with Tern
+ * Plus right below (its icon says where the log lives).
+ */
 export function ProfileSection() {
   const { settings, updateSettings } = useSettings();
   const auth = useAuth();
@@ -46,12 +50,13 @@ export function ProfileSection() {
             style={s.nameInput}
           />
           <Text style={s.sub}>
-            {auth?.isGuest
-              ? 'Preview · nothing is saved, this resets when you exit'
-              : (email ?? 'Local profile')}
+            {email ??
+              (auth ? 'Saved on this phone only' : 'Sample data · nothing is saved')}
           </Text>
         </View>
       </View>
+      {/* Tern Plus sits with who's signed in. Sample data has no accounts, so no row. */}
+      {auth ? <PlusRow /> : null}
     </Group>
   );
 }

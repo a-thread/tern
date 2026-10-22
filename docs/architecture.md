@@ -96,11 +96,75 @@ Every context loads its data and saves edits the same way, so that part is share
 
 ## Storage
 
-Supabase, reached through one repository per domain. Each has an in-memory
-implementation — used in the preview, when there are no keys, and in every test — and a
-Supabase one; [`src/BackendContext.tsx`](../src/BackendContext.tsx)
-chooses between them and `AppProviders` passes each repository to its provider, so nothing
-else knows which it got.
+One repository per domain, in three versions: Supabase for a signed-in account, SQLite on
+the phone for everyone else, and in memory for development without keys and for every
+test. [`src/BackendContext.tsx`](../src/BackendContext.tsx) builds each set and
+[`src/AuthGate.tsx`](../src/AuthGate.tsx) picks one: signed in gets Supabase, otherwise the
+phone's database (signing in is offered from Settings, never required). `AppProviders`
+passes each repository to its provider, so nothing else knows which it got.
+
+On the phone, common foods are the bundled seed, since the shared table needs a sign-in,
+and "Delete my data" or a restore remounts every provider so nothing shows stale data.
+`<name>.repository.local.ts` takes a `LocalDb`
+([`shared/backend/localDb.ts`](../src/shared/backend/localDb.ts)), the schema is
+[`localSchema.ts`](../src/shared/backend/localSchema.ts) (append-only, like the Supabase
+migrations), and tests run the same cases against the memory and local versions using
+sql.js, so no native module is needed.
+
+The phone's data is protected two ways. `tern.db` lives in the app's files, which Android
+Auto Backup copies to the person's Google account (`android.allowBackup` is set explicitly
+in `app.json` so it isn't switched off by accident; Auto Backup holds up to 25 MB per app)
+and iCloud backs up on iPhone. And Settings › Your data exports a `.json` file that
+"Restore from a file" adds back. A restore merges: rows already here win, and rows that
+don't fit their table are skipped. On the phone the file's settings replace the saved
+ones; an account keeps its own. An account restores through the `import_my_data`
+function, since its tables otherwise only accept today's waypoints, rest days and
+movement.
+
+## Tern Plus
+
+Everything in Tern is free; Tern Plus is the account, which syncs and backs up. Making an
+account goes through the paywall (`auth/paywall/`); signing in to an existing one doesn't.
+The store is the source of truth: [`SubscriptionContext`](../src/domain/subscription/SubscriptionContext.tsx)
+reads the `plus` entitlement from RevenueCat ([`subscription.revenuecat.ts`](../src/domain/subscription/subscription.revenuecat.ts),
+behind a small `PurchasesApi` so it tests without the native module), and nothing about it
+is stored in Supabase. It's mounted in `AuthGate` above the sign-in screens, since buying
+comes before the account, and `identify` ties an anonymous purchase to the account once
+they sign in. Without a RevenueCat key the memory version stands in and buying is free. The
+`preview` build sets `EXPO_PUBLIC_PLUS_UNLOCKED`, which turns Plus on with nothing bought,
+for testers who install the APK directly (see [RELEASING.md](RELEASING.md)).
+
+Where the log lives follows Plus, decided in `AuthGate` with the moves in
+[`accountMoves.ts`](../src/accountMoves.ts):
+
+- **Signed in with Plus:** the account. Anything on the phone is uploaded into it first
+  (`import_my_data`, merging), then the phone's copy is cleared. A failed upload clears
+  nothing and is tried again on the next launch.
+- **Signed in, Plus ended:** the phone. The account's log is copied down once per account
+  (a `meta` row remembers it, so a second launch doesn't bring back what was since removed),
+  and the app carries on from the phone. "Delete my data" reaches both copies. Renewing
+  uploads everything back.
+- **Store unreachable:** the account, with nothing moved. A status is only acted on once
+  the store has answered for this account (`checkedFor`), not the phone's from before.
+- A log copied down from one account is never uploaded into another (a shared phone).
+
+When the store says no for a signed-in account, the app asks the server too
+(`serverGrant` on `SubscriptionProvider`), so an account granted Plus by hand in
+`tern.entitlements` (testers, grandfathered accounts) counts as having it, and the store's
+"no" doesn't take it away mid-session. It's lapsed only when both say no; if the server
+can't be reached, the status is unknown and nothing is moved.
+
+The server enforces it too. `tern.entitlements` records who has Plus, written only by the
+`plus` Edge Function ([`supabase/functions/plus/`](../supabase/functions/plus/)) or by hand.
+Every table of the log can be read and deleted by its owner, but only added to or changed
+while `tern.has_plus()` is true (with a day's slack past the expiry, for a renewal that
+reaches the server late). So a lapsed account can still be copied down, exported and
+erased. The function asks RevenueCat for the current state on every call rather than
+trusting the event, and is called two ways: by RevenueCat's webhook, and by the app
+(`Backend.syncPlus`) each time an account with Plus opens, before anything is moved in,
+since RevenueCat doesn't always send an event when a purchase made before sign-up is tied
+to the new account. Its logic is in `entitlement.ts`, tested with the app; `index.ts` is
+the Deno wrapper, left out of typecheck and lint.
 
 Setting a project up, and what each table holds, is in
 [supabase/README.md](../supabase/README.md). `supabase/migrations/` is the schema of

@@ -118,6 +118,21 @@ export const initialSettings: AppSettings = {
   },
 };
 
+/**
+ * The defaults for someone using Tern on the phone with no account: movement in place of
+ * weight and calories, with water and mood on. Defaults only: anything they change is kept.
+ */
+export const phoneSettings: AppSettings = {
+  ...initialSettings,
+  trackMovement: true,
+  movementGoalMinutes: 60,
+  trackCalories: false,
+  trackMacros: true,
+  trackWeight: false,
+  trackWater: true,
+  trackMood: true,
+};
+
 export function changesAnything(
   current: AppSettings,
   patch: Partial<AppSettings>,

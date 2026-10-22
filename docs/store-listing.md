@@ -78,9 +78,11 @@ never mention what you missed, and you can turn them off any time.
 
 YOUR DATA IS YOURS
 • No ads, and your data is never sold.
-• Export everything Tern holds, as JSON.
+• Export everything Tern holds as a file, and restore from it on a new phone.
 • Delete your data, or your whole account, from Settings.
-• Try the preview without an account. Nothing is saved.
+• No account needed. Everything stays on your phone unless you choose to sign in.
+• Optional Tern Plus adds an account that syncs and backs up your log. Every
+feature is free without it.
 
 Nutrition information comes from Open Food Facts and USDA FoodData Central.
 

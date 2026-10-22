@@ -66,7 +66,7 @@ Every rule is for something done, never for a number. The amounts live in
 
 | Source | Waypoints | For |
 | --- | --- | --- |
-| Goal day | 40 | reaching the step goal, or the movement goal (30 minutes unless changed) of activity steps can't see: swims, rides, lifting, yoga, classes. Walks and runs are already in the steps |
+| Goal day | 40 | reaching the step goal, or the movement goal (30 minutes with an account, 60 on the phone without one, unless changed) of activity steps can't see: swims, rides, lifting, yoga, classes. Walks and runs are already in the steps |
 | Movement | 10 | logging any movement today |
 | All meals | 15 | every core meal logged or marked "nothing today" |
 | Each meal | 5 each | food logged in breakfast, lunch and dinner. A skipped meal doesn't pay this one |
