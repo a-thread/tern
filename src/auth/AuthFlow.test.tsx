@@ -48,7 +48,11 @@ describe('AuthFlow and Tern Plus', () => {
   it('puts the paywall in front of making an account', async () => {
     app();
     expect(await screen.findByText('Tern Plus')).toBeTruthy();
-    expect(screen.getByLabelText('Yearly, $29.99 a year')).toBeTruthy();
+    expect(
+      screen.getByLabelText(/^Yearly, \$29\.99 a year, Save .*17\.89.* a year$/),
+    ).toBeTruthy();
+    // Only yearly says what it saves.
+    expect(screen.getByLabelText('Monthly, $3.99 a month')).toBeTruthy();
     expect(screen.queryByText("Let's get started")).toBeNull();
   });
 

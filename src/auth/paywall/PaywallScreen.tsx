@@ -1,8 +1,14 @@
 import React, { useEffect, useState } from 'react';
-import { Platform, StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 
 import { space, typography } from '@shared/theme';
+import { storeName } from '@shared/utils/storeApp';
 import { useSubscription } from '@/domain/subscription/SubscriptionContext';
+import {
+  Plan,
+  savingsLabel,
+  yearlySavings,
+} from '@/domain/subscription/models/subscription';
 import { AuthBanner } from '../components/AuthBanner';
 import { AuthLayout } from '../components/AuthLayout';
 import { LinkButton } from '../components/LinkButton';
@@ -11,7 +17,7 @@ import { SubmitButton } from '../components/SubmitButton';
 import { useSubmit } from '../hooks/useSubmit';
 import { PlanChoice } from './components/PlanChoice/PlanChoice';
 
-const STORE = Platform.OS === 'ios' ? 'the App Store' : 'Google Play';
+const STORE = storeName();
 
 const WHAT_PLUS_ADDS = [
   'Your log synced to an account, so a lost phone loses nothing',
@@ -57,6 +63,9 @@ export default function PaywallScreen({ onBack }: { onBack: () => void }) {
   };
 
   const unavailable = ready && !plans.length;
+  // What yearly saves over paying monthly, worked out from the store's own prices.
+  const savings = yearlySavings(plans);
+  const yearlyNote = savings ? savingsLabel(savings) : undefined;
 
   return (
     <AuthLayout
@@ -87,6 +96,7 @@ export default function PaywallScreen({ onBack }: { onBack: () => void }) {
           key={option.id}
           option={option}
           chosen={option.id === chosen}
+          note={option.plan === Plan.Annual ? yearlyNote : undefined}
           onChoose={() => setChosen(option.id)}
         />
       ))}

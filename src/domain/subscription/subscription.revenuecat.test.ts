@@ -25,7 +25,7 @@ const info = (active: boolean, willRenew = true) => {
 const pkg = (identifier: string, packageType: string, priceString: string) => ({
   identifier,
   packageType,
-  product: { priceString },
+  product: { priceString, price: Number(priceString.slice(1)), currencyCode: 'USD' },
 });
 
 function fakeApi(overrides: Partial<PurchasesApi> = {}) {
@@ -75,9 +75,9 @@ describe('RevenueCat subscription repository', () => {
   it("offers the current offering's subscriptions as plans, never a lifetime one", async () => {
     const plans = await createRevenueCatSubscriptionRepository(fakeApi(), 'k').plans();
     expect(plans).toEqual([
-      { id: '$rc_monthly', plan: Plan.Monthly, price: '$3.99' },
-      { id: '$rc_annual', plan: Plan.Annual, price: '$29.99' },
-      { id: 'weekend', plan: Plan.Other, price: '$1.00' },
+      { id: '$rc_monthly', plan: Plan.Monthly, price: '$3.99', amount: 3.99, currency: 'USD' },
+      { id: '$rc_annual', plan: Plan.Annual, price: '$29.99', amount: 29.99, currency: 'USD' },
+      { id: 'weekend', plan: Plan.Other, price: '$1.00', amount: 1, currency: 'USD' },
     ]);
   });
 

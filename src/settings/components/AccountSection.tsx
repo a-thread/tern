@@ -4,53 +4,24 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { colors, font, space } from '@shared/theme';
 import { useAuth } from '../../domain/auth/AuthContext';
 import { plusUnlocked } from '../../domain/subscription/plusUnlocked';
-import { usePlusLapsed } from '../hooks/usePlusLapsed';
 
-/** Signing in or out, renewing Tern Plus once it has ended, and the app version, at the foot of Settings. */
+/**
+ * Signing in or out, and the app version, at the foot of Settings. Making an account, and
+ * renewing Tern Plus, live in the Tern Plus row at the top.
+ */
 export function AccountSection() {
   const auth = useAuth();
-  const lapsed = usePlusLapsed();
   return (
     <>
       {auth ? (
         <View style={s.signOut}>
-          {auth.session ? (
-            <>
-              {lapsed ? (
-                <Pressable
-                  onPress={() => auth.openSignIn()}
-                  hitSlop={8}
-                  accessibilityRole='button'
-                >
-                  <Text style={s.createText}>Renew Tern Plus</Text>
-                </Pressable>
-              ) : null}
-              <Pressable
-                onPress={() => auth.signOut()}
-                hitSlop={8}
-                accessibilityRole='button'
-              >
-                <Text style={s.signOutText}>Sign out</Text>
-              </Pressable>
-            </>
-          ) : (
-            <>
-              <Pressable
-                onPress={() => auth.openSignIn({ toSignUp: true })}
-                hitSlop={8}
-                accessibilityRole='button'
-              >
-                <Text style={s.createText}>Create account</Text>
-              </Pressable>
-              <Pressable
-                onPress={() => auth.openSignIn()}
-                hitSlop={8}
-                accessibilityRole='button'
-              >
-                <Text style={s.signOutText}>Sign in</Text>
-              </Pressable>
-            </>
-          )}
+          <Pressable
+            onPress={() => (auth.session ? auth.signOut() : auth.openSignIn())}
+            hitSlop={8}
+            accessibilityRole='button'
+          >
+            <Text style={s.signOutText}>{auth.session ? 'Sign out' : 'Sign in'}</Text>
+          </Pressable>
         </View>
       ) : null}
       <Text style={s.version}>
@@ -62,7 +33,6 @@ export function AccountSection() {
 
 const s = StyleSheet.create({
   signOut: { alignItems: 'center', gap: space.md, paddingVertical: space.lg },
-  createText: { fontFamily: font.bold, fontSize: 14, color: colors.coral },
   signOutText: { fontFamily: font.semibold, fontSize: 14, color: colors.ink2 },
   version: {
     fontFamily: font.body,

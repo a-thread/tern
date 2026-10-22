@@ -27,8 +27,8 @@ export interface SubscriptionRepository {
 }
 
 const SAMPLE_PLANS: PlanOption[] = [
-  { id: 'sample_annual', plan: Plan.Annual, price: '$29.99' },
-  { id: 'sample_monthly', plan: Plan.Monthly, price: '$3.99' },
+  { id: 'sample_annual', plan: Plan.Annual, price: '$29.99', amount: 29.99, currency: 'USD' },
+  { id: 'sample_monthly', plan: Plan.Monthly, price: '$3.99', amount: 3.99, currency: 'USD' },
 ];
 
 const SIGNED_IN_PLUS: SubscriptionStatus = {

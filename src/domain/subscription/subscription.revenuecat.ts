@@ -17,7 +17,7 @@ type CustomerInfo = { entitlements: { active: Record<string, Entitlement> } };
 type StorePackage = {
   identifier: string;
   packageType: string;
-  product: { priceString: string };
+  product: { priceString: string; price: number; currencyCode: string };
 };
 
 /**
@@ -63,6 +63,8 @@ const optionFrom = (pkg: StorePackage): PlanOption => ({
   id: pkg.identifier,
   plan: PLANS[pkg.packageType] ?? Plan.Other,
   price: pkg.product.priceString,
+  amount: pkg.product.price,
+  currency: pkg.product.currencyCode,
 });
 
 /** Tern Plus through RevenueCat, which handles Google Play Billing and the App Store. */

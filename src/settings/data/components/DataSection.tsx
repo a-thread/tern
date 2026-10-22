@@ -10,6 +10,9 @@ import { confirm } from '@shared/utils/confirm';
 import { parseTernExport } from '@/domain/settings/models/ternExport';
 import { ExportOutcome, pickExport, saveExport } from '../utils/backupFile';
 import { usePlusLapsed } from '../../hooks/usePlusLapsed';
+import { manageSubscription } from '../../utils/manageSubscription';
+import { useSubscription } from '@/domain/subscription/SubscriptionContext';
+import { storeName } from '@shared/utils/storeApp';
 
 /**
  * Export everything Tern holds, restore it from an export, or erase it: in the account when
@@ -24,6 +27,14 @@ export function DataSection() {
   const onPhone = !signedIn || lapsed;
   const toast = useToast();
   const [busy, setBusy] = useState(false);
+  // A store subscription that will charge again: deleting the account doesn't stop it.
+  const plus = useSubscription();
+  const stillCharging =
+    signedIn &&
+    plus.checkedFor === auth?.session?.user.id &&
+    plus.status.active &&
+    plus.status.renews &&
+    plus.status.expiresAt !== null;
 
   const exportData = async () => {
     if (busy) return;
@@ -102,13 +113,27 @@ export function DataSection() {
     });
   };
 
+  const openStore = () =>
+    manageSubscription().catch((e) => {
+      console.warn('Could not open the store', e);
+      toast.show(`Couldn't open ${storeName()} — cancel Tern Plus from its subscriptions page.`);
+    });
+
   const deleteAccount = () => {
     if (busy) return;
+    const store = storeName();
     confirm({
       title: 'Delete your account?',
       message:
-        "This permanently deletes your account and everything in it: your food log, saved meals, weigh-ins, water, movement, medication and mood history, waypoints, rest days and settings. It can't be undone.",
+        "This permanently deletes your account and everything in it: your food log, saved meals, weigh-ins, water, movement, medication and mood history, waypoints, rest days and settings. It can't be undone." +
+        // The store bills for Tern Plus, not Tern: a deleted account keeps being charged.
+        (stillCharging
+          ? `\n\nThis doesn't cancel Tern Plus. Cancel it in ${store} first, or you'll keep being charged.`
+          : ''),
       action: 'Delete account',
+      also: stillCharging
+        ? { text: `Open ${store}`, onPress: openStore }
+        : undefined,
       onConfirm: async () => {
         setBusy(true);
         try {

@@ -12,6 +12,10 @@ export type PlanOption = {
   plan: Plan;
   /** Already formatted in the person's currency: "$3.99". */
   price: string;
+  /** The same price as a number, in `currency`, for working out savings. */
+  amount: number;
+  /** ISO 4217 code: "USD", "EUR". */
+  currency: string;
 };
 
 export type SubscriptionStatus = {
@@ -50,6 +54,46 @@ export function priceLabel(option: PlanOption): string {
       return `${option.price} a month`;
     case Plan.Other:
       return option.price;
+  }
+}
+
+/**
+ * What yearly saves over twelve months of monthly, or null when there isn't both plan,
+ * they're priced in different currencies, or yearly doesn't come out cheaper.
+ */
+export function yearlySavings(
+  plans: PlanOption[],
+): { amount: number; percent: number; currency: string } | null {
+  const yearly = plans.find((p) => p.plan === Plan.Annual);
+  const monthly = plans.find((p) => p.plan === Plan.Monthly);
+  if (!yearly || !monthly || yearly.currency !== monthly.currency) return null;
+  const twelveMonths = monthly.amount * 12;
+  const amount = Math.round((twelveMonths - yearly.amount) * 100) / 100;
+  if (!(amount > 0) || !(twelveMonths > 0)) return null;
+  return {
+    amount,
+    percent: Math.round((amount / twelveMonths) * 100),
+    currency: yearly.currency,
+  };
+}
+
+/**
+ * "Save $17.89 a year", in the person's currency. Falls back to the percentage ("Save 37%")
+ * where the currency can't be formatted.
+ */
+export function savingsLabel(savings: {
+  amount: number;
+  percent: number;
+  currency: string;
+}): string {
+  try {
+    const money = new Intl.NumberFormat(undefined, {
+      style: 'currency',
+      currency: savings.currency,
+    }).format(savings.amount);
+    return `Save ${money} a year`;
+  } catch {
+    return `Save ${savings.percent}%`;
   }
 }
 
