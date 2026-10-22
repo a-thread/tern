@@ -20,7 +20,7 @@ import { PlanChoice } from './components/PlanChoice/PlanChoice';
 const STORE = storeName();
 
 const WHAT_PLUS_ADDS = [
-  'Your log synced to an account, so a lost phone loses nothing',
+  'Your data synced to an account, so a lost phone loses nothing',
   'The same Tern on more than one phone',
   'An app with no ads and nothing sold, kept going',
 ];
@@ -71,7 +71,7 @@ export default function PaywallScreen({ onBack }: { onBack: () => void }) {
     <AuthLayout
       showMark
       title='Tern Plus'
-      subtitle='Everything in Tern stays free. Plus adds an account that keeps your log safe.'
+      subtitle='Everything in Tern stays free. Plus adds an account that keeps your data safe.'
     >
       <AuthBanner variant='error' message={error || null} />
       <AuthBanner

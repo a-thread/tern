@@ -27,6 +27,10 @@ import { weightSummary } from './models/weightSummary';
 import { waterSummary } from './models/waterSummary';
 import { moodSummary } from './models/moodSummary';
 import { medicationSummary } from './models/medicationSummary';
+import { dataSummary } from './models/dataSummary';
+import { logHome } from './models/logHome';
+import { usePlusLapsed } from './hooks/usePlusLapsed';
+import { useAuth } from '../domain/auth/AuthContext';
 
 type Props = NativeStackScreenProps<SettingsStackParamList, 'SettingsRoot'>;
 
@@ -39,6 +43,9 @@ export default function SettingsScreen({ navigation }: Props) {
   const insets = useSafeAreaInsets();
   const { available: dataAvailable, canImport } = useData();
   const { settings } = useSettings();
+  const auth = useAuth();
+  const lapsed = usePlusLapsed();
+  const home = auth ? logHome({ signedIn: Boolean(auth.session), lapsed }) : null;
 
   return (
     <View
@@ -145,7 +152,7 @@ export default function SettingsScreen({ navigation }: Props) {
               color={colors.driftwood}
               tint={colors.driftwoodTint}
               title='Your data'
-              summary={canImport ? 'Export, restore or delete' : 'Export or delete'}
+              summary={dataSummary({ home, canImport })}
               onPress={() => navigation.navigate('DataSettings')}
             />
           ) : null}

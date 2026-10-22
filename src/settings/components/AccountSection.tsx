@@ -6,21 +6,17 @@ import { useAuth } from '../../domain/auth/AuthContext';
 import { plusUnlocked } from '../../domain/subscription/plusUnlocked';
 
 /**
- * Signing in or out, and the app version, at the foot of Settings. Making an account, and
- * renewing Tern Plus, live in the Tern Plus row at the top.
+ * Signing out, and the app version, at the foot of Settings. Signing in (and making an
+ * account) is the profile card at the top; Tern Plus is in Your data.
  */
 export function AccountSection() {
   const auth = useAuth();
   return (
     <>
-      {auth ? (
+      {auth?.session ? (
         <View style={s.signOut}>
-          <Pressable
-            onPress={() => (auth.session ? auth.signOut() : auth.openSignIn())}
-            hitSlop={8}
-            accessibilityRole='button'
-          >
-            <Text style={s.signOutText}>{auth.session ? 'Sign out' : 'Sign in'}</Text>
+          <Pressable onPress={() => auth.signOut()} hitSlop={8} accessibilityRole='button'>
+            <Text style={s.signOutText}>Sign out</Text>
           </Pressable>
         </View>
       ) : null}

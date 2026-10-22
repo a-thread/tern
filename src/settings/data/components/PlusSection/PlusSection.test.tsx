@@ -6,7 +6,7 @@ import { ToastProvider } from '@shared/state/ToastContext';
 import type { SubscriptionStatus } from '@/domain/subscription/models/subscription';
 import { createMemorySubscriptionRepository } from '@/domain/subscription/subscription.repository';
 import { SubscriptionProvider } from '@/domain/subscription/SubscriptionContext';
-import { PlusRow } from './PlusRow';
+import { PlusSection } from './PlusSection';
 
 const mockAuth = {
   session: null as { user: { id: string } } | null,
@@ -19,6 +19,7 @@ const RENEWING: SubscriptionStatus = {
   renews: true,
   expiresAt: '2026-11-21T12:00:00.000Z',
 };
+const NONE: SubscriptionStatus = { active: false, renews: false, expiresAt: null };
 
 type Button = { text: string; onPress?: () => void };
 const buttons = () => (jest.mocked(Alert.alert).mock.calls[0][2] ?? []) as Button[];
@@ -29,7 +30,7 @@ function show(status: SubscriptionStatus, userId: string | null) {
   return render(
     <ToastProvider>
       <SubscriptionProvider repo={createMemorySubscriptionRepository(status)} userId={userId}>
-        <PlusRow />
+        <PlusSection />
       </SubscriptionProvider>
     </ToastProvider>,
   );
@@ -47,14 +48,21 @@ beforeEach(() => {
 });
 afterEach(() => jest.restoreAllMocks());
 
-describe('Manage subscription', () => {
+describe('Tern Plus in Your data', () => {
+  it('shows a synced account with a label, where to cancel, and what happens if Plus ends', async () => {
+    show(RENEWING, 'me');
+    expect(await screen.findByText('Synced to your account')).toBeTruthy();
+    expect(screen.getByText('Tern Plus')).toBeTruthy();
+    expect(screen.getByText(/Change plan or cancel in Google Play/)).toBeTruthy();
+  });
+
   it('says where cancelling is before leaving for the store', async () => {
     show(RENEWING, 'me');
     fireEvent.press(await screen.findByText('Tern Plus · renews Nov 21'));
     const [title, message] = jest.mocked(Alert.alert).mock.calls[0];
     expect(title).toBe('Manage Tern Plus');
     expect(message).toMatch(/Change plan or cancel in Google Play/);
-    expect(message).toMatch(/kept on this phone/);
+    expect(message).toMatch(/Your data stays either way/);
     await press('Open Google Play');
     expect(Linking.openURL).toHaveBeenCalledWith(
       expect.stringContaining('play.google.com/store/account/subscriptions'),
@@ -63,19 +71,18 @@ describe('Manage subscription', () => {
 
   it('keeps cancelling in reach when Plus is bought but there is no account yet', async () => {
     show(RENEWING, null);
-    fireEvent.press(
-      await screen.findByText('Tern Plus is on · make an account to start syncing'),
-    );
+    fireEvent.press(await screen.findByText('Tern Plus is on · make your account'));
     expect(buttons().map((b) => b.text)).toEqual(['Not now', 'Open Google Play', 'Make account']);
     press('Make account');
     expect(mockAuth.openSignIn).toHaveBeenCalledWith({ toSignUp: true });
-    await press('Open Google Play');
-    expect(Linking.openURL).toHaveBeenCalled();
   });
 
-  it('goes straight to the paywall when there is no Plus', async () => {
-    show({ active: false, renews: false, expiresAt: null }, null);
-    fireEvent.press(await screen.findByText('Tern Plus is off · sync and back up your log'));
+  it('is one short row with no label or footnote on the phone, pointing to the paywall', async () => {
+    show(NONE, null);
+    fireEvent.press(await screen.findByText('Learn about Tern Plus'));
+    expect(screen.getByText('Kept on this phone')).toBeTruthy();
+    expect(screen.queryByText('Tern Plus')).toBeNull();
+    expect(screen.queryByText(/Change plan or cancel/)).toBeNull();
     expect(Alert.alert).not.toHaveBeenCalled();
     expect(mockAuth.openSignIn).toHaveBeenCalledWith({ toSignUp: true });
   });

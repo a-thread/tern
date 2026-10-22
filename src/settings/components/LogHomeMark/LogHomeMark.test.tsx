@@ -8,20 +8,22 @@ import { LogHomeMark } from './LogHomeMark';
 const HIDDEN = { includeHiddenElements: true };
 
 describe('LogHomeMark', () => {
-  it('shows a cloud with a check once the log is synced', () => {
-    render(<LogHomeMark home={LogHome.Account} />);
+  it('shows a cloud with a check, and says so, once the data is synced', () => {
+    render(<LogHomeMark home={LogHome.Account} variant='corner' />);
+    expect(screen.getByLabelText('Synced to your account')).toBeTruthy();
     expect(screen.getByText('[cloud-check-outline]', HIDDEN)).toBeTruthy();
-    expect(screen.queryByText('[cellphone-check]', HIDDEN)).toBeNull();
   });
 
-  it('shows a phone with a check while the log is kept on this phone', () => {
-    render(<LogHomeMark home={LogHome.Phone} />);
+  it('shows a phone with a check, and says so, while the data is on this phone', () => {
+    render(<LogHomeMark home={LogHome.Phone} variant='corner' />);
+    expect(screen.getByLabelText('Kept on this phone')).toBeTruthy();
     expect(screen.getByText('[cellphone-check]', HIDDEN)).toBeTruthy();
-    expect(screen.queryByText('[cloud-check-outline]', HIDDEN)).toBeNull();
   });
 
-  it('stays out of the screen reader, beside text that says it already', () => {
-    render(<LogHomeMark home={LogHome.Account} />);
+  it('stays out of the screen reader as a row icon, beside text that says it already', () => {
+    render(<LogHomeMark home={LogHome.Account} variant='badge' />);
+    expect(screen.queryByLabelText('Synced to your account')).toBeNull();
+    expect(screen.getByText('[cloud-check-outline]', HIDDEN)).toBeTruthy();
     expect(screen.queryByText('[cloud-check-outline]')).toBeNull();
   });
 });

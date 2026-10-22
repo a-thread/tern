@@ -68,9 +68,10 @@ export function DataSection() {
     }
     confirm({
       title: 'Restore from this file?',
+      // Restoring adds; starting over from the file is "Delete my data" first, so say how.
       message: onPhone
-        ? "Everything in the export is added to this phone. Anything already here stays, and your settings are replaced by the file's."
-        : 'Everything in the export is added to your account. Anything already there stays, and so do your settings.',
+        ? "Everything in the export is added to this phone. Anything already here stays, and your settings are replaced by the file's. To start over from the file instead, delete your data first."
+        : 'Everything in the export is added to your account. Anything already there stays, and so do your settings. To start over from the file instead, delete your data first.',
       action: 'Restore',
       destructive: false,
       onConfirm: async () => {
@@ -126,7 +127,7 @@ export function DataSection() {
     confirm({
       title: 'Delete your account?',
       message:
-        "This permanently deletes your account and everything in it: your food log, saved meals, weigh-ins, water, movement, medication and mood history, waypoints, rest days and settings. It can't be undone." +
+        "This permanently deletes your account and all your data: your food log, saved meals, weigh-ins, water, movement, medication and mood history, waypoints, rest days and settings. It can't be undone." +
         // The store bills for Tern Plus, not Tern: a deleted account keeps being charged.
         (stillCharging
           ? `\n\nThis doesn't cancel Tern Plus. Cancel it in ${store} first, or you'll keep being charged.`
@@ -155,12 +156,23 @@ export function DataSection() {
     });
   };
 
+  // Synced, every row says exactly what it touches. On the phone (no account, or Tern Plus
+  // ended) the list is kept short: with Plus ended the account can't be added to, so erasing
+  // the data alone has little point, and deleting the account erases everything anyway.
+  const synced = signedIn && !lapsed;
   return (
     <Group>
-      <Pressable style={s.row} onPress={exportData} disabled={busy}>
+      <Pressable
+        style={s.row}
+        onPress={exportData}
+        disabled={busy}
+        accessibilityRole='button'
+      >
         <View style={{ flex: 1 }}>
           <Text style={s.title}>Export my data</Text>
-          <Text style={s.sub}>Save a file of everything, to restore from later</Text>
+          <Text style={s.sub}>
+            {synced ? 'Save a file of everything, to restore from later' : 'Save a file of everything'}
+          </Text>
         </View>
       </Pressable>
       {data.canImport ? (
@@ -172,21 +184,41 @@ export function DataSection() {
         >
           <View style={{ flex: 1 }}>
             <Text style={s.title}>Restore from a file</Text>
-            <Text style={s.sub}>Add back everything in a Tern export</Text>
+            <Text style={s.sub}>
+              {synced
+                ? "Add back what's in a Tern export. Anything already here stays."
+                : "Add back what's in a Tern export"}
+            </Text>
           </View>
         </Pressable>
       ) : null}
-      <Pressable style={s.row} onPress={deleteData} disabled={busy}>
-        <View style={{ flex: 1 }}>
-          <Text style={[s.title, s.danger]}>Delete my data</Text>
-          <Text style={s.sub}>Erase your log, weigh-ins and waypoints</Text>
-        </View>
-      </Pressable>
+      {!lapsed ? (
+        <Pressable
+          style={s.row}
+          onPress={deleteData}
+          disabled={busy}
+          accessibilityRole='button'
+        >
+          <View style={{ flex: 1 }}>
+            <Text style={[s.title, s.danger]}>Delete my data</Text>
+            <Text style={s.sub}>
+              {synced
+                ? "Erase everything you've logged. Your account and Tern Plus stay."
+                : 'Erase everything on this phone'}
+            </Text>
+          </View>
+        </Pressable>
+      ) : null}
       {signedIn ? (
-        <Pressable style={s.row} onPress={deleteAccount} disabled={busy}>
+        <Pressable
+          style={s.row}
+          onPress={deleteAccount}
+          disabled={busy}
+          accessibilityRole='button'
+        >
           <View style={{ flex: 1 }}>
             <Text style={[s.title, s.danger]}>Delete my account</Text>
-            <Text style={s.sub}>Remove your login and everything in it</Text>
+            <Text style={s.sub}>Close your account and erase all your data</Text>
           </View>
         </Pressable>
       ) : null}

@@ -60,6 +60,8 @@ type RowProps = {
   sub?: string;
   /** Cap the sub line (it ellipsizes); unset lets it wrap. */
   subLines?: number;
+  /** The sub line is the row's call to action ("Learn about Tern Plus"), so it reads as a link. */
+  subLink?: boolean;
   icon?: React.ReactNode;
   value?: string;
   right?: React.ReactNode;
@@ -71,6 +73,7 @@ export function Row({
   title,
   sub,
   subLines,
+  subLink,
   icon,
   value,
   right,
@@ -83,7 +86,7 @@ export function Row({
       <View style={{ flex: 1 }}>
         <Text style={s.rowTitle}>{title}</Text>
         {sub ? (
-          <Text style={s.rowSub} numberOfLines={subLines}>
+          <Text style={[s.rowSub, subLink && s.rowSubLink]} numberOfLines={subLines}>
             {sub}
           </Text>
         ) : null}
@@ -195,6 +198,7 @@ const s = StyleSheet.create({
   iconSlot: {},
   rowTitle: typography.rowTitle,
   rowSub: { ...typography.caption, marginTop: 2, lineHeight: 16 },
+  rowSubLink: { fontFamily: font.semibold, color: colors.water },
   rowValue: { fontFamily: font.body, fontSize: 13.5, color: colors.ink2 },
   iconBadge: {
     width: 28,

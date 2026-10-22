@@ -110,6 +110,10 @@ export class LocalSchema {
        logged_at TEXT NOT NULL
      );
      CREATE INDEX movement_entries_day ON movement_entries (day)`,
+
+    // 2: meta, for phones that ran an earlier step 1 without it (it was added to step 1
+    // before release). Phones that already have it from step 1 skip it.
+    `CREATE TABLE IF NOT EXISTS meta (key TEXT PRIMARY KEY NOT NULL, value TEXT NOT NULL)`,
   ];
 
   /** Every table holding the person's data, for export and "delete my data". */

@@ -1,16 +1,22 @@
 import { NO_SUBSCRIPTION } from '@/domain/subscription/models/subscription';
 import { PlusAction, plusSummary } from './plusSummary';
 
-const base = { signedIn: true, known: true, lapsed: false, status: NO_SUBSCRIPTION };
+const base = {
+  signedIn: true,
+  known: true,
+  lapsed: false,
+  status: NO_SUBSCRIPTION,
+  store: 'Google Play',
+};
 // Noon UTC, so the day is the same in any time zone the tests run in.
 const NOV_21 = '2026-11-21T12:00:00.000Z';
-const MANAGE = 'Manage subscription';
 
 describe('plusSummary', () => {
-  it('offers Plus on the phone without an account', () => {
+  it('points someone without an account to Tern Plus', () => {
     expect(plusSummary({ ...base, signedIn: false })).toEqual({
-      title: MANAGE,
-      summary: 'Tern Plus is off · sync and back up your log',
+      title: 'Kept on this phone',
+      summary: 'Learn about Tern Plus',
+      link: true,
       action: PlusAction.Subscribe,
     });
   });
@@ -23,50 +29,60 @@ describe('plusSummary', () => {
         status: { active: true, renews: true, expiresAt: NOV_21 },
       }),
     ).toEqual({
-      title: MANAGE,
-      summary: 'Tern Plus is on · make an account to start syncing',
+      title: 'Kept on this phone',
+      summary: 'Tern Plus is on · make your account',
+      link: true,
       action: PlusAction.MakeAccount,
     });
   });
 
-  it('says when a subscription renews, and opens the store to manage it', () => {
+  it('says when a subscription renews, where to cancel, and that nothing is lost', () => {
     expect(
       plusSummary({ ...base, status: { active: true, renews: true, expiresAt: NOV_21 } }),
-    ).toEqual({ title: MANAGE, summary: 'Tern Plus · renews Nov 21', action: PlusAction.Manage });
+    ).toEqual({
+      title: 'Synced to your account',
+      summary: 'Tern Plus · renews Nov 21',
+      link: false,
+      footnote:
+        'Change plan or cancel in Google Play. If Plus ends, your data is kept on this phone.',
+      action: PlusAction.Manage,
+    });
   });
 
   it('says when a cancelled subscription ends', () => {
     expect(
       plusSummary({ ...base, status: { active: true, renews: false, expiresAt: NOV_21 } }),
-    ).toEqual({
-      title: MANAGE,
+    ).toMatchObject({
       summary: "Tern Plus until Nov 21 · won't renew",
       action: PlusAction.Manage,
     });
   });
 
-  it('names Plus granted by hand rather than offering to manage it', () => {
+  it('says Plus granted by hand is included, with nothing to manage', () => {
     expect(
       plusSummary({ ...base, status: { active: true, renews: false, expiresAt: null } }),
     ).toEqual({
-      title: 'Tern Plus',
-      summary: 'Included with your account',
+      title: 'Synced to your account',
+      summary: 'Tern Plus · included with your account',
+      link: false,
       action: PlusAction.None,
     });
   });
 
   it('offers to renew once Plus has ended', () => {
     expect(plusSummary({ ...base, lapsed: true })).toEqual({
-      title: MANAGE,
-      summary: 'Tern Plus ended · your log is kept on this phone',
+      title: 'Kept on this phone',
+      summary: 'Renew Tern Plus to sync again',
+      link: true,
       action: PlusAction.Renew,
     });
   });
 
   it('claims nothing when the store could not be reached', () => {
     expect(plusSummary({ ...base, known: false })).toEqual({
-      title: MANAGE,
+      title: 'Synced to your account',
       summary: "Couldn't check Tern Plus just now",
+      link: false,
       action: PlusAction.None,
     });
   });
