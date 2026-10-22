@@ -3,7 +3,7 @@ import { LocalSchema } from '@shared/backend/localSchema';
 import { LocalMetaKey, setLocalMeta } from '@shared/backend/localMeta';
 import type { DataRepository } from './dataRepository';
 import {
-  EXPORT_LISTS,
+  TernExportLists,
   type TernExport,
 } from './models/ternExport';
 
@@ -27,7 +27,7 @@ type TableImport = {
 
 const now = () => new Date().toISOString();
 
-const IMPORTS: Record<(typeof EXPORT_LISTS)[number], TableImport> = {
+const IMPORTS: Record<(typeof TernExportLists.ALL)[number], TableImport> = {
   food: {
     table: 'food_entries',
     columns: [
@@ -211,7 +211,7 @@ export function createLocalDataRepository(db: LocalDb): DataRepository {
     async importAll(copy) {
       const before = await rowCount();
       await inTransaction(db, async () => {
-        for (const list of EXPORT_LISTS) {
+        for (const list of TernExportLists.ALL) {
           const spec = IMPORTS[list];
           const sql = `INSERT OR IGNORE INTO ${spec.table} (${spec.columns.join(', ')})
                        VALUES (${spec.columns.map(() => '?').join(', ')})`;

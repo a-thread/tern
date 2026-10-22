@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import LoadingScreen from '@shared/components/LoadingScreen/LoadingScreen';
 
 import { isBackendConfigured } from '@shared/backend/supabase';
@@ -20,6 +20,7 @@ import {
   SubscriptionProvider,
   useSubscription,
 } from './domain/subscription/SubscriptionContext';
+import { isPlusLapsed } from './domain/subscription/models/subscription';
 import AuthFlow from './auth/AuthFlow';
 import PaywallScreen from './auth/paywall/PaywallScreen';
 import ResetPasswordScreen from './auth/reset-password/ResetPasswordScreen';
@@ -101,7 +102,7 @@ function ChooseBackend({ children }: { children: React.ReactNode }) {
   );
   // The store has answered for this account (not still the phone, from before signing in).
   const settled = plus.checkedFor === userId;
-  const lapsed = Boolean(userId) && settled && plus.known && !plus.active;
+  const lapsed = isPlusLapsed(userId, plus);
 
   // Renewed from the paywall in Settings: the sign-in screens are done with.
   const { signingIn, closeSignIn } = auth;
@@ -162,19 +163,25 @@ function AccountBackend({
   useEffect(() => {
     if (!moveIn) return;
     let live = true;
+    // Whether the server now counts Plus. Usually the webhook has already done it.
     const sync = async () => {
       try {
-        await backend.syncPlus?.();
+        return (await backend.syncPlus?.()) ?? true;
       } catch (e) {
-        // Usually the webhook has already done it; if not, a refused write says so later.
         console.warn('Could not bring the server up to date with Tern Plus', e);
+        return false;
       }
     };
     sync()
-      .then(() => openLocalDb())
-      .then((db) =>
-        moveToAccount(createLocalBackend(db).data!, backend.data!, db, userId),
-      )
+      .then(async (synced) => {
+        // The account would refuse every row: leave the phone's log where it is for next time.
+        if (!synced) {
+          console.warn("The server doesn't count Tern Plus yet; the phone's log stays on it");
+          return 0;
+        }
+        const db = await openLocalDb();
+        return moveToAccount(createLocalBackend(db).data!, backend.data!, db, userId);
+      })
       .then((added) => {
         if (added) {
           toast.show(
@@ -213,9 +220,6 @@ function PhoneBackend({
 }) {
   const toast = useToast();
   const [backend, setBackend] = useState<Backend | null>(null);
-  // Bumped after "Delete my data" or a restore, so every Context reloads from the database.
-  const [generation, setGeneration] = useState(0);
-  const restart = useCallback(() => setGeneration((g) => g + 1), []);
   const lapsedFor = lapsed?.userId;
   const account = lapsed?.account;
 
@@ -241,27 +245,9 @@ function PhoneBackend({
           );
         }
       }
-      const data =
-        lapsedFor && account ? lapsedData(local.data!, account) : local.data!;
-      return {
-        ...local,
-        data: {
-          ...data,
-          deleteAll: async () => {
-            await data.deleteAll();
-            restart();
-          },
-          deleteAccount: async () => {
-            await data.deleteAccount();
-            restart();
-          },
-          importAll: async (copy) => {
-            const added = await data.importAll!(copy);
-            restart();
-            return added;
-          },
-        },
-      };
+      return lapsedFor && account
+        ? { ...local, data: lapsedData(local.data!, account) }
+        : local;
     };
     open().then(
       (next) => live && setBackend(next),
@@ -276,11 +262,11 @@ function PhoneBackend({
     return () => {
       live = false;
     };
-  }, [restart, toast, lapsedFor, account]);
+  }, [toast, lapsedFor, account]);
 
   if (!backend) return <LoadingScreen />;
   return (
-    <BackendProvider key={`phone-${lapsedFor ?? ''}-${generation}`} backend={backend}>
+    <BackendProvider key={`phone-${lapsedFor ?? ''}`} backend={backend}>
       {children}
     </BackendProvider>
   );

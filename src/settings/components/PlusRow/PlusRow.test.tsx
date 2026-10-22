@@ -3,16 +3,16 @@ import { Alert, Linking, Platform } from 'react-native';
 import { fireEvent, render, screen } from '@testing-library/react-native';
 
 import { ToastProvider } from '@shared/state/ToastContext';
-import type { SubscriptionStatus } from '../../domain/subscription/models/subscription';
-import { createMemorySubscriptionRepository } from '../../domain/subscription/subscription.repository';
-import { SubscriptionProvider } from '../../domain/subscription/SubscriptionContext';
+import type { SubscriptionStatus } from '@/domain/subscription/models/subscription';
+import { createMemorySubscriptionRepository } from '@/domain/subscription/subscription.repository';
+import { SubscriptionProvider } from '@/domain/subscription/SubscriptionContext';
 import { PlusRow } from './PlusRow';
 
 const mockAuth = {
   session: null as { user: { id: string } } | null,
   openSignIn: jest.fn(),
 };
-jest.mock('../../domain/auth/AuthContext', () => ({ useAuth: () => mockAuth }));
+jest.mock('@/domain/auth/AuthContext', () => ({ useAuth: () => mockAuth }));
 
 const RENEWING: SubscriptionStatus = {
   active: true,

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo, useState } from 'react';
 import { createRequiredContext } from '@shared/state/createRequiredContext';
 import { supabase } from '@shared/backend/supabase';
 import {
@@ -240,6 +240,10 @@ const [BackendContext, useBackend] = createRequiredContext<Backend>(
 );
 export { useBackend };
 
+/**
+ * Erasing or restoring changes everything under the app at once, so afterwards every
+ * Context below is remounted and reloads from the backend, whichever backend it is.
+ */
 export function BackendProvider({
   backend,
   children,
@@ -247,9 +251,36 @@ export function BackendProvider({
   backend: Backend;
   children: React.ReactNode;
 }) {
+  const [generation, setGeneration] = useState(0);
+  const value = useMemo<Backend>(() => {
+    const data = backend.data;
+    if (!data) return backend;
+    const reload = () => setGeneration((g) => g + 1);
+    return {
+      ...backend,
+      data: {
+        ...data,
+        deleteAll: async () => {
+          await data.deleteAll();
+          reload();
+        },
+        deleteAccount: async () => {
+          await data.deleteAccount();
+          reload();
+        },
+        importAll: data.importAll
+          ? async (copy) => {
+              const added = await data.importAll!(copy);
+              reload();
+              return added;
+            }
+          : undefined,
+      },
+    };
+  }, [backend]);
   return (
-    <BackendContext.Provider value={backend}>
-      {children}
+    <BackendContext.Provider value={value}>
+      <React.Fragment key={generation}>{children}</React.Fragment>
     </BackendContext.Provider>
   );
 }

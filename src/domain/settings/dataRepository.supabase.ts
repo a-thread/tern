@@ -18,9 +18,39 @@ const TABLES = {
   movementEntries: 'movement_entries',
 } as const;
 
+/** Each table's key, so paging through it in that order skips and repeats nothing. */
+const KEYS: Record<(typeof TABLES)[keyof typeof TABLES], string[]> = {
+  food_entries: ['id'],
+  weight_entries: ['id'],
+  waypoint_events: ['id'],
+  rest_days: ['day'],
+  saved_meals: ['id'],
+  medication_doses: ['medication_id', 'day'],
+  water_entries: ['id'],
+  mood_checkins: ['day'],
+  meal_checkins: ['day', 'meal'],
+  skipped_meals: ['day', 'meal'],
+  skipped_weigh_ins: ['day'],
+  movement_entries: ['id'],
+};
+
+// The server caps how many rows one request returns (1000 by default), so a table is read
+// a page at a time until a page comes back empty, whatever that cap is set to.
+const PAGE = 1000;
+
 export function createSupabaseDataRepository(db: TernClient): DataRepository {
-  const all = (table: string) =>
-    rows<Record<string, unknown>>(db.from(table).select('*'));
+  const all = async (table: keyof typeof KEYS) => {
+    const found: Record<string, unknown>[] = [];
+    for (;;) {
+      let query = db.from(table).select('*');
+      for (const key of KEYS[table]) query = query.order(key);
+      const page = await rows<Record<string, unknown>>(
+        query.range(found.length, found.length + PAGE - 1),
+      );
+      if (page.length === 0) return found;
+      found.push(...page);
+    }
+  };
 
   return {
     async exportAll(): Promise<TernExport> {

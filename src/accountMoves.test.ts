@@ -75,9 +75,20 @@ describe('moveToAccount', () => {
     await s.accountRest.add('2026-10-18');
     await copyToPhone(s.account, s.phone, s.phoneDb, 'me');
     await s.phoneRest.add('2026-10-19'); // logged while Plus had ended
-    expect(await moveToAccount(s.phone, s.account, s.phoneDb, 'me')).toBe(1);
+    // The account is replaced by the phone's log, so every row is written back.
+    expect(await moveToAccount(s.phone, s.account, s.phoneDb, 'me')).toBe(2);
     expect(await restDays(s.accountRest)).toEqual(['2026-10-18', '2026-10-19']);
     expect(await copiedFrom(s.phoneDb)).toBeNull();
+  });
+
+  it('keeps what was removed while Plus had ended removed, on renewing', async () => {
+    const s = await sides();
+    await s.accountRest.add('2026-10-17');
+    await s.accountRest.add('2026-10-18');
+    await copyToPhone(s.account, s.phone, s.phoneDb, 'me');
+    await s.phoneRest.remove('2026-10-17');
+    await moveToAccount(s.phone, s.account, s.phoneDb, 'me');
+    expect(await restDays(s.accountRest)).toEqual(['2026-10-18']);
   });
 });
 
@@ -91,6 +102,18 @@ describe('copyToPhone', () => {
     // A second launch while Plus is still off must not bring back what was removed.
     expect(await copyToPhone(s.account, s.phone, s.phoneDb, 'me')).toBe(false);
     expect(await restDays(s.phoneRest)).toEqual([]);
+  });
+
+  it("clears another account's copied log before copying this one", async () => {
+    const s = await sides();
+    await s.accountRest.add('2026-10-18');
+    await copyToPhone(s.account, s.phone, s.phoneDb, 'someone-else');
+    const mineDb = await createMigratedSqlJsDb();
+    await createLocalRestDaysRepository(mineDb).add('2026-10-20');
+    const mine = createLocalDataRepository(mineDb);
+    expect(await copyToPhone(mine, s.phone, s.phoneDb, 'me')).toBe(true);
+    expect(await restDays(s.phoneRest)).toEqual(['2026-10-20']);
+    expect(await copiedFrom(s.phoneDb)).toBe('me');
   });
 });
 

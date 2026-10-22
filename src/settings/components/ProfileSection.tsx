@@ -6,7 +6,7 @@ import { Group } from '@shared/components/ui';
 import { useAuth } from '../../domain/auth/AuthContext';
 import { AccountLimits } from '../../domain/auth/validation';
 import { useSettings } from '../../domain/settings/SettingsContext';
-import { PlusRow } from './PlusRow';
+import { PlusRow } from './PlusRow/PlusRow';
 
 /**
  * Who is signed in: an avatar, the first name (editable) and the account line, with Tern

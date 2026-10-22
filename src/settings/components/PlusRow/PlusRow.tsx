@@ -4,13 +4,13 @@ import { Row } from '@shared/components/ui';
 import { useToast } from '@shared/state/ToastContext';
 import { confirm } from '@shared/utils/confirm';
 import { storeName } from '@shared/utils/storeApp';
-import { useAuth } from '../../domain/auth/AuthContext';
-import { useSubscription } from '../../domain/subscription/SubscriptionContext';
-import { PlusAction, plusSummary } from '../models/plusSummary';
-import { usePlusLapsed } from '../hooks/usePlusLapsed';
-import { manageSubscription } from '../utils/manageSubscription';
-import { logHome } from '../models/logHome';
-import { LogHomeMark } from './LogHomeMark/LogHomeMark';
+import { useAuth } from '@/domain/auth/AuthContext';
+import { useSubscription } from '@/domain/subscription/SubscriptionContext';
+import { PlusAction, plusSummary } from '../../models/plusSummary';
+import { usePlusLapsed } from '../../hooks/usePlusLapsed';
+import { manageSubscription } from '../../utils/manageSubscription';
+import { logHome } from '../../models/logHome';
+import { LogHomeMark } from '../LogHomeMark/LogHomeMark';
 
 /**
  * Tern Plus in the profile card, right under the name: whether Tern Plus is on, when it

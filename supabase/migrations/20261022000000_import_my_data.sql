@@ -62,6 +62,11 @@ begin
   if me is null then
     raise exception 'Not signed in';
   end if;
+  -- Every insert below would be refused, and each refusal swallowed as a skipped row, so
+  -- the caller would think it had been moved. Fail instead, so nothing is cleared.
+  if not tern.has_plus() then
+    raise exception 'Tern Plus is needed to add to an account';
+  end if;
   perform set_config('tern.importing', 'on', true);
 
   for r in select * from jsonb_array_elements(coalesce(copy -> 'food', '[]')) loop

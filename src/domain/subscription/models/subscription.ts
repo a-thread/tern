@@ -39,6 +39,17 @@ export class SubscriptionConfig {
   static readonly ENTITLEMENT = 'plus';
 }
 
+/**
+ * Signed in, and the store has answered for this account that its Tern Plus has ended: the
+ * log then lives on the phone. False while the store hasn't answered, or couldn't be reached.
+ */
+export function isPlusLapsed(
+  userId: string | null | undefined,
+  plus: { checkedFor: string | null | undefined; known: boolean; active: boolean },
+): boolean {
+  return Boolean(userId) && plus.checkedFor === userId && plus.known && !plus.active;
+}
+
 const ORDER = [Plan.Annual, Plan.Monthly, Plan.Other];
 
 /** Yearly first, as the plan most people pick. */

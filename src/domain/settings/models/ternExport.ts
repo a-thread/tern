@@ -18,20 +18,22 @@ export type TernExport = {
 };
 
 /** The lists in an export, each one table's rows. */
-export const EXPORT_LISTS = [
-  'food',
-  'weight',
-  'waypoints',
-  'restDays',
-  'savedMeals',
-  'medicationDoses',
-  'waterEntries',
-  'moodCheckins',
-  'mealCheckins',
-  'skippedMeals',
-  'skippedWeighIns',
-  'movementEntries',
-] as const satisfies readonly (keyof TernExport)[];
+export class TernExportLists {
+  static readonly ALL = [
+    'food',
+    'weight',
+    'waypoints',
+    'restDays',
+    'savedMeals',
+    'medicationDoses',
+    'waterEntries',
+    'moodCheckins',
+    'mealCheckins',
+    'skippedMeals',
+    'skippedWeighIns',
+    'movementEntries',
+  ] as const satisfies readonly (keyof TernExport)[];
+}
 
 export type ParsedExport =
   | { ok: true; copy: TernExport }
@@ -60,7 +62,7 @@ export function parseTernExport(text: string): ParsedExport {
     return { ok: false, message: "This export's weights are in a unit Tern can't read." };
   }
   const lists = Object.fromEntries(
-    EXPORT_LISTS.map((key) => [key, r[key] ?? []]),
+    TernExportLists.ALL.map((key) => [key, r[key] ?? []]),
   );
   if (Object.values(lists).some((list) => !Array.isArray(list))) {
     return { ok: false, message: NOT_TERN };
@@ -71,7 +73,7 @@ export function parseTernExport(text: string): ParsedExport {
       exportedAt: r.exportedAt,
       weightUnit: 'lb',
       settings: r.settings ?? null,
-      ...(lists as Pick<TernExport, (typeof EXPORT_LISTS)[number]>),
+      ...(lists as Pick<TernExport, (typeof TernExportLists.ALL)[number]>),
     },
   };
 }

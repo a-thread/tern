@@ -86,6 +86,7 @@ export function DataSection() {
         } catch (e) {
           console.warn('Could not restore data', e);
           toast.show("Couldn't restore that file — nothing was changed.");
+        } finally {
           setBusy(false);
         }
       },
