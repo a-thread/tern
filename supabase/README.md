@@ -112,7 +112,9 @@ the `tern.waypoint_totals` view (the sum of a user's events).
 Steps are read on the device, not stored on the server — there is no steps table. In
 local (no-keys) mode and the guest preview the app shows sample steps. With an account
 and no step source, steps stay at zero and no step waypoints are awarded, because sample
-data would earn a real account waypoints it didn't earn.
+data would earn a real account waypoints it didn't earn. The one exception is
+`EXPO_PUBLIC_SAMPLE_STEPS=1` in a local `.env`, for screenshots of a demo account seeded
+with [`seed-demo.sql`](seed-demo.sql); it is never set in an EAS build.
 
 Turning Health Connect on, what's already configured and what Google Play reviews:
 [docs/health-connect.md](../docs/health-connect.md).
@@ -181,4 +183,3 @@ it is only ever a suggestion.
 ## Not built yet
 
 - Distance and weight-from-scale from Health Connect.
-- iOS (HealthKit) steps.
