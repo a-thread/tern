@@ -24,7 +24,11 @@ export default function RootNavigator() {
       screenOptions={{ headerShown: false, freezeOnBlur: true }}
     >
       {/* Primary Pages grouped by Tab */}
-      <RootStack.Screen name='Tabs' component={Tabs} />
+      <RootStack.Screen
+        name='Tabs'
+        component={Tabs}
+        options={{ freezeOnBlur: false }}
+      />
 
       {/* Sub Pages displayed as modals for fluid transitions */}
       <RootStack.Group screenOptions={{ presentation: 'modal' }}>
