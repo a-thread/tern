@@ -1,0 +1,31 @@
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directories: ['/', '/.github/actions/*']
+    schedule:
+      interval: weekly
+
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+    groups:
+      npm-minor-and-patch:
+        update-types: [minor, patch]
+    # Expo pins React, React Native and native modules per SDK; upgrade those together with
+    # `npx expo install --fix` during an SDK upgrade, never one at a time through Dependabot.
+    ignore:
+      - dependency-name: 'expo'
+      - dependency-name: 'expo-*'
+      - dependency-name: '@expo/*'
+      - dependency-name: '*-expo'
+      - dependency-name: 'react'
+      - dependency-name: 'react-test-renderer'
+      - dependency-name: '@types/react'
+      - dependency-name: 'react-native'
+      - dependency-name: 'react-native-*'
+      - dependency-name: '@react-native/*'
+      - dependency-name: '@react-native-*/*'
+      - dependency-name: '@kingstinct/react-native-healthkit'
+      - dependency-name: '*'
+        update-types: ['version-update:semver-major']

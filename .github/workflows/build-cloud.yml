@@ -1,4 +1,6 @@
-name: Build
+# Fallback: builds on Expo's servers and counts against the EAS free-tier build quota.
+# Regular releases go through release.yml, which builds on GitHub runners instead.
+name: Build (EAS cloud)
 
 on:
   workflow_dispatch:
@@ -17,14 +19,12 @@ on:
         description: Submit to the store after building (production only)
         type: boolean
         default: false
-  push:
-    tags: ['v*']
 
 permissions:
   contents: read
 
 concurrency:
-  group: build-${{ github.ref }}
+  group: build-cloud-${{ github.ref }}
   cancel-in-progress: false
 
 jobs:
@@ -36,24 +36,17 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     env:
-      PROFILE: ${{ inputs.profile || 'production' }}
-      PLATFORM: ${{ inputs.platform || 'android' }}
-      SUBMIT: ${{ inputs.submit || 'false' }}
+      PROFILE: ${{ inputs.profile }}
+      PLATFORM: ${{ inputs.platform }}
+      SUBMIT: ${{ inputs.submit }}
+      EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
     steps:
-      - uses: actions/checkout@v5
-      - uses: actions/setup-node@v5
-        with:
-          node-version-file: '.node-version'
-          cache: npm
-      - uses: expo/expo-github-action@v9
-        with:
-          eas-version: latest
-          token: ${{ secrets.EXPO_TOKEN }}
-      - run: npm ci
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: ./.github/actions/setup
       - name: Start EAS build
         run: |
           args="--platform $PLATFORM --profile $PROFILE --non-interactive --no-wait"
           if [ "$PROFILE" = "production" ] && [ "$SUBMIT" = "true" ]; then
             args="$args --auto-submit"
           fi
-          eas build $args
+          npx eas build $args

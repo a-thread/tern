@@ -9,21 +9,19 @@ on:
 permissions:
   contents: read
 
+# When called from another workflow, github.workflow is the caller's name, so a release's checks
+# never share a group with (or get cancelled by) ordinary CI runs on the same ref.
 concurrency:
-  group: ci-${{ github.ref }}
-  cancel-in-progress: true
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.workflow == 'CI' }}
 
 jobs:
   check:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
-      - uses: actions/checkout@v5
-      - uses: actions/setup-node@v5
-        with:
-          node-version-file: '.node-version'
-          cache: npm
-      - run: npm ci
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: ./.github/actions/setup
       - run: npm run typecheck
       - run: npm run lint
       - run: npx jest --ci
