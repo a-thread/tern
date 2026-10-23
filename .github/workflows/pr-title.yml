@@ -1,5 +1,5 @@
-# Squash merges use the PR title as the commit release-please reads, so it must be a
-# conventional commit (feat:, fix:, chore:, …) for the version bump and changelog to be right.
+# Squash merges use the PR title as the commit message, and release.yml reads those to pick the
+# next version and write release notes, so it must be a conventional commit (feat:, fix:, chore:, …).
 name: PR title
 
 on:
