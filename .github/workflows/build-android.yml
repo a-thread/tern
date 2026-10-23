@@ -8,6 +8,10 @@ on:
       profile:
         type: string
         required: true
+      app-version:
+        description: Release version (X.Y.Z) baked into the build; empty keeps app.json's
+        type: string
+        default: ''
     secrets:
       EXPO_TOKEN:
         required: true
@@ -25,8 +29,7 @@ jobs:
         with:
           distribution: temurin
           java-version: '17'
-      # Caches saved on a tag are invisible to later tags, so only main saves (see cache-warm.yml);
-      # every run restores the newest main cache.
+      # Only main saves (releases run there); other refs restore main's newest cache.
       - id: gradle-cache
         uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
@@ -42,6 +45,7 @@ jobs:
         env:
           EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
           PROFILE: ${{ inputs.profile }}
+          APP_VERSION: ${{ inputs.app-version }}
         run: |
           ext=apk
           if [ "$PROFILE" = "production" ]; then ext=aab; fi

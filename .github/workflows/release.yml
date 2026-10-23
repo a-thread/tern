@@ -1,109 +1,78 @@
-# Release pipeline: checks → build on GitHub runners → submit (after approval).
-# Builds use `eas build --local`, so they don't count against the EAS build quota.
-# Production releases come from release-please.yml (workflow_call with the new tag) or a v* tag
-# pushed by hand; workflow_dispatch builds ad hoc.
+# Continuous release. Every push to main runs the checks; when the commits since the last v* tag
+# include a feat or fix, it builds on GitHub runners (`eas build --local`, no EAS build quota),
+# uploads to the Play internal track / TestFlight, and only then tags vX.Y.Z with release notes.
+# A failed release leaves no tag, so the next merge retries with everything since the last one.
+# workflow_dispatch builds an Android preview APK for testing and never submits.
 name: Release
 
 on:
-  workflow_call:
-    inputs:
-      tag:
-        description: Release tag created by release-please (vX.Y.Z)
-        type: string
-        required: true
-    secrets:
-      EXPO_TOKEN:
-        required: true
   push:
-    tags: ['v*']
+    branches: [main]
   workflow_dispatch:
-    inputs:
-      profile:
-        description: EAS build profile (iOS builds production only)
-        type: choice
-        options: [preview, production]
-        default: preview
-      platform:
-        description: Platform
-        type: choice
-        options: [android, ios, all]
-        default: android
-      submit:
-        description: Submit to the store after building (production only; run from a v* tag)
-        type: boolean
-        default: false
 
 permissions:
   contents: read
+
+# One release at a time. Merges that land meanwhile collapse into the next run, which picks up
+# every commit since the last tag.
+concurrency:
+  group: release-${{ github.event_name }}
+  cancel-in-progress: false
 
 jobs:
   check:
     uses: ./.github/workflows/ci.yml
 
-  # Rejects runs that would build for up to an hour and then fail or do nothing.
-  preflight:
+  version:
     runs-on: ubuntu-24.04
+    outputs:
+      next: ${{ steps.next.outputs.version }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      - env:
-          # A workflow_call inherits the caller's push event (on main), so the tag comes from the input.
-          EVENT: ${{ github.event_name }}
-          TAG: ${{ inputs.tag || github.ref_name }}
-          REF_TYPE: ${{ github.ref_type }}
-          PROFILE: ${{ inputs.profile }}
-          PLATFORM: ${{ inputs.platform }}
-          SUBMIT: ${{ inputs.submit }}
-          IOS_RELEASES: ${{ vars.IOS_RELEASES }}
+        with:
+          fetch-depth: 0
+      - id: next
+        if: github.event_name == 'push'
         run: |
-          fail() { echo "::error::$1"; exit 1; }
-          submit_ios=false
-          if [ "$EVENT" = "push" ]; then
-            expected="v$(node -p "require('./app.json').expo.version")"
-            [ "$TAG" = "$expected" ] || fail "Tag $TAG does not match app.json version ($expected)"
-            [ "$IOS_RELEASES" = "true" ] && submit_ios=true
+          version="$(bash .github/scripts/next-version.sh)"
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          if [ -n "$version" ]; then
+            echo "::notice::Releasing v$version"
           else
-            if [ "$PROFILE" = "preview" ]; then
-              [ "$PLATFORM" = "ios" ] && fail "iOS builds use the production profile only (preview is ad-hoc signed)"
-              [ "$PLATFORM" = "all" ] && echo "::warning::Building Android only: iOS builds use the production profile only"
-              [ "$SUBMIT" = "true" ] && fail "Submit needs the production profile"
-            fi
-            if [ "$SUBMIT" = "true" ]; then
-              [ "$REF_TYPE" = "tag" ] || fail "Submit only works when run from a v* tag"
-              [ "$PLATFORM" != "android" ] && submit_ios=true
-            fi
+            echo "::notice::No feat/fix commits since the last release, so nothing to release"
           fi
-          if [ "$submit_ios" = "true" ]; then
-            asc="$(node -p "require('./eas.json').submit?.production?.ios?.ascAppId ?? ''")"
-            [ -n "$asc" ] || fail "eas.json submit.production.ios.ascAppId is missing; iOS submit can't run non-interactively"
+      - name: iOS submit needs ascAppId
+        if: steps.next.outputs.version != '' && vars.IOS_RELEASES == 'true'
+        run: |
+          asc="$(node -p "require('./eas.json').submit?.production?.ios?.ascAppId ?? ''")"
+          if [ -z "$asc" ]; then
+            echo "::error::eas.json submit.production.ios.ascAppId is missing; iOS submit can't run non-interactively"
+            exit 1
           fi
 
   android:
-    needs: [check, preflight]
-    if: ${{ github.event_name == 'push' || inputs.platform != 'ios' }}
-    # Per platform, so a submit waiting for approval never blocks the next release's builds.
-    concurrency:
-      group: release-android
-      cancel-in-progress: false
+    needs: [check, version]
+    if: github.event_name == 'workflow_dispatch' || needs.version.outputs.next != ''
     uses: ./.github/workflows/build-android.yml
     with:
-      profile: ${{ inputs.profile || 'production' }}
+      profile: ${{ github.event_name == 'push' && 'production' || 'preview' }}
+      app-version: ${{ needs.version.outputs.next }}
     secrets:
       EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
 
-  # Tag releases include iOS once the repo variable IOS_RELEASES is 'true' (set after iOS credentials exist in EAS).
+  # Included once the repo variable IOS_RELEASES is 'true' (after iOS credentials exist in EAS).
   ios:
-    needs: [check, preflight]
-    if: ${{ (github.event_name == 'push' && vars.IOS_RELEASES == 'true') || (inputs.platform != 'android' && inputs.profile == 'production') }}
-    concurrency:
-      group: release-ios
-      cancel-in-progress: false
+    needs: [check, version]
+    if: needs.version.outputs.next != '' && vars.IOS_RELEASES == 'true'
     uses: ./.github/workflows/build-ios.yml
+    with:
+      app-version: ${{ needs.version.outputs.next }}
     secrets:
       EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
 
   submit-android:
-    needs: android
-    if: ${{ github.event_name == 'push' || (inputs.profile == 'production' && inputs.submit) }}
+    needs: [version, android]
+    if: needs.version.outputs.next != ''
     uses: ./.github/workflows/submit.yml
     with:
       platform: android
@@ -111,10 +80,27 @@ jobs:
       EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
 
   submit-ios:
-    needs: ios
-    if: ${{ github.event_name == 'push' || (inputs.profile == 'production' && inputs.submit) }}
+    needs: [version, ios]
+    if: needs.version.outputs.next != ''
     uses: ./.github/workflows/submit.yml
     with:
       platform: ios
     secrets:
       EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+
+  # Tags only after every upload that ran succeeded (iOS counts only when it ran).
+  publish:
+    needs: [version, submit-android, submit-ios]
+    if: >-
+      !cancelled() && needs.version.outputs.next != '' &&
+      needs.submit-android.result == 'success' &&
+      contains(fromJSON('["success", "skipped"]'), needs.submit-ios.result)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    permissions:
+      contents: write
+    steps:
+      - env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: v${{ needs.version.outputs.next }}
+        run: gh release create "$TAG" --repo "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" --title "$TAG" --generate-notes

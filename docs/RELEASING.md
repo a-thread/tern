@@ -1,7 +1,8 @@
 # Releasing Tern
 
-Builds run on EAS (Expo), started from GitHub Actions. App id: `com.purlieus.tern`,
-Expo owner `purlieus-systems`.
+Builds run on GitHub Actions runners with `eas build --local`, so they don't use the EAS build
+quota; EAS still holds the signing credentials and the build numbers. App id:
+`com.purlieus.tern`, Expo owner `purlieus-systems`.
 
 ## One-time setup
 
@@ -17,17 +18,32 @@ Expo owner `purlieus-systems`.
 
 ## Every release
 
-1. Merge to `main` (CI runs typecheck, lint and tests).
-2. `npm version patch` (bumps `package.json`, commits and tags `vX.Y.Z`), then set the same
-   `version` in `app.json`.
-3. `git push --follow-tags`. The tag starts a **production** Android build.
-4. Follow the build on expo.dev; promote it in the Play Console.
+Releases are automatic ([release.yml](../.github/workflows/release.yml)). Merge a PR whose title
+is a conventional commit (the `PR title` check enforces it):
 
-Test build: Actions > Build > Run workflow > `preview` / `android` gives an installable APK.
+| Title                                                       | Release                       |
+| ----------------------------------------------------------- | ----------------------------- |
+| `fix: …`, `fix(deps): …`, `perf: …`                         | patch, 0.1.2 → 0.1.3          |
+| `feat: …`                                                   | minor, 0.1.2 → 0.2.0          |
+| `feat!: …` or a `BREAKING CHANGE:` footer                   | major (minor while below 1.0) |
+| `chore`, `ci`, `docs`, `refactor`, `test`, `style`, `build` | none                          |
+
+On each push to `main` the workflow runs typecheck, lint and tests, works out the version from
+the commits since the last `v*` tag, builds, uploads to the Play internal track (and TestFlight
+once iOS is on), and only then creates the `vX.Y.Z` tag and GitHub release with notes from the
+PR titles. A failed release leaves no tag, so the next merge retries with everything since the
+last one. Merges that land during a release are picked up by the next run.
+
+The version comes from the tag, through `APP_VERSION` in [app.config.ts](../app.config.ts);
+`app.json`'s `version` is only the local fallback. Build numbers come from EAS.
+
+What stays with you: promoting a build from internal testing to production in the Play Console,
+after trying it on a phone.
+
+Test build: Actions > Release > Run workflow gives an installable preview APK (it never submits).
 Tern Plus is unlocked in it (`EXPO_PUBLIC_PLUS_UNLOCKED`), since Play Billing can't sell to an
 app that wasn't installed from Play; Settings says "test build" at the foot. A test fails if
 `production` ever sets it.
-Tick "submit" (production only) to send the build to the store once step 5 above is done.
 
 ## Testers and Tern Plus
 
@@ -75,7 +91,8 @@ First build and check (see [healthkit.md](healthkit.md) for what to look at):
 
 TestFlight:
 
-1. `eas build --profile production --platform ios --auto-submit` (or Actions > Build > `ios`, tick submit).
+1. Set the repository variable `IOS_RELEASES` to `true`. From then on every release also builds
+   iOS and uploads it to TestFlight (it fails early if `ascAppId` is missing).
 2. In App Store Connect > TestFlight, add testers to an internal group. Builds expire after 90 days.
 
 App Store: screenshots, the privacy policy URL (`docs/index.html`), App Privacy answers, and review

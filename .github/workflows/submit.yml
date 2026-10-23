@@ -1,5 +1,5 @@
 # Uploads a production build from this run to the store with `eas submit`: Android to the Play
-# internal track, iOS to TestFlight. Gated by the `production` environment (approval, v* tags only).
+# internal track, iOS to TestFlight. Runs in the `production` environment.
 name: Submit
 
 on:
