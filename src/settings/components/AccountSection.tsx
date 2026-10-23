@@ -1,5 +1,6 @@
 import React from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
+import Constants from 'expo-constants';
 
 import { colors, font, space } from '@shared/theme';
 import { useAuth } from '../../domain/auth/AuthContext';
@@ -7,10 +8,12 @@ import { plusUnlocked } from '../../domain/subscription/plusUnlocked';
 
 /**
  * Signing out, and the app version, at the foot of Settings. Signing in (and making an
- * account) is the profile card at the top; Tern Plus is in Your data.
+ * account) is the profile card at the top; Tern Plus is in Your data. The version is the
+ * build's (a release build's comes from its release tag; see app.config.ts).
  */
 export function AccountSection() {
   const auth = useAuth();
+  const name = `Tern ${Constants.expoConfig?.version ?? ''}`.trim();
   return (
     <>
       {auth?.session ? (
@@ -21,7 +24,7 @@ export function AccountSection() {
         </View>
       ) : null}
       <Text style={s.version}>
-        {plusUnlocked() ? 'Tern 1.0.0 · test build, Tern Plus unlocked' : 'Tern 1.0.0'}
+        {plusUnlocked() ? `${name} · test build, Tern Plus unlocked` : name}
       </Text>
     </>
   );
