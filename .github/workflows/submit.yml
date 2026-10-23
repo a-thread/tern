@@ -23,15 +23,15 @@ jobs:
     environment: production
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+      # `eas submit` evaluates app.json, which loads the Expo config plugins from node_modules,
+      # so the dependencies must be installed. Install scripts aren't needed for that.
+      - uses: ./.github/actions/setup
         with:
-          node-version-file: '.node-version'
+          ignore-scripts: 'true'
       - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
           name: ${{ inputs.platform }}-production
           path: dist
-      # Only eas-cli is needed to upload a prebuilt binary, so skip installing the app's dependencies.
-      # The version comes from package.json, which Dependabot keeps current.
       - name: Submit
         env:
           EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
@@ -39,6 +39,4 @@ jobs:
         run: |
           file=dist/tern-android.aab
           if [ "$PLATFORM" = "ios" ]; then file=dist/tern-ios.ipa; fi
-          eas_version="$(node -p "require('./package.json').devDependencies['eas-cli']")"
-          npx --yes "eas-cli@$eas_version" submit --platform "$PLATFORM" --profile production \
-            --path "$file" --non-interactive
+          npx eas submit --platform "$PLATFORM" --profile production --path "$file" --non-interactive
