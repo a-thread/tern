@@ -23,3 +23,6 @@ coverage/
 
 # Local folder for docs that shouldn't be committed
 docs/internal/*
+# EAS credentials backups (`eas credentials` download). Never commit.
+credentials.json
+/credentials/
