@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.3](https://github.com/a-thread/tern/compare/v0.1.2...v0.1.3) (2026-10-23)
+
+
+### Bug Fixes
+
+* addressing stale tabs ([#18](https://github.com/a-thread/tern/issues/18)) ([1cb88a6](https://github.com/a-thread/tern/commit/1cb88a66c5c62b60ce86bebf21979d14a1115d35))
+
 ## [0.1.2](https://github.com/a-thread/tern/compare/v0.1.1...v0.1.2) (2026-10-23)
 
 
