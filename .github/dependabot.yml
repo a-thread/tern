@@ -4,11 +4,19 @@ updates:
     directories: ['/', '/.github/actions/*']
     schedule:
       interval: weekly
+    # Conventional titles (checked by pr-title.yml); ci: changes never trigger a release.
+    commit-message:
+      prefix: ci
 
   - package-ecosystem: npm
     directory: /
     schedule:
       interval: weekly
+    # Runtime dependency bumps ship in the app (fix(deps) → patch release); dev ones don't (chore(deps)).
+    commit-message:
+      prefix: fix
+      prefix-development: chore
+      include: scope
     groups:
       npm-minor-and-patch:
         update-types: [minor, patch]

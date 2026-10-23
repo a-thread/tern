@@ -1,9 +1,19 @@
 # Release pipeline: checks → build on GitHub runners → submit (after approval).
 # Builds use `eas build --local`, so they don't count against the EAS build quota.
-# A v* tag releases production; workflow_dispatch builds ad hoc.
+# Production releases come from release-please.yml (workflow_call with the new tag) or a v* tag
+# pushed by hand; workflow_dispatch builds ad hoc.
 name: Release
 
 on:
+  workflow_call:
+    inputs:
+      tag:
+        description: Release tag created by release-please (vX.Y.Z)
+        type: string
+        required: true
+    secrets:
+      EXPO_TOKEN:
+        required: true
   push:
     tags: ['v*']
   workflow_dispatch:
@@ -19,7 +29,7 @@ on:
         options: [android, ios, all]
         default: android
       submit:
-        description: Submit to the store after building (production only; run from a v* tag, the production environment rejects branches)
+        description: Submit to the store after building (production only; run from a v* tag)
         type: boolean
         default: false
 
@@ -36,7 +46,9 @@ jobs:
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - env:
+          # A workflow_call inherits the caller's push event (on main), so the tag comes from the input.
           EVENT: ${{ github.event_name }}
+          TAG: ${{ inputs.tag || github.ref_name }}
           REF_TYPE: ${{ github.ref_type }}
           PROFILE: ${{ inputs.profile }}
           PLATFORM: ${{ inputs.platform }}
@@ -47,7 +59,7 @@ jobs:
           submit_ios=false
           if [ "$EVENT" = "push" ]; then
             expected="v$(node -p "require('./app.json').expo.version")"
-            [ "$GITHUB_REF_NAME" = "$expected" ] || fail "Tag $GITHUB_REF_NAME does not match app.json version ($expected)"
+            [ "$TAG" = "$expected" ] || fail "Tag $TAG does not match app.json version ($expected)"
             [ "$IOS_RELEASES" = "true" ] && submit_ios=true
           else
             if [ "$PROFILE" = "preview" ]; then
@@ -56,7 +68,7 @@ jobs:
               [ "$SUBMIT" = "true" ] && fail "Submit needs the production profile"
             fi
             if [ "$SUBMIT" = "true" ]; then
-              [ "$REF_TYPE" = "tag" ] || fail "Submit only works when run from a v* tag (the production environment rejects branches)"
+              [ "$REF_TYPE" = "tag" ] || fail "Submit only works when run from a v* tag"
               [ "$PLATFORM" != "android" ] && submit_ios=true
             fi
           fi
