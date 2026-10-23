@@ -4,17 +4,15 @@ Builds run on GitHub Actions runners with `eas build --local`, so they don't use
 quota; EAS still holds the signing credentials and the build numbers. App id:
 `com.purlieus.tern`, Expo owner `purlieus-systems`.
 
-## One-time setup
+What it relies on, if a key ever needs replacing:
 
-1. Add the GitHub secret `EXPO_TOKEN` (expo.dev > Account settings > Access tokens).
-2. EAS environment variables (`preview` and `production`): `EXPO_PUBLIC_SUPABASE_URL`,
-   `EXPO_PUBLIC_SUPABASE_ANON_KEY`, `EXPO_PUBLIC_USDA_API_KEY`.
-3. Run the first Android build by hand so EAS creates the keystore, then back it up:
-   `npx eas-cli build -p android --profile production` and `npx eas-cli credentials`.
-4. Play Console: create the app, upload the first AAB manually (Google requires it), fill the
-   listing, data safety and Health Connect declarations, host `docs/index.html` (GitHub Pages).
-5. For automatic submission: add a Google Play service-account key to EAS credentials. The
-   track is already `internal` in `eas.json` — change it there to send builds somewhere else.
+- GitHub secrets: `EXPO_TOKEN` (an Expo robot user's token) and `PLAY_SERVICE_ACCOUNT_JSON`
+  (the JSON key of `github-service@tern-509703.iam.gserviceaccount.com`, which uploads
+  straight to Play and so skips the EAS Submit queue).
+- EAS: the Android keystore (back it up with `npx eas-cli credentials`) and the environment
+  variables `EXPO_PUBLIC_SUPABASE_URL`, `EXPO_PUBLIC_SUPABASE_ANON_KEY`,
+  `EXPO_PUBLIC_USDA_API_KEY`.
+- The Play track is `internal` in `eas.json`; change it there to send builds elsewhere.
 
 ## Every release
 

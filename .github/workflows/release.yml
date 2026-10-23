@@ -78,6 +78,7 @@ jobs:
       platform: android
     secrets:
       EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+      PLAY_SERVICE_ACCOUNT_JSON: ${{ secrets.PLAY_SERVICE_ACCOUNT_JSON }}
 
   submit-ios:
     needs: [version, ios]
