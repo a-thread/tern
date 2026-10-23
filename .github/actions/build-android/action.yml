@@ -1,0 +1,59 @@
+name: Build Android
+description: >-
+  Builds with `eas build --local` on this runner (no EAS build quota used) and uploads the .aab
+  (production) or .apk (preview) as the artifact `android-<profile>`. Run after actions/checkout.
+
+inputs:
+  profile:
+    description: EAS build profile (production or preview)
+    required: true
+  app-version:
+    description: Release version (X.Y.Z) baked into the build; empty keeps app.json's
+    default: ''
+  expo-token:
+    description: EXPO_TOKEN, for the signing credentials and build number
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - uses: actions/setup-java@b843ebf9b913146b38da2eaa7aeddf76074ae1ad # v6.1.0
+      with:
+        distribution: temurin
+        java-version: '17'
+    # Only main saves (releases run there); other refs restore main's newest cache.
+    - id: gradle-cache
+      uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+      with:
+        path: |
+          ~/.gradle/caches
+          ~/.gradle/wrapper
+        key: gradle-${{ runner.os }}-${{ hashFiles('package-lock.json', 'app.json') }}-${{ github.run_id }}
+        restore-keys: |
+          gradle-${{ runner.os }}-${{ hashFiles('package-lock.json', 'app.json') }}-
+          gradle-${{ runner.os }}-
+    - uses: ./.github/actions/setup
+    - name: Build
+      shell: bash
+      env:
+        EXPO_TOKEN: ${{ inputs.expo-token }}
+        PROFILE: ${{ inputs.profile }}
+        APP_VERSION: ${{ inputs.app-version }}
+      run: |
+        ext=apk
+        if [ "$PROFILE" = "production" ]; then ext=aab; fi
+        npx eas build --platform android --profile "$PROFILE" --local --non-interactive \
+          --output "$RUNNER_TEMP/tern-android.$ext"
+    - if: github.ref_name == github.event.repository.default_branch
+      uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+      with:
+        path: |
+          ~/.gradle/caches
+          ~/.gradle/wrapper
+        key: ${{ steps.gradle-cache.outputs.cache-primary-key }}
+    - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+      with:
+        name: android-${{ inputs.profile }}
+        path: ${{ runner.temp }}/tern-android.*
+        retention-days: 5
+        if-no-files-found: error
