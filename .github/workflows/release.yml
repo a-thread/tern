@@ -26,41 +26,68 @@ on:
 permissions:
   contents: read
 
-concurrency:
-  group: release
-  cancel-in-progress: false
-
 jobs:
   check:
     uses: ./.github/workflows/ci.yml
 
-  version:
+  # Rejects runs that would build for up to an hour and then fail or do nothing.
+  preflight:
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      - name: Tag must match app.json version
-        if: github.event_name == 'push'
+      - env:
+          EVENT: ${{ github.event_name }}
+          REF_TYPE: ${{ github.ref_type }}
+          PROFILE: ${{ inputs.profile }}
+          PLATFORM: ${{ inputs.platform }}
+          SUBMIT: ${{ inputs.submit }}
+          IOS_RELEASES: ${{ vars.IOS_RELEASES }}
         run: |
-          expected="v$(node -p "require('./app.json').expo.version")"
-          if [ "$GITHUB_REF_NAME" != "$expected" ]; then
-            echo "::error::Tag $GITHUB_REF_NAME does not match app.json version ($expected)"
-            exit 1
+          fail() { echo "::error::$1"; exit 1; }
+          submit_ios=false
+          if [ "$EVENT" = "push" ]; then
+            expected="v$(node -p "require('./app.json').expo.version")"
+            [ "$GITHUB_REF_NAME" = "$expected" ] || fail "Tag $GITHUB_REF_NAME does not match app.json version ($expected)"
+            [ "$IOS_RELEASES" = "true" ] && submit_ios=true
+          else
+            if [ "$PROFILE" = "preview" ]; then
+              [ "$PLATFORM" = "ios" ] && fail "iOS builds use the production profile only (preview is ad-hoc signed)"
+              [ "$PLATFORM" = "all" ] && echo "::warning::Building Android only: iOS builds use the production profile only"
+              [ "$SUBMIT" = "true" ] && fail "Submit needs the production profile"
+            fi
+            if [ "$SUBMIT" = "true" ]; then
+              [ "$REF_TYPE" = "tag" ] || fail "Submit only works when run from a v* tag (the production environment rejects branches)"
+              [ "$PLATFORM" != "android" ] && submit_ios=true
+            fi
+          fi
+          if [ "$submit_ios" = "true" ]; then
+            asc="$(node -p "require('./eas.json').submit?.production?.ios?.ascAppId ?? ''")"
+            [ -n "$asc" ] || fail "eas.json submit.production.ios.ascAppId is missing; iOS submit can't run non-interactively"
           fi
 
   android:
-    needs: [check, version]
+    needs: [check, preflight]
     if: ${{ github.event_name == 'push' || inputs.platform != 'ios' }}
+    # Per platform, so a submit waiting for approval never blocks the next release's builds.
+    concurrency:
+      group: release-android
+      cancel-in-progress: false
     uses: ./.github/workflows/build-android.yml
     with:
       profile: ${{ inputs.profile || 'production' }}
-    secrets: inherit
+    secrets:
+      EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
 
   # Tag releases include iOS once the repo variable IOS_RELEASES is 'true' (set after iOS credentials exist in EAS).
   ios:
-    needs: [check, version]
+    needs: [check, preflight]
     if: ${{ (github.event_name == 'push' && vars.IOS_RELEASES == 'true') || (inputs.platform != 'android' && inputs.profile == 'production') }}
+    concurrency:
+      group: release-ios
+      cancel-in-progress: false
     uses: ./.github/workflows/build-ios.yml
-    secrets: inherit
+    secrets:
+      EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
 
   submit-android:
     needs: android
@@ -68,7 +95,8 @@ jobs:
     uses: ./.github/workflows/submit.yml
     with:
       platform: android
-    secrets: inherit
+    secrets:
+      EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
 
   submit-ios:
     needs: ios
@@ -76,4 +104,5 @@ jobs:
     uses: ./.github/workflows/submit.yml
     with:
       platform: ios
-    secrets: inherit
+    secrets:
+      EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}

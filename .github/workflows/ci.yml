@@ -9,9 +9,11 @@ on:
 permissions:
   contents: read
 
+# When called from another workflow, github.workflow is the caller's name, so a release's checks
+# never share a group with (or get cancelled by) ordinary CI runs on the same ref.
 concurrency:
-  group: ci-${{ github.ref }}
-  cancel-in-progress: true
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.workflow == 'CI' }}
 
 jobs:
   check:
