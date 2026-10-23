@@ -1,6 +1,6 @@
-# Builds on GitHub runners with `eas build --local`, so builds don't count against the EAS
-# build quota. EAS still supplies signing credentials and the remote build number, and
-# `eas submit` uploads to the Play internal track / TestFlight. Promotion stays manual.
+# Release pipeline: checks → build on GitHub runners → submit (after approval).
+# Builds use `eas build --local`, so they don't count against the EAS build quota.
+# A v* tag releases production; workflow_dispatch builds ad hoc.
 name: Release
 
 on:
@@ -30,18 +30,12 @@ concurrency:
   group: release
   cancel-in-progress: false
 
-env:
-  PROFILE: ${{ inputs.profile || 'production' }}
-
 jobs:
   check:
     uses: ./.github/workflows/ci.yml
 
-  android:
-    needs: check
-    if: ${{ github.event_name == 'push' || inputs.platform != 'ios' }}
+  version:
     runs-on: ubuntu-24.04
-    timeout-minutes: 45
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - name: Tag must match app.json version
@@ -52,113 +46,34 @@ jobs:
             echo "::error::Tag $GITHUB_REF_NAME does not match app.json version ($expected)"
             exit 1
           fi
-      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
-        with:
-          node-version-file: '.node-version'
-          cache: npm
-      - uses: actions/setup-java@b843ebf9b913146b38da2eaa7aeddf76074ae1ad # v6.1.0
-        with:
-          distribution: temurin
-          java-version: '17'
-      - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
-        with:
-          path: |
-            ~/.gradle/caches
-            ~/.gradle/wrapper
-          key: gradle-${{ runner.os }}-${{ hashFiles('package-lock.json', 'app.json') }}
-          restore-keys: gradle-${{ runner.os }}-
-      - run: npm ci
-      - name: Build
-        env:
-          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
-        run: |
-          ext=apk
-          if [ "$PROFILE" = "production" ]; then ext=aab; fi
-          npx eas build --platform android --profile "$PROFILE" --local --non-interactive \
-            --output "$RUNNER_TEMP/tern-android.$ext"
-      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
-        with:
-          name: android-${{ env.PROFILE }}
-          path: ${{ runner.temp }}/tern-android.*
-          retention-days: 5
-          if-no-files-found: error
 
+  android:
+    needs: [check, version]
+    if: ${{ github.event_name == 'push' || inputs.platform != 'ios' }}
+    uses: ./.github/workflows/build-android.yml
+    with:
+      profile: ${{ inputs.profile || 'production' }}
+    secrets: inherit
+
+  # Tag releases include iOS once the repo variable IOS_RELEASES is 'true' (set after iOS credentials exist in EAS).
   ios:
-    needs: check
-    # The preview profile is ad-hoc signed (registered devices only), so CI builds iOS for production only.
-    # Tag releases include iOS once the repo variable IOS_RELEASES is 'true' (set after iOS credentials exist in EAS).
+    needs: [check, version]
     if: ${{ (github.event_name == 'push' && vars.IOS_RELEASES == 'true') || (inputs.platform != 'android' && inputs.profile == 'production') }}
-    runs-on: macos-26
-    timeout-minutes: 60
-    env:
-      # Pinned so runner image updates don't change the toolchain; bump alongside Expo SDK upgrades.
-      DEVELOPER_DIR: /Applications/Xcode_26.3.app
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
-        with:
-          node-version-file: '.node-version'
-          cache: npm
-      - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
-        with:
-          path: ~/Library/Caches/CocoaPods
-          key: pods-${{ runner.os }}-${{ hashFiles('package-lock.json', 'app.json') }}
-          restore-keys: pods-${{ runner.os }}-
-      - run: npm ci
-      - run: xcodebuild -version
-      - name: Build
-        env:
-          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
-        run: |
-          npx eas build --platform ios --profile "$PROFILE" --local --non-interactive \
-            --output "$RUNNER_TEMP/tern-ios.ipa"
-      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
-        with:
-          name: ios-${{ env.PROFILE }}
-          path: ${{ runner.temp }}/tern-ios.ipa
-          retention-days: 5
-          if-no-files-found: error
+    uses: ./.github/workflows/build-ios.yml
+    secrets: inherit
 
   submit-android:
     needs: android
     if: ${{ github.event_name == 'push' || (inputs.profile == 'production' && inputs.submit) }}
-    runs-on: ubuntu-24.04
-    timeout-minutes: 15
-    environment: production
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
-        with:
-          node-version-file: '.node-version'
-          cache: npm
-      - run: npm ci --ignore-scripts
-      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
-        with:
-          name: android-production
-          path: dist
-      - name: Submit to Google Play
-        env:
-          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
-        run: npx eas submit --platform android --profile production --path dist/tern-android.aab --non-interactive
+    uses: ./.github/workflows/submit.yml
+    with:
+      platform: android
+    secrets: inherit
 
   submit-ios:
     needs: ios
     if: ${{ github.event_name == 'push' || (inputs.profile == 'production' && inputs.submit) }}
-    runs-on: ubuntu-24.04
-    timeout-minutes: 15
-    environment: production
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
-        with:
-          node-version-file: '.node-version'
-          cache: npm
-      - run: npm ci --ignore-scripts
-      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
-        with:
-          name: ios-production
-          path: dist
-      - name: Submit to TestFlight
-        env:
-          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
-        run: npx eas submit --platform ios --profile production --path dist/tern-ios.ipa --non-interactive
+    uses: ./.github/workflows/submit.yml
+    with:
+      platform: ios
+    secrets: inherit

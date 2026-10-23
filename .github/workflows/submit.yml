@@ -1,0 +1,37 @@
+# Uploads a production build from this run to the store with `eas submit`: Android to the Play
+# internal track, iOS to TestFlight. Gated by the `production` environment (approval, v* tags only).
+name: Submit
+
+on:
+  workflow_call:
+    inputs:
+      platform:
+        description: android or ios
+        type: string
+        required: true
+
+permissions:
+  contents: read
+
+jobs:
+  submit:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    environment: production
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: ./.github/actions/setup
+        with:
+          ignore-scripts: 'true'
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: ${{ inputs.platform }}-production
+          path: dist
+      - name: Submit
+        env:
+          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+          PLATFORM: ${{ inputs.platform }}
+        run: |
+          file=dist/tern-android.aab
+          if [ "$PLATFORM" = "ios" ]; then file=dist/tern-ios.ipa; fi
+          npx eas submit --platform "$PLATFORM" --profile production --path "$file" --non-interactive
