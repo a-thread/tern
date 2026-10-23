@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.2](https://github.com/a-thread/tern/compare/v0.1.1...v0.1.2) (2026-10-23)
+
+
+### Bug Fixes
+
+* **ci:** install dependencies before eas submit ([#16](https://github.com/a-thread/tern/issues/16)) ([a7363e7](https://github.com/a-thread/tern/commit/a7363e71197191c88d22ae3ae31cb5c2a0cde485))
+
 ## [0.1.1](https://github.com/a-thread/tern/compare/v0.1.0...v0.1.1) (2026-10-23)
 
 
