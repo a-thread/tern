@@ -78,13 +78,23 @@ export function LeftToDoList() {
               key={`med-${item.medicationId}`}
               title={`Take ${item.name}`}
               sub={`Due ${formatMinutes(item.at)}`}
-              onPress={() => setTaken(item.medicationId, true)}
               icon={
                 <IconBadge bg={colors.violetTint}>
                   <Icon name='pill' size={16} color={colors.violet} />
                 </IconBadge>
               }
-              right={<Text style={s.markText}>Mark taken</Text>}
+              right={
+                // Like water, only the button records a dose, so a stray tap on the row can't.
+                <Pressable
+                  onPress={() => setTaken(item.medicationId, true)}
+                  hitSlop={8}
+                  style={s.addBtn}
+                  accessibilityRole='button'
+                  accessibilityLabel={`Mark ${item.name} taken`}
+                >
+                  <Text style={s.markText}>Mark taken</Text>
+                </Pressable>
+              }
             />
           ) : item.kind === 'meal' ? (
             <Row

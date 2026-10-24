@@ -11,7 +11,7 @@ import { CameraView, useCameraPermissions } from 'expo-camera';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 
-import { colors, font, space } from '@shared/theme';
+import { colors, font, space, typography } from '@shared/theme';
 import LoadingBird from '@shared/components/LoadingBird/LoadingBird';
 import { useSessionAdditions } from '../hooks/useSessionAdditions';
 import { describeAdditions } from '../models/sessionAdditions';
@@ -335,7 +335,7 @@ const s = StyleSheet.create({
   foot: {
     color: '#7C8B93',
     fontFamily: font.body,
-    fontSize: 10.5,
+    fontSize: typography.small.fontSize,
     marginTop: 26,
     textAlign: 'center',
     lineHeight: 16,

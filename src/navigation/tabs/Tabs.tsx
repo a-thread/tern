@@ -1,6 +1,6 @@
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { colors, font } from '@shared/theme';
+import { colors, font, typography } from '@shared/theme';
 import TernMark from '@shared/components/TernMark';
 import TodayScreen from '../../today/TodayScreen';
 import FoodScreen from '../../food/FoodScreen';
@@ -35,7 +35,10 @@ export default function Tabs() {
           paddingTop: 8,
           paddingBottom: bottomPadding,
         },
-        tabBarLabelStyle: { fontFamily: font.medium, fontSize: 10 },
+        tabBarLabelStyle: {
+          fontFamily: font.medium,
+          fontSize: typography.small.fontSize,
+        },
       }}
     >
       <Tab.Screen

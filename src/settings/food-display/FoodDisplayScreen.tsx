@@ -142,9 +142,7 @@ export default function FoodDisplayScreen() {
 
 const s = StyleSheet.create({
   previewLabel: {
-    fontFamily: font.body,
-    fontSize: 10.5,
-    color: colors.ink3,
+    ...typography.tick,
     marginTop: space.md,
     marginLeft: space.xs + 2,
   },

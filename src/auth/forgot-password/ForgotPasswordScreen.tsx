@@ -32,6 +32,8 @@ export default function ForgotPasswordScreen({
     <AuthLayout
       title='Forgot your password?'
       subtitle="Enter the email address associated with your account and we'll send you instructions for resetting your password."
+      onBack={onBack}
+      backLabel='Sign in'
     >
       <AuthBanner variant='error' message={error || null} />
       <AuthBanner

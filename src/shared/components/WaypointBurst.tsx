@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useRef } from 'react';
 import { Animated, Easing, StyleSheet, Text, View } from 'react-native';
 import Svg, { Path } from 'react-native-svg';
 import { colors, font } from '../theme';
+import { useReduceMotion } from '../hooks/useReduceMotion';
 
 type Point = { x: number; y: number };
 
@@ -66,10 +67,12 @@ export default function WaypointBurst({
   onDone: () => void;
 }) {
   const t = useRef(new Animated.Value(0)).current;
+  // With Reduce Motion on, nothing flies: the "+10" fades in and out in place, on the same timing.
+  const still = useReduceMotion();
 
   const particles = useMemo(
     () =>
-      Array.from({ length: PARTICLES }, (_, i) => {
+      Array.from({ length: still ? 0 : PARTICLES }, (_, i) => {
         const angle =
           -Math.PI +
           (i / (PARTICLES - 1)) * Math.PI +
@@ -87,7 +90,7 @@ export default function WaypointBurst({
             (140 + rand(id * 13 + i) * 200),
         };
       }),
-    [id, origin.x, origin.y],
+    [id, origin.x, origin.y, still],
   );
 
   useEffect(() => {
@@ -177,7 +180,7 @@ export default function WaypointBurst({
                 {
                   translateY: t.interpolate({
                     inputRange: [0, 1],
-                    outputRange: [0, -34],
+                    outputRange: [0, still ? 0 : -34],
                   }),
                 },
               ],

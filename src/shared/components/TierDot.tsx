@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-import { font } from '../theme';
+import { font, typography } from '../theme';
 
 /** NOVA processing tier. Shows the number by default — not color alone — for a11y; user-togglable in Settings. */
 export function TierDot({
@@ -27,5 +27,9 @@ const s = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  tierText: { fontFamily: font.bold, fontSize: 9.5, color: '#fff' },
+  tierText: {
+    fontFamily: font.bold,
+    fontSize: typography.small.fontSize,
+    color: '#fff',
+  },
 });

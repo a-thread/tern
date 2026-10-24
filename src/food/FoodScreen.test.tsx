@@ -104,6 +104,24 @@ describe('FoodScreen', () => {
     expect(ui.getByText(formatLongDate(today))).toBeTruthy();
   });
 
+  it('steps back a day with the arrows, and not past today', async () => {
+    const ui = await open();
+    expect(
+      ui.getByLabelText('Next day').props.accessibilityState.disabled,
+    ).toBe(true);
+
+    fireEvent.press(ui.getByLabelText('Previous day'));
+    await waitFor(() =>
+      expect(ui.getByText(formatLongDate(addDays(today, -1)))).toBeTruthy(),
+    );
+    expect(ui.getByText('Back to today')).toBeTruthy();
+
+    fireEvent.press(ui.getByLabelText('Next day'));
+    await waitFor(() =>
+      expect(ui.getByText(formatLongDate(today))).toBeTruthy(),
+    );
+  });
+
   it('offers no meal check-in until it is turned on', async () => {
     const ui = await open();
     expect(ui.queryByText('How was it?')).toBeNull();

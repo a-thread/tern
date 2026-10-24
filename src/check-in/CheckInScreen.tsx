@@ -10,6 +10,7 @@ import {
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import * as Haptics from 'expo-haptics';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 
 import { colors, font, radius, space, typography } from '@shared/theme';
@@ -17,6 +18,7 @@ import { Group, GroupLabel, SheetNav } from '@shared/components/ui';
 import { WeightTrend } from '@shared/components/WeightTrend';
 import type { RootStackParamList } from '../navigation/types';
 import { useViewedDay } from '@shared/state/ViewedDayContext';
+import { useReduceMotion } from '@shared/hooks/useReduceMotion';
 import { addDays, dayWord } from '@shared/utils/date';
 import {
   clampScore,
@@ -67,13 +69,22 @@ export default function CheckInScreen({ navigation }: Props) {
     mood: start(MoodMetric.Mood),
     stress: start(MoodMetric.Stress),
   });
-  const [active, setActive] = useState<MoodMetric>(MoodMetric.Mood);
+  const [active, setActiveState] = useState<MoodMetric>(MoodMetric.Mood);
+  // Stress sits behind the switch, so a new check-in doesn't count it as answered until it has
+  // been looked at or moved; otherwise Save would quietly store the starting score.
+  const [stressSet, setStressSet] = useState(todays !== undefined);
   const scoresRef = useRef(scores);
   const activeRef = useRef(active);
   activeRef.current = active;
 
+  const setActive = (metric: MoodMetric) => {
+    if (metric === MoodMetric.Stress) setStressSet(true);
+    setActiveState(metric);
+  };
+
   const setScore = (metric: MoodMetric, v: number) => {
     const next = { ...scoresRef.current, [metric]: clampScore(v) };
+    if (next[metric] !== scoresRef.current[metric]) Haptics.selectionAsync();
     scoresRef.current = next;
     setScores(next);
   };
@@ -98,7 +109,9 @@ export default function CheckInScreen({ navigation }: Props) {
 
   // The number gives a small bounce each time the score changes (or the metric switches).
   const pop = useRef(new Animated.Value(1)).current;
+  const still = useReduceMotion();
   useEffect(() => {
+    if (still) return;
     pop.setValue(0.82);
     Animated.spring(pop, {
       toValue: 1,
@@ -106,7 +119,7 @@ export default function CheckInScreen({ navigation }: Props) {
       tension: 160,
       useNativeDriver: true,
     }).start();
-  }, [value, active, pop]);
+  }, [value, active, pop, still]);
 
   // Ticks swell toward the centre and take the colour of the score they stand for; ticks
   // beyond the ends of the scale are left blank.
@@ -123,6 +136,11 @@ export default function CheckInScreen({ navigation }: Props) {
   const weekAvg = average(week, active);
 
   const save = () => {
+    // The first press shows Stress rather than saving a score nobody chose.
+    if (!stressSet) {
+      setActive(MoodMetric.Stress);
+      return;
+    }
     checkIn(scores.mood, scores.stress);
     navigation.goBack();
   };
@@ -140,7 +158,7 @@ export default function CheckInScreen({ navigation }: Props) {
         title='Check in'
         leftLabel='Cancel'
         onLeftPress={() => navigation.goBack()}
-        rightLabel='Save'
+        rightLabel={stressSet ? 'Save' : 'Next'}
         onRightPress={save}
       />
 
@@ -164,10 +182,18 @@ export default function CheckInScreen({ navigation }: Props) {
                 ]}
                 accessibilityRole='button'
                 accessibilityState={{ selected: on }}
+                accessibilityLabel={
+                  m.id === MoodMetric.Stress && !stressSet
+                    ? `${m.label}, not set`
+                    : m.label
+                }
               >
                 <Text style={[s.switchText, on && s.switchTextOn]}>
                   {m.label}
                 </Text>
+                {m.id === MoodMetric.Stress && !stressSet ? (
+                  <View style={s.unsetDot} />
+                ) : null}
               </Pressable>
             );
           })}
@@ -255,6 +281,7 @@ export default function CheckInScreen({ navigation }: Props) {
               key={d}
               onPress={() => setScore(active, scoresRef.current[active] + d)}
               style={[s.stepBtn, { backgroundColor: scoreTint(active, value) }]}
+              accessibilityRole='button'
               accessibilityLabel={`${d > 0 ? 'Raise' : 'Lower'} ${meta.label.toLowerCase()} by 1`}
             >
               <Text style={[s.stepText, { color }]}>{d > 0 ? '+1' : '−1'}</Text>
@@ -305,14 +332,18 @@ export default function CheckInScreen({ navigation }: Props) {
           </View>
           <View style={s.row}>
             <Text style={s.rowTitle}>Stress</Text>
-            <Text
-              style={[
-                s.rowSub,
-                { color: scoreColor(MoodMetric.Stress, scores.stress) },
-              ]}
-            >
-              {`${scores.stress} · ${scoreWord(MoodMetric.Stress, scores.stress)}`}
-            </Text>
+            {stressSet ? (
+              <Text
+                style={[
+                  s.rowSub,
+                  { color: scoreColor(MoodMetric.Stress, scores.stress) },
+                ]}
+              >
+                {`${scores.stress} · ${scoreWord(MoodMetric.Stress, scores.stress)}`}
+              </Text>
+            ) : (
+              <Text style={s.rowSub}>Not set</Text>
+            )}
           </View>
           {todays ? (
             <Pressable
@@ -342,9 +373,18 @@ const s = StyleSheet.create({
     marginBottom: space.md,
   },
   switchItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
     paddingHorizontal: 22,
     paddingVertical: 7,
     borderRadius: radius.md - 2,
+  },
+  unsetDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: colors.coral,
   },
   switchText: { fontFamily: font.semibold, fontSize: 13, color: colors.ink2 },
   switchTextOn: { color: colors.card },
@@ -390,13 +430,7 @@ const s = StyleSheet.create({
   },
   tickCol: { width: TICK_W, alignItems: 'center' },
   tick: { borderRadius: 3 },
-  tickLabel: {
-    position: 'absolute',
-    top: 40,
-    fontSize: 9.5,
-    color: colors.ink3,
-    fontFamily: font.body,
-  },
+  tickLabel: { ...typography.tick, position: 'absolute', top: 40 },
   pips: { flexDirection: 'row', gap: 5, marginTop: space.md },
   pip: { flex: 1, height: 12, borderRadius: 6 },
   pipCurrent: { transform: [{ scaleY: 1.5 }] },

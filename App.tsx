@@ -20,6 +20,10 @@ import {
 import { colors } from '@shared/theme';
 import { AppProviders } from '@/AppProviders';
 import RootNavigator from '@/navigation/RootNavigator';
+import {
+  lastNavigation,
+  rememberNavigation,
+} from '@/navigation/navigationMemory';
 import AuthGate from '@/AuthGate';
 import { ToastProvider } from '@shared/state/ToastContext';
 
@@ -57,7 +61,11 @@ export default function App() {
       <ToastProvider>
         <AuthGate>
           <AppProviders>
-            <NavigationContainer theme={navTheme}>
+            <NavigationContainer
+              theme={navTheme}
+              initialState={lastNavigation()}
+              onStateChange={rememberNavigation}
+            >
               <RootNavigator />
             </NavigationContainer>
           </AppProviders>

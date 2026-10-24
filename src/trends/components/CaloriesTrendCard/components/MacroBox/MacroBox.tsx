@@ -1,7 +1,7 @@
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 
-import { colors, font } from '@shared/theme';
+import { font, typography } from '@shared/theme';
 
 /** One macro's average, as a tinted tile. */
 export function MacroBox({
@@ -26,5 +26,5 @@ export function MacroBox({
 const s = StyleSheet.create({
   box: { flex: 1, borderRadius: 9, padding: 8, alignItems: 'center' },
   value: { fontFamily: font.bold, fontSize: 13.5 },
-  label: { fontFamily: font.body, fontSize: 9, color: colors.ink2 },
+  label: typography.small,
 });

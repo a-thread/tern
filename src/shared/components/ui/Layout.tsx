@@ -97,7 +97,11 @@ export function Row({
     </View>
   );
   return onPress ? (
-    <Pressable onPress={onPress} android_ripple={{ color: colors.doveTint }}>
+    <Pressable
+      onPress={onPress}
+      android_ripple={{ color: colors.doveTint }}
+      accessibilityRole='button'
+    >
       {body}
     </Pressable>
   ) : (

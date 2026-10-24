@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import { View, Text, ScrollView, StyleSheet } from 'react-native';
+import { View, ScrollView, StyleSheet } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { colors, font, space, typography } from '@shared/theme';
+import { colors, space } from '@shared/theme';
+import { TabHeader } from '@shared/components/TabHeader/TabHeader';
 import { FootNote, SegmentedControl } from '@shared/components/ui';
 import { useDayKey } from '@shared/hooks/useDayKey';
 import { monthName } from '@shared/utils/date';
@@ -30,10 +31,7 @@ export default function TrendsScreen() {
     <View
       style={{ flex: 1, backgroundColor: colors.paper, paddingTop: insets.top }}
     >
-      <View style={{ paddingHorizontal: space.lg, paddingBottom: space.sm }}>
-        <Text style={s.eyebrow}>{monthName(todayKey)}</Text>
-        <Text style={s.title}>Trends</Text>
-      </View>
+      <TabHeader eyebrow={monthName(todayKey)} title='Trends' />
 
       <ScrollView
         refreshControl={refreshControl}
@@ -81,13 +79,6 @@ export default function TrendsScreen() {
 }
 
 const s = StyleSheet.create({
-  eyebrow: typography.meta,
-  title: {
-    fontFamily: font.display,
-    fontSize: 28,
-    color: colors.ink,
-    letterSpacing: -0.3,
-  },
   seg: {
     marginVertical: space.md,
   },

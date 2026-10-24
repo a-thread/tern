@@ -14,6 +14,11 @@ const mockAuth = {
   openSignIn: jest.fn(),
 };
 jest.mock('@/domain/auth/AuthContext', () => ({ useAuth: () => mockAuth }));
+const mockNavigate = jest.fn();
+jest.mock('@react-navigation/native', () => ({
+  ...jest.requireActual('@react-navigation/native'),
+  useNavigation: () => ({ navigate: mockNavigate }),
+}));
 
 const PLUS: SubscriptionStatus = { active: true, renews: true, expiresAt: '2027-01-01T00:00:00Z' };
 const ENDED: SubscriptionStatus = { active: false, renews: false, expiresAt: null };
@@ -34,7 +39,10 @@ function show(status: SubscriptionStatus, signedIn: boolean) {
   );
 }
 
-beforeEach(() => mockAuth.openSignIn.mockClear());
+beforeEach(() => {
+  mockAuth.openSignIn.mockClear();
+  mockNavigate.mockClear();
+});
 
 describe('ProfileSection', () => {
   it('without an account, says the data is on this phone and opens sign-in', () => {
@@ -50,6 +58,12 @@ describe('ProfileSection', () => {
     expect(screen.getByLabelText('First name')).toBeTruthy();
     expect(screen.getByText('me@example.com')).toBeTruthy();
     expect(await screen.findByLabelText('Synced to your account')).toBeTruthy();
+  });
+
+  it('with an account, opens Account and data', () => {
+    show(PLUS, true);
+    fireEvent.press(screen.getByLabelText('Account and data'));
+    expect(mockNavigate).toHaveBeenCalledWith('DataSettings');
   });
 
   it('once Tern Plus has ended, marks the avatar with the phone, where the data is now', async () => {

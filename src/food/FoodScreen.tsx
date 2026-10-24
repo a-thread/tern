@@ -25,9 +25,11 @@ import {
   Icon,
 } from '@shared/components/ui';
 import { SwipeToRemove } from './components/SwipeToRemove/SwipeToRemove';
+import { DaySwitcher } from './components/DaySwitcher/DaySwitcher';
+import { TabHeader } from '@shared/components/TabHeader/TabHeader';
 import { useViewedDay } from '@shared/state/ViewedDayContext';
 import { usePullToRefresh } from '@shared/hooks/usePullToRefresh';
-import { formatLongDate } from '@shared/utils/date';
+import { useToast } from '@shared/state/ToastContext';
 import { useSettings } from '../domain/settings/SettingsContext';
 import { mealTotals, Meals } from '../domain/food/models/meals';
 import { type FoodEntry } from '../domain/food/models/foodEntry';
@@ -53,6 +55,7 @@ export default function FoodScreen() {
     loadedDay,
     setMealSkipped,
     removeFoodEntry,
+    addFoodEntry,
     reload: reloadFood,
   } = useFood();
   const dayLoaded = loadedDay === day;
@@ -65,16 +68,26 @@ export default function FoodScreen() {
     water.reload,
     mealCheckIns.reload,
   ]);
+  const toast = useToast();
+
+  // A swipe removes at once, so the toast offers it back (as a new entry in the same meal).
+  const removeWithUndo = ({ id, ...entry }: FoodEntry) => {
+    removeFoodEntry(id);
+    toast.show(`Removed ${entry.name}`, {
+      label: 'Undo',
+      onPress: () => addFoodEntry(entry),
+    });
+  };
 
   return (
     <View
       style={{ flex: 1, backgroundColor: colors.paper, paddingTop: insets.top }}
     >
-      <View style={{ paddingHorizontal: space.lg, paddingBottom: space.sm }}>
-        <Text style={s.eyebrow}>{formatLongDate(day)}</Text>
-        <View style={s.titleRow}>
-          <Text style={s.title}>Food</Text>
-          {isToday ? null : (
+      <TabHeader
+        eyebrow={<DaySwitcher />}
+        title='Food'
+        accessory={
+          isToday ? null : (
             <Pressable
               onPress={showToday}
               hitSlop={8}
@@ -83,9 +96,9 @@ export default function FoodScreen() {
             >
               <Text style={s.backText}>Back to today</Text>
             </Pressable>
-          )}
-        </View>
-      </View>
+          )
+        }
+      />
 
       <ScrollView
         refreshControl={refreshControl}
@@ -144,7 +157,7 @@ export default function FoodScreen() {
                       editable ? (
                         <SwipeToRemove
                           key={item.id}
-                          onRemove={() => removeFoodEntry(item.id)}
+                          onRemove={() => removeWithUndo(item)}
                         >
                           <FoodRow
                             item={item}
@@ -211,10 +224,12 @@ export default function FoodScreen() {
         {settings.showTiers ? (
           <FootNote>
             Numbers show processing level (NOVA), not a judgment about what to
-            eat. Data from Open Food Facts.
+            eat. Nutrition data from USDA FoodData Central and Open Food Facts.
           </FootNote>
         ) : (
-          <FootNote>Nutrition data from Open Food Facts.</FootNote>
+          <FootNote>
+            Nutrition data from USDA FoodData Central and Open Food Facts.
+          </FootNote>
         )}
       </ScrollView>
     </View>
@@ -330,12 +345,6 @@ function SkippedRow({ text, onUndo }: { text: string; onUndo?: () => void }) {
 }
 
 const s = StyleSheet.create({
-  eyebrow: typography.meta,
-  titleRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-  },
   backChip: {
     backgroundColor: colors.coralTint,
     borderRadius: radius.md,
@@ -343,12 +352,6 @@ const s = StyleSheet.create({
     paddingVertical: 5,
   },
   backText: { fontFamily: font.semibold, fontSize: 12, color: colors.coral },
-  title: {
-    fontFamily: font.display,
-    fontSize: 28,
-    color: colors.ink,
-    letterSpacing: -0.3,
-  },
   foodRow: {
     flexDirection: 'row',
     alignItems: 'center',

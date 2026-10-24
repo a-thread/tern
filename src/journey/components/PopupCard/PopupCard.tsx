@@ -2,7 +2,7 @@ import React, { useEffect, useRef } from 'react';
 import { Animated, Pressable, StyleSheet, Text, View } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 
-import { colors, font } from '@shared/theme';
+import { colors, font, typography } from '@shared/theme';
 import { useRootNavigation } from '@/navigation/useAppNavigation';
 
 /** The card's width; the confetti and route are laid out against it. */
@@ -102,7 +102,7 @@ const s = StyleSheet.create({
   },
   foot: {
     fontFamily: font.body,
-    fontSize: 10.5,
+    fontSize: typography.small.fontSize,
     color: 'rgba(255,255,255,0.45)',
     marginTop: 12,
     textAlign: 'center',

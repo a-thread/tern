@@ -234,7 +234,7 @@ function PhoneBackend({
         try {
           if (await copyToPhone(account, local.data!, db, lapsedFor)) {
             toast.show(
-              'Tern Plus has ended, so your data is kept on this phone now. Renew in Settings › Your data to sync it again.',
+              'Tern Plus has ended, so your data is kept on this phone now. Renew in Settings › Account and data to sync it again.',
             );
           }
         } catch (e) {

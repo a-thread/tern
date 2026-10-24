@@ -35,6 +35,8 @@ export default function LoginScreen({
       showMark
       title='Tern'
       subtitle='Progress answers to your pace.'
+      onBack={auth.closeSignIn}
+      backLabel='Settings'
     >
       <AuthBanner variant='error' message={error || null} />
       <AuthBanner variant='info' message={infoMessage ?? null} />
@@ -68,10 +70,6 @@ export default function LoginScreen({
       <LinkColumn>
         <LinkButton label='Forgot password?' onPress={onForgotPassword} />
         <LinkButton label='Create an account' onPress={onCreateAccount} />
-        <LinkButton
-          label='Continue without an account'
-          onPress={auth.closeSignIn}
-        />
       </LinkColumn>
     </AuthLayout>
   );

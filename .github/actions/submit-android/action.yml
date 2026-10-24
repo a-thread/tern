@@ -1,7 +1,7 @@
 name: Submit Android
 description: >-
-  Uploads this run's `android-production` .aab straight to Google Play with the service account
-  (seconds; no EAS Submit queue). The track comes from eas.json (submit.production.android.track).
+  Uploads this run's `android-production` .aab and its R8 mapping.txt straight to Google Play with
+  the service account (seconds; no EAS Submit queue). The track comes from eas.json (submit.production.android.track).
   Run after actions/checkout.
 
 inputs:
@@ -32,5 +32,6 @@ runs:
         serviceAccountJsonPlainText: ${{ inputs.service-account-json }}
         packageName: ${{ steps.play.outputs.package }}
         releaseFiles: dist/tern-android.aab
+        mappingFile: dist/mapping.txt
         track: ${{ steps.play.outputs.track }}
         status: completed

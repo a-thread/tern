@@ -322,9 +322,9 @@ const s = StyleSheet.create({
   },
   infoText: {
     fontFamily: font.semibold,
-    fontSize: 10,
+    fontSize: typography.small.fontSize,
     color: colors.ink3,
-    lineHeight: 12,
+    lineHeight: 13,
   },
   track: {
     height: 8,
@@ -351,8 +351,7 @@ const s = StyleSheet.create({
   zoneLabel: {
     position: 'absolute',
     top: -20,
-    fontFamily: font.body,
-    fontSize: 10.5,
+    ...typography.small,
     color: colors.aurora,
   },
   ends: { flexDirection: 'row', justifyContent: 'space-between' },

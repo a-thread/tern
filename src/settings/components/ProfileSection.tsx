@@ -10,12 +10,13 @@ import { useSettings } from '../../domain/settings/SettingsContext';
 import { logHome } from '../models/logHome';
 import { usePlusLapsed } from '../hooks/usePlusLapsed';
 import { LogHomeMark } from './LogHomeMark/LogHomeMark';
+import { useSettingsNavigation } from '../../navigation/useAppNavigation';
 
 /**
  * The top of Settings. Without an account it says the data is on this phone and offers to
  * sign in or make an account (the sign-in screen has both). With one, it's who is signed
  * in: an avatar marked with where the data is (synced, or back on the phone once Tern Plus
- * has ended), the first name (editable) and the email.
+ * has ended), the first name (editable) and the email, and it opens Account and data.
  */
 export function ProfileSection() {
   const auth = useAuth();
@@ -52,6 +53,7 @@ function SignedInCard() {
   const auth = useAuth();
   const lapsed = usePlusLapsed();
   const email = auth?.session?.user.email;
+  const navigation = useSettingsNavigation();
 
   // Edited locally and saved on blur, so each keystroke isn't a settings write.
   const [name, setName] = useState(settings.firstName);
@@ -62,9 +64,23 @@ function SignedInCard() {
     if (trimmed !== settings.firstName) updateSettings({ firstName: trimmed });
   };
 
+  // Signed in, the card is the way into Account and data (Tern Plus, export, delete account).
+  // The name stays a text field: a tap on it edits the name, anywhere else opens the page.
+  const openAccount = auth?.session
+    ? () => navigation.navigate('DataSettings')
+    : undefined;
+
   return (
     <Group style={{ marginTop: 4 }}>
-      <View style={s.row}>
+      <Pressable
+        style={s.row}
+        onPress={openAccount}
+        disabled={!openAccount}
+        android_ripple={openAccount ? { color: colors.doveTint } : undefined}
+        // Not one big button, so a screen reader can still reach the name field; the
+        // chevron below is the labelled way in.
+        accessible={false}
+      >
         <View style={s.avatar}>
           <Text style={s.avatarText}>
             {(name.trim() || email || '?')[0].toUpperCase()}
@@ -92,7 +108,17 @@ function SignedInCard() {
           />
           <Text style={s.sub}>{email ?? 'Sample data · nothing is saved'}</Text>
         </View>
-      </View>
+        {openAccount ? (
+          <Pressable
+            onPress={openAccount}
+            hitSlop={12}
+            accessibilityRole='button'
+            accessibilityLabel='Account and data'
+          >
+            <Chevron />
+          </Pressable>
+        ) : null}
+      </Pressable>
     </Group>
   );
 }

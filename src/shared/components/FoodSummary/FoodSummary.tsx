@@ -1,7 +1,7 @@
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 
-import { colors, font, radius, space } from '../../theme';
+import { colors, font, radius, space, typography } from '../../theme';
 import { useViewedDay } from '../../state/ViewedDayContext';
 import { useSettings } from '@/domain/settings/SettingsContext';
 import { dayTotals } from '@/domain/food/models/foodEntry';
@@ -89,10 +89,5 @@ const s = StyleSheet.create({
     alignItems: 'center',
   },
   statValue: { fontFamily: font.bold, fontSize: 15, color: colors.ink },
-  statLabel: {
-    fontFamily: font.body,
-    fontSize: 9.5,
-    color: colors.ink2,
-    marginTop: 1,
-  },
+  statLabel: { ...typography.small, marginTop: 1 },
 });

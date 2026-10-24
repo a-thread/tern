@@ -17,6 +17,10 @@ import { JourneyRoute } from './components/JourneyRoute/JourneyRoute';
 import { useReplayOnFocus } from '@shared/hooks/useReplayOnFocus';
 import { usePullToRefresh } from '@shared/hooks/usePullToRefresh';
 import { AnimatedNumber } from '@shared/components/AnimatedNumber/AnimatedNumber';
+import {
+  TabHeader,
+  TabHeaderTone,
+} from '@shared/components/TabHeader/TabHeader';
 import { formatShortDate, monthName } from '@shared/utils/date';
 import {
   daysWithWaypoints,
@@ -78,14 +82,19 @@ export default function JourneyScreen() {
         colors={[...gradients.journey]}
         style={[s.hero, { paddingTop: insets.top + 8 }]}
       >
-        <Text style={s.heroEyebrow}>
-          {migration.lap > 1
-            ? `Migration ${migration.lap}`
-            : firstDay
-              ? `Since ${monthName(firstDay)}`
-              : 'Your route'}
-        </Text>
-        <Text style={s.heroTitle}>Journey</Text>
+        <TabHeader
+          eyebrow={
+            migration.lap > 1
+              ? `Migration ${migration.lap}`
+              : firstDay
+                ? `Since ${monthName(firstDay)}`
+                : 'Your route'
+          }
+          title='Journey'
+          tone={TabHeaderTone.OnDark}
+          // The hero already pads the sides and the top.
+          style={s.heroHeader}
+        />
 
         <View style={{ marginTop: space.sm }}>
           <JourneyRoute progress={migration.progress} replayKey={replayKey} />
@@ -222,13 +231,7 @@ export default function JourneyScreen() {
 
 const s = StyleSheet.create({
   hero: { paddingHorizontal: space.lg, paddingBottom: space.lg },
-  heroEyebrow: { fontFamily: font.body, fontSize: 11.5, color: '#BDB4D6' },
-  heroTitle: {
-    fontFamily: font.display,
-    fontSize: 28,
-    color: '#F4F1F8',
-    letterSpacing: -0.3,
-  },
+  heroHeader: { paddingHorizontal: 0, paddingBottom: 0 },
   heroNumber: {
     fontFamily: font.displayMedium,
     fontSize: 34,
@@ -264,5 +267,5 @@ const s = StyleSheet.create({
   },
   msCheck: { color: '#fff', fontSize: 11, fontFamily: font.bold },
   msPendingText: { color: colors.ink3, fontSize: 11, fontFamily: font.bold },
-  rulePoints: { fontFamily: font.bold, fontSize: 10 },
+  rulePoints: { fontFamily: font.bold, fontSize: typography.small.fontSize },
 });
