@@ -53,40 +53,53 @@ jobs:
   android:
     needs: [check, version]
     if: github.event_name == 'workflow_dispatch' || needs.version.outputs.next != ''
-    uses: ./.github/workflows/build-android.yml
-    with:
-      profile: ${{ github.event_name == 'push' && 'production' || 'preview' }}
-      app-version: ${{ needs.version.outputs.next }}
-    secrets:
-      EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: ./.github/actions/build-android
+        with:
+          profile: ${{ github.event_name == 'push' && 'production' || 'preview' }}
+          app-version: ${{ needs.version.outputs.next }}
+          expo-token: ${{ secrets.EXPO_TOKEN }}
 
   # Included once the repo variable IOS_RELEASES is 'true' (after iOS credentials exist in EAS).
   ios:
     needs: [check, version]
     if: needs.version.outputs.next != '' && vars.IOS_RELEASES == 'true'
-    uses: ./.github/workflows/build-ios.yml
-    with:
-      app-version: ${{ needs.version.outputs.next }}
-    secrets:
-      EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+    runs-on: macos-26
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: ./.github/actions/build-ios
+        with:
+          app-version: ${{ needs.version.outputs.next }}
+          expo-token: ${{ secrets.EXPO_TOKEN }}
 
   submit-android:
     needs: [version, android]
     if: needs.version.outputs.next != ''
-    uses: ./.github/workflows/submit.yml
-    with:
-      platform: android
-    secrets:
-      EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    environment: production
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: ./.github/actions/submit-android
+        with:
+          service-account-json: ${{ secrets.PLAY_SERVICE_ACCOUNT_JSON }}
 
+  # eas submit waits in the free EAS Submit queue, hence the long timeout.
   submit-ios:
     needs: [version, ios]
     if: needs.version.outputs.next != ''
-    uses: ./.github/workflows/submit.yml
-    with:
-      platform: ios
-    secrets:
-      EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    environment: production
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: ./.github/actions/submit-ios
+        with:
+          expo-token: ${{ secrets.EXPO_TOKEN }}
 
   # Tags only after every upload that ran succeeded (iOS counts only when it ran).
   publish:

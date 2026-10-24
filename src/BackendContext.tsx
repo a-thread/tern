@@ -27,6 +27,7 @@ import {
   type StepsRepository,
 } from './domain/activity/steps.repository';
 import { createHealthStepsRepository } from './domain/activity/steps.health';
+import { sampleSteps } from './domain/activity/sampleSteps';
 import {
   createMemoryRestDaysRepository,
   type RestDaysRepository,
@@ -143,6 +144,15 @@ export function createMemoryBackend(): Backend {
   };
 }
 
+/**
+ * Steps on the phone, with or without an account: the health app's, or none. Sample steps
+ * instead in a local demo build (`sampleSteps`).
+ */
+export function createPhoneStepsRepository(): StepsRepository {
+  if (sampleSteps()) return createMemoryStepsRepository();
+  return createHealthStepsRepository() ?? createUnavailableStepsRepository();
+}
+
 /** In memory with nothing in it: no sample log, weigh-ins or waypoints. */
 export function createBlankMemoryBackend(): Backend {
   return {
@@ -166,7 +176,7 @@ export function createLocalBackend(db: LocalDb): Backend {
     weight: createLocalWeightRepository(db),
     settings: createLocalSettingsRepository(db),
     waypoints: createLocalWaypointsRepository(db),
-    steps: createHealthStepsRepository() ?? createUnavailableStepsRepository(),
+    steps: createPhoneStepsRepository(),
     restDays: createLocalRestDaysRepository(db),
     savedMeals: createLocalSavedMealsRepository(db),
     medication: createLocalMedicationRepository(db),
@@ -219,7 +229,7 @@ export function createRemoteBackend(): Backend {
     weight: createSupabaseWeightRepository(supabase),
     settings: createSupabaseSettingsRepository(supabase),
     waypoints: createSupabaseWaypointsRepository(supabase),
-    steps: createHealthStepsRepository() ?? createUnavailableStepsRepository(),
+    steps: createPhoneStepsRepository(),
     restDays: createSupabaseRestDaysRepository(supabase),
     savedMeals: createSupabaseSavedMealsRepository(supabase),
     medication: createSupabaseMedicationRepository(supabase),

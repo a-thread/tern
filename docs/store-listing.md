@@ -9,80 +9,77 @@ Tern
 
 ## Short description (80 characters max)
 
-Move, eat, rest. A kinder tracker for the life you're actually living.
+Progress answers to your pace - a kinder tracker that meets you where you're at.
 
 ## Full description (4000 characters max)
 
 Inspired by the Arctic tern, a bird with the longest regular migration on Earth,
-this is a tracker built for the long haul. Steps, food and weight, but resting
-too, all held in balance.
+this is a tracker built for the long haul. Each day you show up, your
+tern travels a little further along its journey.
 
-Each day you show up, your Arctic tern travels a little further along its
-migration. Move when you can, log what sustains you, and always rest when you
-need to.
+Each day you show up, your Arctic tern travels a little further along its migration. Move when you can, log what sustains you, and always rest when you need to.
 
-EVERY DAY YOU SHOW UP COUNTS
-• Earn waypoints for the things within reach: meeting your step goal, logging
-your meals, taking a rest day.
-• Your weight and calories never earn or lose anything. They're there to inform
-you, with no verdict attached.
-• Each waypoint is a milestone on the map, and Tern marks it.
-• Reach the Weddell Sea and your tern turns north for home, then sets off again.
-The journey doesn't run out.
+Track all the things that help you meet your goals:
 
-REST IS PART OF THE JOURNEY
-• Take a rest day whenever you need one. Rest counts as showing up, and your
-streak carries through it.
-• Reach your step goal after taking one and it simply becomes a goal day — the
-rest day goes back to your week, unused.
-• A day under your goal is a day under your goal. Walking part of the way is
-never counted as worse than not walking at all.
-• Raise your step goal whenever you're ready. The streak you've already earned
-stays yours.
-
-THE NUMBERS ARE OPTIONAL
-• Hide calorie counts completely and log your meals without a single number
-attached.
-• Turn off "remaining today" to see what you ate rather than what's left.
-• Show or hide processing labels. NOVA is a food-science scale, not a verdict on
-your dinner.
-• Turn weight off entirely, and Tern stops asking. Set a goal weight only if you
-want one — there's no goal line until you do.
-• Tern never shows exercise as earning calories back, and never warns you for
-going over.
-• Tern can learn your real daily burn from your log and weight trend, and suggest
-a target to match. It never changes one on its own.
-
-STEPS
-• Connect Health Connect (or Apple Health on iPhone) to see today's steps, your streak and your goal.
-• Choose a goal that fits your life, and change it as your life changes.
-• Step counts stay on your device. They're never uploaded.
+MOVEMENT
+• Set a daily step goal and connect Health Connect or Apple Health. Your steps
+are read on your phone and never uploaded.
+• Log workouts and how hard they felt.
+• Take rest days that preserve your momentum. A rest day counts as showing up,
+so your streak carries right through it.
+• Walking part of the way is never counted as worse than not walking at all.
+• Raise your goal whenever you're ready or increase your rest days when you need
+to take a longer break.
 
 FOOD
+• Track calories, macros or neither! Nothing warns you for going over, and
+exercise never earns food back.
+• Control how food is displayed. Foods get a NOVA processing level as
+information, never a judgment, and you decide whether to show NOVA numbers,
+colors or neither.
+• Hide calorie counts so the numbers don't keep you from showing up.
 • Search everyday foods and packaged products, or scan a barcode.
-• Log breakfast, lunch, dinner and snacks in quarter-serving portions.
+• Save meals, or re-log yesterday's dinner in a tap.
 • Didn't have lunch? Mark it "nothing today". It counts the same as a logged
-meal, so a complete log never means eating more than you wanted.
-• Save the meals you eat often and add them in a tap, or scale them up and down.
-• Eating the same thing again? Log yesterday’s dinner, or any meal from the
-last two weeks, without searching for it twice.
-• See calories and macros for the day, if you want to see them at all.
+meal, so a complete log never means eating more or less than you wanted.
+• Opt into check-ins after meals to see how each one impacts you.
+• Want a hand? Tern can learn your real daily burn from your log and weight
+trend and suggest a calorie target. It never changes one on its own.
 
-WEIGHT
-• Log weigh-ins in pounds or kilograms.
-• Follow the trend over time, so a single morning never decides how you feel.
+WEIGHT (OPTIONAL)
+• Track daily, weekly or neither! Turn weight off and stop seeing any reference to it
+when you need a break.
+• Skip a weigh-in if you need to.
+• Gain, lose or hold steady: your log is there for whatever goal you set. Follow
+the trend, so a single morning never decides how you feel.
+• Pounds or kilograms, your choice.
+
+WATER (OPTIONAL)
+• Set a daily goal and watch it fill up.
+• Get reminders on a schedule that suits you, or none at all.
+
+MOOD AND STRESS (OPTIONAL)
+• A quick daily check-in to see how you're doing over time.
+
+MEDICATION (OPTIONAL)
+• Add as many as you need.
+• Set each one daily or weekly, with its own reminder if you want one.
+
+WAYPOINTS FOR SHOWING UP
+• Earned for showing up for the habits you choose..
+• Reach the Weddell Sea and your tern heads home, then sets off again, so the
+journey never ends.
 
 GENTLE REMINDERS
-• Optional reminders for meals and weigh-ins, scheduled on your device. They
-never mention what you missed, and you can turn them off any time.
+• Every reminder is optional and never mention what you missed
 
 YOUR DATA IS YOURS
-• No ads, and your data is never sold.
-• Export everything Tern holds as a file, and restore from it on a new phone.
-• Delete your data, or your whole account, from Settings.
-• No account needed. Everything stays on your phone unless you choose to sign in.
-• Optional Tern Plus adds an account that syncs and backs up your data. Every
-feature is free without it.
+• No ads, nothing sold.
+• No account required: stay anonymous and keep everything on your phone. Every
+feature is free.
+• Create an account with Tern Plus to keep your data on a secure server.
+• Export everything and restore it on a new phone, or delete your data or your
+account any time, right from Settings.
 
 Nutrition information comes from Open Food Facts and USDA FoodData Central.
 

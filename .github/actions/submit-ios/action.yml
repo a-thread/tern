@@ -1,0 +1,26 @@
+name: Submit iOS
+description: >-
+  Uploads this run's `ios-production` .ipa to TestFlight with `eas submit`. Free EAS accounts wait
+  in a queue (25+ minutes at times), so give the job a long timeout. Run after actions/checkout.
+
+inputs:
+  expo-token:
+    description: EXPO_TOKEN; the App Store Connect API key is stored in EAS credentials
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+      with:
+        name: ios-production
+        path: dist
+    # `eas submit` evaluates app.json, which loads the Expo config plugins from node_modules,
+    # so the dependencies must be installed. Install scripts aren't needed for that.
+    - uses: ./.github/actions/setup
+      with:
+        ignore-scripts: 'true'
+    - shell: bash
+      env:
+        EXPO_TOKEN: ${{ inputs.expo-token }}
+      run: npx eas submit --platform ios --profile production --path dist/tern-ios.ipa --non-interactive
