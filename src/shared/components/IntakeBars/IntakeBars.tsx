@@ -30,7 +30,8 @@ import {
   zoneStatus,
 } from '@/domain/food/models/intakeZone';
 import { percentsFromMacros } from '@/domain/food/models/macroSplit';
-import type { FoodEntry } from '@/domain/food/models/foodEntry';
+import { dayTotals } from '@/domain/food/models/foodEntry';
+import { useFood } from '@/domain/food/FoodContext';
 import { tierShares } from './models/tierShares';
 import { NovaInfoSheet } from './components/NovaInfoSheet/NovaInfoSheet';
 import {
@@ -41,8 +42,6 @@ import { useRootNavigation } from '@/navigation/useAppNavigation';
 import { IntakePage } from './models/intakePage';
 import { useViewedDay } from '@/shared/state/ViewedDayContext';
 import { dayWord } from '@/shared/utils/date';
-
-type Totals = { calories: number; protein: number; carbs: number; fat: number };
 
 function InfoDot({ label, onPress }: { label: string; onPress: () => void }) {
   return (
@@ -65,18 +64,14 @@ const MACROS = [
 ] as const;
 
 /**
- * Optional calories-and-macros bars for the Food page: calories against a soft
- * target zone, macros against their targets. Off by default; turned on and off in Food display settings.
- * Neutral by design: nothing turns red and going past a target is never flagged.
+ * The viewed day's intake at a glance, heading the Food screen and sitting on Today: calories
+ * against a soft target zone, macros against their targets, and the processing-level split.
+ * Off by default; turned on and off in Food display settings, and absent while neither calories
+ * nor macros are tracked. Neutral by design: nothing turns red and going past a target is never flagged.
  */
-export function IntakeBarometer({
-  totals,
-  entries,
-}: {
-  totals: Totals;
-  /** Today's log, for the processing-level split. */
-  entries: readonly FoodEntry[];
-}) {
+export function IntakeBars() {
+  const { foodLog: entries } = useFood();
+  const totals = dayTotals(entries);
   const { settings } = useSettings();
   const { showCalories, showMacros, showTiers, tracksIntake } =
     useFoodDisplay();

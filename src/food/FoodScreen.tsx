@@ -40,7 +40,7 @@ import { useWater } from '../domain/water/WaterContext';
 import { useMealCheckIns } from '../domain/meal-check-ins/MealCheckInsContext';
 import { MealCheckInRow } from './components/MealCheckInRow/MealCheckInRow';
 import { TierDot } from '@shared/components/TierDot';
-import { FoodSummary } from '@shared/components/FoodSummary/FoodSummary';
+import { IntakeBars } from '@shared/components/IntakeBars/IntakeBars';
 import { useRootNavigation } from '../navigation/useAppNavigation';
 
 export default function FoodScreen() {
@@ -107,7 +107,7 @@ export default function FoodScreen() {
           paddingBottom: space.lg,
         }}
       >
-        <FoodSummary />
+        <IntakeBars />
 
         {water.enabled ? <WaterCard /> : null}
 

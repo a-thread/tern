@@ -36,7 +36,7 @@ their common parent's `components/`; something used from two tabs moves to `doma
 | State | `domain/<name>/*Context.tsx`     | Composes a repository, owns the actions, exposes what the UI reads.                 |
 | UI    | screens, `components/`, `hooks/` | Reads the Context, wires the view. No business rules.                               |
 
-Dependencies point down: `domain` → `shared` → screens → `app`. `shared/` may read `domain/` (`FoodSummary` and `WaterCard` do); `domain/` never imports `shared/components`. A screen never imports another
+Dependencies point down: `domain` → `shared` → screens → `app`. `shared/` may read `domain/` (`IntakeBars` and `WaterCard` do); `domain/` never imports `shared/components`. A screen never imports another
 tab's folder. If two tabs need something it moves to `domain/` (data and rules) or `shared/`
 (UI or plumbing), which means "used by more than one component or util", not "might be reused".
 
