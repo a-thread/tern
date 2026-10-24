@@ -1,20 +1,21 @@
 import React from 'react';
-import { Animated, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Animated, Pressable, StyleSheet, View } from 'react-native';
 
-import { colors, font, space, typography } from '@shared/theme';
-import { Chip, Icon } from '@shared/components/ui';
+import { colors, font } from '@shared/theme';
+import { Chip } from '@shared/components/ui';
 import TernMark from '@shared/components/TernMark';
 import { AnimatedNumber } from '@shared/components/AnimatedNumber/AnimatedNumber';
-import { useDayKey } from '@shared/hooks/useDayKey';
+import { TabHeader } from '@shared/components/TabHeader/TabHeader';
+import { useViewedDay } from '@shared/state/ViewedDayContext';
 import { usePulseOnIncrease } from '@shared/hooks/useAnimatedNumber';
-import { formatLongDate } from '@shared/utils/date';
+import { dayWord, formatLongDate } from '@shared/utils/date';
 import { useWaypoints } from '../../domain/waypoints/WaypointsContext';
 import { useActivity } from '../../domain/activity/ActivityContext';
 import { useRootNavigation } from '../../navigation/useAppNavigation';
 
 /**
- * The date and title, the waypoint chip and the settings gear. The chip holds back awards that
- * haven't been celebrated yet, so its number ticks up (and pulses) as the feathers land on it.
+ * The tab header with the date and the waypoint chip beside the gear. The chip holds back awards
+ * that haven't been celebrated yet, so its number ticks up (and pulses) as the feathers land on it.
  */
 export function TodayHeader({
   chipRef,
@@ -22,20 +23,25 @@ export function TodayHeader({
   chipRef: React.RefObject<View | null>;
 }) {
   const navigation = useRootNavigation();
-  const todayKey = useDayKey();
+  // Follows the week strip: a past day that was tapped is named here too, not just below.
+  const { day, today } = useViewedDay();
   const { streak } = useActivity();
   const { waypoints, pendingPoints } = useWaypoints();
   const shownWaypoints = Math.max(waypoints - pendingPoints, 0);
   const pulse = usePulseOnIncrease(shownWaypoints);
 
   return (
-    <View style={s.header}>
-      <View>
-        <Text style={s.eyebrow}>{formatLongDate(todayKey)}</Text>
-        <Text style={s.title}>Today</Text>
-      </View>
-      <View style={s.actions}>
-        <Pressable onPress={() => navigation.navigate('Waypoints', { streak })}>
+    <TabHeader
+      eyebrow={formatLongDate(day)}
+      title={dayWord(day, today)}
+      accessory={
+        <Pressable
+          onPress={() => navigation.navigate('Waypoints', { streak })}
+          hitSlop={8}
+          accessibilityRole='button'
+          accessibilityLabel={`${shownWaypoints.toLocaleString()} waypoints`}
+          accessibilityHint='Shows your waypoints and streak'
+        >
           <Animated.View
             ref={chipRef}
             collapsable={false}
@@ -50,34 +56,11 @@ export function TodayHeader({
             </Chip>
           </Animated.View>
         </Pressable>
-        <Pressable
-          onPress={() => navigation.navigate('Settings')}
-          hitSlop={8}
-          style={s.gear}
-        >
-          <Icon name='cog-outline' size={21} color={colors.ink2} />
-        </Pressable>
-      </View>
-    </View>
+      }
+    />
   );
 }
 
 const s = StyleSheet.create({
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-end',
-    paddingHorizontal: space.lg,
-    paddingBottom: space.sm,
-  },
-  eyebrow: typography.meta,
-  title: {
-    fontFamily: font.display,
-    fontSize: 28,
-    color: colors.ink,
-    letterSpacing: -0.3,
-  },
-  actions: { flexDirection: 'row', alignItems: 'center', gap: 12 },
-  gear: { padding: 2 },
   chipText: { fontFamily: font.semibold, fontSize: 12 },
 });

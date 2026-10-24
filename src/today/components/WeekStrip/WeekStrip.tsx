@@ -9,6 +9,7 @@ import { weekdayLetter } from '@shared/utils/date';
 import { useSettings } from '@/domain/settings/SettingsContext';
 import { useActivity } from '@/domain/activity/ActivityContext';
 import { factForDay } from './utils/ternFacts';
+import { dayRingLabel } from './utils/dayRingLabel';
 import { DayState } from '@shared/models/dayState';
 import { StepsStatus } from '@/domain/activity/models/stepsStatus';
 
@@ -50,8 +51,13 @@ export function WeekStrip({ replayKey }: { replayKey: number }) {
             key={d.day}
             onPress={() => onSelect(d.day)}
             disabled={d.future}
+            hitSlop={{ top: 8, bottom: 8, left: 4, right: 4 }}
             accessibilityRole='button'
-            accessibilityState={{ selected: d.day === selectedDay }}
+            accessibilityState={{
+              selected: d.day === selectedDay,
+              disabled: d.future,
+            }}
+            accessibilityLabel={dayRingLabel(d, movementGoal)}
           >
             <DayRing
               // Whichever got closer to a goal day: steps, or minutes of movement.
@@ -87,6 +93,7 @@ export function WeekStrip({ replayKey }: { replayKey: number }) {
             undoRestDay();
           }}
           hitSlop={8}
+          accessibilityRole='button'
         >
           <Text style={s.restLink}>Undo today's rest day</Text>
         </Pressable>
@@ -97,6 +104,7 @@ export function WeekStrip({ replayKey }: { replayKey: number }) {
             takeRestDay();
           }}
           hitSlop={8}
+          accessibilityRole='button'
         >
           <Text style={s.restLink}>
             Take today as a rest day · {restLeft} left this week

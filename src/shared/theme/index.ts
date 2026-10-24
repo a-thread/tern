@@ -100,6 +100,13 @@ export function skyFor(progress: number): readonly string[] {
  * marginTop: 1 }`) rather than re-declaring the font, size and colour.
  */
 export const typography = {
+  /** A tab's big title ("Today", "Food"). */
+  screenTitle: {
+    fontFamily: font.display,
+    fontSize: 28,
+    color: colors.ink,
+    letterSpacing: -0.3,
+  },
   /** A row's main line. */
   rowTitle: { fontFamily: font.medium, fontSize: 14, color: colors.ink },
   /** A card or section heading. */
@@ -110,8 +117,10 @@ export const typography = {
   label: { fontFamily: font.semibold, fontSize: 11.5, color: colors.ink2 },
   /** The secondary line under a row's title. */
   caption: { fontFamily: font.body, fontSize: 11.5, color: colors.ink2 },
-  /** Fine print under a figure. */
+  /** Fine print under a figure. 11 is the smallest text size in the app. */
   small: { fontFamily: font.body, fontSize: 11, color: colors.ink2 },
+  /** A chart axis, ruler tick or slider end label: the smallest size, in the quietest ink. */
+  tick: { fontFamily: font.body, fontSize: 11, color: colors.ink3 },
   /** Supporting copy, a step up from a caption. */
   meta: { fontFamily: font.body, fontSize: 12.5, color: colors.ink2 },
 } as const;

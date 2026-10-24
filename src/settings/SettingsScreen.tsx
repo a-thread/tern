@@ -146,7 +146,8 @@ export default function SettingsScreen({ navigation }: Props) {
               </IconBadge>
             }
           />
-          {dataAvailable ? (
+          {/* Signed in, the profile card at the top opens this page instead. */}
+          {dataAvailable && !auth?.session ? (
             <SectionRow
               icon='database-outline'
               color={colors.driftwood}

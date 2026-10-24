@@ -10,6 +10,7 @@ import {
   PanResponder,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import * as Haptics from 'expo-haptics';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 
 import { colors, font, radius, space, typography } from '@shared/theme';
@@ -29,6 +30,8 @@ const PX_PER_UNIT = 110; // drag distance for a 1 lb (or 1 kg) change
 // The range the database accepts, in pounds.
 const MIN_LB = 40;
 const MAX_LB = 1100;
+// Where the ruler sits before a first weigh-in; never saved unless the user moves it.
+const STARTING_LB = 170;
 
 export default function LogWeightScreen({ navigation }: Props) {
   const insets = useSafeAreaInsets();
@@ -45,24 +48,26 @@ export default function LogWeightScreen({ navigation }: Props) {
   const todaysEntry = weightEntries.find((e) => isLoggedOn(e.loggedAt, day));
   const { units, weightLabel, toDisplay, fromDisplay, formatWeight } =
     useUnits();
-  // The ruler works in the user's unit; storage stays lb.
+  // The ruler works in the user's unit; storage stays lb. With nothing logged yet there is
+  // no weight to start from, so the field starts empty rather than at a made-up number.
+  const knownLb = todaysEntry?.lb ?? weightEntries[0]?.lb;
   const latest =
-    Math.round(
-      toDisplay(todaysEntry?.lb ?? weightEntries[0]?.lb ?? 172.4) * 10,
-    ) / 10;
+    knownLb === undefined ? null : Math.round(toDisplay(knownLb) * 10) / 10;
+  // Where the ruler and steppers start from while the field is still empty.
+  const rulerStart = Math.round(toDisplay(STARTING_LB) * 10) / 10;
 
   const min = Math.ceil(toDisplay(MIN_LB) * 10) / 10;
   const max = Math.floor(toDisplay(MAX_LB) * 10) / 10;
   const clamp = (v: number) => Math.min(Math.max(v, min), max);
 
-  const [weight, setWeightState] = useState(latest);
+  const [weight, setWeightState] = useState<number | null>(latest);
   const weightRef = useRef(latest);
   const setWeight = (v: number) => {
     const next = clamp(round1(v));
     weightRef.current = next;
     setWeightState(next);
   };
-  const dragStart = useRef(latest);
+  const dragStart = useRef(latest ?? rulerStart);
   const [draft, setDraft] = useState<string | null>(null); // while typing
 
   const panResponder = useRef(
@@ -70,7 +75,7 @@ export default function LogWeightScreen({ navigation }: Props) {
       onStartShouldSetPanResponder: () => true,
       onPanResponderTerminationRequest: () => false,
       onPanResponderGrant: () => {
-        dragStart.current = weightRef.current;
+        dragStart.current = weightRef.current ?? rulerStart;
       },
       onPanResponderMove: (_evt, gesture) => {
         setWeight(dragStart.current - gesture.dx / PX_PER_UNIT);
@@ -78,20 +83,28 @@ export default function LogWeightScreen({ navigation }: Props) {
     }),
   ).current;
 
-  const commitDraft = () => {
+  // The typed value, if there is one, or what the ruler shows. Save reads this too, so a
+  // number typed and saved without leaving the field isn't lost.
+  const typedOrCurrent = () => {
     const typed = parseFloat((draft ?? '').replace(',', '.'));
-    if (!Number.isNaN(typed)) setWeight(typed);
+    return Number.isNaN(typed) ? weightRef.current : clamp(round1(typed));
+  };
+
+  const commitDraft = () => {
+    const next = typedOrCurrent();
+    if (next !== null) setWeight(next);
     setDraft(null);
   };
 
   const ticks = useMemo(() => {
+    const centre = weight ?? rulerStart;
     const list: { v: number; major: boolean }[] = [];
     for (let i = -16; i <= 16; i++) {
-      const v = round1(weight + i * 0.1);
+      const v = round1(centre + i * 0.1);
       list.push({ v, major: Math.round(v * 10) % 5 === 0 });
     }
     return list;
-  }, [weight]);
+  }, [weight, rulerStart]);
 
   const week = weightTrend.slice(-7);
   const weekAvgLb = week.length
@@ -99,11 +112,14 @@ export default function LogWeightScreen({ navigation }: Props) {
     : null;
 
   const save = () => {
-    if (todaysEntry) updateWeightEntry(todaysEntry.id, fromDisplay(weight));
+    const value = typedOrCurrent();
+    if (value === null) return;
+    if (todaysEntry) updateWeightEntry(todaysEntry.id, fromDisplay(value));
     else
-      addWeightEntry(fromDisplay(weight), isToday ? undefined : atTimeOn(day));
+      addWeightEntry(fromDisplay(value), isToday ? undefined : atTimeOn(day));
     navigation.goBack();
   };
+  const canSave = weight !== null || typedOrCurrent() !== null;
 
   const skip = () => {
     setWeighInSkipped(day, true);
@@ -120,6 +136,7 @@ export default function LogWeightScreen({ navigation }: Props) {
         onLeftPress={() => navigation.goBack()}
         rightLabel='Save'
         onRightPress={save}
+        rightDisabled={!canSave}
       />
 
       <ScrollView
@@ -132,8 +149,11 @@ export default function LogWeightScreen({ navigation }: Props) {
         <View style={s.display}>
           <TextInput
             style={s.val}
-            value={draft ?? weight.toFixed(1)}
-            onFocus={() => setDraft(weight.toFixed(1))}
+            value={draft ?? weight?.toFixed(1) ?? ''}
+            placeholder='—'
+            placeholderTextColor={colors.ink3}
+            autoFocus={weight === null}
+            onFocus={() => setDraft(weight?.toFixed(1) ?? '')}
             onChangeText={setDraft}
             onBlur={commitDraft}
             onSubmitEditing={commitDraft}
@@ -163,8 +183,12 @@ export default function LogWeightScreen({ navigation }: Props) {
           {[-1, -0.1, 0.1, 1].map((d) => (
             <Pressable
               key={d}
-              onPress={() => setWeight(weightRef.current + d)}
+              onPress={() => {
+                Haptics.selectionAsync();
+                setWeight((weightRef.current ?? rulerStart) + d);
+              }}
               style={s.stepBtn}
+              accessibilityRole='button'
               accessibilityLabel={`${d > 0 ? 'Add' : 'Subtract'} ${Math.abs(d)} ${weightLabel}`}
             >
               <Text style={s.stepText}>
@@ -276,13 +300,7 @@ const s = StyleSheet.create({
   tickCol: { width: 11, alignItems: 'center' },
   tickLine: { width: 1.5, height: 13, backgroundColor: colors.dove },
   tickLineMajor: { height: 26, width: 2, backgroundColor: colors.ink3 },
-  tickLabel: {
-    position: 'absolute',
-    top: 28,
-    fontSize: 8.5,
-    color: colors.ink3,
-    fontFamily: font.body,
-  },
+  tickLabel: { ...typography.tick, position: 'absolute', top: 28 },
   needle: {
     position: 'absolute',
     left: '50%',

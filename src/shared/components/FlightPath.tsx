@@ -3,6 +3,7 @@ import { Animated, Easing } from 'react-native';
 import Svg, { Path, Circle, G } from 'react-native-svg';
 import { colors } from '../theme';
 import { TERN_PATH } from './TernMark';
+import { useReduceMotion } from '../hooks/useReduceMotion';
 
 export const AnimatedPath = Animated.createAnimatedComponent(Path);
 
@@ -103,8 +104,15 @@ export function FlightPath({
   const pop = useRef(new Animated.Value(0)).current;
   const [bird, setBird] = useState(() => birdAt(0));
   const [popBoost, setPopBoost] = useState(0);
+  const still = useReduceMotion();
 
   useEffect(() => {
+    // With Reduce Motion on the bird sits where it belongs, with no flight or landing pop.
+    if (still) {
+      travel.setValue(clamped);
+      setBird(birdAt(clamped));
+      return;
+    }
     let lastAt = 0;
     const flightId = travel.addListener(({ value }) => {
       // Each update re-renders the SVG, so don't do it on every animation frame.
@@ -145,7 +153,7 @@ export function FlightPath({
       travel.stopAnimation();
       pop.stopAnimation();
     };
-  }, [clamped, replayKey, travel, pop]);
+  }, [clamped, replayKey, travel, pop, still]);
 
   const k = bird.size * (1 + 0.5 * popBoost);
   const dash = travel.interpolate({

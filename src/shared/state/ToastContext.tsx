@@ -7,26 +7,44 @@ import React, {
   useRef,
   useState,
 } from 'react';
-import { Text, View, StyleSheet } from 'react-native';
+import { Pressable, Text, View, StyleSheet } from 'react-native';
 
 import { colors, font, radius, space } from '../theme';
 
-type ToastContextValue = { show: (message: string) => void };
+/** A button on the toast, e.g. "Undo" after removing something. */
+export type ToastAction = { label: string; onPress: () => void };
+
+type ToastContextValue = {
+  show: (message: string, action?: ToastAction) => void;
+};
 
 // Without a provider (tests, isolated screens) showing a toast is a no-op.
 const ToastContext = createContext<ToastContextValue>({ show: () => {} });
 
 const VISIBLE_MS = 4000;
+/** A toast with a button stays a little longer, so there is time to reach it. */
+const VISIBLE_WITH_ACTION_MS = 6000;
 
 /** A small message at the bottom of the screen, e.g. when a background save fails. */
 export function ToastProvider({ children }: { children: React.ReactNode }) {
-  const [message, setMessage] = useState<string | null>(null);
+  const [toast, setToast] = useState<{
+    message: string;
+    action?: ToastAction;
+  } | null>(null);
   const timer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 
-  const show = useCallback((next: string) => {
-    setMessage(next);
+  const hide = useCallback(() => {
     clearTimeout(timer.current);
-    timer.current = setTimeout(() => setMessage(null), VISIBLE_MS);
+    setToast(null);
+  }, []);
+
+  const show = useCallback((message: string, action?: ToastAction) => {
+    setToast({ message, action });
+    clearTimeout(timer.current);
+    timer.current = setTimeout(
+      () => setToast(null),
+      action ? VISIBLE_WITH_ACTION_MS : VISIBLE_MS,
+    );
   }, []);
 
   useEffect(() => () => clearTimeout(timer.current), []);
@@ -36,10 +54,23 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
   return (
     <ToastContext.Provider value={value}>
       {children}
-      {message ? (
-        <View style={s.wrap} pointerEvents='none'>
+      {toast ? (
+        <View style={s.wrap} pointerEvents='box-none'>
           <View style={s.toast} accessibilityLiveRegion='polite'>
-            <Text style={s.text}>{message}</Text>
+            <Text style={s.text}>{toast.message}</Text>
+            {toast.action ? (
+              <Pressable
+                onPress={() => {
+                  toast.action?.onPress();
+                  hide();
+                }}
+                hitSlop={8}
+                accessibilityRole='button'
+                accessibilityLabel={toast.action.label}
+              >
+                <Text style={s.action}>{toast.action.label}</Text>
+              </Pressable>
+            ) : null}
           </View>
         </View>
       ) : null}
@@ -61,10 +92,14 @@ const s = StyleSheet.create({
     paddingHorizontal: space.lg,
   },
   toast: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: space.md,
     backgroundColor: colors.ink,
     borderRadius: radius.lg,
     paddingHorizontal: space.md,
     paddingVertical: 10,
   },
   text: { fontFamily: font.medium, fontSize: 13, color: colors.paper },
+  action: { fontFamily: font.semibold, fontSize: 13, color: colors.sun },
 });

@@ -1,7 +1,8 @@
 import React, { useEffect, useRef } from 'react';
 import { View, Text, StyleSheet, Animated, Easing } from 'react-native';
 import Svg, { Circle } from 'react-native-svg';
-import { colors, font } from '@shared/theme';
+import { colors, font, typography } from '@shared/theme';
+import { useReduceMotion } from '@shared/hooks/useReduceMotion';
 
 const AnimatedCircle = Animated.createAnimatedComponent(Circle);
 
@@ -40,8 +41,13 @@ function DayRingBase({
   const r = 12;
   const circ = 2 * Math.PI * r;
   const fill = useRef(new Animated.Value(0)).current;
+  const still = useReduceMotion();
 
   useEffect(() => {
+    if (still) {
+      fill.setValue(1);
+      return;
+    }
     fill.setValue(0);
     Animated.timing(fill, {
       toValue: 1,
@@ -50,7 +56,7 @@ function DayRingBase({
       easing: Easing.out(Easing.cubic),
       useNativeDriver: false,
     }).start();
-  }, [progress, replayKey, delay, fill]);
+  }, [progress, replayKey, delay, fill, still]);
 
   const ringOffset = fill.interpolate({
     inputRange: [0, 1],
@@ -95,12 +101,8 @@ function DayRingBase({
             transform='rotate(-90 15 15)'
           />
         </Svg>
-        {moved ? (
-          <View
-            style={cs.moved}
-            accessibilityLabel='Goal reached by movement'
-          />
-        ) : null}
+        {/* The week strip's button label says "goal reached by movement". */}
+        {moved ? <View style={cs.moved} /> : null}
       </View>
       <Text
         style={[
@@ -135,5 +137,5 @@ const cs = StyleSheet.create({
     borderWidth: 1.5,
     borderColor: 'transparent',
   },
-  dayLabel: { fontFamily: font.body, fontSize: 9.5, color: colors.ink2 },
+  dayLabel: typography.small,
 });

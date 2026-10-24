@@ -179,7 +179,7 @@ const s = StyleSheet.create({
     alignItems: 'center',
   },
   statVal: { fontFamily: font.bold, fontSize: 15, color: colors.ink },
-  statLabel: { fontFamily: font.body, fontSize: 9.5, color: colors.ink2 },
+  statLabel: typography.small,
   legend: {
     flexDirection: 'row',
     justifyContent: 'flex-start',

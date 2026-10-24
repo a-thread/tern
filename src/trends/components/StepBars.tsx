@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-import { colors, font, space } from '@shared/theme';
+import { colors, space, typography } from '@shared/theme';
 import { DayState } from '@shared/models/dayState';
 import { LegendDot } from './LegendDot';
 
@@ -109,10 +109,8 @@ const cs = StyleSheet.create({
   goalTag: {
     position: 'absolute',
     right: 0,
-    top: -8,
-    fontFamily: font.body,
-    fontSize: 9,
-    color: colors.ink3,
+    top: -9,
+    ...typography.tick,
     backgroundColor: colors.card,
     paddingHorizontal: 3,
   },
@@ -126,13 +124,7 @@ const cs = StyleSheet.create({
   },
   bar: { width: '100%', borderTopLeftRadius: 3, borderTopRightRadius: 3 },
   labelRow: { flexDirection: 'row', marginTop: 4 },
-  barLabel: {
-    flex: 1,
-    textAlign: 'center',
-    fontFamily: font.body,
-    fontSize: 9,
-    color: colors.ink3,
-  },
+  barLabel: { ...typography.tick, flex: 1, textAlign: 'center' },
   legend: {
     flexDirection: 'row',
     justifyContent: 'center',

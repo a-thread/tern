@@ -137,7 +137,7 @@ describe('AuthGate without an account', () => {
   it('shows the sign-in screens only once they are asked for', async () => {
     mockAuth.signingIn = true;
     render(app());
-    expect(await screen.findByText('Continue without an account')).toBeTruthy();
+    expect(await screen.findByLabelText('Settings')).toBeTruthy();
     expect(screen.queryByText('0 rest days')).toBeNull();
   });
 

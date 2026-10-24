@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { Animated, Easing } from 'react-native';
+import { useReduceMotion } from './useReduceMotion';
 
 /** Limit display updates so the number remains readable. */
 const NUMBER_UPDATE_MS = 66;
@@ -46,9 +47,10 @@ export function useAnimatedNumber(value: number, duration = 650) {
 export function usePulseOnIncrease(value: number) {
   const scale = useRef(new Animated.Value(1)).current;
   const prevValue = useRef(value);
+  const still = useReduceMotion();
 
   useEffect(() => {
-    if (value > prevValue.current) {
+    if (value > prevValue.current && !still) {
       scale.setValue(1);
       Animated.sequence([
         Animated.timing(scale, {
@@ -66,7 +68,7 @@ export function usePulseOnIncrease(value: number) {
       ]).start();
     }
     prevValue.current = value;
-  }, [value, scale]);
+  }, [value, scale, still]);
 
   return scale;
 }

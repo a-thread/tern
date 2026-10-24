@@ -72,6 +72,7 @@ export default function PaywallScreen({ onBack }: { onBack: () => void }) {
       showMark
       title='Tern Plus'
       subtitle='Everything in Tern stays free. Plus adds an account that keeps your data safe.'
+      onBack={onBack}
     >
       <AuthBanner variant='error' message={error || null} />
       <AuthBanner

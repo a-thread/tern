@@ -21,12 +21,20 @@ export function SheetNav({
 }) {
   return (
     <View style={s.sheetNav}>
-      <Pressable onPress={onLeftPress} hitSlop={8}>
+      <Pressable onPress={onLeftPress} hitSlop={8} accessibilityRole='button'>
         <Text style={s.sheetCancel}>{leftLabel}</Text>
       </Pressable>
-      <Text style={s.sheetTitle}>{title}</Text>
+      <Text style={s.sheetTitle} accessibilityRole='header'>
+        {title}
+      </Text>
       {rightLabel ? (
-        <Pressable onPress={onRightPress} disabled={rightDisabled} hitSlop={8}>
+        <Pressable
+          onPress={onRightPress}
+          disabled={rightDisabled}
+          hitSlop={8}
+          accessibilityRole='button'
+          accessibilityState={{ disabled: !!rightDisabled }}
+        >
           <Text style={[s.sheetSave, rightDisabled && { color: colors.ink3 }]}>
             {rightLabel}
           </Text>
@@ -50,7 +58,13 @@ export function PushHeader({
 }) {
   return (
     <View style={s.pushHeader}>
-      <Pressable onPress={onBack} hitSlop={8} style={s.pushBack}>
+      <Pressable
+        onPress={onBack}
+        hitSlop={8}
+        style={s.pushBack}
+        accessibilityRole='button'
+        accessibilityLabel={backLabel}
+      >
         <Icon name='chevron-left' size={17} color={colors.coral} />
         <Text style={s.pushBackText} numberOfLines={1}>
           {backLabel}
