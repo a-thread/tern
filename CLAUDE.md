@@ -34,7 +34,7 @@ src/
 3. **Used by several components of the same screen or tab** → the closest common parent's
    `components/`, `hooks/`, `models/` or `utils/`.
 4. **Used across tabs** → `domain/<name>/` if it is about the app's data or rules (a Context, a
-   repository, a model, a hook that reads them), `shared/` if it is UI or plumbing several tabs use (it may read `domain/`, e.g. `FoodSummary`).
+   repository, a model, a hook that reads them), `shared/` if it is UI or plumbing several tabs use (it may read `domain/`, e.g. `IntakeBars`).
 5. `shared/` means used by **more than one component or util**. One consumer means it moves next to
    that consumer. When a second tab starts using something, promote it then, not before.
 6. Models, hooks and utils ship alongside the components that use them, the same way.

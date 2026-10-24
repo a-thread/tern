@@ -1,7 +1,7 @@
 import React from 'react';
 
 import { useViewedDay } from '@shared/state/ViewedDayContext';
-import { FoodSummary } from '@shared/components/FoodSummary/FoodSummary';
+import { IntakeBars } from '@shared/components/IntakeBars/IntakeBars';
 import { LeftToDoList } from './LeftToDoList';
 import { DoneList } from './DoneList/DoneList';
 import { TargetSuggestionCard } from './TargetSuggestionCard';
@@ -18,7 +18,7 @@ export function DayLists({ resting }: { resting: boolean }) {
       <LeftToDoList />
       <DoneList />
       {/* Empty while neither calories nor macros are tracked. */}
-      <FoodSummary />
+      <IntakeBars />
       {isToday && !resting ? <TargetSuggestionCard /> : null}
     </>
   );

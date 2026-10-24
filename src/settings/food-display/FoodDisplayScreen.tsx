@@ -101,12 +101,6 @@ export default function FoodDisplayScreen() {
               on={settings.showCalories}
               onToggle={(v) => updateSettings({ showCalories: v })}
             />
-            <ToggleRow
-              title='Show remaining vs. target'
-              sub='Off shows totals only, with no "left today" figure'
-              on={settings.showRemainingVsTarget}
-              onToggle={(v) => updateSettings({ showRemainingVsTarget: v })}
-            />
           </Group>
         ) : (
           <FootNote>
@@ -120,14 +114,14 @@ export default function FoodDisplayScreen() {
             <Group>
               <ToggleRow
                 title='Show intake bars'
-                sub='Calories and macros at the top of the Food page'
+                sub='Nutrient totals at the top of the Food page.'
                 on={settings.showIntakeBars}
                 onToggle={(v) => updateSettings({ showIntakeBars: v })}
               />
             </Group>
             <FootNote>
-              Bars never turn red or warn you. Set the calorie zone and protein
-              minimum under Settings, then Calorie & macro targets.
+              Bars never turn red or warn you. Set your calorie zone and protein
+              minimum under Settings → Calorie & macro targets.
             </FootNote>
           </>
         ) : null}

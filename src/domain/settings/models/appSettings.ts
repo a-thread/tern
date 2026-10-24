@@ -43,7 +43,6 @@ export type AppSettings = {
   showTiers: boolean;
   showTierNumber: boolean;
   showCalories: boolean;
-  showRemainingVsTarget: boolean;
   restDaysPerWeek: number;
   autoDetectRestDays: boolean;
   reminders: ReminderSettings;
@@ -96,7 +95,6 @@ export const initialSettings: AppSettings = {
   showTiers: settingsSeed.showTiers,
   showTierNumber: true,
   showCalories: settingsSeed.showCalories,
-  showRemainingVsTarget: false,
   restDaysPerWeek: 2,
   autoDetectRestDays: true,
   reminders: Reminders.DEFAULTS,

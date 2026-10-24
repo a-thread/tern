@@ -3,7 +3,7 @@ import { Pressable, StyleSheet, Text } from 'react-native';
 
 import { colors, font, space } from '@shared/theme';
 import { useViewedDay } from '@shared/state/ViewedDayContext';
-import { FoodSummary } from '@shared/components/FoodSummary/FoodSummary';
+import { IntakeBars } from '@shared/components/IntakeBars/IntakeBars';
 import { useFood } from '@/domain/food/FoodContext';
 import { DoneList } from './DoneList/DoneList';
 
@@ -34,7 +34,7 @@ export function RestDayLists({
         </Pressable>
       ) : null}
       <DoneList quietWhenEmpty />
-      {foodLog.length > 0 ? <FoodSummary /> : null}
+      {foodLog.length > 0 ? <IntakeBars /> : null}
     </>
   );
 }
