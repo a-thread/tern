@@ -108,7 +108,7 @@ export default function JourneyScreen() {
         refreshControl={refreshControl}
         contentContainerStyle={{
           paddingHorizontal: space.lg,
-          paddingBottom: 100,
+          paddingBottom: space.lg,
         }}
       >
         {next ? (

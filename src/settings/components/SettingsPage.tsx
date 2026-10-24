@@ -30,7 +30,7 @@ export function SettingsPage({
       <ScrollView
         contentContainerStyle={{
           paddingHorizontal: space.lg,
-          paddingBottom: 60,
+          paddingBottom: space.lg,
         }}
       >
         {children}
