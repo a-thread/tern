@@ -20,6 +20,18 @@ export type SettingsStackParamList = {
   Medication: undefined;
 };
 
+/** The setup wizard's screens; the names match `WizardStep`. */
+export type WelcomeStackParamList = {
+  Intro: undefined;
+  Track: undefined;
+  Steps: undefined;
+  FoodStyle: undefined;
+  CalorieTarget: undefined;
+  TargetZone: undefined;
+  Account: undefined;
+  Reminders: undefined;
+};
+
 export type RestDayParams = {
   dayName: string;
   steps: number;
@@ -27,6 +39,8 @@ export type RestDayParams = {
 };
 
 export type RootStackParamList = {
+  /** The setup wizard, only while a new install hasn't finished or skipped it. */
+  Welcome: NavigatorScreenParams<WelcomeStackParamList> | undefined;
   Tabs: NavigatorScreenParams<TabParamList> | undefined;
   LogFood: { meal: FoodEntry['meal'] };
   LogWeight: undefined;

@@ -13,6 +13,7 @@ import { useNavigation } from '@react-navigation/native';
 
 import { colors, font, radius, space, typography } from '@shared/theme';
 import { useToast } from '@shared/state/ToastContext';
+import { useConnectHealth } from '@shared/hooks/useConnectHealth';
 import { healthAccessPath, healthAppName } from '@shared/utils/healthApp';
 import {
   Group,
@@ -40,47 +41,18 @@ export default function HealthDataScreen() {
   const { settings, updateSettings } = useSettings();
   const hd = settings.healthData;
   const movement = useMovement();
-  const { status, refresh, connect, days } = useActivity();
+  const { status, refresh, days } = useActivity();
   const lastSynced = useLastSynced();
   const toast = useToast();
-  const [busy, setBusy] = useState(false);
+  const connecting = useConnectHealth();
+  const requestAccess = connecting.requestAccess;
+  const [syncing, setSyncing] = useState(false);
+  const busy = connecting.busy || syncing;
   const healthApp = healthAppName();
-
-  /**
-   * Asks for access to steps (the health app's permission prompt), and to workouts when they
-   * count as movement, and says how it went.
-   */
-  const requestAccess = async () => {
-    if (busy) return;
-    setBusy(true);
-    try {
-      const result = await connect();
-      const wantsWorkouts =
-        settings.trackMovement && hd.readWorkouts && movement.workoutsAvailable;
-      const workoutsAllowed =
-        result !== StepsStatus.Connected ||
-        !wantsWorkouts ||
-        (await movement.connectWorkouts());
-      toast.show(
-        result === StepsStatus.Connected
-          ? workoutsAllowed
-            ? `${healthApp} is connected.`
-            : `${healthApp} is connected. Allow Tern to read workouts in ${healthApp} to count them.`
-          : result === StepsStatus.Unavailable
-            ? `${healthApp} isn't available on this device.`
-            : 'Tern still needs permission to read your steps.',
-      );
-    } catch (e) {
-      console.warn(`Could not connect ${healthApp}`, e);
-      toast.show(`Couldn't connect ${healthApp} — please try again.`);
-    } finally {
-      setBusy(false);
-    }
-  };
 
   const syncNow = async () => {
     if (busy) return;
-    setBusy(true);
+    setSyncing(true);
     try {
       const result = await refresh();
       toast.show(
@@ -91,7 +63,7 @@ export default function HealthDataScreen() {
             : "Steps aren't connected — tap Off to allow access.",
       );
     } finally {
-      setBusy(false);
+      setSyncing(false);
     }
   };
 

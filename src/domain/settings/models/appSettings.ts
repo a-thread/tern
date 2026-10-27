@@ -7,6 +7,7 @@ import { Aim } from './aim';
 import { settingsSeed } from '../settings.mock';
 import { Frequency } from '@shared/models/frequency';
 import { type ReminderConfig, Reminders } from './reminderPlan';
+import { Onboarding, type OnboardingState } from './onboarding';
 
 export type ReminderSettings = ReminderConfig;
 
@@ -75,6 +76,8 @@ export type AppSettings = {
    */
   celebratedMilestone: number | null;
   healthData: HealthDataSettings;
+  /** The setup wizard, tips and getting-started card; see `loadOnboarding`. */
+  onboarding: OnboardingState;
 };
 
 export const initialSettings: AppSettings = {
@@ -114,6 +117,7 @@ export const initialSettings: AppSettings = {
     readSteps: true,
     readWorkouts: true,
   },
+  onboarding: Onboarding.NEW,
 };
 
 /**

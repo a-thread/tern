@@ -18,6 +18,8 @@ import { RestDayLists } from './components/RestDayLists';
 import { DayLists } from './components/DayLists';
 import { CelebrationBurst } from './components/CelebrationBurst';
 import WaterSheet from './components/WaterSheet';
+import { useTodayTips } from './hooks/useTodayTips';
+import { TipOverlay } from '@shared/components/TipOverlay/TipOverlay';
 
 /**
  * The Today tab: steps, the week, what is left to do and what is done, and the waypoint
@@ -40,6 +42,12 @@ export default function TodayScreen() {
     rest.holdCelebrations || waterSheet.showing,
   );
   useMilestoneReward(playing !== null || waterSheet.showing);
+  // The one-time tips wait for the same things, and for any celebration to finish.
+  const tips = useTodayTips({
+    rootRef,
+    chipRef,
+    hold: rest.holdCelebrations || waterSheet.showing || playing !== null,
+  });
 
   return (
     <WaterSheetContext.Provider value={waterSheet.open}>
@@ -59,7 +67,11 @@ export default function TodayScreen() {
           ) : (
             <StepsHero heroRef={heroRef} replayKey={flightKey} />
           )}
-          <WeekStrip replayKey={replayKey} />
+          <WeekStrip
+            replayKey={replayKey}
+            stripRef={tips.stripRef}
+            restRef={tips.restRef}
+          />
           {calm ? (
             <RestDayLists onReveal={reveal} leaving={rest.leaving} />
           ) : (
@@ -69,6 +81,17 @@ export default function TodayScreen() {
 
         {playing ? (
           <CelebrationBurst playing={playing} onDone={finish} />
+        ) : null}
+        {tips.shown && tips.text ? (
+          <TipOverlay
+            rect={tips.shown.rect}
+            lead={tips.text.lead}
+            rest={tips.text.rest}
+            position={tips.shown.position}
+            total={tips.shown.total}
+            onGotIt={tips.gotIt}
+            onSkip={tips.skipAll}
+          />
         ) : null}
       </View>
       <WaterSheet

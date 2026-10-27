@@ -135,10 +135,29 @@ describe('AuthGate without an account', () => {
   });
 
   it('shows the sign-in screens only once they are asked for', async () => {
-    mockAuth.signingIn = true;
     render(app());
-    expect(await screen.findByLabelText('Settings')).toBeTruthy();
-    expect(screen.queryByText('0 rest days')).toBeNull();
+    await screen.findByText('0 rest days');
+    expect(screen.queryByText('Forgot password?')).toBeNull();
+
+    mockAuth.signingIn = true;
+    await act(async () => screen.rerender(app()));
+    expect(await screen.findByText('Forgot password?')).toBeTruthy();
+  });
+
+  it('keeps the app where it was under the sign-in screens, so closing them goes back there', async () => {
+    const ui = render(app());
+    await screen.findByText('0 rest days');
+
+    mockAuth.signingIn = true;
+    await act(async () => ui.rerender(app()));
+    await screen.findByText('Forgot password?');
+    mockAuth.signingIn = false;
+    await act(async () => ui.rerender(app()));
+
+    expect(screen.queryByText('Forgot password?')).toBeNull();
+    expect(screen.getByText('0 rest days')).toBeTruthy();
+    // Never unmounted, so nothing (Settings, a scroll position) had to be rebuilt.
+    expect(mounts).toBe(1);
   });
 
   it('reloads the app from the emptied database after "Delete my data"', async () => {

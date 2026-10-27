@@ -12,13 +12,23 @@ import { factForDay } from './utils/ternFacts';
 import { dayRingLabel } from './utils/dayRingLabel';
 import { DayState } from '@shared/models/dayState';
 import { StepsStatus } from '@/domain/activity/models/stepsStatus';
+import { reachedGoalToday, showsRestLink } from '../../models/restLink';
 
 /**
  * This week's seven rings, a fact for the day, and the rest-day link. Tapping a
  * day that has happened views it (see `useViewedDay`): Home and Food show that day,
  * and a link here leads back to today.
  */
-export function WeekStrip({ replayKey }: { replayKey: number }) {
+export function WeekStrip({
+  replayKey,
+  stripRef,
+  restRef,
+}: {
+  replayKey: number;
+  /** The rings and the rest-day link, for the tips on Today to point at. */
+  stripRef?: React.RefObject<View | null>;
+  restRef?: React.RefObject<View | null>;
+}) {
   const {
     day: selectedDay,
     today: todayKey,
@@ -36,16 +46,20 @@ export function WeekStrip({ replayKey }: { replayKey: number }) {
     takeRestDay,
     undoRestDay,
   } = useActivity();
-  const reached =
-    todaySteps / settings.stepGoal >= 1 ||
-    week.find((d) => d.isToday)?.state === DayState.Goal;
+  const today = {
+    todaySteps,
+    stepGoal: settings.stepGoal,
+    todayState: week.find((d) => d.isToday)?.state,
+  };
+  const reached = reachedGoalToday(today);
+  const restLink = showsRestLink({ ...today, todayIsRest, restLeft });
   const movementGoal = settings.trackMovement
     ? settings.movementGoalMinutes
     : 0;
 
   return (
     <>
-      <View style={s.weekRow}>
+      <View ref={stripRef} collapsable={false} style={s.weekRow}>
         {week.map((d, i) => (
           <Pressable
             key={d.day}
@@ -86,31 +100,37 @@ export function WeekStrip({ replayKey }: { replayKey: number }) {
         <Pressable onPress={showToday} hitSlop={8} accessibilityRole='button'>
           <Text style={[s.restLink, s.backLink]}>Back to today</Text>
         </Pressable>
-      ) : reached ? null : todayIsRest ? (
-        <Pressable
-          onPress={() => {
-            easeLayout(); // the page glides to its new shape
-            undoRestDay();
-          }}
-          hitSlop={8}
-          accessibilityRole='button'
-        >
-          <Text style={s.restLink}>Undo today's rest day</Text>
-        </Pressable>
-      ) : restLeft > 0 ? (
-        <Pressable
-          onPress={() => {
-            easeLayout(); // the page glides to its new shape
-            takeRestDay();
-          }}
-          hitSlop={8}
-          accessibilityRole='button'
-        >
-          <Text style={s.restLink}>
-            Take today as a rest day · {restLeft} left this week
-          </Text>
-        </Pressable>
-      ) : status === StepsStatus.Connected ? (
+      ) : restLink && todayIsRest ? (
+        // Wrapped in a view Android won't flatten away, so the tip on Today can measure it;
+        // it hugs the text, so the tip's outline does too.
+        <View ref={restRef} collapsable={false} style={s.restAnchor}>
+          <Pressable
+            onPress={() => {
+              easeLayout(); // the page glides to its new shape
+              undoRestDay();
+            }}
+            hitSlop={8}
+            accessibilityRole='button'
+          >
+            <Text style={[s.restLink, s.anchored]}>Undo today's rest day</Text>
+          </Pressable>
+        </View>
+      ) : restLink ? (
+        <View ref={restRef} collapsable={false} style={s.restAnchor}>
+          <Pressable
+            onPress={() => {
+              easeLayout(); // the page glides to its new shape
+              takeRestDay();
+            }}
+            hitSlop={8}
+            accessibilityRole='button'
+          >
+            <Text style={[s.restLink, s.anchored]}>
+              Take today as a rest day · {restLeft} left this week
+            </Text>
+          </Pressable>
+        </View>
+      ) : !reached && status === StepsStatus.Connected ? (
         <Text style={[s.restLink, s.restNote]}>
           This week's rest days are used · more on Monday
         </Text>
@@ -143,5 +163,8 @@ const s = StyleSheet.create({
     marginTop: space.sm,
   },
   restNote: { fontFamily: font.body, color: colors.ink3 },
+  // The anchor carries the link's top margin, so the outline sits snug on the text.
+  restAnchor: { alignSelf: 'center', marginTop: space.sm },
+  anchored: { marginTop: 0 },
   backLink: { color: colors.coral },
 });

@@ -103,7 +103,11 @@ export function leftToDo(
     options.weighIn === undefined
       ? { frequency: Frequency.Daily, weekday: 1 }
       : options.weighIn;
-  if (weighIn && !options.weighInSkipped && weighInDue(lastWeight, now, weighIn)) {
+  if (
+    weighIn &&
+    !options.weighInSkipped &&
+    weighInDue(lastWeight, now, weighIn)
+  ) {
     items.push({ kind: 'weight' });
   }
 

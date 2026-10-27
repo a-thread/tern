@@ -14,7 +14,7 @@ import {
 
 /** Syncs scheduled reminders with settings. */
 export function RemindersSync() {
-  const { settings, ready } = useSettings();
+  const { settings, ready, updateSettings } = useSettings();
   const toast = useToast();
   const today = useDayKey();
   const activity = useActivity();
@@ -47,9 +47,41 @@ export function RemindersSync() {
     (trackMood && reminders.mood.on) ||
     medications.some((m) => m.remind);
 
+  // A new install doesn't schedule anything (which would ask to send notifications) until a
+  // reminder is chosen: "Turn on reminders" in the wizard, or changing a reminder later on.
+  const { onboarding } = settings;
+  const waiting = !onboarding.wizardDone || !onboarding.notificationsAsked;
+  const choiceKey = JSON.stringify({
+    reminders,
+    weighInFrequency,
+    medications,
+    trackWater,
+    trackMood,
+    trackWeight,
+  });
+  const choiceWhenWaiting = useRef<string | null>(null);
+  useEffect(() => {
+    if (!ready) return;
+    // Choices made inside the wizard are its own business; its last screen asks or doesn't.
+    if (!onboarding.wizardDone) {
+      choiceWhenWaiting.current = null;
+      return;
+    }
+    if (onboarding.notificationsAsked) return;
+    if (choiceWhenWaiting.current === null) {
+      choiceWhenWaiting.current = choiceKey;
+      return;
+    }
+    if (choiceKey !== choiceWhenWaiting.current && anyOn) {
+      updateSettings({
+        onboarding: { ...onboarding, notificationsAsked: true },
+      });
+    }
+  }, [ready, onboarding, choiceKey, anyOn, updateSettings]);
+
   useEffect(() => {
     // Wait until completion state is ready before scheduling.
-    if (!ready || !doneReady) return;
+    if (!ready || !doneReady || waiting) return;
     if (key === lastKey.current) return;
     const firstRun = lastKey.current === null;
     lastKey.current = key;
@@ -75,7 +107,7 @@ export function RemindersSync() {
       .catch((e) => console.warn('Could not schedule reminders', e));
     // `key` captures all reminder fields.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [ready, doneReady, key, toast]);
+  }, [ready, doneReady, key, toast, waiting]);
 
   // Plan streak alerts only when steps are readable; clear them at the goal or on rest days.
   const stepsReadable =

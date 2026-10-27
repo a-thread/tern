@@ -14,7 +14,7 @@ import { useActivity } from '../../domain/activity/ActivityContext';
 import { suggestGoal } from '../../domain/activity/models/stepGoal';
 import { StepGoal } from '../../domain/settings/models/stepGoalHistory';
 import { useSettings } from '../../domain/settings/SettingsContext';
-import { useSliderValue } from '../hooks/useSliderValue';
+import { useSliderValue } from '@shared/hooks/useSliderValue';
 
 const MIN = StepGoal.MIN;
 const MAX = StepGoal.MAX;

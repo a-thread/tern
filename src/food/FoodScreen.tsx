@@ -42,6 +42,8 @@ import { MealCheckInRow } from './components/MealCheckInRow/MealCheckInRow';
 import { TierDot } from '@shared/components/TierDot';
 import { IntakeBars } from '@shared/components/IntakeBars/IntakeBars';
 import { useRootNavigation } from '../navigation/useAppNavigation';
+import { TipOverlay } from '@shared/components/TipOverlay/TipOverlay';
+import { useFoodTips } from './hooks/useFoodTips';
 
 export default function FoodScreen() {
   // Today unless a past day was picked on Home; yesterday can still be filled in.
@@ -69,6 +71,7 @@ export default function FoodScreen() {
     mealCheckIns.reload,
   ]);
   const toast = useToast();
+  const tips = useFoodTips();
 
   // A swipe removes at once, so the toast offers it back (as a new entry in the same meal).
   const removeWithUndo = ({ id, ...entry }: FoodEntry) => {
@@ -81,6 +84,8 @@ export default function FoodScreen() {
 
   return (
     <View
+      ref={tips.rootRef}
+      collapsable={false}
       style={{ flex: 1, backgroundColor: colors.paper, paddingTop: insets.top }}
     >
       <TabHeader
@@ -155,22 +160,30 @@ export default function FoodScreen() {
                       : []),
                     ...items.map((item) =>
                       editable ? (
-                        <SwipeToRemove
+                        // The first food is where the swipe tip points.
+                        <View
                           key={item.id}
-                          onRemove={() => removeWithUndo(item)}
+                          ref={
+                            item.id === tips.firstFoodId
+                              ? tips.firstFoodRef
+                              : undefined
+                          }
+                          collapsable={false}
                         >
-                          <FoodRow
-                            item={item}
-                            showTiers={settings.showTiers}
-                            showTierNumber={settings.showTierNumber}
-                            showCalories={showCalories}
-                            onPress={() =>
-                              navigation.navigate('EditFood', {
-                                entryId: item.id,
-                              })
-                            }
-                          />
-                        </SwipeToRemove>
+                          <SwipeToRemove onRemove={() => removeWithUndo(item)}>
+                            <FoodRow
+                              item={item}
+                              showTiers={settings.showTiers}
+                              showTierNumber={settings.showTierNumber}
+                              showCalories={showCalories}
+                              onPress={() =>
+                                navigation.navigate('EditFood', {
+                                  entryId: item.id,
+                                })
+                              }
+                            />
+                          </SwipeToRemove>
+                        </View>
                       ) : (
                         <FoodRow
                           key={item.id}
@@ -207,11 +220,21 @@ export default function FoodScreen() {
                           ]
                         : core && !skipped
                           ? [
-                              <SkipMealRow
+                              // The first open meal's is where the "counts as logged" tip points.
+                              <View
                                 key='skip'
-                                text={`No ${name} ${when}`}
-                                onPress={() => setMealSkipped(key, true)}
-                              />,
+                                ref={
+                                  key === tips.skipMeal
+                                    ? tips.skipMealRef
+                                    : undefined
+                                }
+                                collapsable={false}
+                              >
+                                <SkipMealRow
+                                  text={`No ${name} ${when}`}
+                                  onPress={() => setMealSkipped(key, true)}
+                                />
+                              </View>,
                             ]
                           : []),
                   ]}
@@ -232,6 +255,18 @@ export default function FoodScreen() {
           </FootNote>
         )}
       </ScrollView>
+
+      {tips.shown && tips.text ? (
+        <TipOverlay
+          rect={tips.shown.rect}
+          lead={tips.text.lead}
+          rest={tips.text.rest}
+          position={tips.shown.position}
+          total={tips.shown.total}
+          onGotIt={tips.gotIt}
+          onSkip={tips.skipAll}
+        />
+      ) : null}
     </View>
   );
 }

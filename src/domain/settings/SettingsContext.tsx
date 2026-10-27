@@ -23,6 +23,7 @@ import { Frequency } from '@shared/models/frequency';
 import { sanitizeCalorieZone } from './models/calorieZone';
 import { clampMovementGoal } from './models/movementGoal';
 import { Aim } from './models/aim';
+import { loadOnboarding } from './models/onboarding';
 
 type SettingsContextValue = {
   settings: AppSettings;
@@ -98,6 +99,8 @@ export function SettingsProvider({
               : null,
           // A setting added later inside health data takes its default.
           healthData: { ...defaults.healthData, ...saved?.healthData },
+          // Decided here, before anything saves: no saved settings at all is a new install.
+          onboarding: loadOnboarding(saved?.onboarding, saved !== null),
           trackWeight: flag(saved?.trackWeight, defaults.trackWeight),
           trackCalories: flag(saved?.trackCalories, defaults.trackCalories),
           showIntakeBars: flag(saved?.showIntakeBars, defaults.showIntakeBars),
