@@ -7,6 +7,9 @@ import { useReduceMotion } from '@shared/hooks/useReduceMotion';
 import { useAnimatedNumber } from '@shared/hooks/useAnimatedNumber';
 import type { RootStackParamList } from '../../navigation/types';
 import { useSettings } from '../../domain/settings/SettingsContext';
+import { useActivity } from '@/domain/activity/ActivityContext';
+import { useFood } from '@/domain/food/FoodContext';
+import { useViewedDay } from '@shared/state/ViewedDayContext';
 import { useWaypoints } from '../../domain/waypoints/WaypointsContext';
 import { useLastSeenTotal } from './hooks/useLastSeenTotal';
 import {
@@ -36,6 +39,10 @@ export default function WaypointsScreen({ route }: Props) {
   const { streak } = route.params;
   const { waypoints, events } = useWaypoints();
   const { settings } = useSettings();
+  const { goalReachable, todayRestCounts } = useActivity();
+  // The food log follows the viewed day, so its skips only count while that's today.
+  const food = useFood();
+  const { isToday } = useViewedDay();
   const today = useDayKey();
   const { lastSeen, remember } = useLastSeenTotal();
 
@@ -45,11 +52,17 @@ export default function WaypointsScreen({ route }: Props) {
   useEffect(() => () => remember(latest.current), [remember]);
 
   const { lines, total: todayTotal } = earnedOn(events, today);
-  const open = stillOpen(events, today, {
-    mood: settings.trackMood,
-    water: settings.trackWater,
-    movement: settings.trackMovement,
-  });
+  // Nothing is pressed on a rest day: it's a day off, not a day with things left to do.
+  const open = todayRestCounts
+    ? []
+    : stillOpen(events, today, {
+        goal: goalReachable,
+        food: settings.trackFood,
+        mood: settings.trackMood,
+        water: settings.trackWater,
+        movement: settings.trackMovement,
+        skippedMeals: isToday ? food.skippedMeals : [],
+      });
   // Where the count starts, fixed once read: the last total seen here, or (the first time)
   // the total before today's awards.
   const [start, setStart] = useState<number | null>(null);

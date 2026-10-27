@@ -28,7 +28,7 @@ const PROMISES = [
     key: 'no-guilt',
     icon: <Icon name='heart-outline' size={18} color={colors.aurora} />,
     tint: colors.auroraTint,
-    text: 'No guilt: going over a target is never flagged',
+    text: 'Targets are guides: nothing is flagged, above or below',
   },
 ];
 
@@ -51,7 +51,7 @@ export default function IntroScreen() {
           accessibilityLabel='Tern'
         />
       }
-      title='Progress at your pace'
+      title='Progress answers to your pace'
       body='A minute of setup, then Today is yours.'
       primary={{ label: 'Get started', onPress: wizard.next }}
       skip={{ label: 'Skip setup', onPress: () => wizard.finish() }}

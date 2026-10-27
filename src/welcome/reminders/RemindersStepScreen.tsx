@@ -2,6 +2,7 @@ import React from 'react';
 
 import { Group, ToggleRow } from '@shared/components/ui';
 import { useSettings } from '@/domain/settings/SettingsContext';
+import { describeReminders } from '@/domain/settings/models/reminderPlan';
 import { WizardStep } from '../components/WizardStep/WizardStep';
 import { useWizard } from '../hooks/useWizard';
 import { WizardStep as Step } from '../models/wizardSteps';
@@ -14,6 +15,8 @@ export default function RemindersStepScreen() {
   const { settings, updateSettings } = useSettings();
   const wizard = useWizard(Step.Reminders);
   const { reminders } = settings;
+  // The real schedule, as Settings › Reminders words it.
+  const when = describeReminders(reminders, settings.weighInFrequency);
 
   return (
     <WizardStep
@@ -28,23 +31,25 @@ export default function RemindersStepScreen() {
       secondary={{ label: 'Not now', onPress: () => wizard.finish() }}
     >
       <Group>
-        <ToggleRow
-          title='Meal reminders'
-          sub='Midday and evening, if a meal is still open'
-          on={reminders.mealLog.on}
-          onToggle={(on) =>
-            updateSettings({
-              reminders: {
-                ...reminders,
-                mealLog: { ...reminders.mealLog, on },
-              },
-            })
-          }
-        />
+        {settings.trackFood ? (
+          <ToggleRow
+            title='Meal reminders'
+            sub={`${when.meals}, if a meal is still open`}
+            on={reminders.mealLog.on}
+            onToggle={(on) =>
+              updateSettings({
+                reminders: {
+                  ...reminders,
+                  mealLog: { ...reminders.mealLog, on },
+                },
+              })
+            }
+          />
+        ) : null}
         {settings.trackWeight ? (
           <ToggleRow
             title='Weigh-in reminder'
-            sub='Once a week, Monday morning'
+            sub={when.weighIn}
             on={reminders.weighIn.on}
             onToggle={(on) =>
               updateSettings({

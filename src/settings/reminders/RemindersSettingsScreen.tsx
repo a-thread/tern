@@ -13,7 +13,7 @@ import { useSettingsNavigation } from '../../navigation/useAppNavigation';
 
 type Section = keyof Pick<
   SettingsStackParamList,
-  'WeightSettings' | 'WaterSettings' | 'MoodSettings'
+  'FoodSettings' | 'WeightSettings' | 'WaterSettings' | 'MoodSettings'
 >;
 
 /**
@@ -43,7 +43,11 @@ export default function RemindersSettingsScreen() {
 
       <GroupLabel>Meals</GroupLabel>
       <Group>
-        <MealReminderRows />
+        {settings.trackFood ? (
+          <MealReminderRows />
+        ) : (
+          off('Food', 'FoodSettings')
+        )}
       </Group>
 
       <GroupLabel>Weigh-in</GroupLabel>
@@ -64,7 +68,7 @@ export default function RemindersSettingsScreen() {
         )}
       </Group>
 
-      <GroupLabel>Check-in</GroupLabel>
+      <GroupLabel>Mood check-in</GroupLabel>
       <Group>
         {settings.trackMood ? (
           <MoodReminderRows />

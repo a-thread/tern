@@ -31,7 +31,7 @@ describe('earnedOn', () => {
       DAY,
     );
     expect(lines).toEqual([
-      { label: 'Step goal', points: 40 },
+      { label: 'Goal day', points: 40 },
       { label: 'Breakfast and lunch', points: 10 },
       { label: 'Water goal', points: 10 },
     ]);
@@ -60,7 +60,13 @@ describe('earnedOn', () => {
 });
 
 describe('stillOpen', () => {
-  const all = { mood: true, water: true, movement: true };
+  const all = {
+    goal: true,
+    food: true,
+    mood: true,
+    water: true,
+    movement: true,
+  };
 
   it('suggests at most two, the next meal first', () => {
     expect(stillOpen([ev(WaypointSource.Breakfast, 5)], DAY, all)).toEqual([
@@ -77,8 +83,32 @@ describe('stillOpen', () => {
       ev(WaypointSource.Steps, 40),
     ];
     expect(
-      stillOpen(events, DAY, { mood: false, water: true, movement: false }),
+      stillOpen(events, DAY, {
+        goal: true,
+        food: true,
+        mood: false,
+        water: true,
+        movement: false,
+      }),
     ).toEqual([{ label: 'Water goal', points: 10 }]);
+  });
+
+  it('suggests no daily goal when none can be reached', () => {
+    expect(
+      stillOpen([], DAY, { ...all, goal: false }, 10).map((l) => l.label),
+    ).not.toContain('Daily goal');
+  });
+
+  it('moves past a meal marked "nothing today"', () => {
+    expect(
+      stillOpen([], DAY, { ...all, skippedMeals: ['breakfast'] })[0],
+    ).toEqual({ label: 'Log lunch', points: 5 });
+  });
+
+  it('suggests no meal while food is off', () => {
+    expect(
+      stillOpen([], DAY, { ...all, food: false }).map((l) => l.label),
+    ).toEqual(['Check in', 'Water goal']);
   });
 
   it('never suggests a weigh-in, a rest day or medication', () => {
@@ -87,7 +117,7 @@ describe('stillOpen', () => {
       'Log breakfast',
       'Check in',
       'Water goal',
-      'Step goal',
+      'Daily goal',
       'Log movement',
     ]);
   });

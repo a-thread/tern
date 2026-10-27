@@ -41,7 +41,6 @@ function Badge({
  */
 export default function TrackScreen() {
   const { settings, updateSettings } = useSettings();
-  const food = settings.trackCalories || settings.trackMacros;
 
   return (
     <WizardStep
@@ -61,8 +60,8 @@ export default function TrackScreen() {
               tint={colors.kelpTint}
             />
           }
-          on={food}
-          onToggle={(v) => updateSettings({ trackCalories: v, trackMacros: v })}
+          on={settings.trackFood}
+          onToggle={(v) => updateSettings({ trackFood: v })}
         />
         <ToggleRow
           title='Weight'
@@ -113,7 +112,9 @@ export default function TrackScreen() {
           onToggle={(v) => updateSettings({ trackMovement: v })}
         />
       </Group>
-      <FootNote>Steps are always counted.</FootNote>
+      <FootNote>
+        Steps are always part of Tern. Movement is a second way to a goal day.
+      </FootNote>
 
       <GroupLabel>Units</GroupLabel>
       <SegmentedControl

@@ -45,7 +45,9 @@ export default function SettingsScreen({ navigation }: Props) {
   const { settings } = useSettings();
   const auth = useAuth();
   const lapsed = usePlusLapsed();
-  const home = auth ? logHome({ signedIn: Boolean(auth.session), lapsed }) : null;
+  const home = auth
+    ? logHome({ signedIn: Boolean(auth.session), lapsed })
+    : null;
 
   return (
     <View
@@ -161,10 +163,13 @@ export default function SettingsScreen({ navigation }: Props) {
 
         <AccountSection />
 
-        <FootNote>
-          Nutrition data from Open Food Facts, used under the Open Database
-          License, and USDA FoodData Central.
-        </FootNote>
+        {/* The food databases are credited while food is logged, where they're used. */}
+        {settings.trackFood ? (
+          <FootNote>
+            Nutrition data from Open Food Facts, used under the Open Database
+            License, and USDA FoodData Central.
+          </FootNote>
+        ) : null}
       </ScrollView>
     </View>
   );

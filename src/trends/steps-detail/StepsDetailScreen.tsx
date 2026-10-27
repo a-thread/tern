@@ -22,7 +22,7 @@ import { useSettings } from '../../domain/settings/SettingsContext';
 import { bucketSteps } from '../models/stepBars';
 import { longestProtectedRun, summarizeSteps } from '../models/stepsSummary';
 import type { TrendsStackParamList } from '../navigation';
-import { StepsStatus } from '../../domain/activity/models/stepsStatus';
+import { noStepsNote } from '../models/noStepsNote';
 import { DayState } from '@shared/models/dayState';
 
 type Props = NativeStackScreenProps<TrendsStackParamList, 'StepsDetail'>;
@@ -32,8 +32,7 @@ export default function StepsDetailScreen({ navigation }: Props) {
   const [range, setRange] = useState<TrendRange>(TrendRange.Month);
   const { settings } = useSettings();
 
-  const { days, status } = useActivity();
-  const connected = status === StepsStatus.Connected;
+  const { days, status, stepsReadable } = useActivity();
 
   const inRange = days.slice(-TrendRanges.DAYS[range]);
   const { average } = summarizeSteps(days, TrendRanges.DAYS[range]);
@@ -87,7 +86,7 @@ export default function StepsDetailScreen({ navigation }: Props) {
             {average === null ? '—' : average.toLocaleString()}
           </Text>
           <Text style={s.metricSub}>daily average {rangeLabel}</Text>
-          {connected ? (
+          {stepsReadable ? (
             <StepBars
               days={bars}
               goal={settings.stepGoal}
@@ -96,7 +95,7 @@ export default function StepsDetailScreen({ navigation }: Props) {
             />
           ) : (
             <Text style={s.metricSub}>
-              Connect step data in Settings → Health data to see this.
+              {noStepsNote(status, settings.healthData.readSteps)}
             </Text>
           )}
 

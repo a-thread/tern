@@ -9,7 +9,7 @@
 
 Tern is a health tracker built around movement and inspired by the Arctic tern, the bird with the longest regular migration on Earth. Each day you show up, your tern travels a little further along its journey.
 
-Progress is measured in "Waypoints", which you earn by showing up for the habits YOU choose. As you keep at them, your tern moves along its route, reaching milestones on the way. Waypoints are never about the numbers: a weigh-in earns the same whatever the scale says, and calorie totals don't earn or cost you anything.
+Progress is measured in "Waypoints", which you earn by showing up for the habits YOU choose. As you keep at them, your tern moves along its route, reaching milestones on the way. Waypoints are never for your weight or calorie totals: a weigh-in earns the same whatever the scale says, and calorie totals don't earn or cost you anything.
 
 | ![The Today tab](assets/store/home.png) | ![The Food tab](assets/store/food.png) | ![The Journey tab](assets/store/journey.png) | ![The Trends tab](assets/store/trends.png) |
 | :-------------------------------------: | :------------------------------------: | :------------------------------------------: | :----------------------------------------: |

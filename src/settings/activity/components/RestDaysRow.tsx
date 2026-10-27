@@ -15,7 +15,11 @@ export function RestDaysRow({ onPress }: { onPress: () => void }) {
         </IconBadge>
       }
       title='Rest days'
-      sub={`${settings.restDaysPerWeek} per week, streak protected`}
+      sub={
+        settings.restDaysPerWeek > 0
+          ? `${settings.restDaysPerWeek} per week, streak protected`
+          : 'None'
+      }
       chevron
       onPress={onPress}
     />

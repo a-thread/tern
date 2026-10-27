@@ -13,6 +13,8 @@ export enum WizardStep {
 export type WizardInput = {
   /** A health app is on this phone to read steps from. */
   healthAvailable: boolean;
+  trackFood: boolean;
+  trackWeight: boolean;
   trackCalories: boolean;
   trackMacros: boolean;
   showCalories: boolean;
@@ -24,12 +26,13 @@ export type WizardInput = {
 /**
  * The screens that apply, from what has been chosen so far: no Steps screen without a health
  * app, no food screens without food, no calorie target without calorie numbers, no zone
- * without intake bars, and no account invitation once answered or signed in. Worked out again
+ * without intake bars, no account invitation once answered or signed in, and no reminders
+ * without food or weight to remind about. Worked out again
  * after each step, since each step can change it.
  */
 export function wizardSteps(input: WizardInput): WizardStep[] {
-  const food = input.trackCalories || input.trackMacros;
-  const calories = input.trackCalories && input.showCalories;
+  const food = input.trackFood;
+  const calories = food && input.trackCalories && input.showCalories;
   return [
     WizardStep.Intro,
     WizardStep.Track,
@@ -38,7 +41,7 @@ export function wizardSteps(input: WizardInput): WizardStep[] {
     ...(calories ? [WizardStep.CalorieTarget] : []),
     ...(calories && input.showIntakeBars ? [WizardStep.TargetZone] : []),
     ...(input.offerAccount ? [WizardStep.Account] : []),
-    WizardStep.Reminders,
+    ...(food || input.trackWeight ? [WizardStep.Reminders] : []),
   ];
 }
 

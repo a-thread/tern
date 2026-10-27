@@ -20,7 +20,7 @@ const W = 300;
 const H = 90;
 
 /**
- * Estimated burn against logged intake, week by week, for the last eight
+ * Estimated energy use against logged intake, week by week, for the last eight
  * weeks: why the adaptive target moves. Shown in Trends while it's on.
  */
 export function EnergyTrendCard({
@@ -56,7 +56,7 @@ export function EnergyTrendCard({
       foodLog.length,
       refreshKey,
     ], // foodLog.length: read again after logging
-    'Could not load intake and burn',
+    'Could not load the energy estimate',
   );
 
   const values = weeks
@@ -78,13 +78,13 @@ export function EnergyTrendCard({
       .join(' ');
 
   return (
-    <TrendCard title='Intake and burn'>
+    <TrendCard title='Energy estimate'>
       <TrendFigure
         value={latest?.burn ? `${latest.burn.toLocaleString()} a day` : '—'}
         sub={
           latest?.burn
-            ? `estimated burn · last ${WEEKS} weeks`
-            : 'still learning your burn'
+            ? `what you seem to use · last ${WEEKS} weeks`
+            : `still learning: needs ${AdaptiveTarget.MIN_LOGGED_DAYS} logged days and ${AdaptiveTarget.MIN_WEIGH_INS} weigh-ins`
         }
       />
       {values.length ? (
@@ -93,7 +93,7 @@ export function EnergyTrendCard({
             viewBox={`0 0 ${W} ${H}`}
             width='100%'
             height={H}
-            accessibilityLabel='Estimated burn and logged intake by week'
+            accessibilityLabel='Estimated energy use and logged intake by week'
           >
             {[0.25, 0.5, 0.75].map((f) => (
               <Line
@@ -121,7 +121,7 @@ export function EnergyTrendCard({
             />
           </Svg>
           <Text style={s.legend}>
-            <Text style={{ color: colors.aurora }}>━ </Text>estimated burn
+            <Text style={{ color: colors.aurora }}>━ </Text>what you seem to use
             {'   '}
             <Text style={{ color: colors.sunDeep }}>┅ </Text>logged intake
           </Text>

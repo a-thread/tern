@@ -118,12 +118,13 @@ describe('Health data screen', () => {
       await findByText(`${name} is connected.`);
     });
 
-    it(`says so when ${name} is not available on the device`, async () => {
-      const { findByText, getByLabelText } = await open(
+    it(`says so when ${name} is not available on the device, with nothing to tap`, async () => {
+      const { findByText, queryByLabelText, queryByText } = await open(
         source(StepsStatus.Unavailable),
       );
-      fireEvent.press(getByLabelText('Off. Tap to allow access to steps'));
-      await findByText(`${name} isn't available on this device.`);
+      await findByText('Not available on this phone');
+      expect(queryByLabelText('Off. Tap to allow access to steps')).toBeNull();
+      expect(queryByText('Sync now')).toBeNull();
     });
   });
 

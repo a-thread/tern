@@ -24,7 +24,7 @@ export function RestCaption({
       </View>
 
       <Text style={styles.lineText}>{line}</Text>
-      <Text style={styles.detailText}>{detail}</Text>
+      {detail ? <Text style={styles.detailText}>{detail}</Text> : null}
 
       {note ? (
         <View style={styles.noteBox}>

@@ -68,6 +68,8 @@ export function leftToDo(
     weighIn?: WeighInPlan | null;
     /** The weigh-in was marked "not weighing in" for the day; it is no longer asked for. */
     weighInSkipped?: boolean;
+    /** False while food isn't tracked: no meal row at all. */
+    meals?: boolean;
     /** Core meals marked "nothing today"; they count as covered. */
     skippedMeals?: readonly FoodEntry['meal'][];
     medications?: readonly DueMedication[];
@@ -83,7 +85,9 @@ export function leftToDo(
   const missing = Meals.CORE.filter(
     (m) => !skipped.includes(m) && !foodLog.some((f) => f.meal === m),
   );
-  if (missing.length === Meals.CORE.length) {
+  if (options.meals === false) {
+    // Food isn't tracked: nothing to log.
+  } else if (missing.length === Meals.CORE.length) {
     items.push({
       kind: 'meal',
       meal: mealForTime(now),

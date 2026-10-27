@@ -33,9 +33,12 @@ const lateOn = (day: string) => {
 export function useDayItems() {
   const { day, isToday, editable } = useViewedDay();
   // Food, water and the check-in already follow the viewed day.
-  const { foodLog, skippedMeals } = useFood();
   const { weightEntries, isWeighInSkipped } = useWeight();
   const { settings } = useSettings();
+  // With food off, past logs are kept but nothing about meals shows.
+  const food = useFood();
+  const foodLog = settings.trackFood ? food.foodLog : [];
+  const skippedMeals = settings.trackFood ? food.skippedMeals : [];
   const water = useWater();
   const mood = useMood();
   const meds = useMedication();
@@ -92,6 +95,7 @@ export function useDayItems() {
             }
           : null,
         weighInSkipped,
+        meals: settings.trackFood,
         skippedMeals,
         medications: isToday ? meds.due : [],
         water: water.enabled

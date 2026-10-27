@@ -9,6 +9,16 @@ import { WaypointsProvider } from '../domain/waypoints/WaypointsContext';
 import WaypointsScreen from './waypoints/WaypointsScreen';
 import MilestoneScreen from './milestone/MilestoneScreen';
 
+// The waypoints card only asks whether a goal day can be reached today, and what was skipped.
+jest.mock('@/domain/activity/ActivityContext', () => ({
+  useActivity: () => ({ goalReachable: true }),
+}));
+jest.mock('@/domain/food/FoodContext', () => ({
+  useFood: () => ({ skippedMeals: [] }),
+}));
+jest.mock('@shared/state/ViewedDayContext', () => ({
+  useViewedDay: () => ({ isToday: true }),
+}));
 jest.mock('@react-navigation/native', () => ({
   ...jest.requireActual('@react-navigation/native'),
   useNavigation: () => ({ navigate: jest.fn(), goBack: jest.fn() }),

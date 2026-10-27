@@ -14,7 +14,8 @@ const tierPickerOptions: { tier: Tier; label: string }[] = [
 
 /**
  * Food-type picker: Whole (tiers 1–2) / Processed (3) / Ultra-processed (4).
- * `suggested` shows the auto-suggested note; the user's own tap always wins.
+ * `suggested` shows the auto-suggested note; the user's own tap always wins. `editing` is for a
+ * food already logged, whose type was settled when it was added.
  */
 export function TierPicker({
   value,
@@ -22,6 +23,7 @@ export function TierPicker({
   suggested,
   suggestedBy,
   showNumber = true,
+  editing = false,
 }: {
   value: Tier | null;
   onChange: (tier: Tier) => void;
@@ -29,6 +31,7 @@ export function TierPicker({
   /** Where the suggestion came from, for the note under the picker. Unset for a food you logged before. */
   suggestedBy?: SearchResult['source'];
   showNumber?: boolean;
+  editing?: boolean;
 }) {
   return (
     <View>
@@ -54,7 +57,11 @@ export function TierPicker({
           );
         })}
       </View>
-      {suggested ? (
+      {editing ? (
+        <Text style={s.suggestNote}>
+          Change it if it doesn't fit. Your choice is remembered for this food.
+        </Text>
+      ) : suggested ? (
         <Text style={s.suggestNote}>
           {suggestedBy === FoodSource.Off
             ? `Suggested from Open Food Facts processing data (NOVA ${suggested}).`

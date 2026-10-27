@@ -2,6 +2,8 @@ import { nextStep, wizardSteps, WizardStep } from './wizardSteps';
 
 const all = {
   healthAvailable: true,
+  trackFood: true,
+  trackWeight: true,
   trackCalories: true,
   trackMacros: true,
   showCalories: true,
@@ -18,8 +20,10 @@ describe('wizardSteps', () => {
     expect(
       wizardSteps({
         healthAvailable: false,
-        trackCalories: false,
-        trackMacros: false,
+        trackFood: false,
+        trackWeight: true,
+        trackCalories: true,
+        trackMacros: true,
         showCalories: true,
         showIntakeBars: true,
         offerAccount: false,
@@ -45,6 +49,15 @@ describe('wizardSteps', () => {
     expect(noBars).toContain(WizardStep.CalorieTarget);
     expect(noBars).not.toContain(WizardStep.TargetZone);
   });
+
+  it('skips reminders with neither food nor weight to remind about', () => {
+    expect(wizardSteps({ ...all, trackFood: false })).toContain(
+      WizardStep.Reminders,
+    );
+    expect(
+      wizardSteps({ ...all, trackFood: false, trackWeight: false }),
+    ).not.toContain(WizardStep.Reminders);
+  });
 });
 
 describe('nextStep', () => {
@@ -66,5 +79,12 @@ describe('nextStep', () => {
 
   it('ends after the last', () => {
     expect(nextStep(WizardStep.Reminders, all)).toBeNull();
+    expect(
+      nextStep(WizardStep.Account, {
+        ...all,
+        trackFood: false,
+        trackWeight: false,
+      }),
+    ).toBeNull();
   });
 });

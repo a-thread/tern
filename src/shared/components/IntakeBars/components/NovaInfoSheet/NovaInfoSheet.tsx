@@ -56,9 +56,9 @@ export function NovaInfoSheet({
           </View>
         ))}
         <Text style={s.foot}>
-          The bars show each group's share of today's calories. There is no
-          target. Levels come from Open Food Facts, and you can change one on
-          any food.
+          The bars show each group's share of the day's food, weighted by
+          energy. There is no target. Levels come from Open Food Facts, and you
+          can change one on any food.
         </Text>
       </View>
     </BottomSheet>

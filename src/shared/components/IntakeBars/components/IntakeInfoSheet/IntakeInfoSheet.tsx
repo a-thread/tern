@@ -3,34 +3,7 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { BottomSheet } from '@shared/components/ui';
 import { colors, font, space, typography } from '@shared/theme';
-
-export enum IntakeInfoKind {
-  Calories = 'calories',
-  Macros = 'macros',
-}
-
-const COPY: Record<
-  IntakeInfoKind,
-  { title: string; lead: string; points: string[]; action?: string }
-> = {
-  [IntakeInfoKind.Calories]: {
-    title: 'About your target zone',
-    lead: 'A range to land in over the day, not a line to stay under.',
-    points: [
-      'The zone starts around your calorie target, about 15% either side. You can set your own under Calorie & macro targets.',
-      'Being below or above it is just information. Tern never warns you and it never affects your streak or waypoints.',
-    ],
-    action: 'Change the zone',
-  },
-  [IntakeInfoKind.Macros]: {
-    title: 'About your macro targets',
-    lead: 'Targets are a reference point, not a limit.',
-    points: [
-      'Protein is a minimum to reach, so its bar has a mark at your target and keeps filling past it. Carbs and fat are guides to fill toward.',
-      "The percentages are each macro's share of your calorie target. Change the split, or pick a preset, under Settings, then Calorie & macro targets.",
-    ],
-  },
-};
+import { IntakeInfoKind, intakeInfoCopy } from './models/intakeInfoCopy';
 
 /** A short explainer for the calories and macros slides, as a sheet that slides up from the bottom. */
 export function IntakeInfoSheet({
@@ -38,14 +11,17 @@ export function IntakeInfoSheet({
   visible,
   onClose,
   onAction,
+  proteinAsMinimum,
 }: {
   kind: IntakeInfoKind;
+  /** Protein set as a minimum to reach (Settings), which the macros copy explains. */
+  proteinAsMinimum: boolean;
   visible: boolean;
   onClose: () => void;
   /** Runs the sheet's action link, when its copy has one. */
   onAction?: () => void;
 }) {
-  const copy = COPY[kind];
+  const copy = intakeInfoCopy(kind, { proteinAsMinimum });
   return (
     <BottomSheet visible={visible} onClose={onClose}>
       <View>

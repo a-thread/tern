@@ -22,13 +22,13 @@ export function GettingStarted() {
   const { settings, updateSettings } = useSettings();
   const { onboarding } = settings;
   const { isToday } = useViewedDay();
-  const { status } = useActivity();
+  const { status, stepsReadable } = useActivity();
 
   if (!onboarding.wizardDone || onboarding.checklistHidden || !isToday)
     return null;
   const rows = startItems({
     healthAvailable: status !== StepsStatus.Unavailable,
-    healthConnected: status === StepsStatus.Connected,
+    healthConnected: stepsReadable,
     stepGoalSet: settings.stepGoalHistory.length > 0,
     remindersOn: onboarding.notificationsAsked,
   });

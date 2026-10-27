@@ -26,7 +26,7 @@ export function TargetSuggestionCard() {
           {`Your target could be ${adaptive.suggestion.toLocaleString()} (from ${settings.calorieTarget.toLocaleString()})`}
         </Text>
         <Text style={s.sub}>
-          {`You've been burning about ${e.kcal.toLocaleString()} a day, from what you logged and your weight trend.`}
+          {`You've been using about ${e.kcal.toLocaleString()} a day, from what you logged and your weight trend.`}
         </Text>
         <View style={s.actions}>
           <Pressable

@@ -48,7 +48,7 @@ async function openWizard() {
       </ToastProvider>
     </SafeAreaProvider>,
   );
-  await screen.findByText('Progress at your pace');
+  await screen.findByText('Progress answers to your pace');
   return backend;
 }
 
@@ -56,12 +56,12 @@ const press = async (text: string) => {
   await act(async () => fireEvent.press(screen.getByText(text)));
 };
 
-/** Through the wizard to the screen before reminders, choosing "Without numbers" to keep it short. */
+/** Through the wizard to the screen before reminders, choosing "Without calorie counts" to keep it short. */
 async function toAccount() {
   await press('Get started');
   await press('Next');
   if (screen.queryByText('Steps come from your phone')) await press('Skip');
-  await press('Without numbers');
+  await press('Without calorie counts');
   await press('Next');
 }
 

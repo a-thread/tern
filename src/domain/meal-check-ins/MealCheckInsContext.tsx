@@ -23,7 +23,7 @@ type MealCheckInsContextValue = {
   ready: boolean;
   /** Reads everything again from storage (pull to refresh). */
   reload: () => Promise<unknown>;
-  /** "Check in after meals" is switched on in Settings. */
+  /** "Ask how meals went" is switched on in Settings. */
   enabled: boolean;
   /** The last 180 days of meal check-ins, oldest first. */
   entries: MealCheckIn[];
@@ -99,7 +99,7 @@ export function MealCheckInsProvider({
         repo.save(entry),
         {
           log: 'Could not save meal check-in',
-          toast: "Couldn't save your check-in — please try again.",
+          toast: "Couldn't save how the meal went — please try again.",
         },
       );
       return true;

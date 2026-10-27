@@ -54,7 +54,7 @@ export default function MealCheckInScreen({ navigation, route }: Props) {
       style={{ flex: 1, backgroundColor: colors.paper, paddingTop: insets.top }}
     >
       <SheetNav
-        title='Check in'
+        title='How was it?'
         leftLabel='Cancel'
         onLeftPress={() => navigation.goBack()}
         rightLabel='Save'
@@ -110,7 +110,7 @@ export default function MealCheckInScreen({ navigation, route }: Props) {
               onPress={remove}
               accessibilityRole='button'
             >
-              <Text style={s.danger}>Remove this check-in</Text>
+              <Text style={s.danger}>Remove this note</Text>
             </Pressable>
           </Group>
         ) : null}

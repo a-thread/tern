@@ -25,6 +25,11 @@ export type AppSettings = {
   suggestStepAdjustments: boolean;
   calorieTarget: number;
   macroTargets: { protein: number; carbs: number; fat: number };
+  /**
+   * Logging food at all. Off, the Food tab and everything about meals (the meal row on Today,
+   * meal reminders, meal waypoints and check-ins) go away; past logs are kept.
+   */
+  trackFood: boolean;
   /** Calorie targets and calorie numbers. Independent of macros: either can be tracked alone. */
   trackCalories: boolean;
   /** Protein, carb and fat targets and amounts. Independent of calories. */
@@ -87,6 +92,7 @@ export const initialSettings: AppSettings = {
   suggestStepAdjustments: true,
   calorieTarget: settingsSeed.calorieTarget,
   macroTargets: { ...settingsSeed.macroTargets },
+  trackFood: true,
   trackCalories: true,
   trackMacros: true,
   showIntakeBars: false,

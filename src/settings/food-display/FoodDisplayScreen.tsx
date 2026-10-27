@@ -21,6 +21,7 @@ import {
 import { TierDot } from '@shared/components/TierDot';
 import { useFoodDisplay } from '../../domain/food/hooks/useFoodDisplay';
 import { useSettings } from '../../domain/settings/SettingsContext';
+import { intakeBarsNote } from './models/intakeBarsNote';
 
 const PREVIEW_ITEMS = [
   { tier: 1 as const, name: 'Greek yogurt with berries', calories: 210 },
@@ -54,7 +55,11 @@ export default function FoodDisplayScreen() {
         <Group>
           <ToggleRow
             title='Show processing level'
-            sub='Color and NOVA number on each food, and a slide on the intake bars'
+            sub={
+              settings.trackCalories || settings.trackMacros
+                ? 'Color and NOVA number on each food, and a slide on the intake bars'
+                : 'Color and NOVA number on each food'
+            }
             on={settings.showTiers}
             onToggle={(v) => updateSettings({ showTiers: v })}
           />
@@ -105,7 +110,7 @@ export default function FoodDisplayScreen() {
         ) : (
           <FootNote>
             Calorie tracking is off, so no calorie numbers are shown. Turn it on
-            under Settings → Calorie & macro targets.
+            under Settings → Food → Calorie & macro targets.
           </FootNote>
         )}
         {settings.trackCalories || settings.trackMacros ? (
@@ -119,16 +124,13 @@ export default function FoodDisplayScreen() {
                 onToggle={(v) => updateSettings({ showIntakeBars: v })}
               />
             </Group>
+            <FootNote>{intakeBarsNote(settings)}</FootNote>
             <FootNote>
-              Bars never turn red or warn you. Set your calorie zone and protein
-              minimum under Settings → Calorie & macro targets.
+              Tern never shows exercise as "earning back" calories, and won't
+              warn you for going over a target.
             </FootNote>
           </>
         ) : null}
-        <FootNote>
-          Tern never shows exercise as "earning back" calories, and won't warn
-          you for going over a target.
-        </FootNote>
       </ScrollView>
     </View>
   );

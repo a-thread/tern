@@ -19,7 +19,7 @@ export default function TargetZoneScreen() {
     <WizardStep
       step={Step.TargetZone}
       title='Your target zone'
-      body='The range shown on your intake bars. Anywhere inside it is a good day, and going over is never flagged.'
+      body='The range shown on your intake bars. Above or below it is just information, and never flagged.'
     >
       <View
         style={s.preview}

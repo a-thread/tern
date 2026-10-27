@@ -43,6 +43,13 @@ type ActivityContextValue = {
   /** False until steps and rest days have loaded once. */
   ready: boolean;
   status: StepsStatus;
+  /**
+   * Steps can be read: the health app is connected and "Read steps" is on. The one test for
+   * whether anything about steps (a count, a step goal to reach, a streak alert) means anything.
+   */
+  stepsReadable: boolean;
+  /** A goal day can be reached at all: by steps, or by movement while it's tracked. */
+  goalReachable: boolean;
   todaySteps: number;
   /** The last HISTORY_DAYS days, oldest to newest, ending today. */
   days: DayRecord[];
@@ -250,6 +257,8 @@ export function ActivityProvider({
     () => ({
       ready,
       status,
+      stepsReadable,
+      goalReachable: stepsReadable || movementGoal > 0,
       todaySteps,
       days,
       week,
@@ -266,6 +275,8 @@ export function ActivityProvider({
     [
       ready,
       status,
+      stepsReadable,
+      movementGoal,
       todaySteps,
       days,
       week,

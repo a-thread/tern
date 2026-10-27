@@ -32,7 +32,11 @@ export default function StepsScreen() {
     <WizardStep
       step={Step.Steps}
       title='Steps come from your phone'
-      body={`Tern reads your steps and workouts from ${healthApp}, and never shares them.`}
+      body={
+        settings.trackMovement
+          ? `Tern reads your steps and workouts from ${healthApp}, and never shares them.`
+          : `Tern reads your steps from ${healthApp}, and never shares them.`
+      }
     >
       <Group>
         <Row

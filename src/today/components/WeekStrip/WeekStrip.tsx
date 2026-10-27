@@ -11,7 +11,6 @@ import { useActivity } from '@/domain/activity/ActivityContext';
 import { factForDay } from './utils/ternFacts';
 import { dayRingLabel } from './utils/dayRingLabel';
 import { DayState } from '@shared/models/dayState';
-import { StepsStatus } from '@/domain/activity/models/stepsStatus';
 import { reachedGoalToday, showsRestLink } from '../../models/restLink';
 
 /**
@@ -40,7 +39,7 @@ export function WeekStrip({
   const {
     week,
     todaySteps,
-    status,
+    stepsReadable,
     restLeft,
     todayIsRest,
     takeRestDay,
@@ -130,7 +129,8 @@ export function WeekStrip({
             </Text>
           </Pressable>
         </View>
-      ) : !reached && status === StepsStatus.Connected ? (
+      ) : !reached && stepsReadable && settings.restDaysPerWeek > 0 ? (
+        // Only once a week's allowance is spent: with none allowed there's nothing "used".
         <Text style={[s.restLink, s.restNote]}>
           This week's rest days are used · more on Monday
         </Text>

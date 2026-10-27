@@ -8,7 +8,7 @@ import { CountUp } from '@shared/components/AnimatedNumber/AnimatedNumber';
 import { useSettings } from '@/domain/settings/SettingsContext';
 import { useActivity } from '@/domain/activity/ActivityContext';
 import { greetingFor } from './models/greeting';
-import { StepsStatus } from '@/domain/activity/models/stepsStatus';
+import { noStepsLine } from './models/noStepsLine';
 import { useViewedDay } from '@shared/state/ViewedDayContext';
 import { addDays, formatLongDate } from '@shared/utils/date';
 import { DayState } from '@shared/models/dayState';
@@ -32,7 +32,8 @@ export function StepsHero({
 }) {
   const navigation = useRootNavigation();
   const { settings } = useSettings();
-  const { todaySteps, streak, freezes, status, week } = useActivity();
+  const { todaySteps, streak, freezes, status, stepsReadable, week } =
+    useActivity();
   const greeting = greetingFor();
   const movement = useMovement();
   const { day, today, isToday, editable } = useViewedDay();
@@ -59,7 +60,15 @@ export function StepsHero({
     : day === addDays(today, -1)
       ? 'Yesterday'
       : formatLongDate(day);
-  const reached = stepsProgress >= 1;
+  const reached = stepsReadable && stepsProgress >= 1;
+  const noSteps = stepsReadable
+    ? null
+    : noStepsLine({
+        status,
+        readSteps: settings.healthData.readSteps,
+        isToday,
+        movementGoal,
+      });
   const movedToGoal = !reached && movedProgress >= 1;
 
   return (
@@ -101,23 +110,27 @@ export function StepsHero({
           <Text style={s.stepSub}>Rest day</Text>
         ) : !isToday && record?.state === DayState.Frozen ? (
           <Text style={s.stepSub}>A streak freeze covered this day</Text>
-        ) : status !== StepsStatus.Connected ? (
-          <Pressable
-            onPress={() =>
-              navigation.navigate('Settings', { screen: 'HealthData' })
-            }
-            hitSlop={8}
-            accessibilityRole='button'
-          >
-            <Text style={s.stepSub}>Connect steps to start a streak ›</Text>
-          </Pressable>
+        ) : !stepsReadable ? (
+          noSteps?.opensHealthData ? (
+            <Pressable
+              onPress={() =>
+                navigation.navigate('Settings', { screen: 'HealthData' })
+              }
+              hitSlop={8}
+              accessibilityRole='button'
+            >
+              <Text style={s.stepSub}>{noSteps.text}</Text>
+            </Pressable>
+          ) : noSteps ? (
+            <Text style={s.stepSub}>{noSteps.text}</Text>
+          ) : null
         ) : (
           <Text style={s.stepSub}>
             {reached
               ? `Goal reached · ${stepGoal.toLocaleString()} steps`
               : isToday
                 ? `${remaining.toLocaleString()} to go`
-                : `${remaining.toLocaleString()} short of ${stepGoal.toLocaleString()}`}
+                : `of ${stepGoal.toLocaleString()} steps`}
           </Text>
         )}
         {/* Movement is the other way to a goal day, so it's logged from here (today and yesterday). */}

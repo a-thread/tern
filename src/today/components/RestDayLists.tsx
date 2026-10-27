@@ -9,7 +9,7 @@ import { DoneList } from './DoneList/DoneList';
 
 /**
  * The quiet lists under the rest scene: what was done, the food if any was logged, and "Log
- * something anyway" to bring back the usual lists (not while the tern is flying off).
+ * something" to bring back the usual lists (not while the tern is flying off).
  */
 export function RestDayLists({
   onReveal,
@@ -30,7 +30,7 @@ export function RestDayLists({
           style={s.anyway}
           accessibilityRole='button'
         >
-          <Text style={s.anywayText}>Log something anyway</Text>
+          <Text style={s.anywayText}>Log something</Text>
         </Pressable>
       ) : null}
       <DoneList quietWhenEmpty />

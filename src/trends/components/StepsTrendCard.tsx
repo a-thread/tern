@@ -9,7 +9,7 @@ import { TrendCard, TrendHeader } from './TrendCard';
 import { StepBars } from './StepBars';
 import { useActivity } from '../../domain/activity/ActivityContext';
 import { useSettings } from '../../domain/settings/SettingsContext';
-import { StepsStatus } from '../../domain/activity/models/stepsStatus';
+import { noStepsNote } from '../models/noStepsNote';
 import { bucketSteps } from '../models/stepBars';
 import { summarizeSteps } from '../models/stepsSummary';
 import type { TrendsStackParamList } from '../navigation';
@@ -19,7 +19,7 @@ export function StepsTrendCard({ range }: { range: TrendRange }) {
   const navigation =
     useNavigation<NativeStackNavigationProp<TrendsStackParamList>>();
   const { settings } = useSettings();
-  const { days, status } = useActivity();
+  const { days, status, stepsReadable } = useActivity();
   const rangeSteps = summarizeSteps(days, TrendRanges.DAYS[range]);
   const bars = bucketSteps(days, range);
   const { changePct } = rangeSteps;
@@ -44,7 +44,7 @@ export function StepsTrendCard({ range }: { range: TrendRange }) {
               }
         }
       />
-      {status === StepsStatus.Connected ? (
+      {stepsReadable ? (
         <StepBars
           days={bars}
           goal={settings.stepGoal}
@@ -52,7 +52,7 @@ export function StepsTrendCard({ range }: { range: TrendRange }) {
         />
       ) : (
         <Text style={typography.small}>
-          Connect step data in Settings → Health data to see this.
+          {noStepsNote(status, settings.healthData.readSteps)}
         </Text>
       )}
     </TrendCard>

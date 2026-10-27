@@ -48,6 +48,12 @@ describe('planReminders', () => {
     expect(plan.every((r) => r.weekday === undefined)).toBe(true);
   });
 
+  it('schedules no meal reminders while food is not tracked', () => {
+    expect(
+      planReminders(config({ meals: true }), { trackFood: false }),
+    ).toEqual([]);
+  });
+
   it('follows edited times and weekday', () => {
     const c = config({ meals: true, weighIn: true });
     c.mealLog.midday = 13 * 60 + 15;
@@ -174,7 +180,8 @@ describe('time helpers', () => {
       meals: '12:30 pm and 7:00 pm',
       weighIn: 'Sundays, 8:00 am',
       water: 'Every 2 hours, 9:00 am to 7:00 pm',
-      streak: 'An evening heads-up when a streak is waiting on today’s steps',
+      streak:
+        'An evening heads-up while today’s goal is still open, and a morning note if a freeze covers a day',
       mood: 'Every day, 8:00 pm',
     });
   });

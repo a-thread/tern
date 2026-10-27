@@ -41,7 +41,8 @@ export default function FoodDetailScreen({ navigation, route }: Props) {
   const insets = useSafeAreaInsets();
   const { addFoodEntry } = useFood();
   const { addDraftItem } = useSavedMeals();
-  const { showTiers, showTierNumber, showCalories } = useFoodDisplay();
+  const { showTiers, showTierNumber, showCalories, showMacros } =
+    useFoodDisplay();
 
   // Foods sized in grams ("100 g", the usual Open Food Facts unit) are logged by
   // amount: pick a household unit ("large egg", "cup") and how many, or type a
@@ -130,19 +131,24 @@ export default function FoodDetailScreen({ navigation, route }: Props) {
           ) : null}
         </View>
 
-        <View style={s.calCard}>
-          {showCalories ? (
-            <View>
-              <Text style={s.calBig}>{Math.round(shown.calories)}</Text>
-              <Text style={s.calLabel}>calories</Text>
-            </View>
-          ) : null}
-          <View style={s.macroMini}>
-            <MacroMini value={shown.protein} label='protein' />
-            <MacroMini value={shown.carbs} label='carbs' />
-            <MacroMini value={shown.fat} label='fat' />
+        {/* No card at all when neither calories nor macros are shown. */}
+        {showCalories || showMacros ? (
+          <View style={s.calCard}>
+            {showCalories ? (
+              <View>
+                <Text style={s.calBig}>{Math.round(shown.calories)}</Text>
+                <Text style={s.calLabel}>calories</Text>
+              </View>
+            ) : null}
+            {showMacros ? (
+              <View style={s.macroMini}>
+                <MacroMini value={shown.protein} label='protein' />
+                <MacroMini value={shown.carbs} label='carbs' />
+                <MacroMini value={shown.fat} label='fat' />
+              </View>
+            ) : null}
           </View>
-        </View>
+        ) : null}
 
         <GroupLabel>Portion</GroupLabel>
         {measure ? (

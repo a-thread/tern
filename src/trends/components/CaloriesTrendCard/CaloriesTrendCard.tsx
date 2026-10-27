@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 
-import { colors, space } from '@shared/theme';
+import { colors, space, typography } from '@shared/theme';
 import { useDayKey } from '@shared/hooks/useDayKey';
 import { addDays } from '@shared/utils/date';
 import { TrendRange } from '../../models/trendRange';
@@ -11,6 +11,7 @@ import { useFocusLoad } from '../../hooks/useFocusLoad';
 import { averageIntake, type IntakeAverage } from '../../models/intake';
 import { useFood } from '@/domain/food/FoodContext';
 import { useSettings } from '@/domain/settings/SettingsContext';
+import { useFoodDisplay } from '@/domain/food/hooks/useFoodDisplay';
 
 /** Average calories and macros logged over the last week (or 30 days for longer ranges). */
 export function CaloriesTrendCard({
@@ -22,6 +23,7 @@ export function CaloriesTrendCard({
   refreshKey?: number;
 }) {
   const { settings } = useSettings();
+  const { showCalories, showMacros } = useFoodDisplay();
   const { foodLog, loadHistory } = useFood();
   const today = useDayKey();
   const [intake, setIntake] = useState<IntakeAverage | null>(null);
@@ -35,17 +37,17 @@ export function CaloriesTrendCard({
     'Could not load food history',
   );
 
-  // Calories and macros are tracked separately; the card shows whichever are on.
+  // Calories and macros are tracked separately; the card shows whichever are shown.
   return (
-    <TrendCard title={settings.trackCalories ? 'Calories' : 'Macros'}>
-      {settings.trackCalories ? (
+    <TrendCard title={showCalories ? 'Calories' : 'Macros'}>
+      {showCalories ? (
         <TrendFigure
           value={intake ? intake.calories.toLocaleString() : '—'}
           sub={`${intake ? `daily average · last ${foodDays} days` : 'no food logged yet'} · target ${settings.calorieTarget.toLocaleString()}`}
         />
       ) : null}
-      {settings.trackMacros ? (
-        <View style={settings.trackCalories ? s.macroRow : s.macroRowAlone}>
+      {showMacros ? (
+        <View style={showCalories ? s.macroRow : s.macroRowAlone}>
           <MacroBox
             value={intake ? `${intake.protein}g` : '—'}
             label='protein'
@@ -66,6 +68,14 @@ export function CaloriesTrendCard({
           />
         </View>
       ) : null}
+      {/* With calories hidden, the macros say when there's nothing yet, as the calories line does. */}
+      {!showCalories ? (
+        <Text style={s.macroSub}>
+          {intake
+            ? `daily average · last ${foodDays} days`
+            : 'no food logged yet'}
+        </Text>
+      ) : null}
     </TrendCard>
   );
 }
@@ -73,4 +83,5 @@ export function CaloriesTrendCard({
 const s = StyleSheet.create({
   macroRow: { flexDirection: 'row', gap: 6, marginTop: space.sm + 1 },
   macroRowAlone: { flexDirection: 'row', gap: 6 },
+  macroSub: { ...typography.small, marginTop: space.sm },
 });

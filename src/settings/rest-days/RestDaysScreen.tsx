@@ -85,7 +85,11 @@ export default function RestDaysScreen() {
           />
           <InfoRow
             text='Earns 10 waypoints'
-            sub="Resting counts as showing up. If you reach your step goal anyway, it's a goal day instead"
+            sub={
+              settings.trackMovement
+                ? "Resting counts as showing up. If you reach your step or movement goal anyway, it's a goal day instead"
+                : "Resting counts as showing up. If you reach your step goal anyway, it's a goal day instead"
+            }
           />
           <View style={s.row}>
             <IconBadge bg={colors.driftwoodTint}>
@@ -94,7 +98,7 @@ export default function RestDaysScreen() {
             <View style={{ flex: 1 }}>
               <Text style={s.rowTitle}>Shows in driftwood</Text>
               <Text style={s.rowSub}>
-                Distinct from a missed day on your charts
+                Distinct from a day under your goal on your charts
               </Text>
             </View>
           </View>
@@ -116,17 +120,17 @@ export default function RestDaysScreen() {
           />
           <InfoRow
             text='Used for you'
-            sub='When a day would break your streak and your rest days are used, a freeze covers it. It shows in blue and holds the streak without adding a day'
+            sub='When a day would break your streak and no rest day holds it, a freeze covers it. It shows in blue and holds the streak without adding a day'
           />
         </Group>
 
-        <GroupLabel>Missed days</GroupLabel>
+        <GroupLabel>When rest days run out</GroupLabel>
         <View style={s.card}>
           <Text style={s.intro}>
             Running out of rest days won't erase your waypoints or your history
             — a streak just starts counting again, unless a freeze covers the
             day. Once a day is over, what it earned is yours for good. (Today's
-            waypoints follow today: remove a meal or a drink and that award
+            waypoints follow today: remove something you logged and that award
             steps back until it's there again.)
           </Text>
         </View>

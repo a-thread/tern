@@ -7,7 +7,7 @@ import { useSettings } from '@/domain/settings/SettingsContext';
 import { WizardStep } from '../components/WizardStep/WizardStep';
 import { WizardStep as Step } from '../models/wizardSteps';
 
-/** Calories or no numbers: the same choice as Settings › Food display. */
+/** Calorie counts shown or not: the same choice as Settings › Food display. */
 export default function FoodStyleScreen() {
   const { settings, updateSettings } = useSettings();
   const withNumbers = settings.trackCalories && settings.showCalories;
@@ -30,8 +30,12 @@ export default function FoodStyleScreen() {
         />
         <Choice
           icon='silverware-fork-knife'
-          title='Without numbers'
-          sub='Just what you ate and when'
+          title='Without calorie counts'
+          sub={
+            settings.trackMacros
+              ? 'What you ate and when, with protein, carbs and fat'
+              : 'Just what you ate and when'
+          }
           selected={!withNumbers}
           onPress={() => updateSettings({ showCalories: false })}
         />

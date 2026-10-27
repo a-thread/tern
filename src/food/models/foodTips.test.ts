@@ -35,7 +35,13 @@ describe('foodTipTargets', () => {
 describe('foodTipText', () => {
   it('names the meal it points at', () => {
     expect(foodTipText(Tip.FoodSkipMeal, 'lunch').lead).toBe(
-      '“No lunch today” counts as logged.',
+      '“No lunch today” counts toward a full log.',
+    );
+  });
+
+  it('words the day as the skip row does', () => {
+    expect(foodTipText(Tip.FoodSkipMeal, 'lunch', 'yesterday').lead).toBe(
+      '“No lunch yesterday” counts toward a full log.',
     );
   });
 });

@@ -30,7 +30,7 @@ export function useMealAdder(
   navigation: Nav,
 ) {
   const { addFoodEntries } = useFood();
-  const { showCalories } = useFoodDisplay();
+  const { showCalories, showMacros } = useFoodDisplay();
   const [target, setTarget] = useState(initialMeal);
   const [scale, setScale] = useState(1);
 
@@ -38,7 +38,7 @@ export function useMealAdder(
   const summary =
     `${items.length} ${items.length === 1 ? 'food' : 'foods'}` +
     (showCalories ? ` · ${Math.round(totals.calories)} cal` : '') +
-    ` · ${Math.round(totals.protein)}g protein`;
+    (showMacros ? ` · ${Math.round(totals.protein)}g protein` : '');
 
   const add = () => {
     addFoodEntries(itemsToEntries(items, target, scale));

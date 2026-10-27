@@ -1,6 +1,7 @@
 # Adaptive calorie target
 
-An opt-in way for the calorie target to follow what someone actually burns. It uses
+An opt-in way for the calorie target to follow how much energy someone actually uses (the
+app says "energy use", never "burn", so it can't read as exercise earning food). It uses
 their own log and weight trend instead of formulas or per-workout estimates. The code is
 in [`energyBalance.ts`](../src/domain/food/models/energyBalance.ts) (pure, tested) and
 [`useAdaptiveTarget.ts`](../src/domain/food/hooks/useAdaptiveTarget.ts).
@@ -28,6 +29,7 @@ a little low too, so the target still produces the change they're aiming for.
 ## The suggestion
 
 `suggestTarget` works the suggestion out in this order:
+
 1. **Aim:** the burn plus the aim's offset (lose −500, lose slowly −250, maintain 0,
    gain +250).
 2. **Fastest loss:** never more than 1% of body weight a week.
@@ -51,6 +53,6 @@ week. Nothing ever applies automatically.
 
 ## Trends
 
-The "Intake and burn" card (`EnergyTrendCard`) draws the estimate as it stood at the end of
+The "Energy estimate" card (`EnergyTrendCard`) draws the estimate as it stood at the end of
 each of the last 8 weeks, next to that week's average logged intake (`weeklyEnergy`). It's
 shown only while the adaptive target is on.

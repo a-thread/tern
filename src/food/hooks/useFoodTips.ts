@@ -17,7 +17,7 @@ export function useFoodTips() {
   const rootRef = useRef<View>(null);
   const skipMealRef = useRef<View>(null);
   const firstFoodRef = useRef<View>(null);
-  const { day, editable } = useViewedDay();
+  const { day, editable, isToday } = useViewedDay();
   const { foodLog, skippedMeals, loadedDay } = useFood();
   const targets = foodTipTargets({ editable, foodLog, skippedMeals });
 
@@ -47,6 +47,8 @@ export function useFoodTips() {
     firstFoodRef,
     ...targets,
     ...tips,
-    text: tips.shown ? foodTipText(tips.shown.tip, mealName) : null,
+    text: tips.shown
+      ? foodTipText(tips.shown.tip, mealName, isToday ? 'today' : 'yesterday')
+      : null,
   };
 }

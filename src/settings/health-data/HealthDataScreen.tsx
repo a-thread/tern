@@ -41,7 +41,10 @@ export default function HealthDataScreen() {
   const { settings, updateSettings } = useSettings();
   const hd = settings.healthData;
   const movement = useMovement();
-  const { status, refresh, days } = useActivity();
+  const { ready, status, refresh, days } = useActivity();
+  // Nothing to connect on a phone without a health app. Waits for the first read, since the
+  // status starts out as unavailable.
+  const unavailable = ready && status === StepsStatus.Unavailable;
   const lastSynced = useLastSynced();
   const toast = useToast();
   const connecting = useConnectHealth();
@@ -99,10 +102,12 @@ export default function HealthDataScreen() {
                   : 'Connected'
                 : status === StepsStatus.NeedsPermission
                   ? 'Allow Tern to read your steps'
-                  : 'Not available in this build of the app'}
+                  : unavailable
+                    ? 'Not available on this phone'
+                    : ''}
             </Text>
           </View>
-          {status === StepsStatus.Connected ? (
+          {unavailable ? null : status === StepsStatus.Connected ? (
             <Chip bg='#E4EFE6' color='#3B6B4A'>
               On
             </Chip>
@@ -135,49 +140,65 @@ export default function HealthDataScreen() {
           </Pressable>
         ) : null}
 
-        <GroupLabel>{`Reading from ${healthApp}`}</GroupLabel>
-        <Group>
-          <ToggleRow
-            title='Steps'
-            sub='Used for your daily goal. Off hides steps without deleting anything'
-            on={hd.readSteps}
-            onToggle={(v) => patchHealthData({ readSteps: v })}
-          />
-          {settings.trackMovement && movement.workoutsAvailable ? (
-            <ToggleRow
-              title='Workouts'
-              sub={`Count as movement. Read-only: they stay in ${healthApp}`}
-              on={hd.readWorkouts}
-              onToggle={async (v) => {
-                patchHealthData({ readWorkouts: v });
-                if (v && !(await movement.connectWorkouts())) {
-                  toast.show(
-                    `Allow Tern to read workouts in ${healthApp} to count them.`,
-                  );
-                }
-              }}
-            />
-          ) : null}
-        </Group>
+        {unavailable ? (
+          <FootNote>
+            {settings.trackMovement
+              ? 'Without steps, movement you log is how a day becomes a goal day.'
+              : 'Without steps, turn on movement in Settings → Steps and activity to reach goal days by logging activity.'}
+          </FootNote>
+        ) : (
+          <>
+            <GroupLabel>{`Reading from ${healthApp}`}</GroupLabel>
+            <Group>
+              <ToggleRow
+                title='Steps'
+                sub='Used for your daily goal. Off hides steps without deleting anything'
+                on={hd.readSteps}
+                onToggle={(v) => patchHealthData({ readSteps: v })}
+              />
+              {settings.trackMovement && movement.workoutsAvailable ? (
+                <ToggleRow
+                  title='Workouts'
+                  sub={`Count as movement. Read-only: they stay in ${healthApp}`}
+                  on={hd.readWorkouts}
+                  onToggle={async (v) => {
+                    patchHealthData({ readWorkouts: v });
+                    if (v && !(await movement.connectWorkouts())) {
+                      toast.show(
+                        `Allow Tern to read workouts in ${healthApp} to count them.`,
+                      );
+                    }
+                  }}
+                />
+              ) : null}
+            </Group>
 
-        <GroupLabel>
-          {status === StepsStatus.NeedsPermission
-            ? 'Get started'
-            : "If steps aren't syncing"}
-        </GroupLabel>
-        <Group>
-          {status === StepsStatus.NeedsPermission ? (
-            <Pressable style={s.row} onPress={requestAccess} disabled={busy}>
-              <Text style={[s.rowTitle, s.link, { flex: 1 }]}>
-                {`Connect ${healthApp}`}
-              </Text>
-            </Pressable>
-          ) : (
-            <Pressable style={s.row} onPress={syncNow} disabled={busy}>
-              <Text style={[s.rowTitle, s.link, { flex: 1 }]}>Sync now</Text>
-            </Pressable>
-          )}
-        </Group>
+            <GroupLabel>
+              {status === StepsStatus.NeedsPermission
+                ? 'Get started'
+                : "If steps aren't syncing"}
+            </GroupLabel>
+            <Group>
+              {status === StepsStatus.NeedsPermission ? (
+                <Pressable
+                  style={s.row}
+                  onPress={requestAccess}
+                  disabled={busy}
+                >
+                  <Text style={[s.rowTitle, s.link, { flex: 1 }]}>
+                    {`Connect ${healthApp}`}
+                  </Text>
+                </Pressable>
+              ) : (
+                <Pressable style={s.row} onPress={syncNow} disabled={busy}>
+                  <Text style={[s.rowTitle, s.link, { flex: 1 }]}>
+                    Sync now
+                  </Text>
+                </Pressable>
+              )}
+            </Group>
+          </>
+        )}
 
         <FootNote>
           {`Tern only reads your steps, and your workouts when movement is on, and never shares your health data with anyone. To disconnect, remove Tern's access in ${healthAccessPath()}; everything you've logged stays.`}

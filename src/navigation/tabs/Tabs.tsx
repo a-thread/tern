@@ -8,6 +8,7 @@ import TrendsStack from '../../trends/TrendsStack';
 import JourneyScreen from '../../journey/JourneyScreen';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { TabParamList } from './types';
+import { useSettings } from '../../domain/settings/SettingsContext';
 import { ChartIcon, FoodIcon, HomeIcon } from './TabIcons';
 
 const TAB_BAR_CONTENT_HEIGHT = 54;
@@ -21,6 +22,8 @@ export default function Tabs() {
   // navigation area itself (a fixed height would sit under it).
   const insets = useSafeAreaInsets();
   const bottomPadding = Math.max(insets.bottom, MIN_TAB_BAR_BOTTOM_INSET);
+  // No Food tab for someone who doesn't log food (Settings › Food › Track food).
+  const { settings } = useSettings();
   return (
     <Tab.Navigator
       screenOptions={{
@@ -46,11 +49,13 @@ export default function Tabs() {
         component={TodayScreen}
         options={{ tabBarIcon: ({ color }) => <HomeIcon color={color} /> }}
       />
-      <Tab.Screen
-        name='Food'
-        component={FoodScreen}
-        options={{ tabBarIcon: ({ color }) => <FoodIcon color={color} /> }}
-      />
+      {settings.trackFood ? (
+        <Tab.Screen
+          name='Food'
+          component={FoodScreen}
+          options={{ tabBarIcon: ({ color }) => <FoodIcon color={color} /> }}
+        />
+      ) : null}
       <Tab.Screen
         name='Trends'
         component={TrendsStack}

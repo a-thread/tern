@@ -30,7 +30,8 @@ export function useAdaptiveTarget() {
   const { weightEntries } = useWeight();
   const today = useDayKey();
 
-  const available = settings.trackCalories && settings.trackWeight;
+  const available =
+    settings.trackFood && settings.trackCalories && settings.trackWeight;
   const on = available && settings.adaptTarget;
   const [estimate, setEstimate] = useState<BurnEstimate | null>(null);
 

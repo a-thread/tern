@@ -82,7 +82,10 @@ export function SettingsProvider({
           medications: mergeMedications(saved?.medications),
           trackWater: flag(saved?.trackWater, defaults.trackWater),
           trackMood: flag(saved?.trackMood, defaults.trackMood),
-          checkInAfterMeals: flag(saved?.checkInAfterMeals, defaults.checkInAfterMeals),
+          checkInAfterMeals: flag(
+            saved?.checkInAfterMeals,
+            defaults.checkInAfterMeals,
+          ),
           trackMovement: flag(saved?.trackMovement, defaults.trackMovement),
           movementGoalMinutes:
             typeof saved?.movementGoalMinutes === 'number' &&
@@ -102,6 +105,7 @@ export function SettingsProvider({
           // Decided here, before anything saves: no saved settings at all is a new install.
           onboarding: loadOnboarding(saved?.onboarding, saved !== null),
           trackWeight: flag(saved?.trackWeight, defaults.trackWeight),
+          trackFood: flag(saved?.trackFood, defaults.trackFood),
           trackCalories: flag(saved?.trackCalories, defaults.trackCalories),
           showIntakeBars: flag(saved?.showIntakeBars, defaults.showIntakeBars),
           // Before macros had their own switch, "Track calories & macros" covered both.
@@ -111,7 +115,10 @@ export function SettingsProvider({
               ? saved.trackCalories
               : defaults.trackMacros,
           ),
-          proteinAsMinimum: flag(saved?.proteinAsMinimum, defaults.proteinAsMinimum),
+          proteinAsMinimum: flag(
+            saved?.proteinAsMinimum,
+            defaults.proteinAsMinimum,
+          ),
           calorieZone: sanitizeCalorieZone(saved?.calorieZone),
           celebratedMilestone:
             typeof saved?.celebratedMilestone === 'number' &&

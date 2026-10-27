@@ -28,6 +28,7 @@ export default function StepGoalScreen() {
 
   const recent = days.slice(-30).filter((d) => d.steps > 0);
   const goalDays = recent.filter((d) => d.steps >= d.goal).length;
+  const movedDays = recent.filter((d) => d.movedToGoal).length;
   const average = recent.length
     ? Math.round(recent.reduce((sum, d) => sum + d.steps, 0) / recent.length)
     : null;
@@ -101,7 +102,10 @@ export default function StepGoalScreen() {
               You've averaged{' '}
               <Text style={s.bold}>{average.toLocaleString()} steps</Text> over
               the last {recent.length} days with step data, and reached your
-              goal on {goalDays} of them.
+              goal on {goalDays} of them
+              {movedDays > 0
+                ? `, with ${movedDays} more made goal days by movement.`
+                : '.'}
             </Text>
           ) : (
             <Text style={s.historyText}>
@@ -114,7 +118,7 @@ export default function StepGoalScreen() {
         <Group>
           <ToggleRow
             title='Suggest adjustments'
-            sub="Tern can propose a new goal monthly based on what you're actually doing"
+            sub='Tern can suggest a new goal from your last 30 days of steps'
             on={settings.suggestStepAdjustments}
             onToggle={(v) => updateSettings({ suggestStepAdjustments: v })}
           />

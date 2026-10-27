@@ -41,7 +41,8 @@ export class WaypointRules {
     [
       {
         id: WaypointSource.Steps,
-        label: 'Reaching your step goal',
+        // Steps or movement minutes: either makes a goal day.
+        label: 'Reaching your daily goal',
         points: 40,
       },
       { id: WaypointSource.Meals, label: 'Logging all meals', points: 15 },

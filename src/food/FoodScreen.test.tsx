@@ -156,7 +156,7 @@ describe('FoodScreen', () => {
       await ui.findByText(/Swipe a food left/, {}, { timeout: 3000 }),
     ).toBeTruthy();
     expect(ui.getByText('1 of 1')).toBeTruthy();
-    expect(ui.queryByText(/counts as logged/)).toBeNull();
+    expect(ui.queryByText(/counts toward a full log/)).toBeNull();
 
     await act(async () => fireEvent.press(ui.getByText('Got it')));
     expect(ui.queryByText(/Swipe a food left/)).toBeNull();

@@ -245,10 +245,7 @@ export default function FoodScreen() {
         )}
 
         {settings.showTiers ? (
-          <FootNote>
-            Numbers show processing level (NOVA), not a judgment about what to
-            eat. Nutrition data from USDA FoodData Central and Open Food Facts.
-          </FootNote>
+          <FootNote>{`${settings.showTierNumber ? 'Numbers' : 'Colors'} show processing level (NOVA), not a judgment about what to eat. Nutrition data from USDA FoodData Central and Open Food Facts.`}</FootNote>
         ) : (
           <FootNote>
             Nutrition data from USDA FoodData Central and Open Food Facts.

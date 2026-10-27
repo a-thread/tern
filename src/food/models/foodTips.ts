@@ -24,15 +24,19 @@ export function foodTipTargets(input: {
   return { skipMeal, firstFoodId: first?.id ?? null };
 }
 
-/** What each tip on the Food tab says: a bold opening, then the rest. */
+/**
+ * What each tip on the Food tab says: a bold opening, then the rest. `when` is the viewed day
+ * as the skip row words it ("today", or "yesterday", which can still be filled in).
+ */
 export function foodTipText(
   tip: Tip,
   mealName: string,
+  when = 'today',
 ): { lead: string; rest: string } {
   switch (tip) {
     case Tip.FoodSkipMeal:
       return {
-        lead: `“No ${mealName} today” counts as logged.`,
+        lead: `“No ${mealName} ${when}” counts toward a full log.`,
         rest: 'A full log never means eating more than you wanted.',
       };
     default:

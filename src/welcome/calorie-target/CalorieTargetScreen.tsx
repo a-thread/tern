@@ -45,7 +45,7 @@ export default function CalorieTargetScreen() {
         {adaptive.available ? (
           <ToggleRow
             title='Adapt my target'
-            sub='Learns what you burn from your log and weight trend'
+            sub='Learns how much energy you use from your log and weight trend'
             on={settings.adaptTarget}
             onToggle={(v) => updateSettings({ adaptTarget: v })}
           />

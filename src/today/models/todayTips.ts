@@ -13,8 +13,8 @@ export function todayTipText(
       };
     case Tip.Waypoints:
       return {
-        lead: 'Waypoints are for doing things,',
-        rest: 'never for a number. Logging, moving and resting all count.',
+        lead: 'Waypoints are for showing up.',
+        rest: 'Logging, moving, resting and reaching the goals you set all count. Never your weight or calorie totals.',
       };
     default:
       return {

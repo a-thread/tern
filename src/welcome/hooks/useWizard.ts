@@ -2,6 +2,7 @@ import { useSettings } from '@/domain/settings/SettingsContext';
 import { useActivity } from '@/domain/activity/ActivityContext';
 import { useAuth } from '@/domain/auth/AuthContext';
 import { StepsStatus } from '@/domain/activity/models/stepsStatus';
+import { remindersOff } from '@/domain/settings/models/reminderPlan';
 import { useWelcomeNavigation } from '@/navigation/useAppNavigation';
 import { nextStep, wizardSteps, WizardStep } from '../models/wizardSteps';
 
@@ -17,6 +18,8 @@ export function useWizard(step: WizardStep) {
   const auth = useAuth();
   const input = {
     healthAvailable: status !== StepsStatus.Unavailable,
+    trackFood: settings.trackFood,
+    trackWeight: settings.trackWeight,
     trackCalories: settings.trackCalories,
     trackMacros: settings.trackMacros,
     showCalories: settings.showCalories,
@@ -27,9 +30,16 @@ export function useWizard(step: WizardStep) {
   };
   const steps = wizardSteps(input);
 
-  /** `askNotifications`: reminders were chosen, so the phone may ask to send them now. */
+  /**
+   * `askNotifications`: reminders were chosen, so the phone may ask to send them now. Finishing
+   * without ("Not now", or skipping setup) turns the reminders off, so Settings never shows
+   * reminders as on that can't fire; turning one on later asks then.
+   */
   const finish = (askNotifications = false) =>
     updateSettings({
+      ...(askNotifications || settings.onboarding.notificationsAsked
+        ? {}
+        : { reminders: remindersOff(settings.reminders) }),
       onboarding: {
         ...settings.onboarding,
         wizardDone: true,

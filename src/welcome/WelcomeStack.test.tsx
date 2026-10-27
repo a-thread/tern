@@ -75,22 +75,28 @@ beforeEach(() => jest.mocked(syncReminders).mockClear());
 describe('setup wizard', () => {
   it('opens a new install on the wizard, and "Skip setup" lands on Today without asking for notifications', async () => {
     const backend = await openApp();
-    expect(await screen.findByText('Progress at your pace')).toBeTruthy();
+    expect(
+      await screen.findByText('Progress answers to your pace'),
+    ).toBeTruthy();
 
     await press('Skip setup');
     expect((await screen.findAllByText('Today')).length).toBeGreaterThan(0);
-    expect(screen.queryByText('Progress at your pace')).toBeNull();
+    expect(screen.queryByText('Progress answers to your pace')).toBeNull();
     const saved = await backend.settings.load();
     expect(saved?.onboarding).toMatchObject({
       wizardDone: true,
       notificationsAsked: false,
     });
+    // Nothing shows as on in Settings that can't fire without the permission.
+    expect(saved?.reminders?.mealLog.on).toBe(false);
+    expect(saved?.reminders?.weighIn.on).toBe(false);
+    expect(saved?.reminders?.streak.on).toBe(false);
     expect(syncReminders).not.toHaveBeenCalled();
   });
 
   it('writes choices as it goes, skips calorie screens without numbers, and asks once reminders are turned on', async () => {
     const backend = await openApp();
-    await screen.findByText('Progress at your pace');
+    await screen.findByText('Progress answers to your pace');
     await press('Get started');
 
     await screen.findByText('What to keep track of');
@@ -100,7 +106,7 @@ describe('setup wizard', () => {
     // Steps, when the phone has a health app, then the food choice.
     if (screen.queryByText('Steps come from your phone')) await press('Skip');
     await screen.findByText('How do you like food logged?');
-    await press('Without numbers');
+    await press('Without calorie counts');
     await press('Next');
 
     // No calorie target or zone without calorie numbers.
@@ -120,7 +126,7 @@ describe('setup wizard', () => {
 
   it('shows the calorie target, then the zone once intake bars are on', async () => {
     await openApp();
-    await screen.findByText('Progress at your pace');
+    await screen.findByText('Progress answers to your pace');
     await press('Get started');
     await press('Next');
     if (screen.queryByText('Steps come from your phone')) await press('Skip');
@@ -148,13 +154,13 @@ describe('setup wizard', () => {
 
     await openApp(backend);
     expect((await screen.findAllByText('Today')).length).toBeGreaterThan(0);
-    expect(screen.queryByText('Progress at your pace')).toBeNull();
+    expect(screen.queryByText('Progress answers to your pace')).toBeNull();
     expect(screen.queryByText(/Getting started/)).toBeNull();
   });
 
   it('after a skip, asks for notifications only once a reminder is changed', async () => {
     await openApp();
-    await screen.findByText('Progress at your pace');
+    await screen.findByText('Progress answers to your pace');
     await press('Skip setup');
     await screen.findAllByText('Today');
     expect(syncReminders).not.toHaveBeenCalled();
@@ -177,7 +183,7 @@ describe('setup wizard', () => {
 
   it('shows the tips on Today one at a time, skipping any that don’t apply', async () => {
     await openApp();
-    await screen.findByText('Progress at your pace');
+    await screen.findByText('Progress answers to your pace');
     await press('Skip setup');
 
     // The first tip, counted out of the tips that apply today.
@@ -190,7 +196,7 @@ describe('setup wizard', () => {
     // On to the next one that applies (the rest-day tip only with a rest-day link).
     expect(
       await screen.findByText(
-        /Rest days keep your streak|Waypoints are for doing things/,
+        /Rest days keep your streak|Waypoints are for showing up/,
         {},
         { timeout: 4000 },
       ),
@@ -201,7 +207,7 @@ describe('setup wizard', () => {
 
   it('"Skip tips" ends them all', async () => {
     await openApp();
-    await screen.findByText('Progress at your pace');
+    await screen.findByText('Progress answers to your pace');
     await press('Skip setup');
 
     await screen.findByText(/Tap a day to look back/, {}, { timeout: 4000 });
@@ -214,7 +220,7 @@ describe('setup wizard', () => {
 
   it('offers the getting-started card after the wizard, and hides it with its ×', async () => {
     await openApp();
-    await screen.findByText('Progress at your pace');
+    await screen.findByText('Progress answers to your pace');
     await press('Skip setup');
 
     expect(await screen.findByText(/Getting started/)).toBeTruthy();

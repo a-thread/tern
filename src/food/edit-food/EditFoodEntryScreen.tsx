@@ -171,6 +171,7 @@ export default function EditFoodEntryScreen({ navigation, route }: Props) {
                 value={tier}
                 onChange={setTier}
                 suggested={null}
+                editing
                 showNumber={showTierNumber}
               />
             </View>

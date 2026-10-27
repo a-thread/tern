@@ -24,7 +24,7 @@ import { TipOverlay } from '@shared/components/TipOverlay/TipOverlay';
 /**
  * The Today tab: steps, the week, what is left to do and what is done, and the waypoint
  * celebrations. On a rest day the sky card and the to-do list give way to a calm scene; the
- * day's logging stays one tap away ("Log something anyway"). Every section follows the viewed
+ * day's logging stays one tap away ("Log something"). Every section follows the viewed
  * day: today, unless a past day was tapped in the week strip.
  */
 export default function TodayScreen() {

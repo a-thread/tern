@@ -40,10 +40,10 @@ colors or neither.
 • Hide calorie counts so the numbers don't keep you from showing up.
 • Search everyday foods and packaged products, or scan a barcode.
 • Save meals, or re-log yesterday's dinner in a tap.
-• Didn't have lunch? Mark it "nothing today". It counts the same as a logged
-meal, so a complete log never means eating more or less than you wanted.
-• Opt into check-ins after meals to see how each one impacts you.
-• Want a hand? Tern can learn your real daily burn from your log and weight
+• Didn't have lunch? Mark it "nothing today". It counts toward a complete log,
+so a complete log never means eating more or less than you wanted.
+• Opt in to a quick "How was it?" after meals to see how each one sits with you.
+• Want a hand? Tern can learn how much energy you really use from your log and weight
 trend and suggest a calorie target. It never changes one on its own.
 
 WEIGHT (OPTIONAL)
@@ -59,7 +59,7 @@ WATER (OPTIONAL)
 • Get reminders on a schedule that suits you, or none at all.
 
 MOOD AND STRESS (OPTIONAL)
-• A quick daily check-in to see how you're doing over time.
+• A quick daily mood check-in to see how you're doing over time.
 
 MEDICATION (OPTIONAL)
 • Add as many as you need.
@@ -71,12 +71,13 @@ WAYPOINTS FOR SHOWING UP
 journey never ends.
 
 GENTLE REMINDERS
-• Every reminder is optional and never mention what you missed
+• Every reminder is optional, goes quiet once you've done the thing, and never
+scolds.
 
 YOUR DATA IS YOURS
 • No ads, nothing sold.
-• No account required: stay anonymous and keep everything on your phone. Every
-feature is free.
+• No account required: stay anonymous and keep everything on your phone, free.
+Tern Plus is the one paid part: an account that syncs and backs up.
 • Create an account with Tern Plus to keep your data on a secure server.
 • Export everything and restore it on a new phone, or delete your data or your
 account any time, right from Settings.

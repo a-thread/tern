@@ -46,6 +46,19 @@ describe('useFoodDisplay showCalories', () => {
   });
 });
 
+describe('useFoodDisplay with food off', () => {
+  it('shows no calories, macros or intake, and keeps the saved switches', async () => {
+    const { result } = await setup();
+    act(() => result.current.settings.updateSettings({ trackFood: false }));
+    expect(result.current.display).toMatchObject({
+      showCalories: false,
+      showMacros: false,
+      tracksIntake: false,
+    });
+    expect(result.current.settings.settings.trackCalories).toBe(true);
+  });
+});
+
 describe('useFoodDisplay macros', () => {
   it('tracks macros apart from calories', async () => {
     const { result } = await setup();
