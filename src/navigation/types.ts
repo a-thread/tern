@@ -57,6 +57,10 @@ export type RootStackParamList = {
   Waypoints: { streak: number };
   /** Passing a stop: `waypoints` is the stop's running total. */
   Milestone: { waypoints: number };
+  /** A stop already passed, from its row on Journey: `waypoints` is the stop's running total. */
+  Destination: { waypoints: number };
+  /** What the streak and freeze chips on Today mean. */
+  Streak: undefined;
   RestDay: RestDayParams;
 };
 

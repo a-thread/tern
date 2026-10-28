@@ -11,7 +11,9 @@ import {
   IconBadge,
   Card,
   ProgressBar,
+  Icon,
 } from '@shared/components/ui';
+import { useRootNavigation } from '../navigation/useAppNavigation';
 import { JourneyRoute } from './components/JourneyRoute/JourneyRoute';
 import { useReplayOnFocus } from '@shared/hooks/useReplayOnFocus';
 import { usePullToRefresh } from '@shared/hooks/usePullToRefresh';
@@ -54,6 +56,7 @@ const RULE_STYLE: Record<WaypointSource, { bg: string; fg: string }> = {
 
 export default function JourneyScreen() {
   const insets = useSafeAreaInsets();
+  const navigation = useRootNavigation();
   const { waypoints, events, reload } = useWaypoints();
   const refreshControl = usePullToRefresh([reload]);
   const { settings } = useSettings();
@@ -142,9 +145,24 @@ export default function JourneyScreen() {
           </>
         ) : null}
 
-        <GroupLabel>Reached</GroupLabel>
+        {/* Where the bird is headed comes first, then the stops passed, newest first. */}
+        <GroupLabel>Stops</GroupLabel>
         <Group>
           {[
+            ...(next
+              ? [
+                  <Row
+                    key={next.id}
+                    title={next.name}
+                    sub={`Next · ${next.waypoints.toLocaleString()}`}
+                    icon={
+                      <View style={[s.msDot, s.msPending]}>
+                        <Text style={s.msPendingText}>—</Text>
+                      </View>
+                    }
+                  />,
+                ]
+              : []),
             ...[...reached].reverse().map((m, i) => (
               <Row
                 key={m.id}
@@ -156,6 +174,11 @@ export default function JourneyScreen() {
                 ]
                   .filter(Boolean)
                   .join(' · ')}
+                onPress={() =>
+                  navigation.navigate('Destination', {
+                    waypoints: m.waypoints,
+                  })
+                }
                 icon={
                   <View
                     style={[
@@ -168,25 +191,11 @@ export default function JourneyScreen() {
                       },
                     ]}
                   >
-                    <Text style={s.msCheck}>✓</Text>
+                    <Icon name='check-bold' size={14} color='#fff' />
                   </View>
                 }
               />
             )),
-            ...(next
-              ? [
-                  <Row
-                    key={next.id}
-                    title={next.name}
-                    sub={next.waypoints.toLocaleString()}
-                    icon={
-                      <View style={[s.msDot, s.msPending]}>
-                        <Text style={s.msPendingText}>—</Text>
-                      </View>
-                    }
-                  />,
-                ]
-              : []),
           ]}
         </Group>
 
@@ -259,7 +268,6 @@ const s = StyleSheet.create({
     borderColor: colors.dove,
     borderStyle: 'dashed',
   },
-  msCheck: { color: '#fff', fontSize: 11, fontFamily: font.bold },
   msPendingText: { color: colors.ink3, fontSize: 11, fontFamily: font.bold },
   rulePoints: { fontFamily: font.bold, fontSize: typography.small.fontSize },
 });

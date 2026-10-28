@@ -109,6 +109,9 @@ describe('setup wizard', () => {
     await act(async () =>
       fireEvent.press(screen.getByLabelText('Track calories')),
     );
+    await act(async () =>
+      fireEvent.press(screen.getByLabelText('Ask how meals went')),
+    );
     await press('Next');
 
     // No calorie target or zone without calorie numbers; macros, with intake bars offered there.
@@ -125,6 +128,7 @@ describe('setup wizard', () => {
       trackWater: true,
       trackCalories: false,
       trackMacros: true,
+      checkInAfterMeals: true,
     });
     expect(saved?.onboarding).toMatchObject({
       wizardDone: true,

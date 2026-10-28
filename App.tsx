@@ -1,5 +1,4 @@
 import React from 'react';
-import { NavigationContainer, DefaultTheme } from '@react-navigation/native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { enableFreeze } from 'react-native-screens';
 import { StatusBar } from 'expo-status-bar';
@@ -17,27 +16,13 @@ import {
   Manrope_700Bold,
 } from '@expo-google-fonts/manrope';
 
-import { colors } from '@shared/theme';
 import { AppProviders } from '@/AppProviders';
 import RootNavigator from '@/navigation/RootNavigator';
-import {
-  lastNavigation,
-  rememberNavigation,
-} from '@/navigation/navigationMemory';
+import { AppNavigationContainer } from '@/navigation/AppNavigationContainer';
 import AuthGate from '@/AuthGate';
 import { ToastProvider } from '@shared/state/ToastContext';
 
 enableFreeze(true);
-
-const navTheme = {
-  ...DefaultTheme,
-  colors: {
-    ...DefaultTheme.colors,
-    background: colors.paper,
-    card: colors.card,
-    border: colors.border,
-  },
-};
 
 export default function App() {
   const [loaded] = useFonts({
@@ -61,13 +46,9 @@ export default function App() {
       <ToastProvider>
         <AuthGate>
           <AppProviders>
-            <NavigationContainer
-              theme={navTheme}
-              initialState={lastNavigation()}
-              onStateChange={rememberNavigation}
-            >
+            <AppNavigationContainer>
               <RootNavigator />
-            </NavigationContainer>
+            </AppNavigationContainer>
           </AppProviders>
         </AuthGate>
       </ToastProvider>
