@@ -47,6 +47,7 @@ export function RemindersSync() {
     (trackWeight && reminders.weighIn.on) ||
     (trackWater && reminders.water.on) ||
     (trackMood && reminders.mood.on) ||
+    reminders.streak.on ||
     medications.some((m) => m.remind);
 
   // A new install doesn't schedule anything (which would ask to send notifications) until a
@@ -125,18 +126,23 @@ export function RemindersSync() {
   const restCovers = settings.autoDetectRestDays && activity.restLeft > 0;
   useEffect(() => {
     if (!ready || !activity.ready) return;
-    syncStreakAlerts({
-      on: reminders.streak.on,
-      streak: activity.streak,
-      freezes: activity.freezes,
-      todayOpen,
-      restLeft: activity.restLeft,
-      restCovers,
-      movement: settings.trackMovement,
-      now: new Date(),
-    }).catch((e) => console.warn('Could not schedule streak alerts', e));
+    // Once a reminder has been chosen, streak alerts on their own may ask for permission too.
+    syncStreakAlerts(
+      {
+        on: reminders.streak.on,
+        streak: activity.streak,
+        freezes: activity.freezes,
+        todayOpen,
+        restLeft: activity.restLeft,
+        restCovers,
+        movement: settings.trackMovement,
+        now: new Date(),
+      },
+      !waiting,
+    ).catch((e) => console.warn('Could not schedule streak alerts', e));
   }, [
     ready,
+    waiting,
     activity.ready,
     reminders.streak.on,
     activity.streak,

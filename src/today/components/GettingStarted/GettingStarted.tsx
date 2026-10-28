@@ -29,6 +29,7 @@ export function GettingStarted() {
   const rows = startItems({
     healthAvailable: status !== StepsStatus.Unavailable,
     healthConnected: stepsReadable,
+    // The starting goal is a real one and the wizard shows it, so it's set once the wizard is done.
     stepGoalSet: onboarding.wizardDone,
     remindersOn: onboarding.notificationsAsked,
   });

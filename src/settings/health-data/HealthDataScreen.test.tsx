@@ -72,7 +72,11 @@ async function open(
   const backend: Backend = {
     ...createMemoryBackend(),
     steps,
-    settings: { load: async () => ({ trackMovement }), save: async () => {} },
+    settings: {
+      load: async () => ({ trackMovement }),
+      save: async () => {},
+      hasLoggedAnything: async () => true,
+    },
   };
   const ui = render(
     <SafeAreaProvider initialMetrics={metrics}>

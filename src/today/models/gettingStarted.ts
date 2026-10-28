@@ -11,7 +11,7 @@ export enum StartItem {
 export type StartInput = {
   healthAvailable: boolean;
   healthConnected: boolean;
-  /** The step goal has been changed from where it started. */
+  /** The step goal is set: the starting one counts, so this is true once the wizard is done. */
   stepGoalSet: boolean;
   /** A reminder was chosen, so notifications have been asked for. */
   remindersOn: boolean;

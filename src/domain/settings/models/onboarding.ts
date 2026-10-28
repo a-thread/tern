@@ -52,15 +52,15 @@ export class Onboarding {
 }
 
 /**
- * Reads the saved onboarding state. With no saved settings at all this is a new install; saved
- * settings without it come from before it existed (an account, or a phone already in use), so
+ * Reads the saved onboarding state. With nothing saved or logged at all this is a new install;
+ * an install in use without it comes from before it existed (an account, or a phone), so
  * that person never sees it. Anything malformed takes the "done" value, never a repeat.
  */
 export function loadOnboarding(
   saved: unknown,
-  hasSavedSettings: boolean,
+  inUse: boolean,
 ): OnboardingState {
-  if (!hasSavedSettings) return Onboarding.NEW;
+  if (!inUse) return Onboarding.NEW;
   if (!saved || typeof saved !== 'object') return Onboarding.DONE;
   const s = saved as Partial<Record<keyof OnboardingState, unknown>>;
   const flag = (value: unknown, fallback: boolean) =>
