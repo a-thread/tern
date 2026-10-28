@@ -56,13 +56,16 @@ const press = async (text: string) => {
   await act(async () => fireEvent.press(screen.getByText(text)));
 };
 
-/** Through the wizard to the screen before reminders, choosing "Without calorie counts" to keep it short. */
+/** Through the wizard to the screen before reminders, with calories off to keep it short. */
 async function toAccount() {
   await press('Get started');
   await press('Next');
   if (screen.queryByText('Steps come from your phone')) await press('Skip');
-  await press('Without calorie counts');
+  await act(async () =>
+    fireEvent.press(screen.getByLabelText('Track calories')),
+  );
   await press('Next');
+  await press('Next'); // macro targets
 }
 
 beforeEach(() => mockAuth.openSignIn.mockClear());

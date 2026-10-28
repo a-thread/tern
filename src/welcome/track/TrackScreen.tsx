@@ -52,7 +52,7 @@ export default function TrackScreen() {
       <Group>
         <ToggleRow
           title='Food'
-          sub='Meals, with calories or without'
+          sub='Meals, with calories and macros or without'
           icon={
             <Badge
               name='silverware-fork-knife'

@@ -116,7 +116,7 @@ export const initialSettings: AppSettings = {
   trackMovement: false,
   movementGoalMinutes: MovementGoal.DEFAULT,
   adaptTarget: false,
-  aim: Aim.LoseSlowly,
+  aim: Aim.Maintain,
   lastSuggestionWeek: null,
   celebratedMilestone: null,
   healthData: {

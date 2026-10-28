@@ -10,7 +10,6 @@ import {
   Row,
   IconBadge,
   Card,
-  FootNote,
   ProgressBar,
 } from '@shared/components/ui';
 import { JourneyRoute } from './components/JourneyRoute/JourneyRoute';

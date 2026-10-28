@@ -55,6 +55,13 @@ export function useWizard(step: WizardStep) {
   };
 
   /**
+   * The screen before, as swiping back or Android's back button would. None on the first
+   * screen: going by position, since `canGoBack` would also count the app's own stack.
+   */
+  const index = steps.indexOf(step);
+  const back = index > 0 ? () => navigation.goBack() : null;
+
+  /**
    * Settles the account invitation for good: "Keep on this phone" on its own screen (which
    * then moves on), or signing in from the first screen. Opening sign-up or sign-in from the
    * invitation itself doesn't settle it: backing out of those lands on the same screen, and
@@ -68,5 +75,12 @@ export function useWizard(step: WizardStep) {
     signIn?.();
   };
 
-  return { steps, index: steps.indexOf(step), next, finish, answerAccount };
+  return {
+    steps,
+    index,
+    next,
+    back,
+    finish,
+    answerAccount,
+  };
 }

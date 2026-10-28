@@ -50,6 +50,16 @@ describe('wizardSteps', () => {
     expect(noBars).not.toContain(WizardStep.TargetZone);
   });
 
+  it('asks for a macro split only when macros are tracked', () => {
+    expect(wizardSteps(all)).toContain(WizardStep.MacroTargets);
+    expect(wizardSteps({ ...all, trackMacros: false })).not.toContain(
+      WizardStep.MacroTargets,
+    );
+    expect(wizardSteps({ ...all, trackFood: false })).not.toContain(
+      WizardStep.MacroTargets,
+    );
+  });
+
   it('skips reminders with neither food nor weight to remind about', () => {
     expect(wizardSteps({ ...all, trackFood: false })).toContain(
       WizardStep.Reminders,
@@ -67,11 +77,19 @@ describe('nextStep', () => {
     );
     expect(
       nextStep(WizardStep.FoodStyle, { ...all, showCalories: false }),
+    ).toBe(WizardStep.MacroTargets);
+    expect(
+      nextStep(WizardStep.FoodStyle, {
+        ...all,
+        showCalories: false,
+        trackMacros: false,
+      }),
     ).toBe(WizardStep.Account);
     expect(
       nextStep(WizardStep.FoodStyle, {
         ...all,
         showCalories: false,
+        trackMacros: false,
         offerAccount: false,
       }),
     ).toBe(WizardStep.Reminders);

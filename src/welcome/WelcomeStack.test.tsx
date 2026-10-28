@@ -105,18 +105,27 @@ describe('setup wizard', () => {
 
     // Steps, when the phone has a health app, then the food choice.
     if (screen.queryByText('Steps come from your phone')) await press('Skip');
-    await screen.findByText('How do you like food logged?');
-    await press('Without calorie counts');
+    await screen.findByText('Food logging options');
+    await act(async () =>
+      fireEvent.press(screen.getByLabelText('Track calories')),
+    );
     await press('Next');
 
-    // No calorie target or zone without calorie numbers.
-    expect(await screen.findByText('A nudge now and then?')).toBeTruthy();
+    // No calorie target or zone without calorie numbers; macros, with intake bars offered there.
+    expect(await screen.findByText('Your macro targets')).toBeTruthy();
     expect(screen.queryByText('Your daily calorie target')).toBeNull();
+    expect(screen.getByLabelText('Show intake bars')).toBeTruthy();
+    await press('Next');
+    expect(await screen.findByText('A nudge now and then?')).toBeTruthy();
     await press('Turn on reminders');
 
     await screen.findAllByText('Today');
     const saved = await backend.settings.load();
-    expect(saved).toMatchObject({ trackWater: true, showCalories: false });
+    expect(saved).toMatchObject({
+      trackWater: true,
+      trackCalories: false,
+      trackMacros: true,
+    });
     expect(saved?.onboarding).toMatchObject({
       wizardDone: true,
       notificationsAsked: true,
@@ -139,7 +148,54 @@ describe('setup wizard', () => {
     await press('Next');
     expect(await screen.findByText('Your target zone')).toBeTruthy();
     await press('Skip');
+
+    // Then macros; intake bars were already asked about with calories.
+    expect(await screen.findByText('Your macro targets')).toBeTruthy();
+    expect(screen.queryByLabelText('Show intake bars')).toBeNull();
+    expect(screen.getByLabelText('Protein as a minimum')).toBeTruthy();
+    await press('Skip');
     expect(await screen.findByText('A nudge now and then?')).toBeTruthy();
+  });
+
+  it('goes back a screen, keeping what was chosen', async () => {
+    await openApp();
+    await screen.findByText('Progress answers to your pace');
+    expect(screen.queryByLabelText('Back')).toBeNull();
+    await press('Get started');
+    await screen.findByText('What to keep track of');
+    await act(async () => fireEvent.press(screen.getByLabelText('Water')));
+    await press('Next');
+    if (screen.queryByText('Steps come from your phone')) await press('Skip');
+    await screen.findByText('Food logging options');
+
+    // Back from the food step, past Steps if it was shown, to what to track.
+    while (!screen.queryByText('What to keep track of')) {
+      await act(async () =>
+        fireEvent.press(screen.getAllByLabelText('Back').at(-1)!),
+      );
+    }
+    expect(
+      screen.getByLabelText('Water').props.accessibilityState,
+    ).toMatchObject({ checked: true });
+  });
+
+  it('keeps the calorie screens for calories without macros', async () => {
+    const backend = await openApp();
+    await screen.findByText('Progress answers to your pace');
+    await press('Get started');
+    await press('Next');
+    if (screen.queryByText('Steps come from your phone')) await press('Skip');
+    await act(async () =>
+      fireEvent.press(screen.getByLabelText('Track macros')),
+    );
+    await press('Next');
+
+    expect(await screen.findByText('Your daily calorie target')).toBeTruthy();
+    expect(await backend.settings.load()).toMatchObject({
+      trackCalories: true,
+      showCalories: true,
+      trackMacros: false,
+    });
   });
 
   it('never shows to someone who already has saved settings', async () => {
@@ -224,7 +280,7 @@ describe('setup wizard', () => {
     await press('Skip setup');
 
     expect(await screen.findByText(/Getting started/)).toBeTruthy();
-    expect(screen.getByText('Turn on reminders')).toBeTruthy();
+    expect(screen.getByText('Review reminders')).toBeTruthy();
     await act(async () =>
       fireEvent.press(screen.getByLabelText('Hide getting started')),
     );

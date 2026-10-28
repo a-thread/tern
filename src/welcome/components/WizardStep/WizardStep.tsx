@@ -3,13 +3,15 @@ import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { colors, font, radius, space, typography } from '@shared/theme';
+import { Icon } from '@shared/components/ui';
 import { useWizard } from '../../hooks/useWizard';
 import { WizardStep as Step } from '../../models/wizardSteps';
 
 type Action = { label: string; onPress: () => void };
 
 /**
- * The frame every wizard screen shares: progress dots and a skip link at the top, a title and
+ * The frame every wizard screen shares: a back arrow (after the first screen), progress dots
+ * and a skip link at the top, a title and
  * body, the screen's own controls, then the main button and an optional quieter link under it.
  * `skip` defaults to "Skip", which keeps this screen's defaults and moves on; pass null for none.
  */
@@ -56,21 +58,33 @@ export function WizardStep({
       ]}
     >
       <View style={s.top}>
-        <View
-          style={s.dots}
-          accessible
-          accessibilityLabel={`Step ${wizard.index + 1} of ${wizard.steps.length}`}
-        >
-          {wizard.steps.map((st, i) => (
-            <View
-              key={st}
-              style={[
-                s.dot,
-                i < wizard.index && s.dotDone,
-                i === wizard.index && s.dotOn,
-              ]}
-            />
-          ))}
+        <View style={s.lead}>
+          {wizard.back ? (
+            <Pressable
+              onPress={wizard.back}
+              hitSlop={12}
+              accessibilityRole='button'
+              accessibilityLabel='Back'
+            >
+              <Icon name='chevron-left' size={24} color={colors.ink2} />
+            </Pressable>
+          ) : null}
+          <View
+            style={s.dots}
+            accessible
+            accessibilityLabel={`Step ${wizard.index + 1} of ${wizard.steps.length}`}
+          >
+            {wizard.steps.map((st, i) => (
+              <View
+                key={st}
+                style={[
+                  s.dot,
+                  i < wizard.index && s.dotDone,
+                  i === wizard.index && s.dotOn,
+                ]}
+              />
+            ))}
+          </View>
         </View>
         {topAction ? (
           <Pressable
@@ -136,6 +150,7 @@ const s = StyleSheet.create({
     alignItems: 'center',
     minHeight: 28,
   },
+  lead: { flexDirection: 'row', alignItems: 'center', gap: space.sm },
   dots: { flexDirection: 'row', gap: 5 },
   // Done steps stay tinted, so the dots read as progress rather than a row of equals.
   dot: { width: 8, height: 8, borderRadius: 4, backgroundColor: colors.dove },
@@ -153,7 +168,11 @@ const s = StyleSheet.create({
     fontSize: 26,
     lineHeight: 32,
   },
-  body: { ...typography.meta, lineHeight: 19, marginTop: space.sm },
+  body: {
+    ...typography.meta,
+    lineHeight: 19,
+    marginTop: space.sm,
+  },
   centered: { textAlign: 'center' },
   primary: {
     backgroundColor: colors.coral,

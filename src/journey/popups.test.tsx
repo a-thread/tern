@@ -62,9 +62,6 @@ describe('waypoints card', () => {
     expect(ui.getByText('☀ 9-day streak')).toBeTruthy();
     expect(ui.getByText(/to go$/)).toBeTruthy();
     expect(ui.getByText('See your journey ›')).toBeTruthy();
-    expect(
-      ui.getByText('Earned for showing up, never for weight or calories.'),
-    ).toBeTruthy();
   });
 });
 

@@ -9,6 +9,7 @@ import StepsScreen from './steps/StepsScreen';
 import FoodStyleScreen from './food-style/FoodStyleScreen';
 import CalorieTargetScreen from './calorie-target/CalorieTargetScreen';
 import TargetZoneScreen from './target-zone/TargetZoneScreen';
+import MacroTargetsScreen from './macro-targets/MacroTargetsScreen';
 import AccountScreen from './account/AccountScreen';
 import RemindersStepScreen from './reminders/RemindersStepScreen';
 
@@ -30,6 +31,10 @@ export default function WelcomeStack() {
         component={CalorieTargetScreen}
       />
       <Stack.Screen name={WizardStep.TargetZone} component={TargetZoneScreen} />
+      <Stack.Screen
+        name={WizardStep.MacroTargets}
+        component={MacroTargetsScreen}
+      />
       <Stack.Screen name={WizardStep.Account} component={AccountScreen} />
       <Stack.Screen
         name={WizardStep.Reminders}

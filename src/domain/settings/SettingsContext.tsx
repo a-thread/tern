@@ -95,7 +95,7 @@ export function SettingsProvider({
           adaptTarget: flag(saved?.adaptTarget, defaults.adaptTarget),
           aim: Object.values(Aim).includes(saved?.aim as Aim)
             ? (saved!.aim as Aim)
-            : Aim.LoseSlowly,
+            : Aim.Maintain,
           lastSuggestionWeek:
             typeof saved?.lastSuggestionWeek === 'string'
               ? saved.lastSuggestionWeek

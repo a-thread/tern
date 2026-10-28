@@ -29,7 +29,7 @@ export default function AccountScreen() {
     <WizardStep
       step={Step.Account}
       title='Keep your data safe'
-      body='Tern works fully on this phone. An account, with Tern Plus, keeps it safe beyond it.'
+      body='You can use Tern without an account. Create one with Tern Plus to back up your data and use Tern on other phones.'
       // These open over the wizard and leave it here, so backing out comes back to this screen.
       primary={{
         label: 'Create an account',

@@ -1,7 +1,7 @@
 import React from 'react';
 import { Pressable, StyleSheet, Text } from 'react-native';
 
-import { colors, font } from '@shared/theme';
+import { colors, font, space } from '@shared/theme';
 import {
   Group,
   GroupLabel,
@@ -38,7 +38,7 @@ export default function StepsScreen() {
           : `Tern reads your steps from ${healthApp}, and never shares them.`
       }
     >
-      <Group>
+      <Group style={s.group}>
         <Row
           title={healthApp}
           sub={connected ? 'Connected' : 'Count steps without typing them in'}
@@ -76,4 +76,5 @@ export default function StepsScreen() {
 
 const s = StyleSheet.create({
   connect: { fontFamily: font.semibold, fontSize: 13.5, color: colors.coral },
+  group: { marginTop: space.md },
 });

@@ -7,6 +7,7 @@ export class CalorieTarget {
     { label: '−20%', factor: 0.8 },
     { label: '−10%', factor: 0.9 },
     { label: '+10%', factor: 1.1 },
+    { label: '+20%', factor: 1.2 },
   ] as const;
 
   /** Rounds to the slider's step and keeps it in range. */

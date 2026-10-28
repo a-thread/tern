@@ -28,6 +28,7 @@ export type WelcomeStackParamList = {
   FoodStyle: undefined;
   CalorieTarget: undefined;
   TargetZone: undefined;
+  MacroTargets: undefined;
   Account: undefined;
   Reminders: undefined;
 };

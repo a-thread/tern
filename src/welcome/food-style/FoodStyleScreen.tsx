@@ -1,125 +1,53 @@
 import React from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { StyleSheet } from 'react-native';
 
-import { colors, radius, space, typography } from '@shared/theme';
-import { Icon, type IconName } from '@shared/components/ui';
+import { FootNote, Group, ToggleRow } from '@shared/components/ui';
 import { useSettings } from '@/domain/settings/SettingsContext';
 import { WizardStep } from '../components/WizardStep/WizardStep';
 import { WizardStep as Step } from '../models/wizardSteps';
+import { space } from '@/shared/theme';
 
-/** Calorie counts shown or not: the same choice as Settings › Food display. */
+/**
+ * Calories and macros, each on its own switch: the same two as Settings › Targets. Turning
+ * calories on here also shows the counts, since that is what was asked for.
+ */
 export default function FoodStyleScreen() {
   const { settings, updateSettings } = useSettings();
-  const withNumbers = settings.trackCalories && settings.showCalories;
+  const calories = settings.trackCalories && settings.showCalories;
 
   return (
     <WizardStep
       step={Step.FoodStyle}
-      title='How do you like food logged?'
-      body='Either way, logging every meal counts the same.'
+      title='Food logging options'
+      body='Turn on calories, macros, or both to set the corresponding daily targets. Targets and counts are for display only and never affect points.'
     >
-      <View style={s.options} accessibilityRole='radiogroup'>
-        <Choice
-          icon='counter'
-          title='With calories'
-          sub='Totals against a daily target you can change'
-          selected={withNumbers}
-          onPress={() =>
-            updateSettings({ trackCalories: true, showCalories: true })
+      <Group style={s.group}>
+        <ToggleRow
+          title='Track calories'
+          sub='A daily calorie target and calorie counts'
+          on={calories}
+          onToggle={(v) =>
+            updateSettings(
+              v
+                ? { trackCalories: true, showCalories: true }
+                : { trackCalories: false },
+            )
           }
         />
-        <Choice
-          icon='silverware-fork-knife'
-          title='Without calorie counts'
-          sub={
-            settings.trackMacros
-              ? 'What you ate and when, with protein, carbs and fat'
-              : 'Just what you ate and when'
-          }
-          selected={!withNumbers}
-          onPress={() => updateSettings({ showCalories: false })}
+        <ToggleRow
+          title='Track macros'
+          sub='Protein, carb and fat targets'
+          on={settings.trackMacros}
+          onToggle={(v) => updateSettings({ trackMacros: v })}
         />
-      </View>
+      </Group>
+      {calories || settings.trackMacros ? null : (
+        <FootNote>Just what you ate and when, with no numbers.</FootNote>
+      )}
     </WizardStep>
   );
 }
 
-function Choice({
-  icon,
-  title,
-  sub,
-  selected,
-  onPress,
-}: {
-  icon: IconName;
-  title: string;
-  sub: string;
-  selected: boolean;
-  onPress: () => void;
-}) {
-  return (
-    <Pressable
-      onPress={onPress}
-      style={[s.choice, selected && s.choiceOn]}
-      accessibilityRole='radio'
-      accessibilityState={{ selected }}
-    >
-      <View style={[s.badge, selected && s.badgeOn]}>
-        <Icon
-          name={icon}
-          size={20}
-          color={selected ? colors.card : colors.kelp}
-        />
-      </View>
-      <View style={{ flex: 1 }}>
-        <Text style={typography.rowTitle}>{title}</Text>
-        <Text style={s.sub}>{sub}</Text>
-      </View>
-      {/* A radio mark too, so the choice isn't shown by colour alone. */}
-      <View style={[s.radio, selected && s.radioOn]}>
-        {selected ? <View style={s.radioDot} /> : null}
-      </View>
-    </Pressable>
-  );
-}
-
 const s = StyleSheet.create({
-  options: { gap: space.sm, marginTop: space.lg },
-  choice: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: space.md,
-    backgroundColor: colors.card,
-    borderRadius: radius.lg,
-    padding: space.md + 1,
-    borderWidth: 1.5,
-    borderColor: 'transparent',
-  },
-  choiceOn: { borderColor: colors.kelp, backgroundColor: colors.kelpTint },
-  badge: {
-    width: 40,
-    height: 40,
-    borderRadius: radius.md,
-    backgroundColor: colors.kelpTint,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  badgeOn: { backgroundColor: colors.kelp },
-  sub: { ...typography.caption, marginTop: 2 },
-  radio: {
-    width: 22,
-    height: 22,
-    borderRadius: 11,
-    borderWidth: 2,
-    borderColor: colors.dove,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  radioOn: { borderColor: colors.kelp },
-  radioDot: {
-    width: 10,
-    height: 10,
-    borderRadius: 5,
-    backgroundColor: colors.kelp,
-  },
+  group: { marginTop: space.md },
 });

@@ -6,6 +6,7 @@ export enum WizardStep {
   FoodStyle = 'FoodStyle',
   CalorieTarget = 'CalorieTarget',
   TargetZone = 'TargetZone',
+  MacroTargets = 'MacroTargets',
   Account = 'Account',
   Reminders = 'Reminders',
 }
@@ -26,7 +27,7 @@ export type WizardInput = {
 /**
  * The screens that apply, from what has been chosen so far: no Steps screen without a health
  * app, no food screens without food, no calorie target without calorie numbers, no zone
- * without intake bars, no account invitation once answered or signed in, and no reminders
+ * without intake bars, no macro split without macros, no account invitation once answered or signed in, and no reminders
  * without food or weight to remind about. Worked out again
  * after each step, since each step can change it.
  */
@@ -40,6 +41,7 @@ export function wizardSteps(input: WizardInput): WizardStep[] {
     ...(food ? [WizardStep.FoodStyle] : []),
     ...(calories ? [WizardStep.CalorieTarget] : []),
     ...(calories && input.showIntakeBars ? [WizardStep.TargetZone] : []),
+    ...(food && input.trackMacros ? [WizardStep.MacroTargets] : []),
     ...(input.offerAccount ? [WizardStep.Account] : []),
     ...(food || input.trackWeight ? [WizardStep.Reminders] : []),
   ];
