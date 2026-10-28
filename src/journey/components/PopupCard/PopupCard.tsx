@@ -62,9 +62,6 @@ export function PopupCard({
             <Pressable onPress={toJourney} hitSlop={8} accessibilityRole='link'>
               <Text style={s.link}>See your journey ›</Text>
             </Pressable>
-            <Text style={s.foot}>
-              Earned for showing up, never for weight or calories.
-            </Text>
           </LinearGradient>
           {overlay ? (
             <View style={StyleSheet.absoluteFill} pointerEvents='none'>

@@ -29,7 +29,7 @@ export function GettingStarted() {
   const rows = startItems({
     healthAvailable: status !== StepsStatus.Unavailable,
     healthConnected: stepsReadable,
-    stepGoalSet: settings.stepGoalHistory.length > 0,
+    stepGoalSet: onboarding.wizardDone,
     remindersOn: onboarding.notificationsAsked,
   });
   const done = rows.filter((r) => r.done).length;
@@ -56,7 +56,7 @@ export function GettingStarted() {
   const title: Record<StartItem, string> = {
     [StartItem.ConnectHealth]: `Connect ${healthAppName()}`,
     [StartItem.StepGoal]: 'Set your step goal',
-    [StartItem.Reminders]: 'Turn on reminders',
+    [StartItem.Reminders]: 'Review reminders',
   };
 
   return (

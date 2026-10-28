@@ -37,12 +37,12 @@ export function foodTipText(
     case Tip.FoodSkipMeal:
       return {
         lead: `“No ${mealName} ${when}” counts toward a full log.`,
-        rest: 'A full log never means eating more than you wanted.',
+        rest: "A full log means you've logged every meal for that day.",
       };
     default:
       return {
         lead: 'Swipe a food left to remove it.',
-        rest: 'Tap it to change how much you had.',
+        rest: "Tap it to edit the amount, meal association or food type if you're tracking NOVA processing levels.",
       };
   }
 }

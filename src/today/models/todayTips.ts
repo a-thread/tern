@@ -14,7 +14,7 @@ export function todayTipText(
     case Tip.Waypoints:
       return {
         lead: 'Waypoints are for showing up.',
-        rest: 'Logging, moving, resting and reaching the goals you set all count. Never your weight or calorie totals.',
+        rest: 'Logging, moving, resting and reaching the goals you set are measured. Go to Journey tab to see how many points each earn.',
       };
     default:
       return {

@@ -219,11 +219,6 @@ export default function JourneyScreen() {
             />
           ))}
         </Group>
-
-        <FootNote>
-          Waypoints are earned for showing up: logging, moving, resting and
-          reaching the goals you set. Never for weight or calorie totals.
-        </FootNote>
       </ScrollView>
     </View>
   );
