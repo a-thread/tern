@@ -81,6 +81,12 @@ describe('leftToDo', () => {
     expect(leftToDo(log, undefined, now)).toEqual([{ kind: 'weight' }]);
   });
 
+  it('has no meal row while food is not tracked', () => {
+    expect(leftToDo([], undefined, now, { meals: false })).toEqual([
+      { kind: 'weight' },
+    ]);
+  });
+
   it('counts a skipped meal as done, and moves on to the next one', () => {
     const [meal] = leftToDo([food(Meal.Breakfast)], weighedToday, now, {
       skippedMeals: [Meal.Lunch],
@@ -356,6 +362,19 @@ describe('suggestGoal', () => {
   it('stays quiet when the goal fits', () => {
     const steps = Array.from({ length: 20 }, (_, i) => (i % 2 ? 9000 : 6000));
     expect(suggestGoal(series(steps), 8000)).toBeNull();
+  });
+
+  it('does not count goal days made by movement as misses', () => {
+    // 16 days at the goal, 10 swims on low-step days: still "met almost every day".
+    const days = [
+      ...series(Array(16).fill(9000)),
+      ...series(Array(10).fill(3000)).map((d) => ({
+        ...d,
+        movedToGoal: true,
+        state: DayState.Goal,
+      })),
+    ];
+    expect(suggestGoal(days, 8000)).toBe(9000);
   });
 });
 

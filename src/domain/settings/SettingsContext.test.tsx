@@ -9,10 +9,17 @@ import {
   initialSettings,
   phoneSettings,
 } from './models/appSettings';
-import { createMemorySettingsRepository } from './settings.repository';
+import {
+  createMemorySettingsRepository,
+  type SettingsRepository,
+} from './settings.repository';
+import { Onboarding } from './models/onboarding';
 
 /** Settings as loaded over `defaults`, from `saved` (null: never saved). */
-async function loadWith(defaults: AppSettings, saved: Partial<AppSettings> | null) {
+async function loadWith(
+  defaults: AppSettings,
+  saved: Partial<AppSettings> | null,
+) {
   const repo = createMemorySettingsRepository();
   if (saved) await repo.save(saved as AppSettings);
   const wrapper = ({ children }: { children: React.ReactNode }) => (
@@ -258,7 +265,10 @@ describe('water settings', () => {
 
 describe('loading macro tracking', () => {
   async function load(saved: Record<string, unknown>) {
-    const repo = { load: async () => saved, save: async () => {} };
+    const repo = {
+      ...createMemorySettingsRepository(),
+      load: async () => saved,
+    };
     const wrapper = ({ children }: { children: React.ReactNode }) => (
       <SettingsProvider repo={repo}>{children}</SettingsProvider>
     );
@@ -277,5 +287,48 @@ describe('loading macro tracking', () => {
     const s = await load({ trackCalories: false, trackMacros: true });
     expect(s.trackCalories).toBe(false);
     expect(s.trackMacros).toBe(true);
+  });
+});
+
+describe('onboarding on load', () => {
+  async function onboardingFrom(repo: SettingsRepository) {
+    const wrapper = ({ children }: { children: React.ReactNode }) => (
+      <SettingsProvider repo={repo}>{children}</SettingsProvider>
+    );
+    const { result } = renderHook(() => useSettings(), { wrapper });
+    await waitFor(() => expect(result.current.ready).toBe(true));
+    return result.current.settings.onboarding;
+  }
+
+  it('starts a new install, with nothing saved or logged, at the beginning', async () => {
+    expect(await onboardingFrom(createMemorySettingsRepository())).toEqual(
+      Onboarding.NEW,
+    );
+  });
+
+  it('skips it for someone who has logged things but never changed a setting', async () => {
+    expect(await onboardingFrom(createMemorySettingsRepository(true))).toEqual(
+      Onboarding.DONE,
+    );
+  });
+
+  it('skips it when it cannot tell whether anything was logged', async () => {
+    const repo: SettingsRepository = {
+      ...createMemorySettingsRepository(),
+      hasLoggedAnything: async () => {
+        throw new Error('offline');
+      },
+    };
+    expect(await onboardingFrom(repo)).toEqual(Onboarding.DONE);
+  });
+
+  it('skips it when the settings could not be loaded', async () => {
+    const repo: SettingsRepository = {
+      ...createMemorySettingsRepository(),
+      load: async () => {
+        throw new Error('offline');
+      },
+    };
+    expect(await onboardingFrom(repo)).toEqual(Onboarding.DONE);
   });
 });

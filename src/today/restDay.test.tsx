@@ -132,7 +132,7 @@ describe('Today on a rest day', () => {
     const ui = await open();
     await waitFor(() => expect(ui.getByText('Left to do')).toBeTruthy());
     expect(ui.queryByText('Rest day')).toBeNull();
-    expect(ui.queryByText('Log something anyway')).toBeNull();
+    expect(ui.queryByText('Log something')).toBeNull();
   });
 
   it('swaps the to-do list for the calm scene, with logging one tap away', async () => {
@@ -144,15 +144,15 @@ describe('Today on a rest day', () => {
     });
     await waitFor(() => expect(ui.getByText('Rest day')).toBeTruthy());
     expect(
-      ui.getByText('Your streak is safe. Nothing to log today.'),
+      ui.getByText('Your streak is safe. Nothing you need to do today.'),
     ).toBeTruthy();
     expect(ui.getByText('Reminders are quiet until tomorrow')).toBeTruthy();
     expect(ui.queryByText('Left to do')).toBeNull();
     expect(ui.queryByText('Nutrition today')).toBeNull();
 
-    fireEvent.press(ui.getByText('Log something anyway'));
+    fireEvent.press(ui.getByText('Log something'));
     await waitFor(() => expect(ui.getByText('Left to do')).toBeTruthy());
-    expect(ui.queryByText('Log something anyway')).toBeNull();
+    expect(ui.queryByText('Log something')).toBeNull();
     expect(ui.getByText('Rest day')).toBeTruthy(); // still resting
   });
 
@@ -174,7 +174,7 @@ describe('Today on a rest day', () => {
     });
     await waitFor(() => expect(ui.getByText('Left to do')).toBeTruthy());
     expect(ui.queryByText('Rest day')).toBeNull();
-    expect(ui.queryByText('Log something anyway')).toBeNull();
+    expect(ui.queryByText('Log something')).toBeNull();
   });
 });
 

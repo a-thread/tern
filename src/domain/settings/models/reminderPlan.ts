@@ -160,7 +160,56 @@ export type PlanExtras = {
   trackMood?: boolean;
   /** Enable weigh-in reminders only when tracking weight. */
   trackWeight?: boolean;
+  /** Enable meal reminders only when tracking food. */
+  trackFood?: boolean;
 };
+
+/** Every reminder switched off, keeping the times chosen for each. */
+export function remindersOff(c: ReminderConfig): ReminderConfig {
+  return {
+    mealLog: { ...c.mealLog, on: false },
+    weighIn: { ...c.weighIn, on: false },
+    water: { ...c.water, on: false },
+    mood: { ...c.mood, on: false },
+    streak: { ...c.streak, on: false },
+  };
+}
+
+/** Each kind of reminder, and whether it will actually fire. */
+export type RemindersOn = {
+  meals: boolean;
+  weighIn: boolean;
+  water: boolean;
+  mood: boolean;
+  streak: boolean;
+  medication: boolean;
+};
+
+/**
+ * The reminders that will actually fire: switched on, and for something tracked (a water
+ * reminder does nothing while water is off). Streak alerts need steps read from the health
+ * app; medication reminders are set on each medication.
+ */
+export function remindersOn(
+  c: ReminderConfig,
+  {
+    medications = [],
+    trackWater = false,
+    trackMood = false,
+    trackWeight = true,
+    trackFood = true,
+    readSteps = true,
+  }: PlanExtras & { readSteps?: boolean } = {},
+): RemindersOn {
+  return {
+    meals: trackFood && c.mealLog.on,
+    weighIn: trackWeight && c.weighIn.on,
+    water: trackWater && c.water.on,
+    mood: trackMood && c.mood.on,
+    streak: readSteps && c.streak.on,
+    medication: medications.some((m) => m.remind),
+  };
+}
 
 export const waterReminderId = (index: number) => `tern-water-${index}`;
 
@@ -182,10 +231,11 @@ export function planReminders(
     trackWater = false,
     trackMood = false,
     trackWeight = true,
+    trackFood = true,
   }: PlanExtras = {},
 ): PlannedReminder[] {
   const plan: PlannedReminder[] = [];
-  if (c.mealLog.on) {
+  if (trackFood && c.mealLog.on) {
     plan.push(
       {
         id: 'tern-meals-midday',
@@ -212,8 +262,8 @@ export function planReminders(
       key: ReminderKey.WeighIn,
       title: daily ? 'Daily weigh-in' : 'Weekly weigh-in',
       body: daily
-        ? 'Your daily check-in is here, whenever you’d like.'
-        : 'Your weekly check-in is here, whenever you’d like.',
+        ? 'Today’s weigh-in, whenever you’d like.'
+        : 'This week’s weigh-in, whenever you’d like.',
       ...(daily ? {} : { weekday: c.weighIn.weekday }),
       ...at(c.weighIn.at),
     });
@@ -233,7 +283,7 @@ export function planReminders(
     plan.push({
       id: 'tern-mood',
       key: ReminderKey.Mood,
-      title: 'Check-in',
+      title: 'Mood check-in',
       body: 'How are you feeling today? A quick check-in, if you like.',
       ...at(c.mood.at),
     });
@@ -292,7 +342,8 @@ export function describeReminders(
         ? `Every day, ${formatMinutes(c.weighIn.at)}`
         : `${weekdayPlural(c.weighIn.weekday)}, ${formatMinutes(c.weighIn.at)}`,
     mood: `Every day, ${formatMinutes(c.mood.at)}`,
-    streak: 'An evening heads-up when a streak is waiting on today’s steps',
+    streak:
+      'An evening heads-up while today’s goal is still open, and a morning note if a freeze covers a day',
     water: `Every ${c.water.everyHours === 1 ? 'hour' : `${c.water.everyHours} hours`}, ${formatMinutes(c.water.start)} to ${formatMinutes(c.water.end)}`,
   };
 }
@@ -370,8 +421,7 @@ export function upcomingDates(
 
 /** Replacement trigger used to silence a reminder on a rest day. */
 export type RestTrigger =
-  | { id: string; weekday: number }
-  | { id: string; date: Date };
+  { id: string; weekday: number } | { id: string; date: Date };
 
 /** Replacement triggers that silence a repeating reminder for the rest of a rest day. */
 export function restDayTriggers(

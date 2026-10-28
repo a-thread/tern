@@ -7,6 +7,7 @@ import { Aim } from './aim';
 import { settingsSeed } from '../settings.mock';
 import { Frequency } from '@shared/models/frequency';
 import { type ReminderConfig, Reminders } from './reminderPlan';
+import { Onboarding, type OnboardingState } from './onboarding';
 
 export type ReminderSettings = ReminderConfig;
 
@@ -24,6 +25,11 @@ export type AppSettings = {
   suggestStepAdjustments: boolean;
   calorieTarget: number;
   macroTargets: { protein: number; carbs: number; fat: number };
+  /**
+   * Logging food at all. Off, the Food tab and everything about meals (the meal row on Today,
+   * meal reminders, meal waypoints and check-ins) go away; past logs are kept.
+   */
+  trackFood: boolean;
   /** Calorie targets and calorie numbers. Independent of macros: either can be tracked alone. */
   trackCalories: boolean;
   /** Protein, carb and fat targets and amounts. Independent of calories. */
@@ -75,6 +81,8 @@ export type AppSettings = {
    */
   celebratedMilestone: number | null;
   healthData: HealthDataSettings;
+  /** The setup wizard, tips and getting-started card; see `loadOnboarding`. */
+  onboarding: OnboardingState;
 };
 
 export const initialSettings: AppSettings = {
@@ -84,6 +92,7 @@ export const initialSettings: AppSettings = {
   suggestStepAdjustments: true,
   calorieTarget: settingsSeed.calorieTarget,
   macroTargets: { ...settingsSeed.macroTargets },
+  trackFood: true,
   trackCalories: true,
   trackMacros: true,
   showIntakeBars: false,
@@ -107,13 +116,14 @@ export const initialSettings: AppSettings = {
   trackMovement: false,
   movementGoalMinutes: MovementGoal.DEFAULT,
   adaptTarget: false,
-  aim: Aim.LoseSlowly,
+  aim: Aim.Maintain,
   lastSuggestionWeek: null,
   celebratedMilestone: null,
   healthData: {
     readSteps: true,
     readWorkouts: true,
   },
+  onboarding: Onboarding.NEW,
 };
 
 /**

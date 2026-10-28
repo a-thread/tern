@@ -34,10 +34,8 @@ import { dayTotals } from '@/domain/food/models/foodEntry';
 import { useFood } from '@/domain/food/FoodContext';
 import { tierShares } from './models/tierShares';
 import { NovaInfoSheet } from './components/NovaInfoSheet/NovaInfoSheet';
-import {
-  IntakeInfoKind,
-  IntakeInfoSheet,
-} from './components/IntakeInfoSheet/IntakeInfoSheet';
+import { IntakeInfoSheet } from './components/IntakeInfoSheet/IntakeInfoSheet';
+import { IntakeInfoKind } from './components/IntakeInfoSheet/models/intakeInfoCopy';
 import { useRootNavigation } from '@/navigation/useAppNavigation';
 import { IntakePage } from './models/intakePage';
 import { useViewedDay } from '@/shared/state/ViewedDayContext';
@@ -180,8 +178,8 @@ export function IntakeBars() {
                     {status.kind === 'in'
                       ? 'Within your zone'
                       : status.kind === 'below'
-                        ? `${status.amount.toLocaleString()} cal to reach your zone`
-                        : `${status.amount.toLocaleString()} cal past your zone`}
+                        ? 'Below your zone so far'
+                        : 'Above your zone'}
                   </Text>
                 </View>
               ) : p === IntakePage.Processing ? (
@@ -275,6 +273,7 @@ export function IntakeBars() {
         <NovaInfoSheet visible={novaOpen} onClose={() => setNovaOpen(false)} />
         <IntakeInfoSheet
           kind={info ?? IntakeInfoKind.Calories}
+          proteinAsMinimum={settings.proteinAsMinimum}
           visible={info !== null}
           onClose={() => setInfo(null)}
           onAction={() => {

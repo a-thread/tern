@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
+import { StyleSheet, View } from 'react-native';
 import LoadingScreen from '@shared/components/LoadingScreen/LoadingScreen';
 
 import { isBackendConfigured } from '@shared/backend/supabase';
@@ -113,18 +114,25 @@ function ChooseBackend({ children }: { children: React.ReactNode }) {
   if (auth.loading) return <LoadingScreen />;
 
   if (!userId || !remote) {
-    if (auth.signingIn) return <AuthFlow />;
-    return <PhoneBackend>{children}</PhoneBackend>;
+    return (
+      <SignInOver open={auth.signingIn} screens={<AuthFlow />}>
+        <PhoneBackend>{children}</PhoneBackend>
+      </SignInOver>
+    );
   }
   // Arriving from a reset link: they're signed in, but must choose a new password first.
   if (auth.passwordRecoveryPending) return <ResetPasswordScreen />;
   if (!settled) return <LoadingScreen />;
   if (lapsed) {
-    if (auth.signingIn) return <PaywallScreen onBack={auth.closeSignIn} />;
     return (
-      <PhoneBackend lapsed={{ userId, account: remote.data! }}>
-        {children}
-      </PhoneBackend>
+      <SignInOver
+        open={auth.signingIn}
+        screens={<PaywallScreen onBack={auth.closeSignIn} />}
+      >
+        <PhoneBackend lapsed={{ userId, account: remote.data! }}>
+          {children}
+        </PhoneBackend>
+      </SignInOver>
     );
   }
   return (
@@ -140,6 +148,41 @@ function ChooseBackend({ children }: { children: React.ReactNode }) {
     </AccountBackend>
   );
 }
+
+/**
+ * The sign-in screens (or the paywall) laid over the app rather than in place of it, so the
+ * app stays exactly where it was underneath: closing them goes back to Settings, or to the
+ * setup wizard, instead of rebuilding the app from Today. While they're open the app is hidden
+ * from screen readers. Signing in still swaps the backend, which reloads the app.
+ */
+function SignInOver({
+  open,
+  screens,
+  children,
+}: {
+  open: boolean;
+  screens: React.ReactNode;
+  children: React.ReactNode;
+}) {
+  return (
+    <View style={s.fill}>
+      <View
+        style={s.fill}
+        importantForAccessibility={open ? 'no-hide-descendants' : 'auto'}
+        accessibilityElementsHidden={open}
+      >
+        {children}
+      </View>
+      {open ? (
+        <View style={StyleSheet.absoluteFill} accessibilityViewIsModal>
+          {screens}
+        </View>
+      ) : null}
+    </View>
+  );
+}
+
+const s = StyleSheet.create({ fill: { flex: 1 } });
 
 /**
  * Signed in with Plus. The server's record of Plus is brought up to date first (it's what

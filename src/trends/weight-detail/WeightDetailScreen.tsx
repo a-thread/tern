@@ -81,8 +81,8 @@ export default function WeightDetailScreen({ navigation }: Props) {
                   <Text style={s.metricValue}>{formatWeight(latest)}</Text>
                   <Text style={s.metricSub}>
                     {goal === null
-                      ? '7-day average'
-                      : `7-day average · goal ${formatGoal(goal)}`}
+                      ? 'Trend'
+                      : `Trend · goal ${formatGoal(goal)}`}
                   </Text>
                 </View>
                 <View style={s.delta}>
@@ -125,7 +125,7 @@ export default function WeightDetailScreen({ navigation }: Props) {
           <Insight
             icon={<Icon name='trending-up' size={15} color={colors.water} />}
           >
-            {`The shaded band is your day-to-day spread — usually about ${formatWeight(spread * 2)} wide. That's normal fluctuation, not change.`}
+            {`The shaded band shows a typical day-to-day swing, about ${formatWeight(spread * 2)} wide. That's normal fluctuation, not change.`}
           </Insight>
         ) : null}
 

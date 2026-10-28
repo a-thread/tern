@@ -2,7 +2,14 @@ import React from 'react';
 import { StyleSheet, Text } from 'react-native';
 
 import { colors, font } from '@shared/theme';
-import { FootNote, Group, GroupLabel, Row } from '@shared/components/ui';
+import {
+  FootNote,
+  Group,
+  GroupLabel,
+  Icon,
+  IconBadge,
+  Row,
+} from '@shared/components/ui';
 import { useUnits } from '@/domain/settings/hooks/useUnits';
 import { useFoodDisplay } from '@/domain/food/hooks/useFoodDisplay';
 import { useMedication } from '@/domain/medication/MedicationContext';
@@ -19,6 +26,7 @@ import { useViewedDay } from '@shared/state/ViewedDayContext';
 import { dayWord } from '@shared/utils/date';
 import { healthAppName } from '@shared/utils/healthApp';
 import { useDayItems } from '../../hooks/useDayItems';
+import { useActivity } from '@/domain/activity/ActivityContext';
 import { DoneBadge } from './components/DoneBadge';
 import { useRootNavigation } from '@/navigation/useAppNavigation';
 
@@ -46,6 +54,7 @@ export function DoneList({
     editable,
   } = useDayItems();
   const { today } = useViewedDay();
+  const { stepsReadable } = useActivity();
   const { formatWeight, formatVolume } = useUnits();
   const { showCalories } = useFoodDisplay();
   const water = useWater();
@@ -103,7 +112,7 @@ export function DoneList({
         {summary.checkIn ? (
           <Row
             key='done-check-in'
-            title='Checked in'
+            title='Mood check-in'
             sub={`Mood ${summary.checkIn.mood} · ${scoreWord(MoodMetric.Mood, summary.checkIn.mood)} · Stress ${summary.checkIn.stress} · ${scoreWord(MoodMetric.Stress, summary.checkIn.stress)}`}
             icon={<DoneBadge />}
             chevron={editable}
@@ -127,7 +136,16 @@ export function DoneList({
             key='done-water'
             title='Water'
             sub={`${formatVolume(summary.waterOz)} of ${formatVolume(water.goalOz)}`}
-            icon={<DoneBadge />}
+            // A past day lists whatever was drunk; the tick is only for a goal that was met.
+            icon={
+              water.reached ? (
+                <DoneBadge />
+              ) : (
+                <IconBadge bg={colors.waterTint}>
+                  <Icon name='water-outline' size={16} color={colors.water} />
+                </IconBadge>
+              )
+            }
             chevron={editable}
             onPress={editable ? openWaterSheet : undefined}
           />
@@ -155,12 +173,8 @@ export function DoneList({
         {summary.stepGoalReached ? (
           <Row
             key='done-steps'
-            title='Step goal reached'
-            sub={
-              movedToGoal
-                ? `by movement · ${steps.toLocaleString()} steps`
-                : `${steps.toLocaleString()} steps`
-            }
+            title={movedToGoal ? 'Movement goal reached' : 'Step goal reached'}
+            sub={stepsReadable ? `${steps.toLocaleString()} steps` : undefined}
             icon={<DoneBadge />}
             chevron
             onPress={() => navigation.navigate('Tabs', { screen: 'Trends' })}

@@ -137,7 +137,7 @@ export default function LogFoodScreen({ navigation, route }: Props) {
           style={s.checkIn}
           accessibilityRole='button'
         >
-          <Text style={s.ghostText}>{`Done eating? Check in on ${meal}`}</Text>
+          <Text style={s.ghostText}>{`Done eating? How was ${meal}?`}</Text>
         </Pressable>
       ) : null}
 

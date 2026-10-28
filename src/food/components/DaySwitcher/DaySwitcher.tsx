@@ -51,11 +51,7 @@ function Arrow({
       accessibilityLabel={label}
       accessibilityState={{ disabled: !onPress }}
     >
-      <Icon
-        name={name}
-        size={18}
-        color={onPress ? colors.ink2 : colors.dove}
-      />
+      <Icon name={name} size={18} color={onPress ? colors.ink2 : colors.dove} />
     </Pressable>
   );
 }

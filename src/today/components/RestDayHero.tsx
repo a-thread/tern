@@ -6,7 +6,9 @@ import { useActivity } from '@/domain/activity/ActivityContext';
 import { RestScene } from './RestScene/RestScene';
 import { easeLayout } from '../utils/easeLayout';
 import type { RestDay } from '../hooks/useRestDay';
-import { restDetail } from '../models/restDetail';
+import { restDetail, restReminderNote } from '../models/restDetail';
+import { useSettings } from '@/domain/settings/SettingsContext';
+import { remindersOn } from '@/domain/settings/models/reminderPlan';
 
 /**
  * The rest scene in place of the sky card, with its copy for the viewed day. Today it promises
@@ -20,7 +22,8 @@ export function RestDayHero({
   rest: RestDay;
 }) {
   const { isToday } = useViewedDay();
-  const { todaySteps, streak } = useActivity();
+  const { todaySteps, streak, stepsReadable } = useActivity();
+  const { settings } = useSettings();
 
   return (
     <RestScene
@@ -35,14 +38,23 @@ export function RestDayHero({
       title='Rest day'
       line={
         isToday
-          ? 'Your streak is safe. Nothing to log today.'
+          ? 'Your streak is safe. Nothing you need to do today.'
           : 'A day off. Your streak carried on.'
       }
       detail={restDetail(
-        rest.record?.steps ?? todaySteps,
+        stepsReadable ? (rest.record?.steps ?? todaySteps) : null,
         isToday ? streak : 0,
       )}
-      note={isToday ? 'Reminders are quiet until tomorrow' : undefined}
+      note={
+        isToday
+          ? restReminderNote(
+              remindersOn(settings.reminders, {
+                ...settings,
+                readSteps: stepsReadable,
+              }),
+            )
+          : undefined
+      }
     />
   );
 }

@@ -23,6 +23,7 @@ import { Frequency } from '@shared/models/frequency';
 import { sanitizeCalorieZone } from './models/calorieZone';
 import { clampMovementGoal } from './models/movementGoal';
 import { Aim } from './models/aim';
+import { loadOnboarding, Onboarding } from './models/onboarding';
 
 type SettingsContextValue = {
   settings: AppSettings;
@@ -64,7 +65,15 @@ export function SettingsProvider({
     let cancelled = false;
     repo
       .load()
-      .then((saved) => {
+      .then(async (saved) => {
+        // Settings are only saved once one changes, so someone who has logged things but never
+        // changed a setting has none saved either. If that can't be told, they aren't new.
+        const inUse =
+          saved !== null ||
+          (await repo.hasLoggedAnything().catch((e) => {
+            console.warn('Could not check for logged data', e);
+            return true;
+          }));
         if (cancelled) return;
         // A switch counts only as a real true or false; anything else takes the default.
         const flag = (value: unknown, fallback: boolean) =>
@@ -81,7 +90,10 @@ export function SettingsProvider({
           medications: mergeMedications(saved?.medications),
           trackWater: flag(saved?.trackWater, defaults.trackWater),
           trackMood: flag(saved?.trackMood, defaults.trackMood),
-          checkInAfterMeals: flag(saved?.checkInAfterMeals, defaults.checkInAfterMeals),
+          checkInAfterMeals: flag(
+            saved?.checkInAfterMeals,
+            defaults.checkInAfterMeals,
+          ),
           trackMovement: flag(saved?.trackMovement, defaults.trackMovement),
           movementGoalMinutes:
             typeof saved?.movementGoalMinutes === 'number' &&
@@ -91,14 +103,17 @@ export function SettingsProvider({
           adaptTarget: flag(saved?.adaptTarget, defaults.adaptTarget),
           aim: Object.values(Aim).includes(saved?.aim as Aim)
             ? (saved!.aim as Aim)
-            : Aim.LoseSlowly,
+            : Aim.Maintain,
           lastSuggestionWeek:
             typeof saved?.lastSuggestionWeek === 'string'
               ? saved.lastSuggestionWeek
               : null,
           // A setting added later inside health data takes its default.
           healthData: { ...defaults.healthData, ...saved?.healthData },
+          // Decided here, before anything saves: nothing saved and nothing logged is a new install.
+          onboarding: loadOnboarding(saved?.onboarding, inUse),
           trackWeight: flag(saved?.trackWeight, defaults.trackWeight),
+          trackFood: flag(saved?.trackFood, defaults.trackFood),
           trackCalories: flag(saved?.trackCalories, defaults.trackCalories),
           showIntakeBars: flag(saved?.showIntakeBars, defaults.showIntakeBars),
           // Before macros had their own switch, "Track calories & macros" covered both.
@@ -108,7 +123,10 @@ export function SettingsProvider({
               ? saved.trackCalories
               : defaults.trackMacros,
           ),
-          proteinAsMinimum: flag(saved?.proteinAsMinimum, defaults.proteinAsMinimum),
+          proteinAsMinimum: flag(
+            saved?.proteinAsMinimum,
+            defaults.proteinAsMinimum,
+          ),
           calorieZone: sanitizeCalorieZone(saved?.calorieZone),
           celebratedMilestone:
             typeof saved?.celebratedMilestone === 'number' &&
@@ -136,7 +154,12 @@ export function SettingsProvider({
         }
         setSettings(loaded);
       })
-      .catch((e) => console.warn('Could not load settings', e))
+      .catch((e) => {
+        console.warn('Could not load settings', e);
+        // Not knowing is no reason to start setup, whose answers would save over the real ones.
+        if (!cancelled)
+          setSettings((s) => ({ ...s, onboarding: Onboarding.DONE }));
+      })
       .finally(() => !cancelled && setReady(true));
     return () => {
       cancelled = true;

@@ -1,19 +1,14 @@
 import type { AppSettings } from '../../domain/settings/models/appSettings';
+import { remindersOn } from '../../domain/settings/models/reminderPlan';
 
 /**
- * Reminders that will actually fire: switched on, and for something that's tracked
- * (a water reminder does nothing while water is off). Meal and streak reminders
- * belong to food logging and steps, which are always there.
+ * How many kinds of reminder will actually fire (see `remindersOn`), medication counted
+ * once however many medications remind.
  */
 export function activeReminderCount(s: AppSettings): number {
-  const r = s.reminders;
-  return [
-    r.mealLog.on,
-    r.streak.on,
-    r.weighIn.on && s.trackWeight,
-    r.water.on && s.trackWater,
-    r.mood.on && s.trackMood,
-  ].filter(Boolean).length;
+  return Object.values(
+    remindersOn(s.reminders, { ...s, readSteps: s.healthData.readSteps }),
+  ).filter(Boolean).length;
 }
 
 /** The Settings index line for reminders: "4 on", or "Off". */
@@ -22,9 +17,13 @@ export function remindersSummary(s: AppSettings): string {
   return n ? `${n} on` : 'Off';
 }
 
-/** The Settings index line for health data: what Tern reads from Health Connect. */
+/**
+ * The Settings index line for health data: what Tern reads from the health app. Workouts are
+ * only read as movement, so they're left out while movement isn't tracked.
+ */
 export function healthDataSummary(s: AppSettings): string {
-  const { readSteps, readWorkouts } = s.healthData;
+  const { readSteps } = s.healthData;
+  const readWorkouts = s.healthData.readWorkouts && s.trackMovement;
   if (readSteps && readWorkouts) return 'Steps and workouts';
   if (readSteps) return 'Steps';
   if (readWorkouts) return 'Workouts';

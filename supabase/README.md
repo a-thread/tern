@@ -122,21 +122,24 @@ Turning Health Connect on, what's already configured and what Google Play review
 ## Rest days and the streak
 
 You choose rest days from Today ("Take today as a rest day"), within the weekly
-allowance in Settings → Rest days. With auto-detect on, a _past_ day that has
-some steps but is well under the goal also reads as a rest day (within the same
-allowance, chosen days first). Days with no step data are never treated as rest
-days. A rest day holds the streak without adding to it. Taking one earns the
-rest waypoints; undoing it takes them back quietly.
+allowance in Settings → Rest days. With auto-detect on, any _past_ day under the
+goal reads as a rest day while the week's allowance lasts (chosen days first),
+from the first day Tern has steps for; that includes a day with no steps at all.
+A rest day holds the streak without adding to it. Taking one earns the rest
+waypoints; undoing it takes them back quietly. A day the allowance can't cover
+uses a streak freeze if one is held.
 
 ## Reminders
 
-Two repeating local notifications (no server involved): meals twice a day, and
-a weekly weigh-in. Defaults are 12:30 pm and 7:00 pm, and Sundays at 8:00 am;
-turn a reminder on in Settings and its times can be changed in 15-minute steps.
-They're scheduled on the device ([src/domain/settings/reminders.ts](../src/domain/settings/reminders.ts))
-and can't tell whether you've already logged, so the wording is neutral. The old
-"step goal nudge" was removed: a scheduled notification can't check how close
-you are to the goal.
+Local notifications only, no server involved, scheduled on the device
+([src/domain/settings/reminders.ts](../src/domain/settings/reminders.ts),
+[reminderPlan.ts](../src/domain/settings/models/reminderPlan.ts)): meals (12:30 pm and
+7:00 pm), a weigh-in (Sundays at 8:00 am, or daily), water, a mood check-in, each
+medication, and streak reminders (an evening heads-up while today's goal is open, and a
+morning note when a freeze covered a day). Each fires only while its feature is tracked.
+They're rescheduled whenever the app syncs, so a reminder goes quiet once what it's for
+is done that day, and every one except medication goes quiet on a rest day. A new install
+doesn't ask for notification permission until a reminder is chosen.
 
 ## Your data
 

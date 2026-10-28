@@ -166,12 +166,20 @@ export async function syncReminders(
   return SyncResult.Ok;
 }
 
-/** Sync streak alerts only when notification permission is already granted. */
-export async function syncStreakAlerts(input: StreakAlertInput): Promise<void> {
+/**
+ * Sync streak alerts. With `mayAsk` (a reminder has been chosen) the phone asks for
+ * notification permission if it hasn't been given; without it they wait until it is.
+ */
+export async function syncStreakAlerts(
+  input: StreakAlertInput,
+  mayAsk = false,
+): Promise<void> {
   await cancelScheduled(true);
   const plan = planStreakAlerts(input);
   if (plan.length === 0) return;
-  const { granted } = await Notifications.getPermissionsAsync();
+  const granted = mayAsk
+    ? await ensurePermission()
+    : (await Notifications.getPermissionsAsync()).granted;
   if (!granted) return;
   for (const a of plan) {
     await Notifications.scheduleNotificationAsync({

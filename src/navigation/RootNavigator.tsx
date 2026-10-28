@@ -13,16 +13,29 @@ import MovementStack from '../movement/MovementStack';
 import WaypointsScreen from '../journey/waypoints/WaypointsScreen';
 import MilestoneScreen from '../journey/milestone/MilestoneScreen';
 import SettingsStack from '../settings/SettingsStack';
+import WelcomeStack from '../welcome/WelcomeStack';
+import { useSettings } from '../domain/settings/SettingsContext';
 import type { RootStackParamList } from './types';
 import Tabs from './tabs/Tabs';
 
 const RootStack = createNativeStackNavigator<RootStackParamList>();
 
 export default function RootNavigator() {
+  const { settings } = useSettings();
   return (
     <RootStack.Navigator
       screenOptions={{ headerShown: false, freezeOnBlur: true }}
     >
+      {/* A new install's setup wizard comes first; finishing or skipping it removes the
+          route, and the app lands on Today. */}
+      {settings.onboarding.wizardDone ? null : (
+        <RootStack.Screen
+          name='Welcome'
+          component={WelcomeStack}
+          options={{ gestureEnabled: false }}
+        />
+      )}
+
       {/* Primary Pages grouped by Tab */}
       <RootStack.Screen
         name='Tabs'

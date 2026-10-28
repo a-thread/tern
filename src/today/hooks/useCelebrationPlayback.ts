@@ -7,6 +7,7 @@ import {
   useWaypoints,
   type Celebration,
 } from '../../domain/waypoints/WaypointsContext';
+import { measureInWindow, type Rect } from '@shared/utils/measureInWindow';
 
 type Point = { x: number; y: number };
 export type Playing = {
@@ -15,14 +16,8 @@ export type Playing = {
   target: Point;
 };
 
-function measureInWindow(ref: React.RefObject<View | null>) {
-  return new Promise<{ x: number; y: number; width: number; height: number }>(
-    (resolve) =>
-      ref.current?.measureInWindow((x, y, width, height) =>
-        resolve({ x, y, width, height }),
-      ),
-  );
-}
+/** Stands in for a view that couldn't be measured, so a celebration still plays. */
+const NOWHERE: Rect = { x: 0, y: 0, width: 0, height: 0 };
 
 /**
  * Plays the next queued waypoint award while Today is actually on screen — an award made in
@@ -46,12 +41,14 @@ export function useCelebrationPlayback(hold = false) {
       return;
     starting.current = true;
     (async () => {
-      const [root, hero, chip] = await Promise.all([
-        measureInWindow(rootRef),
-        measureInWindow(heroRef),
-        measureInWindow(chipRef),
-      ]);
-      const inRoot = (r: typeof hero): Point => ({
+      const [root, hero, chip] = (
+        await Promise.all([
+          measureInWindow(rootRef),
+          measureInWindow(heroRef),
+          measureInWindow(chipRef),
+        ])
+      ).map((r) => r ?? NOWHERE);
+      const inRoot = (r: Rect): Point => ({
         x: r.x - root.x + r.width / 2,
         y: r.y - root.y + r.height / 2,
       });

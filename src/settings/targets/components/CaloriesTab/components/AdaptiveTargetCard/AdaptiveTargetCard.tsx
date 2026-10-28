@@ -12,6 +12,7 @@ import {
   ToggleRow,
 } from '@shared/components/ui';
 import { useSettings } from '@/domain/settings/SettingsContext';
+import { useUnits } from '@/domain/settings/hooks/useUnits';
 import { useAdaptiveTarget } from '@/domain/food/hooks/useAdaptiveTarget';
 import { AdaptiveTarget } from '@/domain/food/models/energyBalance';
 import { Aim, AIM_LABEL } from '@/domain/settings/models/aim';
@@ -25,6 +26,7 @@ const AIMS = Object.values(Aim);
 export function AdaptiveTargetCard() {
   const { settings, updateSettings } = useSettings();
   const adaptive = useAdaptiveTarget();
+  const { formatWeight } = useUnits();
   const [info, setInfo] = useState(false);
   const e = adaptive.estimate;
 
@@ -36,8 +38,8 @@ export function AdaptiveTargetCard() {
           title='Adapt my target'
           sub={
             adaptive.available
-              ? 'Learns what you burn from your log and weight trend'
-              : 'Needs calories and weight both tracked'
+              ? 'Learns how much energy you use from your log and weight trend'
+              : 'Needs weight tracked'
           }
           on={adaptive.available && settings.adaptTarget}
           onToggle={(v) =>
@@ -61,7 +63,7 @@ export function AdaptiveTargetCard() {
               <Text style={s.sub}>Working it out…</Text>
             ) : e.status === 'learning' ? (
               <>
-                <Text style={s.title}>Learning your burn</Text>
+                <Text style={s.title}>Learning your energy use</Text>
                 <Text style={s.sub}>
                   {`${e.loggedDays} of ${e.neededDays} days logged · ${e.weighIns} of ${e.neededWeighIns} weigh-ins, over the last ${AdaptiveTarget.WINDOW_DAYS} days`}
                 </Text>
@@ -83,12 +85,12 @@ export function AdaptiveTargetCard() {
               <>
                 <Text
                   style={s.title}
-                >{`You burn about ${e.kcal.toLocaleString()} a day`}</Text>
+                >{`You use about ${e.kcal.toLocaleString()} a day`}</Text>
                 <Text style={s.sub}>
                   {`Last ${AdaptiveTarget.WINDOW_DAYS} days: logged ${e.meanIntake.toLocaleString()} a day on average, trend weight ${
                     e.trendChangeLb === 0
                       ? 'steady'
-                      : `${e.trendChangeLb < 0 ? 'down' : 'up'} ${Math.abs(e.trendChangeLb)} lb`
+                      : `${e.trendChangeLb < 0 ? 'down' : 'up'} ${formatWeight(Math.abs(e.trendChangeLb), 1)}`
                   }. Likely between ${e.low.toLocaleString()} and ${e.high.toLocaleString()}.`}
                 </Text>
                 {adaptive.offer && adaptive.suggestion !== null ? (
@@ -150,7 +152,7 @@ export function AdaptiveTargetCard() {
           </Pressable>
         </View>
         <Text style={s.point}>
-          {`Over the last ${AdaptiveTarget.WINDOW_DAYS} days, Tern compares what you logged with how your trend weight moved. Eating 2,050 a day while your trend drops 1.2 lb in three weeks means you burn about 2,250.`}
+          {`Over the last ${AdaptiveTarget.WINDOW_DAYS} days, Tern compares what you logged with how your trend weight moved. Eating 2,050 a day while your trend drops ${formatWeight(1.2, 1)} in three weeks means you use about 2,250. A steady trend means you use about what you eat; a rising one, a little less.`}
         </Text>
         <Text style={s.point}>
           That counts everything you do: workouts, walking, work. It also
@@ -158,10 +160,7 @@ export function AdaptiveTargetCard() {
           any calorie estimate for a single workout.
         </Text>
         <Text style={s.point}>
-          It needs most days fully logged (days with nothing logged are left
-          out, never counted as eating nothing) and a few weigh-ins each week. A
-          suggestion never aims below 1,200, or for losing more than 1% of your
-          weight a week.
+          {`It needs ${AdaptiveTarget.MIN_LOGGED_DAYS} of the last ${AdaptiveTarget.WINDOW_DAYS} days fully logged (days with nothing logged are left out, never counted as eating nothing) and at least ${AdaptiveTarget.MIN_WEIGH_INS} weigh-ins. A suggestion never aims below 1,200, or for losing more than 1% of your weight a week.`}
         </Text>
       </BottomSheet>
     </>

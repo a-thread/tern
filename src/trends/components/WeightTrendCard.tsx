@@ -14,6 +14,7 @@ import { useWeight } from '../../domain/weight/WeightContext';
 import { signedChange } from '../../domain/weight/models/weightEntry';
 import { useSettings } from '../../domain/settings/SettingsContext';
 import { useUnits } from '../../domain/settings/hooks/useUnits';
+import { Frequency } from '@shared/models/frequency';
 
 /** The smoothed weight line for the range and how far it moved. Tapping opens the weight detail. */
 export function WeightTrendCard({ range }: { range: TrendRange }) {
@@ -22,7 +23,14 @@ export function WeightTrendCard({ range }: { range: TrendRange }) {
   const { settings } = useSettings();
   const { weightEntries, weightTrend } = useWeight();
   const { formatWeight, toDisplay, weightLabel } = useUnits();
-  const rangeTrend = weightTrendFor(weightEntries, TrendRanges.DAYS[range]);
+  // Weekly weigh-ins never put two in a week, so the Week range looks back a month instead.
+  const widened =
+    range === TrendRange.Week && settings.weighInFrequency === Frequency.Weekly;
+  const rangeTrend = weightTrendFor(
+    weightEntries,
+    TrendRanges.DAYS[widened ? TrendRange.Month : range],
+  );
+  const trendLabel = widened ? 'Trend · last month' : 'Trend';
   const latest = weightTrend[weightTrend.length - 1];
   const delta =
     rangeTrend.length > 1
@@ -38,8 +46,8 @@ export function WeightTrendCard({ range }: { range: TrendRange }) {
             value={formatWeight(latest)}
             sub={
               settings.weightGoalLb === null
-                ? '7-day average'
-                : `7-day average · ${Math.abs(toDisplay(latest - settings.weightGoalLb)).toFixed(1)} ${weightLabel} from goal`
+                ? trendLabel
+                : `${trendLabel} · ${Math.abs(toDisplay(latest - settings.weightGoalLb)).toFixed(1)} ${weightLabel} from goal`
             }
             delta={{
               text: signedChange(toDisplay(delta)),
@@ -57,8 +65,8 @@ export function WeightTrendCard({ range }: { range: TrendRange }) {
             }
           />
           <Text style={s.legendNote}>
-            The shaded band is your day-to-day spread — normal fluctuation, not
-            change.
+            The shaded band shows a typical day-to-day swing: normal
+            fluctuation, not change.
           </Text>
         </>
       ) : (

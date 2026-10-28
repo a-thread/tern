@@ -26,7 +26,8 @@ export default function ManualFoodEntryScreen({ navigation, route }: Props) {
   const insets = useSafeAreaInsets();
   const { addFoodEntry } = useFood();
   const { addDraftItem } = useSavedMeals();
-  const { showTiers, showTierNumber, showCalories } = useFoodDisplay();
+  const { showTiers, showTierNumber, tracksCalories, showMacros } =
+    useFoodDisplay();
 
   const [name, setName] = useState(initialName ?? '');
   const [serving, setServing] = useState('1 serving');
@@ -84,8 +85,9 @@ export default function ManualFoodEntryScreen({ navigation, route }: Props) {
         keyboardShouldPersistTaps='handled'
       >
         <Text style={s.intro}>
-          Homemade or missing from the database? Add what you know — you can
-          leave macros blank and still log it.
+          {tracksCalories || showMacros
+            ? 'Homemade or missing from the database? Add what you know — you can leave the numbers blank and still log it.'
+            : 'Homemade or missing from the database? A name is all it needs.'}
         </Text>
 
         <GroupLabel>Basics</GroupLabel>
@@ -104,42 +106,58 @@ export default function ManualFoodEntryScreen({ navigation, route }: Props) {
           />
         </Group>
 
-        <GroupLabel>Nutrition (optional)</GroupLabel>
-        <Group>
-          {showCalories ? (
-            <FieldRow
-              label='Calories'
-              value={calories}
-              onChangeText={setCalories}
-              keyboardType='numeric'
-              placeholder='—'
-            />
-          ) : null}
-          <FieldRow
-            label='Protein'
-            value={protein}
-            onChangeText={setProtein}
-            keyboardType='numeric'
-            placeholder='—'
-            suffix='g'
-          />
-          <FieldRow
-            label='Carbs'
-            value={carbs}
-            onChangeText={setCarbs}
-            keyboardType='numeric'
-            placeholder='—'
-            suffix='g'
-          />
-          <FieldRow
-            label='Fat'
-            value={fat}
-            onChangeText={setFat}
-            keyboardType='numeric'
-            placeholder='—'
-            suffix='g'
-          />
-        </Group>
+        {/* Calories are asked for whenever they're tracked, even with counts hidden, so a
+            hidden field never saves a zero into the log. */}
+        {tracksCalories || showMacros ? (
+          <>
+            <GroupLabel>Nutrition (optional)</GroupLabel>
+            <Group>
+              {tracksCalories ? (
+                <FieldRow
+                  key='calories'
+                  label='Calories'
+                  value={calories}
+                  onChangeText={setCalories}
+                  keyboardType='numeric'
+                  placeholder='—'
+                />
+              ) : null}
+              {showMacros ? (
+                <FieldRow
+                  key='protein'
+                  label='Protein'
+                  value={protein}
+                  onChangeText={setProtein}
+                  keyboardType='numeric'
+                  placeholder='—'
+                  suffix='g'
+                />
+              ) : null}
+              {showMacros ? (
+                <FieldRow
+                  key='carbs'
+                  label='Carbs'
+                  value={carbs}
+                  onChangeText={setCarbs}
+                  keyboardType='numeric'
+                  placeholder='—'
+                  suffix='g'
+                />
+              ) : null}
+              {showMacros ? (
+                <FieldRow
+                  key='fat'
+                  label='Fat'
+                  value={fat}
+                  onChangeText={setFat}
+                  keyboardType='numeric'
+                  placeholder='—'
+                  suffix='g'
+                />
+              ) : null}
+            </Group>
+          </>
+        ) : null}
 
         {showTiers ? (
           <>

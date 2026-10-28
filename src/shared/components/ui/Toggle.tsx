@@ -2,14 +2,29 @@ import React from 'react';
 import { View, Text, StyleSheet, Pressable } from 'react-native';
 import { colors, typography } from '../../theme';
 
-export function Toggle({ on, onPress }: { on: boolean; onPress?: () => void }) {
+export function Toggle({
+  on,
+  onPress,
+  label,
+}: {
+  on: boolean;
+  onPress?: () => void;
+  /** What it switches, for screen readers. */
+  label?: string;
+}) {
   const body = (
     <View style={[s.toggle, on && { backgroundColor: colors.coral }]}>
       <View style={[s.knob, on && { left: 20 }]} />
     </View>
   );
   return onPress ? (
-    <Pressable onPress={onPress} hitSlop={8}>
+    <Pressable
+      onPress={onPress}
+      hitSlop={8}
+      accessibilityRole='switch'
+      accessibilityState={{ checked: on }}
+      accessibilityLabel={label}
+    >
       {body}
     </Pressable>
   ) : (
@@ -23,19 +38,23 @@ export function ToggleRow({
   sub,
   on,
   onToggle,
+  icon,
 }: {
   title: string;
   sub?: string;
   on: boolean;
   onToggle: (next: boolean) => void;
+  /** An `IconBadge` before the title, as on a `Row`. */
+  icon?: React.ReactNode;
 }) {
   return (
     <View style={s.row}>
+      {icon}
       <View style={{ flex: 1 }}>
         <Text style={s.rowTitle}>{title}</Text>
         {sub ? <Text style={s.rowSub}>{sub}</Text> : null}
       </View>
-      <Toggle on={on} onPress={() => onToggle(!on)} />
+      <Toggle on={on} onPress={() => onToggle(!on)} label={title} />
     </View>
   );
 }

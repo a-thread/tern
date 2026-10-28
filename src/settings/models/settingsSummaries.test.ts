@@ -35,6 +35,11 @@ describe('settings index summaries', () => {
         with_({ stepGoal: 10000, restDaysPerWeek: 1, trackMovement: true }),
       ),
     ).toBe('10,000 steps · 1 rest day · movement on');
+    expect(
+      activitySummary(
+        with_({ stepGoal: 8000, restDaysPerWeek: 0, trackMovement: false }),
+      ),
+    ).toBe('8,000 steps · no rest days');
   });
 
   it('sums up food as calories and the macro split, or says calories are off', () => {
@@ -50,6 +55,7 @@ describe('settings index summaries', () => {
     expect(
       foodSummary(with_({ trackCalories: false, trackMacros: false })),
     ).toBe('Calories off');
+    expect(foodSummary(with_({ trackFood: false }))).toBe('Off');
   });
 
   it('sums up only what is tracked when calories and macros differ', () => {
@@ -151,6 +157,18 @@ describe('settings index summaries', () => {
         }),
       ),
     ).toBe(2);
+    // Meal reminders go quiet with food off, like the others with their feature.
+    expect(
+      activeReminderCount(
+        with_({
+          reminders: all,
+          trackFood: false,
+          trackWeight: false,
+          trackWater: false,
+          trackMood: false,
+        }),
+      ),
+    ).toBe(1);
     expect(
       remindersSummary(
         with_({
@@ -178,9 +196,21 @@ describe('settings index summaries', () => {
   it('says what health data is read', () => {
     expect(
       healthDataSummary(
-        with_({ healthData: { readSteps: true, readWorkouts: true } }),
+        with_({
+          trackMovement: true,
+          healthData: { readSteps: true, readWorkouts: true },
+        }),
       ),
     ).toBe('Steps and workouts');
+    // Workouts only count as movement, so they aren't read without it.
+    expect(
+      healthDataSummary(
+        with_({
+          trackMovement: false,
+          healthData: { readSteps: true, readWorkouts: true },
+        }),
+      ),
+    ).toBe('Steps');
     expect(
       healthDataSummary(
         with_({ healthData: { readSteps: true, readWorkouts: false } }),

@@ -5,6 +5,7 @@ import { IntakeBars } from '@shared/components/IntakeBars/IntakeBars';
 import { LeftToDoList } from './LeftToDoList';
 import { DoneList } from './DoneList/DoneList';
 import { TargetSuggestionCard } from './TargetSuggestionCard';
+import { GettingStarted } from './GettingStarted/GettingStarted';
 
 /**
  * The usual lists for the viewed day: what is left, what is done, the food, and (today, when
@@ -15,6 +16,7 @@ export function DayLists({ resting }: { resting: boolean }) {
 
   return (
     <>
+      <GettingStarted />
       <LeftToDoList />
       <DoneList />
       {/* Empty while neither calories nor macros are tracked. */}

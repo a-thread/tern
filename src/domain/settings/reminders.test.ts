@@ -7,7 +7,7 @@ import {
   Reminders,
   type ReminderConfig,
 } from './models/reminderPlan';
-import { syncReminders } from './reminders';
+import { syncReminders, syncStreakAlerts } from './reminders';
 
 jest.mock('expo-notifications', () => ({
   setNotificationHandler: jest.fn(),
@@ -162,5 +162,34 @@ describe('syncReminders when the goal is already met', () => {
       ids().filter((id) => id.startsWith(medicationReminderId('m'))),
     ).toHaveLength(7);
     expect(ids()).toContain(medicationReminderId('o'));
+  });
+});
+
+describe('syncStreakAlerts without notification permission', () => {
+  const streakOnly = {
+    on: true,
+    streak: 3,
+    freezes: 1,
+    todayOpen: true,
+    now: new Date(2026, 9, 27, 9, 0),
+  };
+  const getPermissions = Notifications.getPermissionsAsync as jest.Mock;
+  const requestPermissions = Notifications.requestPermissionsAsync as jest.Mock;
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+    getPermissions.mockResolvedValueOnce({ granted: false });
+  });
+
+  it('asks for it once a reminder has been chosen, then schedules', async () => {
+    await syncStreakAlerts(streakOnly, true);
+    expect(requestPermissions).toHaveBeenCalled();
+    expect(schedule).toHaveBeenCalled();
+  });
+
+  it('waits for it, without asking, before then', async () => {
+    await syncStreakAlerts(streakOnly);
+    expect(requestPermissions).not.toHaveBeenCalled();
+    expect(schedule).not.toHaveBeenCalled();
   });
 });

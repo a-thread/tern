@@ -8,7 +8,7 @@ export function MealCheckInToggleRow() {
   const { settings, updateSettings } = useSettings();
   return (
     <ToggleRow
-      title='Check in after meals'
+      title='Ask how meals went'
       sub='A quick note on how full you are and how you feel'
       on={settings.checkInAfterMeals}
       onToggle={(v) => updateSettings({ checkInAfterMeals: v })}

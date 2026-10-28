@@ -200,7 +200,7 @@ export default function LogWeightScreen({ navigation }: Props) {
         </View>
 
         <Text style={s.hint}>
-          Day-to-day changes are mostly water. Tern tracks your weekly average
+          Day-to-day changes are mostly water. Tern shows a smoothed trend
           instead.
         </Text>
 

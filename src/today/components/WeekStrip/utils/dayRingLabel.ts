@@ -9,7 +9,14 @@ import type { DayRecord } from '@/domain/activity/models/dayRecord';
 export function dayRingLabel(
   d: Pick<
     DayRecord,
-    'day' | 'steps' | 'goal' | 'minutes' | 'movedToGoal' | 'state' | 'isToday' | 'future'
+    | 'day'
+    | 'steps'
+    | 'goal'
+    | 'minutes'
+    | 'movedToGoal'
+    | 'state'
+    | 'isToday'
+    | 'future'
   >,
   movementGoalMinutes: number,
 ): string {
@@ -18,7 +25,10 @@ export function dayRingLabel(
 }
 
 function dayStatus(
-  d: Pick<DayRecord, 'steps' | 'goal' | 'minutes' | 'movedToGoal' | 'state' | 'future'>,
+  d: Pick<
+    DayRecord,
+    'steps' | 'goal' | 'minutes' | 'movedToGoal' | 'state' | 'future'
+  >,
   movementGoalMinutes: number,
 ): string {
   if (d.future) return 'not yet';

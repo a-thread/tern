@@ -10,7 +10,6 @@ import {
   Row,
   IconBadge,
   Card,
-  FootNote,
   ProgressBar,
 } from '@shared/components/ui';
 import { JourneyRoute } from './components/JourneyRoute/JourneyRoute';
@@ -24,9 +23,10 @@ import {
 import { formatShortDate, monthName } from '@shared/utils/date';
 import {
   daysWithWaypoints,
-  listedRules,
   WaypointSource,
 } from '../domain/waypoints/models/waypoint';
+import { earnableRules } from './models/earnableRules';
+import { useActivity } from '../domain/activity/ActivityContext';
 import {
   migrationProgress,
   milestonesFor,
@@ -57,6 +57,7 @@ export default function JourneyScreen() {
   const { waypoints, events, reload } = useWaypoints();
   const refreshControl = usePullToRefresh([reload]);
   const { settings } = useSettings();
+  const { goalReachable } = useActivity();
 
   // Redraw the route when Journey comes into view the first time, when the total changes or after a minute away.
   const replayKey = useReplayOnFocus(waypoints);
@@ -191,39 +192,32 @@ export default function JourneyScreen() {
 
         <GroupLabel>How waypoints are earned</GroupLabel>
         <Group>
-          {listedRules()
-            .filter(
-              (rule) =>
-                (rule.id !== WaypointSource.Water || settings.trackWater) &&
-                (rule.id !== WaypointSource.Mood || settings.trackMood) &&
-                (rule.id !== WaypointSource.Movement ||
-                  settings.trackMovement) &&
-                (rule.id !== WaypointSource.Weight || settings.trackWeight) &&
-                (rule.id !== WaypointSource.Medication ||
-                  settings.medications.length > 0),
-            )
-            .map((rule) => (
-              <Row
-                key={rule.id}
-                title={rule.label}
-                icon={
-                  <IconBadge bg={RULE_STYLE[rule.id].bg}>
-                    <Text
-                      style={[s.rulePoints, { color: RULE_STYLE[rule.id].fg }]}
-                    >
-                      {rule.points}
-                      {rule.id === WaypointSource.Streak ? '+' : ''}
-                    </Text>
-                  </IconBadge>
-                }
-              />
-            ))}
+          {earnableRules({
+            food: settings.trackFood,
+            mood: settings.trackMood,
+            water: settings.trackWater,
+            movement: settings.trackMovement,
+            weight: settings.trackWeight,
+            medication: settings.medications.length > 0,
+            goal: goalReachable,
+            rest: settings.restDaysPerWeek > 0,
+          }).map((rule) => (
+            <Row
+              key={rule.id}
+              title={rule.label}
+              icon={
+                <IconBadge bg={RULE_STYLE[rule.id].bg}>
+                  <Text
+                    style={[s.rulePoints, { color: RULE_STYLE[rule.id].fg }]}
+                  >
+                    {rule.points}
+                    {rule.id === WaypointSource.Streak ? '+' : ''}
+                  </Text>
+                </IconBadge>
+              }
+            />
+          ))}
         </Group>
-
-        <FootNote>
-          Waypoints are earned for showing up — logging, moving, and resting.
-          Never for weight or calorie totals.
-        </FootNote>
       </ScrollView>
     </View>
   );

@@ -36,7 +36,7 @@ export default function LoginScreen({
       title='Tern'
       subtitle='Progress answers to your pace.'
       onBack={auth.closeSignIn}
-      backLabel='Settings'
+      backLabel='Back'
     >
       <AuthBanner variant='error' message={error || null} />
       <AuthBanner variant='info' message={infoMessage ?? null} />

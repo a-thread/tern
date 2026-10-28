@@ -2,7 +2,7 @@ import React, { useEffect, useRef } from 'react';
 import { Animated, Pressable, StyleSheet, Text, View } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 
-import { colors, font, typography } from '@shared/theme';
+import { colors, font } from '@shared/theme';
 import { useRootNavigation } from '@/navigation/useAppNavigation';
 
 /** The card's width; the confetti and route are laid out against it. */
@@ -62,9 +62,6 @@ export function PopupCard({
             <Pressable onPress={toJourney} hitSlop={8} accessibilityRole='link'>
               <Text style={s.link}>See your journey ›</Text>
             </Pressable>
-            <Text style={s.foot}>
-              Earned for showing up, never for weight or calories.
-            </Text>
           </LinearGradient>
           {overlay ? (
             <View style={StyleSheet.absoluteFill} pointerEvents='none'>
@@ -99,13 +96,6 @@ const s = StyleSheet.create({
     fontSize: 13,
     color: colors.sunLight,
     marginTop: 16,
-  },
-  foot: {
-    fontFamily: font.body,
-    fontSize: typography.small.fontSize,
-    color: 'rgba(255,255,255,0.45)',
-    marginTop: 12,
-    textAlign: 'center',
   },
 });
 

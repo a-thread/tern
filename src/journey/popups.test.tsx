@@ -9,6 +9,16 @@ import { WaypointsProvider } from '../domain/waypoints/WaypointsContext';
 import WaypointsScreen from './waypoints/WaypointsScreen';
 import MilestoneScreen from './milestone/MilestoneScreen';
 
+// The waypoints card only asks whether a goal day can be reached today, and what was skipped.
+jest.mock('@/domain/activity/ActivityContext', () => ({
+  useActivity: () => ({ goalReachable: true }),
+}));
+jest.mock('@/domain/food/FoodContext', () => ({
+  useFood: () => ({ skippedMeals: [] }),
+}));
+jest.mock('@shared/state/ViewedDayContext', () => ({
+  useViewedDay: () => ({ isToday: true }),
+}));
 jest.mock('@react-navigation/native', () => ({
   ...jest.requireActual('@react-navigation/native'),
   useNavigation: () => ({ navigate: jest.fn(), goBack: jest.fn() }),
@@ -52,9 +62,6 @@ describe('waypoints card', () => {
     expect(ui.getByText('☀ 9-day streak')).toBeTruthy();
     expect(ui.getByText(/to go$/)).toBeTruthy();
     expect(ui.getByText('See your journey ›')).toBeTruthy();
-    expect(
-      ui.getByText('Earned for showing up, never for weight or calories.'),
-    ).toBeTruthy();
   });
 });
 

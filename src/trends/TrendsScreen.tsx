@@ -17,6 +17,7 @@ import WaterTrendCard from './components/WaterTrendCard/WaterTrendCard';
 import MoodTrendCard from './components/MoodTrendCard';
 import { ConsistencyCard } from './components/ConsistencyCard';
 import { useSettings } from '../domain/settings/SettingsContext';
+import { useFoodDisplay } from '../domain/food/hooks/useFoodDisplay';
 import { useTrendsRefresh } from './hooks/useTrendsRefresh';
 
 /** The Trends tab: a range picker over one card per thing being tracked. */
@@ -24,6 +25,8 @@ export default function TrendsScreen() {
   const insets = useSafeAreaInsets();
   const [range, setRange] = useState<TrendRange>(TrendRange.Month);
   const { settings } = useSettings();
+  // Calorie figures follow "show calorie counts" here as on every food screen.
+  const { showCalories, showMacros } = useFoodDisplay();
   const todayKey = useDayKey();
   const { refreshControl, refreshKey } = useTrendsRefresh();
 
@@ -50,13 +53,11 @@ export default function TrendsScreen() {
         <StepsTrendCard range={range} />
         {/* weight: gone when weight isn't tracked */}
         {settings.trackWeight ? <WeightTrendCard range={range} /> : null}
-        {/* nutrition: gone when neither calories nor macros are tracked */}
-        {settings.trackCalories || settings.trackMacros ? (
+        {/* nutrition: gone when neither calories nor macros are shown */}
+        {showCalories || showMacros ? (
           <CaloriesTrendCard range={range} refreshKey={refreshKey} />
         ) : null}
-        {settings.adaptTarget &&
-        settings.trackCalories &&
-        settings.trackWeight ? (
+        {settings.adaptTarget && showCalories && settings.trackWeight ? (
           <EnergyTrendCard refreshKey={refreshKey} />
         ) : null}
         {settings.trackMovement ? (
@@ -70,8 +71,9 @@ export default function TrendsScreen() {
         <ConsistencyCard range={range} />
 
         <FootNote>
-          Averages smooth out day-to-day noise. Single-day weight changes are
-          mostly water and rarely meaningful.
+          {settings.trackWeight
+            ? 'Averages smooth out day-to-day noise. Single-day weight changes are mostly water and rarely meaningful.'
+            : 'Averages smooth out day-to-day noise.'}
         </FootNote>
       </ScrollView>
     </View>

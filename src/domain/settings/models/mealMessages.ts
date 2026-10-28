@@ -8,7 +8,7 @@ export type ReminderText = { title: string; body: string };
 export const LUNCH_MESSAGES: readonly ReminderText[] = [
   { title: 'Lunch', body: 'Whenever you’re ready, log what you had.' },
   { title: 'Lunch time', body: 'Had something to eat? You can add it here.' },
-  { title: 'Midday check-in', body: 'What did lunch look like today?' },
+  { title: 'Lunch', body: 'What did lunch look like today?' },
   {
     title: 'Lunch',
     body: 'Take your time. Add lunch whenever it feels right.',
@@ -22,7 +22,7 @@ export const LUNCH_MESSAGES: readonly ReminderText[] = [
 export const DINNER_MESSAGES: readonly ReminderText[] = [
   { title: 'Dinner', body: 'Whenever you’re ready, add what you had.' },
   { title: 'Dinner time', body: 'Had dinner? You can add it here.' },
-  { title: 'Evening check-in', body: 'What did dinner look like tonight?' },
+  { title: 'Dinner', body: 'What did dinner look like tonight?' },
   { title: 'Dinner', body: 'Enjoy your meal. You can add it afterward.' },
   { title: 'Winding down', body: 'A little note about dinner, if you’d like.' },
   { title: 'Dinner', body: 'No rush. Add it whenever you’re ready.' },

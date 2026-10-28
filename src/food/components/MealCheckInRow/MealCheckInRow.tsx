@@ -9,7 +9,7 @@ import { describeMealCheckIn } from '@/domain/meal-check-ins/models/mealCheckIn'
 import { useRootNavigation } from '@/navigation/useAppNavigation';
 
 /**
- * Under a meal's foods, while "Check in after meals" is on: how the meal sat, or a way to say.
+ * Under a meal's foods, while "Ask how meals went" is on: how the meal sat, or a way to say.
  * On a day that can only be looked at, the screen shows it only for a check-in that was made.
  */
 export function MealCheckInRow({ meal }: { meal: Meal }) {
@@ -20,7 +20,7 @@ export function MealCheckInRow({ meal }: { meal: Meal }) {
 
   return (
     <Row
-      title={done ? 'Checked in' : 'How was it?'}
+      title={done ? 'How it went' : 'How was it?'}
       sub={
         done
           ? describeMealCheckIn(done) + (done.note ? ` · “${done.note}”` : '')

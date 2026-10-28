@@ -12,6 +12,7 @@ import { DataProvider } from '../domain/settings/DataContext';
 import { createMemorySubscriptionRepository } from '../domain/subscription/subscription.repository';
 import { SubscriptionProvider } from '../domain/subscription/SubscriptionContext';
 import WaterSettingsScreen from './water/WaterSettingsScreen';
+import FoodSettingsScreen from './food/FoodSettingsScreen';
 import SettingsScreen from './SettingsScreen';
 
 const mockNavigate = jest.fn();
@@ -117,5 +118,17 @@ describe('Water settings page', () => {
 
     await act(async () => update({ trackWater: true }));
     await waitFor(() => expect(ui.getByText('Water reminder')).toBeTruthy());
+  });
+});
+
+describe('Food settings page', () => {
+  it('shows targets, check-ins and reminders only while food is tracked', async () => {
+    const ui = await open(<FoodSettingsScreen />);
+    await waitFor(() => expect(ui.getByText('Meal reminders')).toBeTruthy());
+
+    await act(async () => fireEvent.press(ui.getByLabelText('Track food')));
+    await waitFor(() => expect(ui.queryByText('Meal reminders')).toBeNull());
+    expect(ui.queryByText('Calorie & macro targets')).toBeNull();
+    expect(ui.getByText(/Meals you've logged are kept/)).toBeTruthy();
   });
 });

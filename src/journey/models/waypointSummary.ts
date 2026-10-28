@@ -13,7 +13,8 @@ import {
 export type EarnedLine = { label: string; points: number };
 
 const LABELS: Partial<Record<WaypointSource, string>> = {
-  [WaypointSource.Steps]: 'Step goal',
+  // Steps or movement minutes: either makes a goal day.
+  [WaypointSource.Steps]: 'Goal day',
   [WaypointSource.Meals]: 'All meals logged',
   [WaypointSource.Water]: 'Water goal',
   [WaypointSource.Movement]: 'Movement',
@@ -85,7 +86,16 @@ export function earnedOn(
 }
 
 /** Which optional features are on, so "still open" only suggests what can actually be done. */
-export type Tracking = { mood: boolean; water: boolean; movement: boolean };
+export type Tracking = {
+  /** A goal day can be reached: steps are read, or movement is tracked. */
+  goal: boolean;
+  food: boolean;
+  mood: boolean;
+  water: boolean;
+  movement: boolean;
+  /** Meals marked "nothing today": covered, so not suggested (they don't pay their own 5). */
+  skippedMeals?: readonly string[];
+};
 
 /**
  * Up to `max` things still open today and what each pays, gently: the next meal to log, the
@@ -102,7 +112,11 @@ export function stillOpen(
     events.filter((e) => e.day === day).map((e) => e.source),
   );
   const open: EarnedLine[] = [];
-  const meal = MEALS.find((m) => !done.has(m.source));
+  const meal =
+    tracking.food &&
+    MEALS.find(
+      (m) => !done.has(m.source) && !tracking.skippedMeals?.includes(m.name),
+    );
   if (meal)
     open.push({ label: `Log ${meal.name}`, points: pointsFor(meal.source) });
   if (tracking.mood && !done.has(WaypointSource.Mood)) {
@@ -111,8 +125,8 @@ export function stillOpen(
   if (tracking.water && !done.has(WaypointSource.Water)) {
     open.push({ label: 'Water goal', points: pointsFor(WaypointSource.Water) });
   }
-  if (!done.has(WaypointSource.Steps))
-    open.push({ label: 'Step goal', points: pointsFor(WaypointSource.Steps) });
+  if (tracking.goal && !done.has(WaypointSource.Steps))
+    open.push({ label: 'Daily goal', points: pointsFor(WaypointSource.Steps) });
   if (tracking.movement && !done.has(WaypointSource.Movement)) {
     open.push({
       label: 'Log movement',

@@ -48,6 +48,7 @@ jest.mock('../../weight/WeightContext', () => ({
 beforeEach(() => {
   mockUpdate.mockReset();
   mockSettings = {
+    trackFood: true,
     trackCalories: true,
     trackWeight: true,
     adaptTarget: true,

@@ -5,7 +5,7 @@ import { dayNumber, variantFor, type ReminderText } from './mealMessages';
 export class StreakAlerts {
   /** The evening heads-up when today's goal isn't reached yet (minutes since midnight). */
   static readonly AT_RISK_AT = 20 * 60;
-  /** The morning note after a streak ended, or a freeze held it. */
+  /** The morning note after a freeze held the streak. */
   static readonly MORNING_AT = 9 * 60;
   static readonly AT_RISK_ID = 'tern-streak-risk';
   static readonly OUTCOME_ID = 'tern-streak-outcome';
@@ -17,56 +17,59 @@ export type StreakAlertInput = {
   /** Streak as it stands now (today still in progress), see `computeStreak`. */
   streak: number;
   freezes: number;
-  /** Today's steps have been read and the goal isn't reached or a rest day taken. */
+  /** Today's steps have been read and the goal isn't reached (by steps or movement) or a rest day taken. */
   todayOpen: boolean;
+  /** Rest days left this week: taking one is a way to keep the streak, so it's named. */
+  restLeft?: number;
+  /** A day under the goal turns into a rest day by itself (auto-detect, with allowance left). */
+  restCovers?: boolean;
+  /** Movement is tracked, so it's a way to today's goal as well as steps. */
+  movement?: boolean;
   now: Date;
 };
 
 export type PlannedStreakAlert = ReminderText & { id: string; at: Date };
 
-const atRisk = (n: number, freezes: number): ReminderText[] => {
-  const days = `${n}-day`;
+/** "Reaching your goal, or taking a rest day, keeps it going." */
+function keepsItGoing(input: StreakAlertInput): string {
+  const goal = input.movement
+    ? 'Reaching your step or movement goal'
+    : 'Reaching your step goal';
+  if (input.restCovers)
+    return `${goal} adds a day. If not, a rest day holds it.`;
+  if ((input.restLeft ?? 0) > 0)
+    return `${goal}, or taking a rest day, keeps it going.`;
+  return `${goal} keeps it going.`;
+}
+
+/** Neutral: where the streak stands and what keeps it, never what would be lost. */
+const evening = (input: StreakAlertInput): ReminderText[] => {
+  const n = input.streak;
+  const keep = keepsItGoing(input);
   const freezeLine =
-    freezes > 0 ? ' A streak freeze has your back if not.' : '';
+    !input.restCovers && input.freezes > 0
+      ? ' A streak freeze has your back if not.'
+      : '';
   return [
     {
-      title: 'Your streak is waiting',
-      body: `Your ${days} streak is still going. A walk this evening keeps it that way.${freezeLine}`,
+      title: 'Today so far',
+      body: `You’re ${n} days in. ${keep}${freezeLine}`,
     },
     {
-      title: 'Still time tonight',
-      body: `A short stroll would carry your ${days} streak into tomorrow.${freezeLine}`,
+      title: 'Your streak',
+      body: `${n} days and counting. ${keep}${freezeLine}`,
     },
     {
-      title: 'Evening steps?',
-      body: `You’re ${n} days in. Open Tern to see how today is looking.${freezeLine}`,
-    },
-    {
-      title: 'Streak check',
-      body: `Day ${n + 1} is within reach. Even a few minutes outside helps.${freezeLine}`,
+      title: 'This evening',
+      body: `Your ${n}-day streak is still open today. Open Tern to see how today is looking.${freezeLine}`,
     },
   ];
 };
 
-const ended = (n: number): ReminderText[] => [
-  {
-    title: 'A fresh start',
-    body: `Your ${n}-day streak ended yesterday. Today is a good day to begin the next one.`,
-  },
-  {
-    title: 'New streak, new day',
-    body: `${n} days is a real run. Whenever you’re ready, start another today.`,
-  },
-  {
-    title: 'Onward',
-    body: `Yesterday’s steps fell short of the goal, and that’s okay. A new streak starts with today’s walk.`,
-  },
-];
-
 const frozen = (n: number): ReminderText[] => [
   {
     title: 'Freeze used',
-    body: `A streak freeze covered yesterday, so your ${n}-day streak is safe. Today is a fresh chance.`,
+    body: `A streak freeze covered yesterday, so your ${n}-day streak still stands.`,
   },
   {
     title: 'Streak protected',
@@ -78,38 +81,35 @@ const frozen = (n: number): ReminderText[] => [
  * The streak notifications to have scheduled. Both only exist while a streak is worth
  * protecting and today isn't settled, so reaching the goal (or taking a rest day) and
  * syncing clears them:
- *  - this evening, a heads-up that the streak is waiting on today's steps;
- *  - tomorrow morning, a note on how it turned out if today's goal never gets reached
- *    (a freeze covered it, or the streak ended). Without a freeze left, that's the loss.
+ *  - this evening, a heads-up that the streak is still open today;
+ *  - tomorrow morning, a note that a freeze held it, if today's goal never gets reached and
+ *    a freeze (not a rest day) is what covers the day. A streak that ends gets no note.
  */
-export function planStreakAlerts({
-  on,
-  streak,
-  freezes,
-  todayOpen,
-  now,
-}: StreakAlertInput): PlannedStreakAlert[] {
+export function planStreakAlerts(
+  input: StreakAlertInput,
+): PlannedStreakAlert[] {
+  const { on, streak, freezes, todayOpen, now } = input;
   if (!on || streak <= 0 || !todayOpen) return [];
   const today = dayKey(now);
   const day = dayNumber(now);
   const out: PlannedStreakAlert[] = [];
 
-  const evening = atTime(today, StreakAlerts.AT_RISK_AT);
-  if (evening > now) {
+  const eveningAt = atTime(today, StreakAlerts.AT_RISK_AT);
+  if (eveningAt > now) {
     out.push({
       id: StreakAlerts.AT_RISK_ID,
-      at: evening,
-      ...variantFor(atRisk(streak, freezes), day),
+      at: eveningAt,
+      ...variantFor(evening(input), day),
     });
   }
 
-  const morning = atTime(addDays(today, 1), StreakAlerts.MORNING_AT);
-  const outcome = freezes > 0 ? frozen(streak) : ended(streak);
-  out.push({
-    id: StreakAlerts.OUTCOME_ID,
-    at: morning,
-    ...variantFor(outcome, day),
-  });
+  if (freezes > 0 && !input.restCovers) {
+    out.push({
+      id: StreakAlerts.OUTCOME_ID,
+      at: atTime(addDays(today, 1), StreakAlerts.MORNING_AT),
+      ...variantFor(frozen(streak), day),
+    });
+  }
   return out;
 }
 

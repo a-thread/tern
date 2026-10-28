@@ -22,19 +22,20 @@ domain color instead. The tokens live in
 
 These are deliberate and worth preserving as the app grows:
 
-1. **Rewards are for behavior, never outcomes.** Waypoints come from logging, moving,
-   and resting. Nothing pays out for a number on the scale or staying under a calorie
+1. **Rewards are for behavior and the goals you set, never body outcomes.** Waypoints come
+   from logging, moving, resting and reaching your own goals (steps or movement, water,
+   medication). Nothing pays out for a number on the scale or staying under a calorie
    target.
 2. **No compensatory mechanics.** Exercise never "earns back" food. There is no
    equivalent of banking steps for a treat. Movement is logged in minutes, never as
    calories burned.
-6. **The calorie target can learn, from your own data.** With the adaptive target on,
-   Tern estimates what you actually burn from what you log and how your trend weight
+3. **The calorie target can learn, from your own data.** With the adaptive target on,
+   Tern estimates how much energy you actually use from what you log and how your trend weight
    moves, so all activity counts without per-workout estimates. It only ever suggests a
    new target, at most once a week and by at most 100 calories; nothing changes until
    you choose it. See [adaptive-target.md](adaptive-target.md).
-3. **Rest days are first-class.** They hold the streak (don't increment it), earn
-   waypoints, and render in driftwood — visually distinct from a missed day. A streak
+4. **Rest days are first-class.** They hold the streak (don't increment it), earn
+   waypoints, and render in driftwood — visually distinct from a day under the goal. A streak
    freeze does the same job for a day a rest day couldn't cover, and renders in blue.
    A rest day is a real day off, not just a day without a step goal: Today shows a calm
    scene (a tern landing on driftwood at dusk) instead of the sky card and the to-do list,
@@ -43,24 +44,26 @@ These are deliberate and worth preserving as the app grows:
    skipped one), the water goal, the check-in, or a dose taken. Logging
    remains one tap away and nothing is hidden or locked. A rest day with little logged is
    left out of the adaptive target like any lightly logged day.
-4. **Weight is shown as a trend with a visible fluctuation band.** Day-to-day deltas are
+5. **Weight is shown as a trend with a visible fluctuation band.** Day-to-day deltas are
    deliberately de-emphasized because they're mostly water.
-5. **Food color is information, not judgment.** It maps to NOVA processing level, always
-   shows the number alongside the color (accessibility), is user-overridable, and can be
-   switched off entirely in settings.
+6. **Food color is information, not judgment.** It maps to NOVA processing level, shows
+   the number alongside the color by default (accessibility), is user-overridable, and can
+   be switched off entirely in settings.
 
 ## Earning rules
 
 A day is a goal day or a rest day, never both: reaching the goal (by steps or by movement)
 after taking a rest day returns that rest day to the week's allowance. A day counts as a
 goal day once, however it got there. Skipping a meal with "nothing today"
-counts exactly as logging it, so a complete log never means eating more than you wanted.
+covers it for "all meals" exactly as logging it does (only the meal's own 5 needs food in it),
+so a complete log never means eating more than you wanted.
 Nothing about these rules rewards under-reporting, and there is no leaderboard — the only
 person a padded ledger fools is the person keeping it.
 
 ### What earns waypoints
 
-Every rule is for something done, never for a number. The amounts live in
+Every rule is for something you did or a goal you set, never for your weight or calorie
+totals. The amounts live in
 [`WaypointRules`](../src/domain/waypoints/models/waypoint.ts), and the database check in the newest
 `waypoint_events_points_check` migration has to agree with them (a test compares the two).
 
