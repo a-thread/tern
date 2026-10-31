@@ -37,7 +37,7 @@ export function useDoneToday(): { done: DoneToday; ready: boolean } {
   }
 
   const done: DoneToday = {
-    rest: activity.todayRestCounts,
+    rest: activity.todayIsRest,
     ...viewed.current,
     weighIn:
       weight.weightEntries.some((e) => isLoggedOn(e.loggedAt, today)) ||

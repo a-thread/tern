@@ -38,7 +38,7 @@ export default function WaypointsScreen({ route }: Props) {
   const { streak } = route.params;
   const { waypoints, events } = useWaypoints();
   const { settings } = useSettings();
-  const { goalReachable, todayRestCounts } = useActivity();
+  const { goalReachable, todayIsRest } = useActivity();
   // The food log follows the viewed day, so its skips only count while that's today.
   const food = useFood();
   const { isToday } = useViewedDay();
@@ -52,7 +52,7 @@ export default function WaypointsScreen({ route }: Props) {
 
   const { lines, total: todayTotal } = earnedOn(events, today);
   // Nothing is pressed on a rest day: it's a day off, not a day with things left to do.
-  const open = todayRestCounts
+  const open = todayIsRest
     ? []
     : stillOpen(events, today, {
         goal: goalReachable,

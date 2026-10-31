@@ -36,8 +36,11 @@ export default function StepsDetailScreen({ navigation }: Props) {
 
   const inRange = days.slice(-TrendRanges.DAYS[range]);
   const { average } = summarizeSteps(days, TrendRanges.DAYS[range]);
-  const goalDays = inRange.filter((d) => d.state === DayState.Goal).length;
-  const restDays = inRange.filter((d) => d.state === DayState.Rest).length;
+  // A rest day on which the goal was reached anyway counts as a goal day here.
+  const goalDays = inRange.filter((d) => d.reachedGoal).length;
+  const restDays = inRange.filter(
+    (d) => d.state === DayState.Rest && !d.reachedGoal,
+  ).length;
   const longestRun = longestProtectedRun(inRange.map((d) => d.state));
 
   const last7 = days.slice(-7);

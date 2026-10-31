@@ -14,13 +14,14 @@ export function reachedGoalToday(input: TodayInput): boolean {
 }
 
 /**
- * Whether today offers a rest-day link ("Take today as a rest day", or undo it): not once the
- * goal is reached (a goal day is never also a rest day), and only while one is taken or some
- * are left this week. The week strip shows the link by it, and the tips on Today only explain
+ * Whether today offers a rest-day link ("Take today as a rest day", or undo it). A rest day
+ * taken can always be undone, even once the goal is reached; a new one can't be taken once
+ * it is (it would only add the rest day's waypoints to a day already done), or with none left
+ * this week. The week strip shows the link by it, and the tips on Today only explain
  * rest days when it's there to point at.
  */
 export function showsRestLink(
   input: TodayInput & { todayIsRest: boolean; restLeft: number },
 ): boolean {
-  return !reachedGoalToday(input) && (input.todayIsRest || input.restLeft > 0);
+  return input.todayIsRest || (!reachedGoalToday(input) && input.restLeft > 0);
 }

@@ -51,6 +51,18 @@ function open() {
 }
 
 // The sample total (1,240) has passed Iceland, the stopover and the Azores, and is headed to Cape Verde.
+describe('Journey total', () => {
+  it('says how many days earned waypoints, and explains them when tapped', async () => {
+    open();
+    const total = await screen.findByLabelText(
+      /^1,240 waypoints, earned on \d+ days?$/,
+    );
+    expect(screen.getByText(/^waypoints · earned on \d+ days?$/)).toBeTruthy();
+    fireEvent.press(total);
+    expect(mockNavigate).toHaveBeenCalledWith('WaypointsInfo');
+  });
+});
+
 describe('Journey stops', () => {
   it('lists the stop being headed to first, then the ones passed, newest first', async () => {
     open();

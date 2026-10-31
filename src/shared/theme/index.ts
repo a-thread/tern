@@ -52,6 +52,8 @@ export const colors = {
   // on the dark heroes and cards
   /** Text over a dark sky or card. */
   onDark: '#FBFAF7',
+  /** Secondary text over a dark sky or card: softer, but still easy to read on the light end of a gradient. */
+  onDarkSoft: 'rgba(251,250,247,0.86)',
   /** A chip or label's backing over a dark sky or card. */
   chipOnDark: 'rgba(0,0,0,0.35)',
   /** The soft shadow under a hero, once the list below scrolls beneath it. */

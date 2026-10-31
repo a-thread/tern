@@ -152,14 +152,28 @@ describe('buildDays', () => {
     expect(d).toHaveLength(14);
   });
 
-  it('marks a chosen rest day, but reaching the goal still reads as goal', () => {
+  it('keeps a chosen rest day a rest day even when the goal is reached, and marks that', () => {
     const d = days({
       stepsByDay: { '2026-09-19': 500, '2026-09-18': 9000 },
       restDays: new Set(['2026-09-19', '2026-09-18']),
     });
-    const by = Object.fromEntries(d.map((x) => [x.day, x.state]));
-    expect(by['2026-09-19']).toBe('rest');
-    expect(by['2026-09-18']).toBe('goal');
+    const by = Object.fromEntries(d.map((x) => [x.day, x]));
+    expect(by['2026-09-19'].state).toBe('rest');
+    expect(by['2026-09-19'].reachedGoal).toBe(false);
+    expect(by['2026-09-18'].state).toBe('rest');
+    expect(by['2026-09-18'].reachedGoal).toBe(true);
+  });
+
+  it('counts a rest day on which the goal was reached toward the streak', () => {
+    const d = days({
+      stepsByDay: {
+        '2026-09-18': 9000,
+        '2026-09-19': 9000,
+        '2026-09-20': 9000,
+      },
+      restDays: new Set(['2026-09-19']),
+    });
+    expect(computeStreak(d)).toBe(3);
   });
 
   it('detects low-step past days as rest only when auto-detect is on, within the allowance', () => {
@@ -341,6 +355,7 @@ describe('suggestGoal', () => {
       goal,
       minutes: 0,
       movedToGoal: false,
+      reachedGoal: s >= goal,
       state: s >= goal ? DayState.Goal : DayState.Partial,
       chosenRest: false,
       isToday: false,

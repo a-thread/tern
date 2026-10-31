@@ -55,6 +55,7 @@ describe('summarizeSteps', () => {
     goal: 8000,
     minutes: 0,
     movedToGoal: false,
+    reachedGoal: false,
     state: DayState.Partial,
     chosenRest: false,
     isToday: false,
@@ -100,6 +101,7 @@ const dayRecords = (
       goal: 5000,
       minutes: 0,
       movedToGoal: false,
+      reachedGoal: steps(i) >= 5000,
       state:
         steps(i) >= 5000
           ? DayState.Goal

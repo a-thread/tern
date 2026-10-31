@@ -10,7 +10,7 @@ import {
 } from 'react-native';
 import Svg, { Circle, G, Image as SvgImage } from 'react-native-svg';
 
-import { colors, radius, typography } from '@shared/theme';
+import { colors, radius, space, typography } from '@shared/theme';
 import { Icon } from '@shared/components/ui';
 import { AnimatedPath } from '@shared/components/FlightPath';
 import { FadeIn } from '@shared/components/FadeIn/FadeIn';
@@ -431,8 +431,12 @@ export function JourneyMap({
 }
 
 const s = StyleSheet.create({
-  // Zoomed in, the map stays inside its frame.
-  frame: { width: '100%', overflow: 'hidden' },
+  // Zoomed in, the map stays inside its frame, rounded like the app's other cards.
+  frame: {
+    width: '100%',
+    overflow: 'hidden',
+    borderRadius: radius.xl,
+  },
   label: {
     position: 'absolute',
     width: MapLayout.LABEL_W,
@@ -449,8 +453,8 @@ const s = StyleSheet.create({
   },
   controls: {
     position: 'absolute',
-    top: 0,
-    right: 0,
+    top: space.lg,
+    right: space.lg,
     flexDirection: 'row',
     gap: 6,
   },

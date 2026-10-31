@@ -133,7 +133,7 @@ describe('rest days', () => {
     expect(result.current.activity.todayIsRest).toBe(false);
   });
 
-  it('a rest day taken early gives way to the goal: one award, and the allowance comes back', async () => {
+  it('a rest day stays a rest day when the goal is reached, and earns both awards', async () => {
     let steps = 1000;
     const repo: StepsRepository = {
       status: async () => StepsStatus.Connected,
@@ -155,14 +155,15 @@ describe('rest days', () => {
       await result.current.activity.refresh();
     });
     await waitFor(() =>
-      expect(result.current.points.waypoints).toBe(before + 40),
+      expect(result.current.points.waypoints).toBe(before + 10 + 40),
     );
     const sources = result.current.points.events
       .filter((e) => e.day === todayKey)
       .map((e) => e.source);
     expect(sources).toContain('steps');
-    expect(sources).not.toContain('rest');
-    expect(result.current.activity.restLeft).toBe(2);
+    expect(sources).toContain('rest');
+    expect(result.current.activity.todayIsRest).toBe(true);
+    expect(result.current.activity.restLeft).toBe(1);
   });
 
   it('keeps the streak through a rest day, and stops at the weekly allowance', async () => {
