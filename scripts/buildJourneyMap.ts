@@ -17,7 +17,6 @@ import { writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import {
   geoGraticule10,
-  geoInterpolate,
   geoNaturalEarth1,
   geoOrthographic,
   geoPath,
@@ -33,7 +32,7 @@ const WIDTH = 340;
 /** The flat map is shorter: it fits the whole route in less height than the globe. */
 const MAP_HEIGHT = 200;
 const GLOBE_HEIGHT = 280;
-/** Points along each leg between two stops; the route curves with the globe between them. */
+/** Points along each leg between two stops, enough for the curve to look smooth. */
 const LEG_POINTS = 24;
 const OUT = join(
   __dirname,
@@ -88,6 +87,44 @@ function globe(): GeoProjection {
 
 const round = (n: number, places: number) => Number(n.toFixed(places));
 
+/** The migration as a loop of stops: the colony (also the last stop), then each stop in turn. */
+const LOOP = Milestones.STOPS.map((s) => [s.at.lon, s.at.lat] as const);
+
+/** The middle of the loop, which every leg bows toward. */
+const CENTRE = [0, 1].map(
+  (d) => LOOP.reduce((sum, p) => sum + p[d], 0) / LOOP.length,
+);
+
+/** How far each leg bows out of a straight line, as a share of its length. */
+const BOW = 0.22;
+
+/**
+ * Leg `i` of the loop (from stop `i - 1`, or the colony, to stop `i`) as an arc: a quadratic
+ * curve whose middle bows toward the centre of the loop by `BOW` of the leg's length. Bowing
+ * inward keeps the arcs over the ocean instead of across Africa or the Americas. Worked in
+ * degrees, which is fine here since the route never crosses the date line or a pole.
+ */
+function curvedLeg(i: number): (t: number) => [number, number] {
+  const n = LOOP.length;
+  const from = LOOP[(i - 1 + n) % n];
+  const to = LOOP[i];
+  const [dx, dy] = [to[0] - from[0], to[1] - from[1]];
+  const mid = [(from[0] + to[0]) / 2, (from[1] + to[1]) / 2];
+  // A perpendicular to the leg, turned to face the centre of the loop.
+  let [nx, ny] = [-dy, dx];
+  if (nx * (CENTRE[0] - mid[0]) + ny * (CENTRE[1] - mid[1]) < 0) {
+    [nx, ny] = [-nx, -ny];
+  }
+  const bend = [mid[0] + nx * BOW, mid[1] + ny * BOW];
+  return (t) => {
+    const [a, b, c] = [(1 - t) * (1 - t), 2 * (1 - t) * t, t * t];
+    return [
+      a * from[0] + b * bend[0] + c * to[0],
+      a * from[1] + b * bend[1] + c * to[1],
+    ];
+  };
+}
+
 function shape(projection: GeoProjection, height: number, withSphere: boolean) {
   const path = geoPath(projection).digits(1);
   // The colony is where every migration starts and ends: the last stop.
@@ -109,10 +146,7 @@ function shape(projection: GeoProjection, height: number, withSphere: boolean) {
   };
   add(colony.lon, colony.lat);
   for (let i = 1; i < stops.length; i++) {
-    const leg = geoInterpolate(
-      [stops[i - 1].lon, stops[i - 1].lat],
-      [stops[i].lon, stops[i].lat],
-    );
+    const leg = curvedLeg(i - 1);
     for (let k = 1; k <= LEG_POINTS; k++) {
       const [lon, lat] = leg(k / LEG_POINTS);
       add(lon, lat);
