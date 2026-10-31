@@ -11,7 +11,7 @@ import { useActivity } from '@/domain/activity/ActivityContext';
 import { factForDay } from './utils/ternFacts';
 import { dayRingLabel } from './utils/dayRingLabel';
 import { DayState } from '@shared/models/dayState';
-import { reachedGoalToday, showsRestLink } from '../../models/restLink';
+import { showsRestLink } from '../../models/restLink';
 
 /**
  * This week's seven rings, a fact for the day, and the rest-day link. Tapping a
@@ -38,20 +38,18 @@ export function WeekStrip({
   const { settings } = useSettings();
   const {
     week,
-    todaySteps,
     stepsReadable,
     restLeft,
     todayIsRest,
     takeRestDay,
     undoRestDay,
   } = useActivity();
-  const today = {
-    todaySteps,
-    stepGoal: settings.stepGoal,
-    todayState: week.find((d) => d.isToday)?.state,
-  };
-  const reached = reachedGoalToday(today);
-  const restLink = showsRestLink({ ...today, todayIsRest, restLeft });
+  const reached = week.find((d) => d.isToday)?.reachedGoal ?? false;
+  const restLink = showsRestLink({
+    todayReached: reached,
+    todayIsRest,
+    restLeft,
+  });
   const movementGoal = settings.trackMovement
     ? settings.movementGoalMinutes
     : 0;
@@ -94,7 +92,7 @@ export function WeekStrip({
         ))}
       </View>
       <Text style={s.caption}>{factForDay(todayKey)}</Text>
-      {/* Once the goal is reached today is a goal day, so there's no rest day to take or undo. */}
+      {/* A rest day taken can always be undone; once the goal is reached a new one can't be taken. */}
       {!isToday ? (
         <Pressable onPress={showToday} hitSlop={8} accessibilityRole='button'>
           <Text style={[s.restLink, s.backLink]}>Back to today</Text>

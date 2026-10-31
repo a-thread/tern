@@ -73,10 +73,12 @@ export function buildDays(input: BuildDaysInput): DayRecord[] {
   );
 
   // Chosen rest days use the allowance first, so a detected day earlier in the
-  // week never crowds one the user picked.
+  // week never crowds one the user picked. One on which the goal was reached
+  // anyway doesn't use it: the day was walked, so the week keeps its rest days
+  // (and history reads the same as before rest days stopped giving way).
   const chosenPerWeek = new Map<string, number>();
   for (const k of keys) {
-    if (restDays.has(k)) {
+    if (restDays.has(k) && !reached(k)) {
       const w = weekStartKey(k);
       chosenPerWeek.set(w, (chosenPerWeek.get(w) ?? 0) + 1);
     }
@@ -223,14 +225,17 @@ export function weekOf(days: DayRecord[], today: string): DayRecord[] {
   });
 }
 
-/** Rest days still available this week (chosen and detected both count). */
+/**
+ * Rest days still available this week (chosen and detected both count). A rest
+ * day on which the goal was reached anyway doesn't use one, as in `buildDays`.
+ */
 export function restDaysLeft(
   days: DayRecord[],
   today: string,
   restPerWeek: number,
 ): number {
   const used = weekOf(days, today).filter(
-    (d) => d.state === DayState.Rest,
+    (d) => d.state === DayState.Rest && !d.reachedGoal,
   ).length;
   return Math.max(restPerWeek - used, 0);
 }

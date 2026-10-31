@@ -87,8 +87,8 @@ export default function RestDaysScreen() {
             text='Earns 10 waypoints'
             sub={
               settings.trackMovement
-                ? "Resting counts as showing up. If you reach your step or movement goal anyway, it's a goal day instead"
-                : "Resting counts as showing up. If you reach your step goal anyway, it's a goal day instead"
+                ? "Resting counts as showing up. It stays a rest day even if you reach your step or movement goal, and you earn the goal's waypoints too."
+                : "Resting counts as showing up. It stays a rest day even if you reach your step goal, and you earn the goal's waypoints too."
             }
           />
           <View style={s.row}>

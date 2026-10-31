@@ -163,7 +163,8 @@ describe('rest days', () => {
     expect(sources).toContain('steps');
     expect(sources).toContain('rest');
     expect(result.current.activity.todayIsRest).toBe(true);
-    expect(result.current.activity.restLeft).toBe(1);
+    // The day was walked, so the week keeps its rest day for another time.
+    expect(result.current.activity.restLeft).toBe(2);
   });
 
   it('keeps the streak through a rest day, and stops at the weekly allowance', async () => {

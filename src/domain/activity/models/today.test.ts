@@ -164,6 +164,22 @@ describe('buildDays', () => {
     expect(by['2026-09-18'].reachedGoal).toBe(true);
   });
 
+  it("doesn't let a walked rest day use the week's allowance, so detected rest days stay", () => {
+    const d = days({
+      stepsByDay: {
+        '2026-09-14': 9000,
+        '2026-09-15': 500,
+        '2026-09-16': 400,
+      },
+      restDays: new Set(['2026-09-14']),
+      autoDetect: true,
+    });
+    const by = Object.fromEntries(d.map((x) => [x.day, x.state]));
+    expect(by['2026-09-14']).toBe('rest');
+    expect(by['2026-09-15']).toBe('rest');
+    expect(by['2026-09-16']).toBe('rest');
+  });
+
   it('counts a rest day on which the goal was reached toward the streak', () => {
     const d = days({
       stepsByDay: {

@@ -44,6 +44,12 @@ class MapLayout {
    */
   static readonly BIRD_W = 20;
   static readonly LABEL_W = 180;
+  /** How far above or below the stop its name sits. */
+  static readonly LABEL_ABOVE = 26;
+  static readonly LABEL_BELOW = 10;
+  /** The corner the zoom and view buttons take up, from the top-right: a name stays out of it. */
+  static readonly CONTROLS_W = 128;
+  static readonly CONTROLS_H = 48;
   /** How long a tapped stop's name stays up, from the latest tap. */
   static readonly LABEL_MS = 2500;
   /** Two taps this close together in time (ms) and space (points) make a double tap. */
@@ -237,6 +243,17 @@ export function JourneyMap({
         y: pointAt(shape, stopIndex(tapped.stop)).y * scale,
       })
     : null;
+  const labelLeft = shown
+    ? Math.min(
+        Math.max(shown.x - MapLayout.LABEL_W / 2, 0),
+        Math.max(width - MapLayout.LABEL_W, 0),
+      )
+    : 0;
+  // Above the stop, unless that's off the top or under the buttons in the corner.
+  const above = shown ? shown.y - MapLayout.LABEL_ABOVE : 0;
+  const underButtons =
+    above < MapLayout.CONTROLS_H &&
+    labelLeft + MapLayout.LABEL_W > width - MapLayout.CONTROLS_W;
   const label =
     tapped &&
     shown &&
@@ -249,12 +266,9 @@ export function JourneyMap({
             tapped.stop === next
               ? `Next: ${Milestones.STOPS[tapped.stop].name}`
               : Milestones.STOPS[tapped.stop].name,
-          left: Math.min(
-            Math.max(shown.x - MapLayout.LABEL_W / 2, 0),
-            Math.max(width - MapLayout.LABEL_W, 0),
-          ),
-          // Below the stop when it's too near the top to fit above.
-          top: shown.y < 30 ? shown.y + 10 : shown.y - 26,
+          left: labelLeft,
+          top:
+            above < 4 || underButtons ? shown.y + MapLayout.LABEL_BELOW : above,
         }
       : null;
 

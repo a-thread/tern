@@ -14,6 +14,7 @@ export function dayRingLabel(
     | 'goal'
     | 'minutes'
     | 'movedToGoal'
+    | 'reachedGoal'
     | 'state'
     | 'isToday'
     | 'future'
@@ -27,14 +28,21 @@ export function dayRingLabel(
 function dayStatus(
   d: Pick<
     DayRecord,
-    'steps' | 'goal' | 'minutes' | 'movedToGoal' | 'state' | 'future'
+    | 'steps'
+    | 'goal'
+    | 'minutes'
+    | 'movedToGoal'
+    | 'reachedGoal'
+    | 'state'
+    | 'future'
   >,
   movementGoalMinutes: number,
 ): string {
   if (d.future) return 'not yet';
   switch (d.state) {
     case DayState.Rest:
-      return 'rest day';
+      // A rest day stays one even if the goal is reached; say so, since the ring can't.
+      return d.reachedGoal ? 'rest day, goal reached' : 'rest day';
     case DayState.Frozen:
       return 'covered by a streak freeze';
     case DayState.Goal:

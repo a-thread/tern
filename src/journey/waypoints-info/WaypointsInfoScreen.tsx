@@ -38,10 +38,10 @@ export default function WaypointsInfoScreen() {
         <Text style={[popup.lineText, s.line]}>
           A day counts once you earn at least one waypoint on it.
         </Text>
-        {/* The streak reads the phone's step history, which can go back before Tern did. */}
+        {/* The streak reads the phone's step history; waypoints only come on days Tern is opened. */}
         {streak > stats.days ? (
           <Text style={[popup.lineText, s.line]}>
-            {`Your ${streak}-day streak can be longer, because it also counts steps from before you started with Tern.`}
+            {`Your ${streak}-day streak can be longer. It counts every day your phone recorded you reaching your goal, including days before Tern and days you didn't open it.`}
           </Text>
         ) : null}
       </View>

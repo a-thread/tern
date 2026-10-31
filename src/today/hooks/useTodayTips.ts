@@ -33,9 +33,7 @@ export function useTodayTips({
   const { isToday } = useViewedDay();
   const activity = useActivity();
   const restLink = showsRestLink({
-    todaySteps: activity.todaySteps,
-    stepGoal: settings.stepGoal,
-    todayState: activity.week.find((d) => d.isToday)?.state,
+    todayReached: activity.week.find((d) => d.isToday)?.reachedGoal ?? false,
     todayIsRest: activity.todayIsRest,
     restLeft: activity.restLeft,
   });

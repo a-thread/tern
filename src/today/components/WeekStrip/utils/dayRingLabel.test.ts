@@ -7,6 +7,7 @@ const base = {
   goal: 8000,
   minutes: 0,
   movedToGoal: false,
+  reachedGoal: false,
   state: DayState.Partial,
   isToday: false,
   future: false,
@@ -35,6 +36,12 @@ describe('dayRingLabel', () => {
     expect(dayRingLabel({ ...base, state: DayState.Rest }, 30)).toMatch(
       /rest day$/,
     );
+    expect(
+      dayRingLabel(
+        { ...base, state: DayState.Rest, steps: 9000, reachedGoal: true },
+        30,
+      ),
+    ).toMatch(/rest day, goal reached$/);
     expect(dayRingLabel({ ...base, state: DayState.Frozen }, 30)).toMatch(
       /streak freeze$/,
     );
