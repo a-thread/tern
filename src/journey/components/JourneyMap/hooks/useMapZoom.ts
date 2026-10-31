@@ -15,6 +15,7 @@ import {
   NO_ZOOM,
   zoomAbout,
   zoomBetween,
+  zoomThen,
 } from '../utils/mapZoom';
 
 /** How long a double tap or the zoom button takes to glide. */
@@ -47,7 +48,7 @@ export function useMapZoom({
   height: number;
   home: MapZoom;
   resetKey: unknown;
-  /** Called as a pinch or drag begins, to clear anything placed for the old zoom. */
+  /** Called as a pinch, drag or glide begins, to clear anything placed for the old zoom. */
   onGestureStart: () => void;
 }) {
   /** The zoom the map is drawn at. */
@@ -111,6 +112,8 @@ export function useMapZoom({
     }
     const d = zoomBetween(drawn.current, z);
     glide.current?.stop();
+    // A stop's name placed for the old zoom would hang in the wrong spot while the map moves.
+    latest.current.onGestureStart();
     const anim = Animated.parallel(
       (
         [
@@ -130,8 +133,26 @@ export function useMapZoom({
     );
     glide.current = anim;
     anim.start(({ finished }) => {
+      if (glide.current === anim) glide.current = null;
       if (finished) setZoom(z);
     });
+  };
+
+  /**
+   * Stops a glide part-way and returns the zoom the map shows as right then, so a pinch or drag
+   * picks up from what's on screen rather than from where the glide was going.
+   */
+  const catchGlide = (): MapZoom => {
+    if (!glide.current) return live.current;
+    glide.current.stop();
+    glide.current = null;
+    const now = { scale: 1, x: 0, y: 0, rotate: 0 };
+    scale.stopAnimation((v) => (now.scale = v));
+    x.stopAnimation((v) => (now.x = v));
+    y.stopAnimation((v) => (now.y = v));
+    turn.stopAnimation((v) => (now.rotate = v));
+    live.current = zoomThen(drawn.current, now);
+    return live.current;
   };
 
   // A new view or leg takes its zoom in the same render, not in an effect afterwards: otherwise
@@ -139,7 +160,11 @@ export function useMapZoom({
   // close-up is worked out afresh each render.
   const homeKey = `${home.scale},${home.x},${home.y},${home.rotate}`;
   const [seen, setSeen] = useState<{ homeKey: string; resetKey: unknown }>();
-  if (seen?.homeKey !== homeKey || seen?.resetKey !== resetKey) {
+  // Not under the fingers, though: a new close-up mid-pinch waits until they lift.
+  if (
+    !start.current &&
+    (seen?.homeKey !== homeKey || seen?.resetKey !== resetKey)
+  ) {
     const z = chosenWhole.current ? NO_ZOOM : home;
     setSeen({ homeKey, resetKey });
     setZoom(z);
@@ -191,6 +216,7 @@ export function useMapZoom({
           (live.current.scale > 1 && Math.hypot(g.dx, g.dy) > 6),
         onPanResponderGrant: (e) => {
           latest.current.onGestureStart();
+          catchGlide();
           begin(e.nativeEvent.touches);
         },
         onPanResponderMove: (e) => {
@@ -246,6 +272,11 @@ export function useMapZoom({
     zoom,
     /** Where a tap landed in the frame. */
     tapPoint: (e: GestureResponderEvent) => framePoint(e.nativeEvent),
+    /**
+     * Whether the map is mid-glide or under the fingers, when what's on screen isn't yet drawn
+     * at `zoom`, so a tap can't be placed on it.
+     */
+    moving: () => glide.current !== null || start.current !== null,
     /**
      * Zooms by `factor` about a point in the frame, from wherever the map is headed, gliding
      * there. Zoomed all the way out it's the whole route, north up.

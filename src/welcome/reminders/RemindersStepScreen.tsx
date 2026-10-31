@@ -6,7 +6,7 @@ import { describeReminders } from '@/domain/settings/models/reminderPlan';
 import { WizardStep } from '../components/WizardStep/WizardStep';
 import { useWizard } from '../hooks/useWizard';
 import { WizardStep as Step } from '../models/wizardSteps';
-import { space } from '@/shared/theme';
+import { space } from '@shared/theme';
 import { StyleSheet } from 'react-native';
 
 /**

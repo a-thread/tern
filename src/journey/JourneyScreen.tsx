@@ -255,7 +255,7 @@ export default function JourneyScreen() {
           ]}
         >
           <LinearGradient
-            colors={[colors.heroShadow, 'transparent']}
+            colors={[colors.heroShadow, colors.heroShadowClear]}
             style={StyleSheet.absoluteFill}
           />
         </Animated.View>

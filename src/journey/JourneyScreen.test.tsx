@@ -96,6 +96,44 @@ describe('Journey map zoom', () => {
       }),
     );
 
+  /** Stop names shown on the map: a tapped stop's label, the only text of this shape there. */
+  const mapLabels = () => screen.queryAllByText(/^Next: /);
+
+  it('names a stop on a single tap, once no second tap has come', async () => {
+    open();
+    await screen.findByLabelText('Map of the migration. Heading to Cape Verde');
+    await layOut();
+    // On the close-up the next stop is right of centre; tap it.
+    jest.useFakeTimers();
+    try {
+      await act(async () =>
+        fireEvent.press(map(), { nativeEvent: { pageX: 212, pageY: 84 } }),
+      );
+      expect(mapLabels()).toHaveLength(0);
+      await act(async () => jest.advanceTimersByTime(350));
+      expect(mapLabels()).toHaveLength(1);
+    } finally {
+      jest.useRealTimers();
+    }
+  });
+
+  it('shows no stop name on a double tap', async () => {
+    open();
+    await screen.findByLabelText('Map of the migration. Heading to Cape Verde');
+    await layOut();
+    jest.useFakeTimers();
+    try {
+      await act(async () => {
+        fireEvent.press(map(), tap);
+        fireEvent.press(map(), tap);
+      });
+      await act(async () => jest.advanceTimersByTime(350));
+      expect(mapLabels()).toHaveLength(0);
+    } finally {
+      jest.useRealTimers();
+    }
+  });
+
   it('opens close up on the leg, and a double tap goes out to the whole route and back', async () => {
     open();
     await screen.findByLabelText('Map of the migration. Heading to Cape Verde');

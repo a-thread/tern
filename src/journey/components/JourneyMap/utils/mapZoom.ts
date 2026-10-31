@@ -36,11 +36,21 @@ export const isWhole = (z: MapZoom) =>
 /**
  * Keeps the zoom between 1 and `ZoomLimits.MAX`. North up, it also keeps the map covering the
  * whole frame (`width` by `height`), so dragging never pulls an edge into view. Turned, the
- * corners can't all be kept covered, so it's left where it is.
+ * corners can't all be kept covered, so instead the middle of the frame is kept over the map:
+ * however far it's dragged, the map never leaves the frame.
  */
 export function clampZoom(z: MapZoom, width: number, height: number): MapZoom {
   const scale = clamp(z.scale, 1, ZoomLimits.MAX);
-  if (Math.abs(shortAngle(z.rotate)) > 0.01) return { ...z, scale };
+  if (Math.abs(shortAngle(z.rotate)) > 0.01) {
+    const middle = { x: width / 2, y: height / 2 };
+    const under = toMap({ ...z, scale }, middle);
+    const kept = {
+      x: clamp(under.x, 0, width),
+      y: clamp(under.y, 0, height),
+    };
+    const at = toFrame({ ...z, scale, x: 0, y: 0 }, kept);
+    return { scale, rotate: z.rotate, x: middle.x - at.x, y: middle.y - at.y };
+  }
   return {
     scale,
     x: clamp(z.x, width - scale * width, 0),
@@ -99,4 +109,15 @@ export function zoomBetween(from: MapZoom, to: MapZoom): MapZoom {
   const rotate = shortAngle(to.rotate - from.rotate);
   const t = turn({ x: from.x, y: from.y }, rotate);
   return { scale, rotate, x: to.x - scale * t.x, y: to.y - scale * t.y };
+}
+
+/** The zoom the map shows as when drawn at `from` and moved by `move`: `zoomBetween` undone. */
+export function zoomThen(from: MapZoom, move: MapZoom): MapZoom {
+  const at = toFrame(move, { x: from.x, y: from.y });
+  return {
+    scale: from.scale * move.scale,
+    rotate: from.rotate + move.rotate,
+    x: at.x,
+    y: at.y,
+  };
 }

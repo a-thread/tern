@@ -8,6 +8,7 @@ import {
   zoomAbout,
   zoomBetween,
   ZoomLimits,
+  zoomThen,
 } from './mapZoom';
 
 const W = 300;
@@ -75,13 +76,43 @@ describe('clampZoom', () => {
     );
   });
 
-  it('leaves a turned map where it is, apart from the zoom limits', () => {
-    expect(clampZoom({ scale: 9, x: 50, y: 50, rotate: 30 }, W, H)).toEqual({
-      scale: ZoomLimits.MAX,
-      x: 50,
-      y: 50,
-      rotate: 30,
-    });
+  it('leaves a turned map alone while the middle of the frame is over it', () => {
+    // Turned about the middle of the frame, so the middle stays over the map's middle.
+    const z = zoomAbout(
+      { ...NO_ZOOM, rotate: 30 },
+      { x: W / 2, y: H / 2 },
+      { x: W / 2, y: H / 2 },
+      2,
+      W,
+      H,
+    );
+    const kept = clampZoom(z, W, H);
+    expect(kept.x).toBeCloseTo(z.x);
+    expect(kept.y).toBeCloseTo(z.y);
+    expect(clampZoom({ ...z, scale: 9 }, W, H).scale).toBe(ZoomLimits.MAX);
+  });
+
+  it('never lets a turned map be dragged out of the frame', () => {
+    const middle = { x: W / 2, y: H / 2 };
+    const z = clampZoom({ scale: 2, x: 5000, y: -5000, rotate: 30 }, W, H);
+    const under = toMap(z, middle);
+    expect(under.x).toBeGreaterThanOrEqual(-1e-6);
+    expect(under.x).toBeLessThanOrEqual(W + 1e-6);
+    expect(under.y).toBeGreaterThanOrEqual(-1e-6);
+    expect(under.y).toBeLessThanOrEqual(H + 1e-6);
+    expect(z.rotate).toBe(30);
+  });
+});
+
+describe('zoomThen', () => {
+  it('undoes zoomBetween', () => {
+    const from = { scale: 1.5, x: 20, y: -10, rotate: 15 };
+    const to = { scale: 3, x: -60, y: 40, rotate: -70 };
+    const back = zoomThen(from, zoomBetween(from, to));
+    expect(back.scale).toBeCloseTo(to.scale);
+    expect(shortAngle(back.rotate - to.rotate)).toBeCloseTo(0);
+    expect(back.x).toBeCloseTo(to.x);
+    expect(back.y).toBeCloseTo(to.y);
   });
 });
 

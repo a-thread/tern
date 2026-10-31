@@ -8,7 +8,7 @@ import {
   Text,
   View,
 } from 'react-native';
-import Svg, { Circle, G, Image as SvgImage, Path } from 'react-native-svg';
+import Svg, { Circle, G, Image as SvgImage } from 'react-native-svg';
 
 import { colors, radius, typography } from '@shared/theme';
 import { Icon } from '@shared/components/ui';
@@ -31,6 +31,7 @@ import { ternPose } from './utils/ternPose';
 import { toFrame, toMap } from './utils/mapZoom';
 import { legZoom } from './utils/legZoom';
 import { useMapZoom } from './hooks/useMapZoom';
+import { MapBase } from './components/MapBase/MapBase';
 
 /** Timings and sizes for the map's tern, labels and toggle. */
 class MapLayout {
@@ -50,7 +51,7 @@ class MapLayout {
   static readonly DOUBLE_TAP_SLOP = 30;
 }
 
-/** The tern seen from above, cropped from assets/flying-bird-icon.png. */
+/** The tern seen from above, cropped from design/flying-bird-icon.png. */
 class TernIcon {
   static readonly SOURCE = require('../../../../assets/journey-tern.png');
   /** Height over width of the image. */
@@ -148,33 +149,59 @@ export function JourneyMap({
   const frameHeight = width * (shape.height / JourneyMapShapes.WIDTH);
   // It opens close up on the leg the tern is flying, like the old route strip.
   const home = legZoom(shape, progress, width, frameHeight);
-  const { zoom, tapPoint, zoomBy, whole, toggleWhole, frameProps, moveStyle } =
-    useMapZoom({
-      width,
-      height: frameHeight,
-      home,
-      resetKey: view,
-      onGestureStart: () => setTapped(null),
-    });
+  const {
+    zoom,
+    tapPoint,
+    moving,
+    zoomBy,
+    whole,
+    toggleWhole,
+    frameProps,
+    moveStyle,
+  } = useMapZoom({
+    width,
+    height: frameHeight,
+    home,
+    resetKey: view,
+    onGestureStart: () => setTapped(null),
+  });
   // Dots, lines and the tern keep their size as the map zooms, so they're drawn this much smaller.
   const k = zoom.scale;
   const lastTap = useRef<{ at: number; x: number; y: number } | null>(null);
   const total = shape.lengths[last];
-  const dash = travel.interpolate({
-    inputRange: shape.lengths.map((_, i) => i),
-    outputRange: shape.lengths.map((l) => total - l),
-    extrapolate: 'clamp',
-  });
+  // Built once per view: the tern's flight re-renders the map about 30 times a second.
+  const dash = useMemo(
+    () =>
+      travel.interpolate({
+        inputRange: shape.lengths.map((_, i) => i),
+        outputRange: shape.lengths.map((l) => total - l),
+        extrapolate: 'clamp',
+      }),
+    [travel, shape, total],
+  );
 
   const bird = ternPose(shape, birdIndex, TernIcon.HEADING);
   const birdW = MapLayout.BIRD_W / k;
   const birdH = birdW * TernIcon.RATIO;
+
+  // What a held single tap reads when it goes off: the map as it is then, not as it was tapped.
+  const current = useRef({ zoom, shape, scale });
+  current.current = { zoom, shape, scale };
+  const heldTap = useRef<ReturnType<typeof setTimeout> | null>(null);
+  useEffect(
+    () => () => {
+      if (heldTap.current) clearTimeout(heldTap.current);
+    },
+    [],
+  );
 
   const onPress = (e: GestureResponderEvent) => {
     const at = tapPoint(e);
     const now = Date.now();
     const prev = lastTap.current;
     lastTap.current = { at: now, ...at };
+    if (heldTap.current) clearTimeout(heldTap.current);
+    heldTap.current = null;
     // A second tap close by, soon after, zooms out to the whole route, or back in to the leg.
     if (
       prev &&
@@ -186,9 +213,21 @@ export function JourneyMap({
       toggleWhole();
       return;
     }
-    const spot = toMap(zoom, at);
-    const stop = nearestStop(shape, spot.x / scale, spot.y / scale);
-    setTapped((was) => ({ stop, tap: (was?.tap ?? 0) + 1 }));
+    // A single tap names the nearest stop, but only once no second tap has come, so a double
+    // tap doesn't flash a name first. Not while the map is moving: what's on screen then isn't
+    // drawn where the tap would be placed.
+    heldTap.current = setTimeout(() => {
+      heldTap.current = null;
+      if (moving()) return;
+      const map = current.current;
+      const spot = toMap(map.zoom, at);
+      const stop = nearestStop(
+        map.shape,
+        spot.x / map.scale,
+        spot.y / map.scale,
+      );
+      setTapped((was) => ({ stop, tap: (was?.tap ?? 0) + 1 }));
+    }, MapLayout.DOUBLE_TAP_MS);
   };
 
   // Where the tapped stop shows in the frame, zoomed or not; no label for one zoomed out of view.
@@ -251,7 +290,7 @@ export function JourneyMap({
               ? `Map of the migration. Heading to ${Milestones.STOPS[next].name}`
               : 'Map of the migration'
           }
-          accessibilityHint='Shows the name of the stop you tap. Double-tap or pinch to zoom.'
+          accessibilityHint='Shows the name of the nearest stop. Use the Zoom in and Zoom out actions to zoom.'
           accessibilityActions={[
             { name: 'zoomIn', label: 'Zoom in' },
             { name: 'zoomOut', label: 'Zoom out' },
@@ -269,39 +308,7 @@ export function JourneyMap({
             <G
               transform={`translate(${zoom.x / scale}, ${zoom.y / scale}) rotate(${zoom.rotate}) scale(${zoom.scale})`}
             >
-              {shape.sphere ? (
-                <Path
-                  d={shape.sphere}
-                  fill={colors.mapSea}
-                  stroke={colors.mapGrid}
-                  strokeWidth={1 / k}
-                />
-              ) : null}
-              <Path
-                d={shape.graticule}
-                fill='none'
-                stroke={colors.mapGrid}
-                strokeWidth={0.6 / k}
-              />
-              <Path d={shape.land} fill={colors.mapLand} />
-
-              {/* A finished migration stays underneath; the first one shows the way ahead dashed. */}
-              {lap > 1 ? (
-                <Path
-                  d={path}
-                  fill='none'
-                  stroke={colors.routePast}
-                  strokeWidth={1.6 / k}
-                />
-              ) : (
-                <Path
-                  d={path}
-                  fill='none'
-                  stroke={colors.routeAhead}
-                  strokeWidth={1.2 / k}
-                  strokeDasharray={`${3 / k} ${4 / k}`}
-                />
-              )}
+              <MapBase shape={shape} path={path} lap={lap} k={k} />
               <AnimatedPath
                 d={path}
                 fill='none'
