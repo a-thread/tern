@@ -80,6 +80,96 @@ describe('Journey stops', () => {
   });
 });
 
+describe('Journey map zoom', () => {
+  const tap = { nativeEvent: { pageX: 120, pageY: 60 } };
+  const map = () =>
+    screen.getByLabelText('Map of the migration. Heading to Cape Verde');
+
+  /**
+   * Gives the map a size, as laying it out on a phone would. Called directly: fireEvent skips a
+   * view whose touch handler turns down a touch at the start, which the pinch handler does.
+   */
+  const layOut = () =>
+    act(async () =>
+      screen.getByTestId('journey-map').props.onLayout({
+        nativeEvent: { layout: { width: 340, height: 200 } },
+      }),
+    );
+
+  it('opens close up on the leg, and a double tap goes out to the whole route and back', async () => {
+    open();
+    await screen.findByLabelText('Map of the migration. Heading to Cape Verde');
+    await layOut();
+    expect(screen.getByLabelText('Show the whole route')).toBeTruthy();
+    await act(async () => {
+      fireEvent.press(map(), tap);
+      fireEvent.press(map(), tap);
+    });
+    expect(screen.getByLabelText('Zoom to the tern')).toBeTruthy();
+    await act(async () => {
+      fireEvent.press(map(), tap);
+      fireEvent.press(map(), tap);
+    });
+    expect(screen.getByLabelText('Show the whole route')).toBeTruthy();
+  });
+
+  it('stays on the whole route, or the close-up, when switching to the globe and back', async () => {
+    open();
+    await screen.findByLabelText('Map of the migration. Heading to Cape Verde');
+    await layOut();
+    // The close-up carries over.
+    await act(async () => fireEvent.press(screen.getByLabelText('Globe')));
+    await layOut();
+    expect(screen.getByLabelText('Show the whole route')).toBeTruthy();
+    // So does the whole route, both ways.
+    await act(async () =>
+      fireEvent.press(screen.getByLabelText('Show the whole route')),
+    );
+    await act(async () => fireEvent.press(screen.getByLabelText('Flat map')));
+    await layOut();
+    expect(screen.getByLabelText('Zoom to the tern')).toBeTruthy();
+    await act(async () => fireEvent.press(screen.getByLabelText('Globe')));
+    await layOut();
+    expect(screen.getByLabelText('Zoom to the tern')).toBeTruthy();
+  });
+
+  it('has a button that does the same', async () => {
+    open();
+    await screen.findByLabelText('Map of the migration. Heading to Cape Verde');
+    await layOut();
+    await act(async () =>
+      fireEvent.press(screen.getByLabelText('Show the whole route')),
+    );
+    await act(async () =>
+      fireEvent.press(screen.getByLabelText('Zoom to the tern')),
+    );
+    expect(screen.getByLabelText('Show the whole route')).toBeTruthy();
+  });
+
+  it('zooms for screen readers too', async () => {
+    open();
+    await screen.findByLabelText('Map of the migration. Heading to Cape Verde');
+    await layOut();
+    await act(async () =>
+      fireEvent.press(screen.getByLabelText('Show the whole route')),
+    );
+    await act(async () =>
+      fireEvent(map(), 'accessibilityAction', {
+        nativeEvent: { actionName: 'zoomIn' },
+      }),
+    );
+    expect(screen.getByLabelText('Show the whole route')).toBeTruthy();
+    for (let i = 0; i < 4; i++) {
+      await act(async () =>
+        fireEvent(map(), 'accessibilityAction', {
+          nativeEvent: { actionName: 'zoomOut' },
+        }),
+      );
+    }
+    expect(screen.getByLabelText('Zoom to the tern')).toBeTruthy();
+  });
+});
+
 describe('Journey map', () => {
   it('starts on the flat map, heading to the next stop', async () => {
     open();

@@ -1,5 +1,5 @@
-import React, { useMemo } from 'react';
-import { View, Text, ScrollView, StyleSheet } from 'react-native';
+import React, { useMemo, useRef } from 'react';
+import { Animated, View, Text, StyleSheet } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -59,6 +59,7 @@ export default function JourneyScreen() {
   const navigation = useRootNavigation();
   const { waypoints, events, reload } = useWaypoints();
   const refreshControl = usePullToRefresh([reload]);
+  const scrollY = useRef(new Animated.Value(0)).current;
   const { settings } = useSettings();
   const { goalReachable } = useActivity();
 
@@ -121,122 +122,151 @@ export default function JourneyScreen() {
         </View>
       </LinearGradient>
 
-      <ScrollView
-        refreshControl={refreshControl}
-        contentContainerStyle={{
-          paddingHorizontal: space.lg,
-          paddingBottom: space.lg,
-        }}
-      >
-        {next ? (
-          <>
-            <GroupLabel>Next milestone</GroupLabel>
-            <Card>
-              <View style={s.nextTop}>
-                <Text style={s.nextName}>{next.name}</Text>
-                <Text style={s.nextCount}>
-                  {waypoints.toLocaleString()} /{' '}
-                  {next.waypoints.toLocaleString()}
+      <View style={s.listArea}>
+        <Animated.ScrollView
+          refreshControl={refreshControl}
+          onScroll={Animated.event(
+            [{ nativeEvent: { contentOffset: { y: scrollY } } }],
+            { useNativeDriver: true },
+          )}
+          scrollEventThrottle={16}
+          contentContainerStyle={{
+            paddingHorizontal: space.lg,
+            paddingBottom: space.lg,
+          }}
+        >
+          {next ? (
+            <>
+              <GroupLabel>Next milestone</GroupLabel>
+              <Card>
+                <View style={s.nextTop}>
+                  <Text style={s.nextName}>{next.name}</Text>
+                  <Text style={s.nextCount}>
+                    {waypoints.toLocaleString()} /{' '}
+                    {next.waypoints.toLocaleString()}
+                  </Text>
+                </View>
+                <View style={{ marginTop: 7 }}>
+                  <ProgressBar value={progress} color={colors.aurora} />
+                </View>
+                <Text style={s.nextSub}>
+                  {Math.max(next.waypoints - waypoints, 0).toLocaleString()} to
+                  go
                 </Text>
-              </View>
-              <View style={{ marginTop: 7 }}>
-                <ProgressBar value={progress} color={colors.aurora} />
-              </View>
-              <Text style={s.nextSub}>
-                {Math.max(next.waypoints - waypoints, 0).toLocaleString()} to go
-              </Text>
-            </Card>
-          </>
-        ) : null}
+              </Card>
+            </>
+          ) : null}
 
-        {/* Where the bird is headed comes first, then the stops passed, newest first. */}
-        <GroupLabel>Stops</GroupLabel>
-        <Group>
-          {[
-            ...(next
-              ? [
-                  <Row
-                    key={next.id}
-                    title={next.name}
-                    sub={`Next · ${next.waypoints.toLocaleString()}`}
-                    icon={
-                      <View style={[s.msDot, s.msPending]}>
-                        <Text style={s.msPendingText}>—</Text>
-                      </View>
-                    }
-                  />,
-                ]
-              : []),
-            ...[...reached].reverse().map((m, i) => (
+          {/* Where the bird is headed comes first, then the stops passed, newest first. */}
+          <GroupLabel>Stops</GroupLabel>
+          <Group>
+            {[
+              ...(next
+                ? [
+                    <Row
+                      key={next.id}
+                      title={next.name}
+                      sub={`Next · ${next.waypoints.toLocaleString()}`}
+                      icon={
+                        <View style={[s.msDot, s.msPending]}>
+                          <Text style={s.msPendingText}>—</Text>
+                        </View>
+                      }
+                    />,
+                  ]
+                : []),
+              ...[...reached].reverse().map((m, i) => (
+                <Row
+                  key={m.id}
+                  title={m.name}
+                  sub={[
+                    m.lap > 1 ? `Migration ${m.lap}` : null,
+                    m.waypoints.toLocaleString(),
+                    m.reachedOn ? formatShortDate(m.reachedOn) : null,
+                  ]
+                    .filter(Boolean)
+                    .join(' · ')}
+                  onPress={() =>
+                    navigation.navigate('Destination', {
+                      waypoints: m.waypoints,
+                    })
+                  }
+                  icon={
+                    <View
+                      style={[
+                        s.msDot,
+                        {
+                          backgroundColor:
+                            MILESTONE_COLORS[
+                              (reached.length - 1 - i) % MILESTONE_COLORS.length
+                            ],
+                        },
+                      ]}
+                    >
+                      <Icon name='check-bold' size={14} color='#fff' />
+                    </View>
+                  }
+                />
+              )),
+            ]}
+          </Group>
+
+          <GroupLabel>How waypoints are earned</GroupLabel>
+          <Group>
+            {earnableRules({
+              food: settings.trackFood,
+              mood: settings.trackMood,
+              water: settings.trackWater,
+              movement: settings.trackMovement,
+              weight: settings.trackWeight,
+              medication: settings.medications.length > 0,
+              goal: goalReachable,
+              rest: settings.restDaysPerWeek > 0,
+            }).map((rule) => (
               <Row
-                key={m.id}
-                title={m.name}
-                sub={[
-                  m.lap > 1 ? `Migration ${m.lap}` : null,
-                  m.waypoints.toLocaleString(),
-                  m.reachedOn ? formatShortDate(m.reachedOn) : null,
-                ]
-                  .filter(Boolean)
-                  .join(' · ')}
-                onPress={() =>
-                  navigation.navigate('Destination', {
-                    waypoints: m.waypoints,
-                  })
-                }
+                key={rule.id}
+                title={rule.label}
                 icon={
-                  <View
-                    style={[
-                      s.msDot,
-                      {
-                        backgroundColor:
-                          MILESTONE_COLORS[
-                            (reached.length - 1 - i) % MILESTONE_COLORS.length
-                          ],
-                      },
-                    ]}
-                  >
-                    <Icon name='check-bold' size={14} color='#fff' />
-                  </View>
+                  <IconBadge bg={RULE_STYLE[rule.id].bg}>
+                    <Text
+                      style={[s.rulePoints, { color: RULE_STYLE[rule.id].fg }]}
+                    >
+                      {rule.points}
+                      {rule.id === WaypointSource.Streak ? '+' : ''}
+                    </Text>
+                  </IconBadge>
                 }
               />
-            )),
+            ))}
+          </Group>
+        </Animated.ScrollView>
+        {/* Once the list scrolls under the hero, a soft shadow shows where it goes beneath. */}
+        <Animated.View
+          pointerEvents='none'
+          style={[
+            s.heroShadow,
+            {
+              opacity: scrollY.interpolate({
+                inputRange: [0, 12],
+                outputRange: [0, 1],
+                extrapolate: 'clamp',
+              }),
+            },
           ]}
-        </Group>
-
-        <GroupLabel>How waypoints are earned</GroupLabel>
-        <Group>
-          {earnableRules({
-            food: settings.trackFood,
-            mood: settings.trackMood,
-            water: settings.trackWater,
-            movement: settings.trackMovement,
-            weight: settings.trackWeight,
-            medication: settings.medications.length > 0,
-            goal: goalReachable,
-            rest: settings.restDaysPerWeek > 0,
-          }).map((rule) => (
-            <Row
-              key={rule.id}
-              title={rule.label}
-              icon={
-                <IconBadge bg={RULE_STYLE[rule.id].bg}>
-                  <Text
-                    style={[s.rulePoints, { color: RULE_STYLE[rule.id].fg }]}
-                  >
-                    {rule.points}
-                    {rule.id === WaypointSource.Streak ? '+' : ''}
-                  </Text>
-                </IconBadge>
-              }
-            />
-          ))}
-        </Group>
-      </ScrollView>
+        >
+          <LinearGradient
+            colors={[colors.heroShadow, 'transparent']}
+            style={StyleSheet.absoluteFill}
+          />
+        </Animated.View>
+      </View>
     </View>
   );
 }
 
 const s = StyleSheet.create({
+  listArea: { flex: 1 },
+  heroShadow: { position: 'absolute', top: 0, left: 0, right: 0, height: 14 },
   hero: { paddingHorizontal: space.lg, paddingBottom: space.lg },
   heroHeader: { paddingHorizontal: 0, paddingBottom: 0 },
   heroNumber: {

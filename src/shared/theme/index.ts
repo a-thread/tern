@@ -54,6 +54,8 @@ export const colors = {
   onDark: '#FBFAF7',
   /** A chip or label's backing over a dark sky or card. */
   chipOnDark: 'rgba(0,0,0,0.35)',
+  /** The soft shadow under a hero, once the list below scrolls beneath it. */
+  heroShadow: 'rgba(30,24,52,0.28)',
   /** The line flown so far on the Journey route, and the stops passed. */
   route: '#8FD9C4',
   /** The route still to fly, and the outline of stops not reached yet. */

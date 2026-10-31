@@ -8,13 +8,12 @@ import {
   Text,
   View,
 } from 'react-native';
-import Svg, { Circle, G, Path } from 'react-native-svg';
+import Svg, { Circle, G, Image as SvgImage, Path } from 'react-native-svg';
 
 import { colors, radius, typography } from '@shared/theme';
 import { Icon } from '@shared/components/ui';
 import { AnimatedPath } from '@shared/components/FlightPath';
 import { FadeIn } from '@shared/components/FadeIn/FadeIn';
-import { TERN_PATH } from '@shared/components/TernMark';
 import { useReduceMotion } from '@shared/hooks/useReduceMotion';
 import { useSettings } from '@/domain/settings/SettingsContext';
 import { JourneyView } from '@/domain/settings/models/journeyView';
@@ -28,17 +27,38 @@ import {
   routePointCount,
   stopIndex,
 } from './utils/routeAt';
+import { ternPose } from './utils/ternPose';
+import { toFrame, toMap } from './utils/mapZoom';
+import { legZoom } from './utils/legZoom';
+import { useMapZoom } from './hooks/useMapZoom';
 
 /** Timings and sizes for the map's tern, labels and toggle. */
 class MapLayout {
   static readonly FLIGHT_MS = 1800;
   /** The tern's position updates at most this often (about 30 per second). */
   static readonly BIRD_UPDATE_MS = 33;
-  /** The tern mark's 2000-unit drawing, scaled to about 22 points across. */
-  static readonly BIRD_SCALE = 0.011;
+  /**
+   * The tern image's width on the map, in the drawing's units (about points). Its wings run
+   * corner to corner, so the wingspan comes out at about twice this.
+   */
+  static readonly BIRD_W = 20;
   static readonly LABEL_W = 180;
   /** How long a tapped stop's name stays up, from the latest tap. */
   static readonly LABEL_MS = 2500;
+  /** Two taps this close together in time (ms) and space (points) make a double tap. */
+  static readonly DOUBLE_TAP_MS = 300;
+  static readonly DOUBLE_TAP_SLOP = 30;
+}
+
+/** The tern seen from above, cropped from assets/flying-bird-icon.png. */
+class TernIcon {
+  static readonly SOURCE = require('../../../../assets/journey-tern.png');
+  /** Height over width of the image. */
+  static readonly RATIO = 119 / 72;
+  /** Where its body sits in the image, as shares of the width and height: it turns about here. */
+  static readonly ANCHOR = { x: 0.611, y: 0.464 };
+  /** The way it's drawn heading, in degrees clockwise from east: right and a little down. */
+  static readonly HEADING = 15;
 }
 
 const SHAPES = {
@@ -51,6 +71,9 @@ const SHAPES = {
  * the tern flying it from the colony to where it is now. Stops already passed are filled, the
  * next is gold, and a finished migration stays faintly underneath the current one. Tapping
  * names the nearest stop. A toggle switches between a flat map and a globe, and is remembered.
+ * It opens close up on the leg the tern is flying. Double-tap (or the button beside the toggle)
+ * to zoom out to the whole route, and again to come back. Pinch to zoom anywhere in between,
+ * and drag to look around while zoomed.
  */
 export function JourneyMap({
   progress,
@@ -122,6 +145,20 @@ export function JourneyMap({
 
   // The drawing fills the width and keeps its proportions, so one scale maps between them.
   const scale = width ? width / JourneyMapShapes.WIDTH : 1;
+  const frameHeight = width * (shape.height / JourneyMapShapes.WIDTH);
+  // It opens close up on the leg the tern is flying, like the old route strip.
+  const home = legZoom(shape, progress, width, frameHeight);
+  const { zoom, tapPoint, zoomBy, whole, toggleWhole, frameProps, moveStyle } =
+    useMapZoom({
+      width,
+      height: frameHeight,
+      home,
+      resetKey: view,
+      onGestureStart: () => setTapped(null),
+    });
+  // Dots, lines and the tern keep their size as the map zooms, so they're drawn this much smaller.
+  const k = zoom.scale;
+  const lastTap = useRef<{ at: number; x: number; y: number } | null>(null);
   const total = shape.lengths[last];
   const dash = travel.interpolate({
     inputRange: shape.lengths.map((_, i) => i),
@@ -129,33 +166,65 @@ export function JourneyMap({
     extrapolate: 'clamp',
   });
 
-  const bird = pointAt(shape, birdIndex);
+  const bird = ternPose(shape, birdIndex, TernIcon.HEADING);
+  const birdW = MapLayout.BIRD_W / k;
+  const birdH = birdW * TernIcon.RATIO;
+
   const onPress = (e: GestureResponderEvent) => {
-    const stop = nearestStop(
-      shape,
-      e.nativeEvent.locationX / scale,
-      e.nativeEvent.locationY / scale,
-    );
+    const at = tapPoint(e);
+    const now = Date.now();
+    const prev = lastTap.current;
+    lastTap.current = { at: now, ...at };
+    // A second tap close by, soon after, zooms out to the whole route, or back in to the leg.
+    if (
+      prev &&
+      now - prev.at < MapLayout.DOUBLE_TAP_MS &&
+      Math.hypot(at.x - prev.x, at.y - prev.y) < MapLayout.DOUBLE_TAP_SLOP
+    ) {
+      lastTap.current = null;
+      setTapped(null);
+      toggleWhole();
+      return;
+    }
+    const spot = toMap(zoom, at);
+    const stop = nearestStop(shape, spot.x / scale, spot.y / scale);
     setTapped((was) => ({ stop, tap: (was?.tap ?? 0) + 1 }));
   };
 
-  const shown = tapped ? pointAt(shape, stopIndex(tapped.stop)) : null;
+  // Where the tapped stop shows in the frame, zoomed or not; no label for one zoomed out of view.
+  const shown = tapped
+    ? toFrame(zoom, {
+        x: pointAt(shape, stopIndex(tapped.stop)).x * scale,
+        y: pointAt(shape, stopIndex(tapped.stop)).y * scale,
+      })
+    : null;
   const label =
-    tapped && shown
+    tapped &&
+    shown &&
+    shown.x >= 0 &&
+    shown.x <= width &&
+    shown.y >= 0 &&
+    shown.y <= frameHeight
       ? {
           text:
             tapped.stop === next
               ? `Next: ${Milestones.STOPS[tapped.stop].name}`
               : Milestones.STOPS[tapped.stop].name,
           left: Math.min(
-            Math.max(shown.x * scale - MapLayout.LABEL_W / 2, 0),
+            Math.max(shown.x - MapLayout.LABEL_W / 2, 0),
             Math.max(width - MapLayout.LABEL_W, 0),
           ),
           // Below the stop when it's too near the top to fit above.
-          top:
-            shown.y * scale < 30 ? shown.y * scale + 10 : shown.y * scale - 26,
+          top: shown.y < 30 ? shown.y + 10 : shown.y - 26,
         }
       : null;
+
+  // For screen readers, which can't pinch: zoom in and out a step about the middle.
+  const middle = { x: width / 2, y: frameHeight / 2 };
+  const onAccessibilityAction = (name: string) => {
+    if (name === 'zoomIn') zoomBy(1.5, middle);
+    if (name === 'zoomOut') zoomBy(1 / 1.5, middle);
+  };
 
   const toggle = (to: JourneyView) => {
     if (to !== view) updateSettings({ journeyView: to });
@@ -163,104 +232,135 @@ export function JourneyMap({
 
   return (
     <View
+      {...frameProps}
       // Each view keeps its own proportions: the flat map is shorter than the globe.
       style={[s.frame, { aspectRatio: JourneyMapShapes.WIDTH / shape.height }]}
-      onLayout={(e) => setWidth(e.nativeEvent.layout.width)}
+      testID='journey-map'
+      onLayout={(e) => {
+        setWidth(e.nativeEvent.layout.width);
+        frameProps.onLayout();
+      }}
     >
-      <Pressable
-        style={StyleSheet.absoluteFill}
-        onPress={onPress}
-        accessibilityRole='button'
-        accessibilityLabel={
-          next >= 0
-            ? `Map of the migration. Heading to ${Milestones.STOPS[next].name}`
-            : 'Map of the migration'
-        }
-        accessibilityHint='Shows the name of the stop you tap'
-      >
-        <Svg
-          width='100%'
-          height='100%'
-          viewBox={`0 0 ${JourneyMapShapes.WIDTH} ${shape.height}`}
+      <Animated.View style={[StyleSheet.absoluteFill, moveStyle]}>
+        <Pressable
+          style={StyleSheet.absoluteFill}
+          onPress={onPress}
+          accessibilityRole='button'
+          accessibilityLabel={
+            next >= 0
+              ? `Map of the migration. Heading to ${Milestones.STOPS[next].name}`
+              : 'Map of the migration'
+          }
+          accessibilityHint='Shows the name of the stop you tap. Double-tap or pinch to zoom.'
+          accessibilityActions={[
+            { name: 'zoomIn', label: 'Zoom in' },
+            { name: 'zoomOut', label: 'Zoom out' },
+          ]}
+          onAccessibilityAction={(e) =>
+            onAccessibilityAction(e.nativeEvent.actionName)
+          }
         >
-          {shape.sphere ? (
-            <Path
-              d={shape.sphere}
-              fill={colors.mapSea}
-              stroke={colors.mapGrid}
-              strokeWidth={1}
-            />
-          ) : null}
-          <Path
-            d={shape.graticule}
-            fill='none'
-            stroke={colors.mapGrid}
-            strokeWidth={0.6}
-          />
-          <Path d={shape.land} fill={colors.mapLand} />
-
-          {/* A finished migration stays underneath; the first one shows the way ahead dashed. */}
-          {lap > 1 ? (
-            <Path
-              d={path}
-              fill='none'
-              stroke={colors.routePast}
-              strokeWidth={1.6}
-            />
-          ) : (
-            <Path
-              d={path}
-              fill='none'
-              stroke={colors.routeAhead}
-              strokeWidth={1.2}
-              strokeDasharray='3 4'
-            />
-          )}
-          <AnimatedPath
-            d={path}
-            fill='none'
-            stroke={colors.route}
-            strokeWidth={2.2}
-            strokeLinecap='round'
-            strokeLinejoin='round'
-            strokeDasharray={total}
-            strokeDashoffset={dash as unknown as number}
-          />
-
-          {Milestones.STOPS.map((stop, i) => {
-            const p = pointAt(shape, stopIndex(i));
-            const reached = i < next || next < 0;
-            return i === next ? (
-              <Circle key={stop.id} cx={p.x} cy={p.y} r={4} fill={colors.sun} />
-            ) : reached ? (
-              <Circle
-                key={stop.id}
-                cx={p.x}
-                cy={p.y}
-                r={2.6}
-                fill={colors.route}
-              />
-            ) : (
-              <Circle
-                key={stop.id}
-                cx={p.x}
-                cy={p.y}
-                r={2.6}
-                fill='none'
-                stroke={colors.routeAhead}
-                strokeWidth={1.2}
-              />
-            );
-          })}
-
-          {/* The tern faces right in its drawing, so it turns to the way it's flying. */}
-          <G
-            transform={`translate(${bird.x - 1000 * MapLayout.BIRD_SCALE}, ${bird.y - 1000 * MapLayout.BIRD_SCALE}) scale(${MapLayout.BIRD_SCALE}) rotate(${bird.angle} 1000 1000)`}
+          <Svg
+            width='100%'
+            height='100%'
+            viewBox={`0 0 ${JourneyMapShapes.WIDTH} ${shape.height}`}
           >
-            <Path d={TERN_PATH} fill={colors.onDark} />
-          </G>
-        </Svg>
-      </Pressable>
+            {/* The zoom and turn, drawn as part of the map so it stays sharp close up. */}
+            <G
+              transform={`translate(${zoom.x / scale}, ${zoom.y / scale}) rotate(${zoom.rotate}) scale(${zoom.scale})`}
+            >
+              {shape.sphere ? (
+                <Path
+                  d={shape.sphere}
+                  fill={colors.mapSea}
+                  stroke={colors.mapGrid}
+                  strokeWidth={1 / k}
+                />
+              ) : null}
+              <Path
+                d={shape.graticule}
+                fill='none'
+                stroke={colors.mapGrid}
+                strokeWidth={0.6 / k}
+              />
+              <Path d={shape.land} fill={colors.mapLand} />
+
+              {/* A finished migration stays underneath; the first one shows the way ahead dashed. */}
+              {lap > 1 ? (
+                <Path
+                  d={path}
+                  fill='none'
+                  stroke={colors.routePast}
+                  strokeWidth={1.6 / k}
+                />
+              ) : (
+                <Path
+                  d={path}
+                  fill='none'
+                  stroke={colors.routeAhead}
+                  strokeWidth={1.2 / k}
+                  strokeDasharray={`${3 / k} ${4 / k}`}
+                />
+              )}
+              <AnimatedPath
+                d={path}
+                fill='none'
+                stroke={colors.route}
+                strokeWidth={2.2 / k}
+                strokeLinecap='round'
+                strokeLinejoin='round'
+                strokeDasharray={total}
+                strokeDashoffset={dash as unknown as number}
+              />
+
+              {Milestones.STOPS.map((stop, i) => {
+                const p = pointAt(shape, stopIndex(i));
+                const reached = i < next || next < 0;
+                return i === next ? (
+                  <Circle
+                    key={stop.id}
+                    cx={p.x}
+                    cy={p.y}
+                    r={4 / k}
+                    fill={colors.sun}
+                  />
+                ) : reached ? (
+                  <Circle
+                    key={stop.id}
+                    cx={p.x}
+                    cy={p.y}
+                    r={2.6 / k}
+                    fill={colors.route}
+                  />
+                ) : (
+                  <Circle
+                    key={stop.id}
+                    cx={p.x}
+                    cy={p.y}
+                    r={2.6 / k}
+                    fill='none'
+                    stroke={colors.routeAhead}
+                    strokeWidth={1.2 / k}
+                  />
+                );
+              })}
+
+              {/* Seen from above, so it can turn about its body to face any way it flies. */}
+              <G
+                transform={`translate(${bird.x}, ${bird.y}) rotate(${bird.rotate})`}
+              >
+                <SvgImage
+                  href={TernIcon.SOURCE}
+                  x={-TernIcon.ANCHOR.x * birdW}
+                  y={-TernIcon.ANCHOR.y * birdH}
+                  width={birdW}
+                  height={birdH}
+                />
+              </G>
+            </G>
+          </Svg>
+        </Pressable>
+      </Animated.View>
 
       {label && tapped ? (
         <View
@@ -275,38 +375,57 @@ export function JourneyMap({
         </View>
       ) : null}
 
-      <View style={s.toggle}>
-        {[
-          {
-            to: JourneyView.Map,
-            icon: 'map-outline' as const,
-            name: 'Flat map',
-          },
-          { to: JourneyView.Globe, icon: 'earth' as const, name: 'Globe' },
-        ].map(({ to, icon, name }) => (
-          <Pressable
-            key={to}
-            onPress={() => toggle(to)}
-            hitSlop={6}
-            style={[s.toggleButton, view === to && s.toggleOn]}
-            accessibilityRole='button'
-            accessibilityLabel={name}
-            accessibilityState={{ selected: view === to }}
-          >
-            <Icon
-              name={icon}
-              size={15}
-              color={view === to ? colors.onDark : colors.routeAhead}
-            />
-          </Pressable>
-        ))}
+      <View style={s.controls}>
+        {/* The same as a double tap: out to the whole route, or back in to the leg. */}
+        <Pressable
+          onPress={toggleWhole}
+          hitSlop={6}
+          style={[s.pill, s.pillButton]}
+          accessibilityRole='button'
+          accessibilityLabel={
+            whole ? 'Zoom to the tern' : 'Show the whole route'
+          }
+        >
+          <Icon
+            name={whole ? 'crosshairs-gps' : 'arrow-expand'}
+            size={14}
+            color={colors.onDark}
+          />
+        </Pressable>
+        <View style={[s.pill, s.toggle]}>
+          {[
+            {
+              to: JourneyView.Map,
+              icon: 'map-outline' as const,
+              name: 'Flat map',
+            },
+            { to: JourneyView.Globe, icon: 'earth' as const, name: 'Globe' },
+          ].map(({ to, icon, name }) => (
+            <Pressable
+              key={to}
+              onPress={() => toggle(to)}
+              hitSlop={6}
+              style={[s.toggleButton, view === to && s.toggleOn]}
+              accessibilityRole='button'
+              accessibilityLabel={name}
+              accessibilityState={{ selected: view === to }}
+            >
+              <Icon
+                name={icon}
+                size={15}
+                color={view === to ? colors.onDark : colors.routeAhead}
+              />
+            </Pressable>
+          ))}
+        </View>
       </View>
     </View>
   );
 }
 
 const s = StyleSheet.create({
-  frame: { width: '100%' },
+  // Zoomed in, the map stays inside its frame.
+  frame: { width: '100%', overflow: 'hidden' },
   label: {
     position: 'absolute',
     width: MapLayout.LABEL_W,
@@ -321,15 +440,24 @@ const s = StyleSheet.create({
     paddingHorizontal: 9,
     paddingVertical: 3,
   },
-  toggle: {
+  controls: {
     position: 'absolute',
     top: 0,
     right: 0,
     flexDirection: 'row',
+    gap: 6,
+  },
+  pill: {
     backgroundColor: colors.chipOnDark,
     borderRadius: radius.pill,
-    padding: 2,
   },
+  pillButton: {
+    width: 28,
+    height: 28,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  toggle: { flexDirection: 'row', padding: 2 },
   toggleButton: {
     width: 28,
     height: 24,
