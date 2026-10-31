@@ -55,6 +55,8 @@ export type RootStackParamList = {
   Settings: NavigatorScreenParams<SettingsStackParamList> | undefined;
   /** The waypoints card, from the chip on Today. */
   Waypoints: { streak: number };
+  /** What the total and day count on Journey mean, from tapping them. */
+  WaypointsInfo: undefined;
   /** Passing a stop: `waypoints` is the stop's running total. */
   Milestone: { waypoints: number };
   /** A stop already passed, from its row on Journey: `waypoints` is the stop's running total. */

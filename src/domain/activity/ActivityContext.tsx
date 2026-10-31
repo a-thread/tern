@@ -16,6 +16,7 @@ import { addDays } from '@shared/utils/date';
 import { useSettings } from '../settings/SettingsContext';
 import { useAward } from '../waypoints/hooks/useAward';
 import {
+  addsToStreak,
   buildDays,
   restDaysLeft,
   weekOf,
@@ -28,7 +29,6 @@ import { StepsStatus } from './models/stepsStatus';
 import type { RestDaysRepository } from './restDays.repository';
 import { sameDays, sameSteps } from './utils/sameData';
 import { streakBonus, WaypointSource } from '../waypoints/models/waypoint';
-import { DayState } from '@shared/models/dayState';
 import { useMovement } from '../movement/MovementContext';
 
 /** How much history is read: enough for the 6-month views. */
@@ -60,13 +60,8 @@ type ActivityContextValue = {
   freezes: number;
   /** Rest days left in this week's allowance. */
   restLeft: number;
-  /** Whether the user chose today as a rest day. */
+  /** Whether the user chose today as a rest day: a day off from Tern, even if the goal is reached. */
   todayIsRest: boolean;
-  /**
-   * Whether today is standing as a rest day: chosen, and the goal not reached after all (which
-   * turns it into a goal day and gives the rest day back).
-   */
-  todayRestCounts: boolean;
   /** Re-reads steps. Resolves to the step status afterwards, or 'failed' if it could not be read. */
   refresh: () => Promise<StepsStatus | 'failed'>;
   /** Ask for access to the step source (Health Connect). Resolves to the status afterwards. */
@@ -214,18 +209,16 @@ export function ActivityProvider({
     judging && movement.ready && (stepsReadable || movementGoal > 0),
   );
 
-  // A day is either a goal day or a rest day, never both: a rest day taken
-  // early earns its waypoints only if the goal isn't reached after all. So
-  // taking one "just in case" is never better than waiting to see.
-  const restCounts =
-    todayIsRest && !((stepsReadable && goalReachedToday) || movedToGoalToday);
-  useAward(WaypointSource.Rest, restCounts, judging);
+  // A rest day is a day off from Tern, and it stays one: reaching the goal anyway doesn't take
+  // it back. It earns the rest day's waypoints, and the goal's on top if it's reached.
+  useAward(WaypointSource.Rest, todayIsRest, judging);
 
   // A streak milestone pays a one-time bonus on the day the streak gets there, so it needs
   // today's goal reached (a streak of 7 that ended yesterday was paid yesterday). If today's
   // goal moves out of reach the streak drops a day, and the bonus is taken back at the amount
   // it was given: the milestone the streak would have reached with today.
-  const reachedToday = days[days.length - 1]?.state === DayState.Goal;
+  const lastDay = days[days.length - 1];
+  const reachedToday = lastDay ? addsToStreak(lastDay) : false;
   const bonus = streakBonus(streak);
   useAward(
     WaypointSource.Streak,
@@ -269,7 +262,6 @@ export function ActivityProvider({
       freezes,
       restLeft,
       todayIsRest,
-      todayRestCounts: restCounts,
       refresh,
       connect,
       takeRestDay,
@@ -287,7 +279,6 @@ export function ActivityProvider({
       freezes,
       restLeft,
       todayIsRest,
-      restCounts,
       refresh,
       connect,
       takeRestDay,

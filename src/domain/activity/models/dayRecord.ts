@@ -10,6 +10,8 @@ export type DayRecord = {
   minutes: number;
   /** A goal day reached by movement rather than steps. */
   movedToGoal: boolean;
+  /** The step or movement goal was reached, even on a rest day (which still reads as rest). */
+  reachedGoal: boolean;
   state: DayState;
   /** The user chose this as a rest day (as opposed to it being detected). */
   chosenRest: boolean;
@@ -37,11 +39,13 @@ export type BuildDaysInput = {
 
 /**
  * Turns raw step counts into a day-by-day record, oldest to newest, ending
- * today. Reaching the step goal, or moving for `movementGoal` minutes, always
- * reads as 'goal' (once, either way). Otherwise a chosen rest
- * day (or, with auto-detect on, any past day under the goal) reads as 'rest' —
- * within the weekly allowance, chosen days first — and anything else is
- * 'partial' (some steps) or 'none'. Weeks run Monday to Sunday.
+ * today. A chosen rest day reads as 'rest' however far someone walks: it's a
+ * day off from Tern, and hitting the goal anyway doesn't take it back (it's
+ * marked `reachedGoal`, which the streak counts). Otherwise reaching the step
+ * goal, or moving for `movementGoal` minutes, reads as 'goal' (once, either
+ * way); with auto-detect on, a past day under the goal reads as 'rest' within
+ * the weekly allowance, chosen days first; and anything else is 'partial'
+ * (some steps) or 'none'. Weeks run Monday to Sunday.
  *
  * Auto-detect treats every day under the goal alike, so walking part of the
  * way is never worse for the streak than not walking at all, and a day with no
@@ -69,7 +73,9 @@ export function buildDays(input: BuildDaysInput): DayRecord[] {
   );
 
   // Chosen rest days use the allowance first, so a detected day earlier in the
-  // week never crowds one the user picked.
+  // week never crowds one the user picked. One on which the goal was reached
+  // anyway doesn't use it: the day was walked, so the week keeps its rest days
+  // (and history reads the same as before rest days stopped giving way).
   const chosenPerWeek = new Map<string, number>();
   for (const k of keys) {
     if (restDays.has(k) && !reached(k)) {
@@ -86,10 +92,10 @@ export function buildDays(input: BuildDaysInput): DayRecord[] {
     const chosenRest = restDays.has(k);
     const w = weekStartKey(k);
     let state: DayState;
-    if (reached(k)) {
-      state = DayState.Goal;
-    } else if (chosenRest) {
+    if (chosenRest) {
       state = DayState.Rest;
+    } else if (reached(k)) {
+      state = DayState.Goal;
     } else if (
       autoDetect &&
       k < today &&
@@ -108,6 +114,7 @@ export function buildDays(input: BuildDaysInput): DayRecord[] {
       goal,
       minutes: minutesByDay[k] ?? 0,
       movedToGoal: steps < goal && moved(k),
+      reachedGoal: reached(k),
       state,
       chosenRest,
       isToday: k === today,
@@ -116,16 +123,21 @@ export function buildDays(input: BuildDaysInput): DayRecord[] {
   });
 }
 
+/** Whether a day adds to the streak: a goal day, or a rest day on which the goal was reached anyway. */
+export const addsToStreak = (d: Pick<DayRecord, 'state' | 'reachedGoal'>) =>
+  d.state === DayState.Goal || (d.state === DayState.Rest && d.reachedGoal);
+
 /**
  * The current streak: days that reached the goal, counted back from today.
- * Rest days and frozen days hold the streak without adding to it, and today
- * doesn't break it while it's still in progress.
+ * Rest days and frozen days hold the streak without adding to it (unless the
+ * goal was reached on the rest day anyway), and today doesn't break it while
+ * it's still in progress.
  */
 export function computeStreak(days: DayRecord[]): number {
   let streak = 0;
   for (let i = days.length - 1; i >= 0; i--) {
     const d = days[i];
-    if (d.state === DayState.Goal) streak += 1;
+    if (addsToStreak(d)) streak += 1;
     else if (d.state === DayState.Rest || d.state === DayState.Frozen) continue;
     else if (d.isToday)
       continue; // still in progress
@@ -169,7 +181,7 @@ export function withFreezes(days: DayRecord[]): StreakSummary {
   let streak = 0;
   let freezes = 0;
   const out = days.map((d) => {
-    if (d.state === DayState.Goal) {
+    if (addsToStreak(d)) {
       streak += 1;
       if (streak % StreakFreezes.EVERY === 0) {
         freezes = Math.min(freezes + 1, StreakFreezes.MAX);
@@ -203,6 +215,7 @@ export function weekOf(days: DayRecord[], today: string): DayRecord[] {
         goal: 0,
         minutes: 0,
         movedToGoal: false,
+        reachedGoal: false,
         state: DayState.None as DayState,
         chosenRest: false,
         isToday: false,
@@ -212,14 +225,17 @@ export function weekOf(days: DayRecord[], today: string): DayRecord[] {
   });
 }
 
-/** Rest days still available this week (chosen and detected both count). */
+/**
+ * Rest days still available this week (chosen and detected both count). A rest
+ * day on which the goal was reached anyway doesn't use one, as in `buildDays`.
+ */
 export function restDaysLeft(
   days: DayRecord[],
   today: string,
   restPerWeek: number,
 ): number {
   const used = weekOf(days, today).filter(
-    (d) => d.state === DayState.Rest,
+    (d) => d.state === DayState.Rest && !d.reachedGoal,
   ).length;
   return Math.max(restPerWeek - used, 0);
 }

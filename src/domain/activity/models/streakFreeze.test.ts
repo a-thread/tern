@@ -18,6 +18,7 @@ const record = (states: DayState[]): DayRecord[] =>
     goal: 8000,
     minutes: 0,
     movedToGoal: false,
+    reachedGoal: state === DayState.Goal,
     state,
     chosenRest: state === DayState.Rest,
     isToday: i === states.length - 1,

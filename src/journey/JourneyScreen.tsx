@@ -1,5 +1,5 @@
 import React, { useMemo, useRef } from 'react';
-import { Animated, View, Text, StyleSheet } from 'react-native';
+import { Animated, Pressable, View, Text, StyleSheet } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -60,6 +60,7 @@ export default function JourneyScreen() {
   const { waypoints, events, reload } = useWaypoints();
   const refreshControl = usePullToRefresh([reload]);
   const scrollY = useRef(new Animated.Value(0)).current;
+  const days = daysWithWaypoints(events);
   const { settings } = useSettings();
   const { goalReachable } = useActivity();
 
@@ -109,17 +110,24 @@ export default function JourneyScreen() {
           />
         </View>
 
-        <View style={{ alignItems: 'center', marginTop: 6 }}>
+        {/* Tapping the total explains it: what a waypoint is, and what counts as a day. */}
+        <Pressable
+          style={s.heroTotal}
+          onPress={() => navigation.navigate('WaypointsInfo')}
+          hitSlop={8}
+          accessibilityRole='button'
+          accessibilityLabel={`${waypoints.toLocaleString()} waypoints, earned on ${days} ${days === 1 ? 'day' : 'days'}`}
+          accessibilityHint='Explains waypoints and how days are counted'
+        >
           <AnimatedNumber
             value={waypoints}
             duration={900}
             style={s.heroNumber}
           />
           <Text style={s.heroLabel}>
-            waypoints · {daysWithWaypoints(events)}{' '}
-            {daysWithWaypoints(events) === 1 ? 'day' : 'days'} earned
+            {`waypoints · earned on ${days} ${days === 1 ? 'day' : 'days'}`}
           </Text>
-        </View>
+        </Pressable>
       </LinearGradient>
 
       <View style={s.listArea}>
@@ -266,6 +274,7 @@ export default function JourneyScreen() {
 
 const s = StyleSheet.create({
   listArea: { flex: 1 },
+  heroTotal: { alignItems: 'center', marginTop: 6 },
   heroShadow: { position: 'absolute', top: 0, left: 0, right: 0, height: 14 },
   hero: { paddingHorizontal: space.lg, paddingBottom: space.lg },
   heroHeader: { paddingHorizontal: 0, paddingBottom: 0 },
@@ -276,9 +285,8 @@ const s = StyleSheet.create({
     lineHeight: 38,
   },
   heroLabel: {
-    fontFamily: font.body,
-    fontSize: 11,
-    color: '#BDB4D6',
+    ...typography.meta,
+    color: colors.onDarkSoft,
     marginTop: 3,
   },
   nextTop: {

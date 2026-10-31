@@ -14,7 +14,9 @@ export function bucketSteps(days: DayRecord[], range: TrendRange): StepBar[] {
     return days.slice(-TrendRanges.DAYS[range]).map((d) => ({
       label: range === TrendRange.Week ? weekdayLetter(d.day) : '',
       value: d.steps,
-      state: d.state,
+      // The steps chart is about steps: a rest day that reached the goal anyway is drawn as one,
+      // matching the goal days counted beside it.
+      state: d.reachedGoal ? DayState.Goal : d.state,
     }));
   }
 

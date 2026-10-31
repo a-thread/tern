@@ -62,9 +62,11 @@ describe('buildDays with movement', () => {
     expect(days.find((d) => d.day === on(-1))!.state).toBe(DayState.Partial);
   });
 
-  it('turns a rest day reached by movement into a goal day, giving the rest day back', () => {
+  it('keeps a rest day reached by movement a rest day, marked as reaching the goal', () => {
     const days = build({ minutes: { [on(-1)]: 40 }, rest: [on(-1)] });
-    expect(days.find((d) => d.day === on(-1))!.state).toBe(DayState.Goal);
+    const day = days.find((d) => d.day === on(-1))!;
+    expect(day.state).toBe(DayState.Rest);
+    expect(day.reachedGoal).toBe(true);
   });
 
   it('keeps the streak going through a goal day reached by movement', () => {

@@ -10,6 +10,7 @@ import WaypointsScreen from './waypoints/WaypointsScreen';
 import MilestoneScreen from './milestone/MilestoneScreen';
 import DestinationScreen from './destination/DestinationScreen';
 import StreakScreen from '../today/streak/StreakScreen';
+import WaypointsInfoScreen from './waypoints-info/WaypointsInfoScreen';
 
 // The waypoints card asks whether a goal day can be reached today and what was skipped; the
 // streak card, the streak and freezes held.
@@ -95,6 +96,19 @@ describe('destination card', () => {
     ).toBeTruthy();
     expect(ui.getByText(/nine volcanic islands/)).toBeTruthy();
     // It opens from Journey, so there's no link back to it.
+    expect(ui.queryByText('See your journey ›')).toBeNull();
+  });
+});
+
+describe('waypoints info card', () => {
+  it('explains waypoints and how days are counted', async () => {
+    const ui = open(<WaypointsInfoScreen />);
+    await waitFor(() => expect(ui.getByText('1,240')).toBeTruthy());
+    expect(ui.getByText('Your waypoints')).toBeTruthy();
+    expect(ui.getByText(/^earned on \d+ days?$/)).toBeTruthy();
+    expect(
+      ui.getByText(/A day counts once you earn at least one waypoint/),
+    ).toBeTruthy();
     expect(ui.queryByText('See your journey ›')).toBeNull();
   });
 });

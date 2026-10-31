@@ -1,10 +1,7 @@
 import { showsRestLink } from './restLink';
-import { DayState } from '@shared/models/dayState';
 
 const open = {
-  todaySteps: 1200,
-  stepGoal: 8000,
-  todayState: DayState.Partial,
+  todayReached: false,
   todayIsRest: false,
   restLeft: 2,
 };
@@ -21,8 +18,13 @@ describe('showsRestLink', () => {
     );
   });
 
-  it('offers nothing once the goal is reached', () => {
-    expect(showsRestLink({ ...open, todaySteps: 8000 })).toBe(false);
-    expect(showsRestLink({ ...open, todayState: DayState.Goal })).toBe(false);
+  it('offers no new rest day once the goal is reached', () => {
+    expect(showsRestLink({ ...open, todayReached: true })).toBe(false);
+  });
+
+  it('still offers to undo a rest day on which the goal was reached', () => {
+    expect(
+      showsRestLink({ ...open, todayReached: true, todayIsRest: true }),
+    ).toBe(true);
   });
 });
