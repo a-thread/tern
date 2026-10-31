@@ -8,7 +8,6 @@ import { useMovement } from '../../domain/movement/MovementContext';
 import { StreakFreezes } from '../../domain/activity/models/dayRecord';
 import { streakRules } from './models/streakRules';
 
-
 /**
  * What the ☀ streak and ❄ freeze chips on Today mean, from either chip: how many of each are
  * held now, how a streak grows, and how freezes are earned, held and spent.
@@ -27,7 +26,7 @@ export default function StreakScreen() {
           : 'Not started yet'}
       </Text>
       <Text style={popup.label}>
-        {`❄ ${freezes} of ${StreakFreezes.MAX} freezes held`}
+        {`❄ ${freezes} of ${StreakFreezes.MAX} freezes`}
       </Text>
 
       <View style={popup.section}>
@@ -40,7 +39,7 @@ export default function StreakScreen() {
       </View>
 
       <View style={popup.section}>
-        <Text style={popup.sectionTitle}>❄ Streak freezes</Text>
+        <Text style={popup.sectionTitle}>❄ Freezes</Text>
         {rules.freezes.map((line) => (
           <Text key={line} style={[popup.lineText, s.line]}>
             {line}

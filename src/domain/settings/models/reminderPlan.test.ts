@@ -181,7 +181,7 @@ describe('time helpers', () => {
       weighIn: 'Sundays, 8:00 am',
       water: 'Every 2 hours, 9:00 am to 7:00 pm',
       streak:
-        'An evening heads-up while today’s goal is still open, and a morning note if a freeze covers a day',
+        'An evening nudge if today’s goal isn’t met yet, and a morning note when a freeze was used',
       mood: 'Every day, 8:00 pm',
     });
   });

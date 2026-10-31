@@ -9,7 +9,7 @@ describe('streakRules', () => {
 
   it('says how freezes are earned and how many can be held, from the rules themselves', () => {
     const { freezes } = streakRules({ movement: false });
-    expect(freezes[0]).toContain(`every ${StreakFreezes.EVERY} goal days`);
+    expect(freezes[0]).toContain(`every ${StreakFreezes.EVERY} days in a row`);
     expect(freezes[1]).toContain(`up to ${StreakFreezes.MAX}`);
   });
 });
