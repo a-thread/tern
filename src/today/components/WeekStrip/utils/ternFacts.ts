@@ -182,7 +182,7 @@ export const TERN_FACTS: readonly string[] = [
   'The RSPB says the Arctic tern’s long tail streamers and streamlined shape earn it the local name “sea swallow.”',
   'The Arctic tern is covered by international agreements for protecting birds that migrate between countries.',
   'Like many seabirds, Arctic terns are long-lived for their size.',
-  'Those trackers were geolocators, loggers so small they weighed about a gram and a half, lighter than a sugar cube.',
+  'The trackers used to follow Arctic terns weigh about a gram and a half, lighter than a sugar cube.',
   'Arctic terns found far inland in fall in North America are mostly young birds.',
   'Some Arctic terns nest far inland, on islets and banks along rivers and lakes in the tundra.',
   'A tern tagged in Iceland followed much the same route as the terns tagged in Greenland, even though it set off earlier.',

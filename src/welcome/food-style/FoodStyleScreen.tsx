@@ -21,7 +21,7 @@ export default function FoodStyleScreen() {
     <WizardStep
       step={Step.FoodStyle}
       title='Food logging options'
-      body='Turn on calories, macros, or both to set the corresponding daily targets, and choose whether to check in after meals. Targets and counts are for display only and never affect points.'
+      body='Pick what to track. Targets are for reference and never affect your waypoints.'
     >
       <Group style={s.group}>
         <ToggleRow

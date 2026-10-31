@@ -101,10 +101,8 @@ export default function StepGoalScreen() {
         ) : null}
 
         <Text style={s.footNote}>
-          Changing your goal never touches past days: your streak and the
-          waypoints you've earned stay yours. Today counts toward whichever goal
-          you finish the day with. A goal you can hit most days works better
-          than one you can't.
+          Changing your goal never changes past days. Pick one you can hit most
+          days.
         </Text>
       </ScrollView>
     </View>

@@ -103,8 +103,8 @@ describe('streak card', () => {
   it('shows what is held now and how freezes are earned and capped', async () => {
     const ui = open(<StreakScreen />);
     expect(ui.getByText('☀ 12 days')).toBeTruthy();
-    expect(ui.getByText('❄ 1 of 2 freezes held')).toBeTruthy();
-    expect(ui.getByText(/every 7 goal days in a row/)).toBeTruthy();
+    expect(ui.getByText('❄ 1 of 2 freezes')).toBeTruthy();
+    expect(ui.getByText(/every 7 days in a row/)).toBeTruthy();
     // Explaining streaks isn't about the journey, so there's no link to it.
     expect(ui.queryByText('See your journey ›')).toBeNull();
   });

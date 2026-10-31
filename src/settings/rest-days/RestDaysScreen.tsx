@@ -116,22 +116,19 @@ export default function RestDaysScreen() {
           />
           <InfoRow
             text={`Earn one every ${StreakFreezes.EVERY} days`}
-            sub={`Each time your streak reaches a multiple of ${StreakFreezes.EVERY} days. You can hold up to ${StreakFreezes.MAX}`}
+            sub={`For every ${StreakFreezes.EVERY} days in a row you hit your goal. Hold up to ${StreakFreezes.MAX}.`}
           />
           <InfoRow
             text='Used for you'
-            sub='When a day would break your streak and no rest day holds it, a freeze covers it. It shows in blue and holds the streak without adding a day'
+            sub='Miss a day and one covers it, so your streak carries on. Covered days show in blue.'
           />
         </Group>
 
         <GroupLabel>When rest days run out</GroupLabel>
         <View style={s.card}>
           <Text style={s.intro}>
-            Running out of rest days won't erase your waypoints or your history
-            — a streak just starts counting again, unless a freeze covers the
-            day. Once a day is over, what it earned is yours for good. (Today's
-            waypoints follow today: remove something you logged and that award
-            steps back until it's there again.)
+            Running out of rest days never erases your waypoints or history.
+            Your streak just starts over, unless a freeze covers the day.
           </Text>
         </View>
       </ScrollView>

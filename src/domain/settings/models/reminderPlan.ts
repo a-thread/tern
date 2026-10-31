@@ -343,7 +343,7 @@ export function describeReminders(
         : `${weekdayPlural(c.weighIn.weekday)}, ${formatMinutes(c.weighIn.at)}`,
     mood: `Every day, ${formatMinutes(c.mood.at)}`,
     streak:
-      'An evening heads-up while today’s goal is still open, and a morning note if a freeze covers a day',
+      'An evening nudge if today’s goal isn’t met yet, and a morning note when a freeze was used',
     water: `Every ${c.water.everyHours === 1 ? 'hour' : `${c.water.everyHours} hours`}, ${formatMinutes(c.water.start)} to ${formatMinutes(c.water.end)}`,
   };
 }
