@@ -7,6 +7,10 @@ import { useRootNavigation } from '@/navigation/useAppNavigation';
 
 /** The card's width; the confetti and route are laid out against it. */
 export const CARD_WIDTH = 280;
+/** The card's padding on each side. */
+const CARD_PADDING = 20;
+/** The width inside the padding, for anything that should run from edge to edge (a photo). */
+export const CARD_INNER_WIDTH = CARD_WIDTH - CARD_PADDING * 2;
 
 /**
  * The dark card the waypoint popups sit on: the screen dims, the card springs in, and a tap
@@ -92,7 +96,7 @@ const s = StyleSheet.create({
   card: {
     width: CARD_WIDTH,
     borderRadius: 20,
-    paddingHorizontal: 20,
+    paddingHorizontal: CARD_PADDING,
     paddingTop: 22,
     paddingBottom: 18,
     alignItems: 'center',

@@ -1,11 +1,18 @@
 import React from 'react';
-import { fireEvent, render, screen } from '@testing-library/react-native';
+import {
+  act,
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+} from '@testing-library/react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import { createMemoryBackend } from '../BackendContext';
 import { ToastProvider } from '@shared/state/ToastContext';
 import { SettingsProvider } from '../domain/settings/SettingsContext';
 import { WaypointsProvider } from '../domain/waypoints/WaypointsContext';
+import { JourneyView } from '../domain/settings/models/journeyView';
 import JourneyScreen from './JourneyScreen';
 
 const mockNavigate = jest.fn();
@@ -40,6 +47,7 @@ function open() {
       </ToastProvider>
     </SafeAreaProvider>,
   );
+  return backend;
 }
 
 // The sample total (1,240) has passed Iceland, the stopover and the Azores, and is headed to Cape Verde.
@@ -69,5 +77,33 @@ describe('Journey stops', () => {
     expect(mockNavigate).toHaveBeenCalledWith('Destination', {
       waypoints: 250,
     });
+  });
+});
+
+describe('Journey map', () => {
+  it('starts on the flat map, heading to the next stop', async () => {
+    open();
+    expect(
+      await screen.findByLabelText(
+        'Map of the migration. Heading to Cape Verde',
+      ),
+    ).toBeTruthy();
+    expect(
+      screen.getByLabelText('Flat map').props.accessibilityState,
+    ).toMatchObject({ selected: true });
+  });
+
+  it('switches to the globe and remembers it', async () => {
+    const backend = open();
+    await screen.findByLabelText('Globe');
+    await act(async () => fireEvent.press(screen.getByLabelText('Globe')));
+    expect(
+      screen.getByLabelText('Globe').props.accessibilityState,
+    ).toMatchObject({ selected: true });
+    await waitFor(async () =>
+      expect((await backend.settings.load())?.journeyView).toBe(
+        JourneyView.Globe,
+      ),
+    );
   });
 });

@@ -6,7 +6,7 @@ export class StepGoal {
   /** The first entry's `from`, meaning "since the beginning". */
   static readonly SINCE_ALWAYS = '0000-00-00';
 
-  static readonly MIN = 2000;
+  static readonly MIN = 400;
 
   static readonly MAX = 15000;
 }

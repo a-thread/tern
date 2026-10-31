@@ -23,6 +23,7 @@ import { Frequency } from '@shared/models/frequency';
 import { sanitizeCalorieZone } from './models/calorieZone';
 import { clampMovementGoal } from './models/movementGoal';
 import { Aim } from './models/aim';
+import { JourneyView } from './models/journeyView';
 import { loadOnboarding, Onboarding } from './models/onboarding';
 
 type SettingsContextValue = {
@@ -104,6 +105,11 @@ export function SettingsProvider({
           aim: Object.values(Aim).includes(saved?.aim as Aim)
             ? (saved!.aim as Aim)
             : Aim.Maintain,
+          journeyView: Object.values(JourneyView).includes(
+            saved?.journeyView as JourneyView,
+          )
+            ? (saved!.journeyView as JourneyView)
+            : defaults.journeyView,
           lastSuggestionWeek:
             typeof saved?.lastSuggestionWeek === 'string'
               ? saved.lastSuggestionWeek

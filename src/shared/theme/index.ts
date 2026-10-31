@@ -56,6 +56,16 @@ export const colors = {
   chipOnDark: 'rgba(0,0,0,0.35)',
   /** The line flown so far on the Journey route, and the stops passed. */
   route: '#8FD9C4',
+  /** The route still to fly, and the outline of stops not reached yet. */
+  routeAhead: 'rgba(255,255,255,0.45)',
+  /** A migration already finished, drawn faintly under the current one. */
+  routePast: 'rgba(143,217,196,0.28)',
+  /** Land on the Journey map. */
+  mapLand: 'rgba(255,255,255,0.14)',
+  /** The sea on the Journey globe, a step lighter than the hero behind it. */
+  mapSea: 'rgba(255,255,255,0.05)',
+  /** Lines of latitude and longitude on the Journey map. */
+  mapGrid: 'rgba(255,255,255,0.06)',
 
   // whole foods
   kelp: '#5C6B4E',

@@ -9,7 +9,11 @@ import {
 } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 
-import { PopupCard, popup } from '@shared/components/PopupCard/PopupCard';
+import {
+  CARD_INNER_WIDTH,
+  PopupCard,
+  popup,
+} from '@shared/components/PopupCard/PopupCard';
 import { formatShortDate } from '@shared/utils/date';
 import { gradients, radius, space, typography } from '@shared/theme';
 import { useToast } from '@shared/state/ToastContext';
@@ -54,7 +58,8 @@ export default function DestinationScreen({ navigation, route }: Props) {
     });
 
   return (
-    <PopupCard colors={gradients.journey}>
+    // Opened from Journey itself, so no link back to it.
+    <PopupCard colors={gradients.journey} journeyLink={false}>
       {photo ? (
         <View style={s.photoWrap}>
           <Image
@@ -103,11 +108,17 @@ export default function DestinationScreen({ navigation, route }: Props) {
 }
 
 const s = StyleSheet.create({
-  photoWrap: { alignSelf: 'stretch', marginBottom: space.xs },
-  // Fills the card's width, whatever its padding.
+  // Starts below the card's ✕, so the close button never sits on the photo.
+  photoWrap: {
+    alignSelf: 'stretch',
+    marginTop: space.lg,
+    marginBottom: space.xs,
+  },
+  // A fixed size, edge to edge inside the card. A percentage width lets Android fall back to
+  // the picture's own pixel size, which drew it far bigger than the card.
   photo: {
-    width: '100%',
-    aspectRatio: 1 / PHOTO_RATIO,
+    width: CARD_INNER_WIDTH,
+    height: CARD_INNER_WIDTH * PHOTO_RATIO,
     borderRadius: radius.md,
   },
   credit: {

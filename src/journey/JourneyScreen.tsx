@@ -14,7 +14,7 @@ import {
   Icon,
 } from '@shared/components/ui';
 import { useRootNavigation } from '../navigation/useAppNavigation';
-import { JourneyRoute } from './components/JourneyRoute/JourneyRoute';
+import { JourneyMap } from './components/JourneyMap/JourneyMap';
 import { useReplayOnFocus } from '@shared/hooks/useReplayOnFocus';
 import { usePullToRefresh } from '@shared/hooks/usePullToRefresh';
 import { AnimatedNumber } from '@shared/components/AnimatedNumber/AnimatedNumber';
@@ -101,7 +101,11 @@ export default function JourneyScreen() {
         />
 
         <View style={{ marginTop: space.sm }}>
-          <JourneyRoute progress={migration.progress} replayKey={replayKey} />
+          <JourneyMap
+            progress={migration.progress}
+            lap={migration.lap}
+            replayKey={replayKey}
+          />
         </View>
 
         <View style={{ alignItems: 'center', marginTop: 6 }}>

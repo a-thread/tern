@@ -2,14 +2,8 @@ import React from 'react';
 import { Pressable, StyleSheet, Text } from 'react-native';
 
 import { colors, font, space } from '@shared/theme';
-import {
-  Group,
-  GroupLabel,
-  Icon,
-  IconBadge,
-  Row,
-  SegmentedControl,
-} from '@shared/components/ui';
+import { Group, GroupLabel, Icon, IconBadge, Row } from '@shared/components/ui';
+import { StepGoalSlider } from '@shared/components/StepGoalSlider/StepGoalSlider';
 import { healthAppName } from '@shared/utils/healthApp';
 import { useConnectHealth } from '@shared/hooks/useConnectHealth';
 import { useSettings } from '@/domain/settings/SettingsContext';
@@ -17,16 +11,14 @@ import { useActivity } from '@/domain/activity/ActivityContext';
 import { StepsStatus } from '@/domain/activity/models/stepsStatus';
 import { WizardStep } from '../components/WizardStep/WizardStep';
 import { WizardStep as Step } from '../models/wizardSteps';
-import { stepGoalOptions } from './models/stepGoalOptions';
 
-/** Connecting the phone's health app, and a daily step goal. */
+/** Connecting the phone's health app, and a daily step goal (the same slider as Settings). */
 export default function StepsScreen() {
-  const { settings, updateSettings } = useSettings();
+  const { settings } = useSettings();
   const { status } = useActivity();
   const { busy, requestAccess } = useConnectHealth();
   const healthApp = healthAppName();
   const connected = status === StepsStatus.Connected;
-  const options = stepGoalOptions(settings.stepGoal).map(String);
 
   return (
     <WizardStep
@@ -64,12 +56,7 @@ export default function StepsScreen() {
       </Group>
 
       <GroupLabel>Daily step goal</GroupLabel>
-      <SegmentedControl
-        options={options}
-        value={String(settings.stepGoal)}
-        onChange={(v) => updateSettings({ stepGoal: Number(v) })}
-        label={(v) => Number(v).toLocaleString()}
-      />
+      <StepGoalSlider />
     </WizardStep>
   );
 }

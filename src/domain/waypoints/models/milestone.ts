@@ -1,5 +1,8 @@
 import type { LedgerEvent } from './waypoint';
 
+/** A place on the globe, in degrees: north and east are positive. */
+export type GeoPoint = { lat: number; lon: number };
+
 export type Milestone = {
   id: string;
   name: string;
@@ -9,6 +12,8 @@ export type Milestone = {
   facts: string[];
   /** The running total that reaches this stop. */
   waypoints: number;
+  /** Where the stop is, for the map on Journey. */
+  at: GeoPoint;
   /** Which migration this stop is on: 1 for the first trip, 2 for the second… */
   lap: number;
   reached: boolean;
@@ -31,12 +36,14 @@ export class Milestones {
     note: string;
     facts: string[];
     waypoints: number;
+    at: GeoPoint;
   }[] = [
     {
       id: 'iceland',
       name: 'Iceland',
-      note: 'Iceland is home to one of the largest Arctic tern colonies anywhere.',
+      note: 'Heading south, the route passes Iceland, home to one of the largest Arctic tern colonies anywhere.',
       waypoints: 250,
+      at: { lat: 65, lon: -22 },
       facts: [
         'Icelanders call the Arctic tern kría, after the sound of its call.',
         'Nesting terns dive at anyone who walks too close, so walkers near colonies sometimes hold a stick above their heads.',
@@ -48,6 +55,7 @@ export class Milestones {
       name: 'The North Atlantic stopover',
       note: 'Tracked terns pause out here for weeks, feeding up before the long run south.',
       waypoints: 600,
+      at: { lat: 47, lon: -35 },
       facts: [
         'This stopover was only discovered in 2010, when tiny trackers on Greenland terns showed them circling this patch of ocean.',
         'Terns spend around three weeks out here, feeding up before the long run south.',
@@ -56,8 +64,9 @@ export class Milestones {
     {
       id: 'azores',
       name: 'The Azores',
-      note: 'Islands in the middle of the ocean, a rare patch of land on the way south.',
+      note: 'Islands in the middle of the ocean, a rare patch of land that terns fly past on the way south.',
       waypoints: 1000,
+      at: { lat: 38.5, lon: -28 },
       facts: [
         'The Azores are nine volcanic islands, about 1,400 km west of Portugal.',
         'Common and roseate terns nest here, and the islands are one of the most important places in Europe for roseate terns.',
@@ -68,6 +77,7 @@ export class Milestones {
       name: 'Cape Verde',
       note: 'Off West Africa the route splits: some terns cross toward Brazil, others keep to the African coast.',
       waypoints: 1500,
+      at: { lat: 15, lon: -23.6 },
       facts: [
         'Ten volcanic islands sit about 570 km off the coast of West Africa.',
         'The Cape Verde shearwater, a seabird that breeds nowhere else in the world, nests on these islands.',
@@ -78,6 +88,7 @@ export class Milestones {
       name: 'The Namibian coast',
       note: 'A cold current along this coast brings up plenty of food for passing seabirds.',
       waypoints: 2200,
+      at: { lat: -23, lon: 13.5 },
       facts: [
         'The cold Benguela Current flows north along this coast, carrying rich water up from the deep.',
         'The Namib, one of the oldest deserts on Earth, runs right down to the sea here.',
@@ -89,6 +100,7 @@ export class Milestones {
       name: 'Cape Town',
       note: 'At the tip of Africa, the route turns toward the Southern Ocean.',
       waypoints: 3000,
+      at: { lat: -34.3, lon: 17.6 },
       facts: [
         'Many say the Atlantic and Indian Oceans meet at Cape Point, though the official line is at Cape Agulhas, further east.',
         'Antarctic terns, close cousins of the Arctic tern, spend the southern winter on these shores.',
@@ -99,6 +111,7 @@ export class Milestones {
       name: 'The Weddell Sea',
       note: 'Terns spend the southern summer here by the pack ice, in almost constant daylight.',
       waypoints: 4000,
+      at: { lat: -72, lon: -45 },
       facts: [
         'The sea is named after James Weddell, a British sealer who sailed into it in 1823.',
         "Shackleton's ship Endurance was crushed by its ice in 1915. The wreck was found in 2022, about 3,000 m down.",
@@ -108,8 +121,9 @@ export class Milestones {
     {
       id: 'south-georgia',
       name: 'South Georgia',
-      note: 'A wild island famous for its seabirds, passed on the way back north.',
+      note: 'A wild island famous for its seabirds, at the edge of the Southern Ocean that terns leave behind on the way north.',
       waypoints: 4700,
+      at: { lat: -54.3, lon: -36.5 },
       facts: [
         "The explorer Ernest Shackleton is buried at Grytviken, the island's old whaling station.",
         'Millions of seabirds, seals and penguins breed here, including king penguins and wandering albatrosses.',
@@ -120,6 +134,7 @@ export class Milestones {
       name: 'The mid-Atlantic',
       note: 'Heading home, terns fly up the middle of the ocean in a wide S, riding the winds.',
       waypoints: 5600,
+      at: { lat: 5, lon: -30 },
       facts: [
         'The trip home is much quicker than the trip south: about 40 days instead of about 90.',
         'Far below runs the Mid-Atlantic Ridge, the longest mountain range on Earth, almost all of it under water.',
@@ -128,8 +143,9 @@ export class Milestones {
     {
       id: 'newfoundland',
       name: 'Newfoundland',
-      note: 'The last long stretch, past Newfoundland and on toward the Arctic.',
+      note: 'The S-shaped flight home swings west across the North Atlantic, toward Newfoundland, before the last stretch to Greenland.',
       waypoints: 6600,
+      at: { lat: 49, lon: -49.5 },
       facts: [
         'Arctic terns and common terns both nest along these coasts.',
         'In spring, icebergs from Greenland drift past here along what locals call Iceberg Alley.',
@@ -140,6 +156,7 @@ export class Milestones {
       name: 'Home to Greenland',
       note: 'Back at the colony, where terns return to nest year after year, often to the same spot.',
       waypoints: 7600,
+      at: { lat: 74.3, lon: -20 },
       facts: [
         'Tracked Greenland terns flew about 70,900 km in a year, the longest migration then recorded for any animal.',
         'Arctic terns can live for more than 30 years, and a lifetime of migrations adds up to about three trips to the Moon and back.',

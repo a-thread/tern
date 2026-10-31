@@ -94,6 +94,8 @@ describe('destination card', () => {
       ui.getByText('Photo: Jules Verne Times Two · CC BY-SA 4.0'),
     ).toBeTruthy();
     expect(ui.getByText(/nine volcanic islands/)).toBeTruthy();
+    // It opens from Journey, so there's no link back to it.
+    expect(ui.queryByText('See your journey ›')).toBeNull();
   });
 });
 
