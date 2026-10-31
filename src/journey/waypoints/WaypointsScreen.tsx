@@ -18,13 +18,12 @@ import {
   legProgress,
   stillOpen,
 } from '../models/waypointSummary';
-import { PopupCard, popup } from '../components/PopupCard/PopupCard';
-import { FadeIn } from '../components/FadeIn/FadeIn';
-import { colors } from '@shared/theme';
+import { PopupCard, popup } from '@shared/components/PopupCard/PopupCard';
+import { FadeIn } from '@shared/components/FadeIn/FadeIn';
+import { colors, gradients } from '@shared/theme';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Waypoints'>;
 
-const COLORS = ['#1A2630', '#3E5A6C', '#8B7C6B'] as const;
 /** When the count and the bar start, after the card has sprung in. */
 const START_MS = 150;
 const COUNT_MS = 900;
@@ -74,7 +73,7 @@ export default function WaypointsScreen({ route }: Props) {
   }, [lastSeen, start, waypoints, todayTotal]);
 
   return (
-    <PopupCard colors={COLORS}>
+    <PopupCard colors={gradients.waypoints}>
       <Text style={popup.label}>Waypoints so far</Text>
       {start === null ? (
         <Text style={popup.big}>{waypoints.toLocaleString()}</Text>

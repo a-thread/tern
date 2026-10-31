@@ -5,7 +5,7 @@ import { useSettings } from '../../domain/settings/SettingsContext';
 import { SettingsPage } from '../components/SettingsPage';
 import { CalorieTargetsRow } from './components/CalorieTargetsRow';
 import { FoodDisplayRow } from './components/FoodDisplayRow';
-import { MealCheckInToggleRow } from './components/MealCheckInToggleRow';
+import { MealCheckInToggleRow } from '@shared/components/MealCheckInToggleRow/MealCheckInToggleRow';
 import { MealReminderRows } from '../components/MealReminderRows';
 import { useSettingsNavigation } from '../../navigation/useAppNavigation';
 

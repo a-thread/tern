@@ -7,20 +7,26 @@ import { useRootNavigation } from '@/navigation/useAppNavigation';
 
 /** The card's width; the confetti and route are laid out against it. */
 export const CARD_WIDTH = 280;
+/** The card's padding on each side. */
+const CARD_PADDING = 20;
+/** The width inside the padding, for anything that should run from edge to edge (a photo). */
+export const CARD_INNER_WIDTH = CARD_WIDTH - CARD_PADDING * 2;
 
 /**
  * The dark card the waypoint popups sit on: the screen dims, the card springs in, and a tap
- * outside (or ✕) closes it. Ends with a link to Journey and the promise that waypoints are
- * for showing up. `overlay` draws over the card (confetti), outside its rounded edge.
+ * outside (or ✕) closes it. Ends with a link to Journey unless `journeyLink` is false.
+ * `overlay` draws over the card (confetti), outside its rounded edge.
  */
 export function PopupCard({
   colors,
   children,
   overlay,
+  journeyLink = true,
 }: {
   colors: readonly [string, string, string];
   children: React.ReactNode;
   overlay?: React.ReactNode;
+  journeyLink?: boolean;
 }) {
   const navigation = useRootNavigation();
   const scale = useRef(new Animated.Value(0.85)).current;
@@ -59,9 +65,15 @@ export function PopupCard({
               <Text style={s.closeText}>✕</Text>
             </Pressable>
             {children}
-            <Pressable onPress={toJourney} hitSlop={8} accessibilityRole='link'>
-              <Text style={s.link}>See your journey ›</Text>
-            </Pressable>
+            {journeyLink ? (
+              <Pressable
+                onPress={toJourney}
+                hitSlop={8}
+                accessibilityRole='link'
+              >
+                <Text style={s.link}>See your journey ›</Text>
+              </Pressable>
+            ) : null}
           </LinearGradient>
           {overlay ? (
             <View style={StyleSheet.absoluteFill} pointerEvents='none'>
@@ -84,7 +96,7 @@ const s = StyleSheet.create({
   card: {
     width: CARD_WIDTH,
     borderRadius: 20,
-    paddingHorizontal: 20,
+    paddingHorizontal: CARD_PADDING,
     paddingTop: 22,
     paddingBottom: 18,
     alignItems: 'center',

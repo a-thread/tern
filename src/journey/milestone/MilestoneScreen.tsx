@@ -14,17 +14,16 @@ import { daysWithWaypoints } from '../../domain/waypoints/models/waypoint';
 import { legFor, routeFraction } from '../models/waypointSummary';
 import WaypointBurst from '@shared/components/WaypointBurst';
 import { RouteStrip } from './components/RouteStrip/RouteStrip';
-import { FadeIn } from '../components/FadeIn/FadeIn';
+import { FadeIn } from '@shared/components/FadeIn/FadeIn';
 import {
   CARD_WIDTH,
   PopupCard,
   popup,
-} from '../components/PopupCard/PopupCard';
-import { colors } from '@shared/theme';
+} from '@shared/components/PopupCard/PopupCard';
+import { colors, gradients } from '@shared/theme';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Milestone'>;
 
-const COLORS = ['#2A2440', '#4A4372', '#4E8C7D'] as const;
 const MARK = 64;
 /** The mark's centre on the card (its top padding plus half the mark), where the feathers burst. */
 const MARK_CENTRE = { x: CARD_WIDTH / 2, y: 22 + MARK / 2 };
@@ -74,7 +73,7 @@ export default function MilestoneScreen({ route }: Props) {
 
   return (
     <PopupCard
-      colors={COLORS}
+      colors={gradients.journey}
       overlay={
         burst ? (
           <WaypointBurst

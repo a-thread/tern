@@ -49,6 +49,28 @@ export const colors = {
   /** Gold for points, the route and links on the dark cards. */
   sunLight: '#F2C888',
 
+  // on the dark heroes and cards
+  /** Text over a dark sky or card. */
+  onDark: '#FBFAF7',
+  /** A chip or label's backing over a dark sky or card. */
+  chipOnDark: 'rgba(0,0,0,0.35)',
+  /** The soft shadow under a hero, once the list below scrolls beneath it. */
+  heroShadow: 'rgba(30,24,52,0.28)',
+  /** The same, faded out: a gradient ends here, not at transparent black, so it doesn't grey. */
+  heroShadowClear: 'rgba(30,24,52,0)',
+  /** The line flown so far on the Journey route, and the stops passed. */
+  route: '#8FD9C4',
+  /** The route still to fly, and the outline of stops not reached yet. */
+  routeAhead: 'rgba(255,255,255,0.45)',
+  /** A migration already finished, drawn faintly under the current one. */
+  routePast: 'rgba(143,217,196,0.28)',
+  /** Land on the Journey map. */
+  mapLand: 'rgba(255,255,255,0.14)',
+  /** The sea on the Journey globe, a step lighter than the hero behind it. */
+  mapSea: 'rgba(255,255,255,0.05)',
+  /** Lines of latitude and longitude on the Journey map. */
+  mapGrid: 'rgba(255,255,255,0.06)',
+
   // whole foods
   kelp: '#5C6B4E',
   kelpTint: '#E6EADF',
@@ -71,7 +93,10 @@ export const gradients = {
   dawn: ['#2E4257', '#5C6F92', '#A9849E', '#E0A98C'],
   midday: ['#3E5A6C', '#6E8CA0', '#A9C2CE'],
   goalReached: ['#3E5A6C', '#8B7C6B', '#E0A96D', '#F0C888'],
+  /** Journey, and the milestone and stop cards. */
   journey: ['#2A2440', '#4A4372', '#4E8C7D'],
+  /** The waypoints and streak cards opened from Today. */
+  waypoints: ['#1A2630', '#3E5A6C', '#8B7C6B'],
   rest: ['#3A3327', '#5B4636', '#8A6A4F'],
 } as const;
 

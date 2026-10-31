@@ -4,6 +4,7 @@ import { type Medication } from './medication';
 import { WaterGoal } from './waterGoal';
 import { MovementGoal } from './movementGoal';
 import { Aim } from './aim';
+import { JourneyView } from './journeyView';
 import { settingsSeed } from '../settings.mock';
 import { Frequency } from '@shared/models/frequency';
 import { type ReminderConfig, Reminders } from './reminderPlan';
@@ -80,6 +81,8 @@ export type AppSettings = {
    * whatever has already been passed — an existing journey isn't re-celebrated.
    */
   celebratedMilestone: number | null;
+  /** Whether Journey draws the migration on a flat map or a globe. */
+  journeyView: JourneyView;
   healthData: HealthDataSettings;
   /** The setup wizard, tips and getting-started card; see `loadOnboarding`. */
   onboarding: OnboardingState;
@@ -95,7 +98,7 @@ export const initialSettings: AppSettings = {
   trackFood: true,
   trackCalories: true,
   trackMacros: true,
-  showIntakeBars: false,
+  showIntakeBars: true,
   calorieZone: null,
   proteinAsMinimum: true,
   units: settingsSeed.units,
@@ -119,6 +122,7 @@ export const initialSettings: AppSettings = {
   aim: Aim.Maintain,
   lastSuggestionWeek: null,
   celebratedMilestone: null,
+  journeyView: JourneyView.Map,
   healthData: {
     readSteps: true,
     readWorkouts: true,
