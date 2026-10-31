@@ -61,7 +61,7 @@ const evening = (input: StreakAlertInput): ReminderText[] => {
     },
     {
       title: 'This evening',
-      body: `Your ${n}-day streak is still open today. Open Tern to see how today is looking.${freezeLine}`,
+      body: `Your ${n}-day streak is waiting on today's goal.${freezeLine}`,
     },
   ];
 };

@@ -50,7 +50,7 @@ export function LogFoodMealsTab({
         <ListNote>
           {trimmed
             ? `Nothing matches “${trimmed}”.`
-            : 'Build a meal with New meal, or log a few foods and choose “Save as meal” on the Food tab. Meals you log show up here too.'}
+            : 'Meals you build or save show up here.'}
         </ListNote>
       ) : null}
     </>

@@ -14,11 +14,10 @@ import { useActivity } from '../../domain/activity/ActivityContext';
 import { suggestGoal } from '../../domain/activity/models/stepGoal';
 import { StepGoal } from '../../domain/settings/models/stepGoalHistory';
 import { useSettings } from '../../domain/settings/SettingsContext';
-import { useSliderValue } from '@shared/hooks/useSliderValue';
+import { StepGoalSlider } from '@shared/components/StepGoalSlider/StepGoalSlider';
 
 const MIN = StepGoal.MIN;
 const MAX = StepGoal.MAX;
-const PRESETS = [4800, 6000, 8000, 10000];
 
 export default function StepGoalScreen() {
   const navigation = useNavigation();
@@ -41,14 +40,6 @@ export default function StepGoalScreen() {
       stepGoal: Math.round(Math.min(Math.max(v, MIN), MAX) / 100) * 100,
     });
 
-  const slider = useSliderValue({
-    value: settings.stepGoal,
-    min: MIN,
-    max: MAX,
-    step: 100,
-    onCommit: (stepGoal) => updateSettings({ stepGoal }),
-  });
-
   return (
     <View
       style={{ flex: 1, backgroundColor: colors.paper, paddingTop: insets.top }}
@@ -65,35 +56,7 @@ export default function StepGoalScreen() {
           paddingBottom: 40,
         }}
       >
-        <View style={s.display}>
-          <Text style={s.num}>{slider.shown.toLocaleString()}</Text>
-          <Text style={s.unit}>steps per day</Text>
-        </View>
-
-        <View
-          style={s.slider}
-          onLayout={slider.onLayout}
-          {...slider.panHandlers}
-        >
-          <View style={[s.sliderFill, { width: `${slider.fillPct}%` }]} />
-          <View style={[s.sliderKnob, { left: `${slider.fillPct}%` }]} />
-        </View>
-        <View style={s.sliderEnds}>
-          <Text style={s.sliderEndText}>{MIN.toLocaleString()}</Text>
-          <Text style={s.sliderEndText}>{MAX.toLocaleString()}</Text>
-        </View>
-
-        <View style={s.presetRow}>
-          {PRESETS.map((p) => (
-            <Text
-              key={p}
-              onPress={() => setGoal(p)}
-              style={[s.preset, slider.shown === p && s.presetSel]}
-            >
-              {p.toLocaleString()}
-            </Text>
-          ))}
-        </View>
+        <StepGoalSlider />
 
         <GroupLabel>Based on your history</GroupLabel>
         <View style={s.card}>
@@ -138,10 +101,8 @@ export default function StepGoalScreen() {
         ) : null}
 
         <Text style={s.footNote}>
-          Changing your goal never touches past days: your streak and the
-          waypoints you've earned stay yours. Today counts toward whichever goal
-          you finish the day with. A goal you can hit most days works better
-          than one you can't.
+          Changing your goal never changes past days. Pick one you can hit most
+          days.
         </Text>
       </ScrollView>
     </View>
@@ -149,74 +110,11 @@ export default function StepGoalScreen() {
 }
 
 const s = StyleSheet.create({
-  display: { alignItems: 'center', paddingVertical: 18 },
-  num: {
-    fontFamily: font.displayMedium,
-    fontSize: 42,
-    color: colors.ink,
-    lineHeight: 46,
-  },
-  unit: {
-    fontFamily: font.body,
-    fontSize: 13,
-    color: colors.ink2,
-    marginTop: 4,
-  },
-  slider: {
-    height: 24,
-    justifyContent: 'center',
-    marginHorizontal: 6,
-    marginTop: 10,
-  },
-  sliderFill: {
-    position: 'absolute',
-    left: 0,
-    height: 5,
-    borderRadius: 3,
-    backgroundColor: colors.coral,
-  },
-  sliderKnob: {
-    position: 'absolute',
-    width: 22,
-    height: 22,
-    marginLeft: -11,
-    borderRadius: 11,
-    backgroundColor: '#fff',
-    borderWidth: 2.5,
-    borderColor: colors.coral,
-  },
-  sliderEnds: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    paddingHorizontal: 6,
-    marginTop: 4,
-  },
   suggestLink: {
     fontFamily: font.semibold,
     fontSize: 13,
     color: colors.ink,
     marginTop: space.sm,
-  },
-  sliderEndText: { fontFamily: font.body, fontSize: 10.5, color: colors.ink3 },
-  presetRow: { flexDirection: 'row', gap: 7, marginTop: 14 },
-  preset: {
-    flex: 1,
-    textAlign: 'center',
-    fontFamily: font.body,
-    fontSize: 12,
-    paddingVertical: 9,
-    borderRadius: 10,
-    borderWidth: 1.5,
-    borderColor: colors.border,
-    backgroundColor: '#fff',
-    color: colors.ink2,
-    overflow: 'hidden',
-  },
-  presetSel: {
-    borderColor: colors.coral,
-    backgroundColor: colors.coralTint,
-    color: colors.ink,
-    fontFamily: font.bold,
   },
   card: {
     backgroundColor: colors.card,

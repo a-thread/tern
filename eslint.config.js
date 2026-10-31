@@ -4,8 +4,18 @@ const globals = require('globals');
 module.exports = [
   ...expoConfig,
   // Edge Function entry points run on Deno (npm: imports, the Deno global); their logic
-  // lives beside them in plain modules that are linted and tested like the app.
-  { ignores: ['dist/*', 'android/*', 'ios/*', '.expo/*', 'supabase/functions/**/index.ts'] },
+  // lives beside them in plain modules that are linted and tested like the app. The Journey
+  // map generator imports map packages that are only installed while it runs.
+  {
+    ignores: [
+      'dist/*',
+      'android/*',
+      'ios/*',
+      '.expo/*',
+      'supabase/functions/**/index.ts',
+      'scripts/buildJourneyMap.ts',
+    ],
+  },
   {
     languageOptions: { globals: { ...globals.jest } },
     rules: {

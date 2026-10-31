@@ -109,6 +109,9 @@ describe('setup wizard', () => {
     await act(async () =>
       fireEvent.press(screen.getByLabelText('Track calories')),
     );
+    await act(async () =>
+      fireEvent.press(screen.getByLabelText('Ask how meals went')),
+    );
     await press('Next');
 
     // No calorie target or zone without calorie numbers; macros, with intake bars offered there.
@@ -125,6 +128,7 @@ describe('setup wizard', () => {
       trackWater: true,
       trackCalories: false,
       trackMacros: true,
+      checkInAfterMeals: true,
     });
     expect(saved?.onboarding).toMatchObject({
       wizardDone: true,
@@ -133,7 +137,7 @@ describe('setup wizard', () => {
     expect(syncReminders).toHaveBeenCalled();
   });
 
-  it('shows the calorie target, then the zone once intake bars are on', async () => {
+  it('shows the calorie target, then the zone, since intake bars start on', async () => {
     await openApp();
     await screen.findByText('Progress answers to your pace');
     await press('Get started');
@@ -142,9 +146,9 @@ describe('setup wizard', () => {
     await press('Next'); // with calories
 
     expect(await screen.findByText('Your daily calorie target')).toBeTruthy();
-    await act(async () =>
-      fireEvent.press(screen.getByLabelText('Show intake bars')),
-    );
+    expect(
+      screen.getByLabelText('Show intake bars').props.accessibilityState,
+    ).toMatchObject({ checked: true });
     await press('Next');
     expect(await screen.findByText('Your target zone')).toBeTruthy();
     await press('Skip');

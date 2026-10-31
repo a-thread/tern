@@ -74,7 +74,7 @@ export function WeightTrendCard({ range }: { range: TrendRange }) {
           <Icon name='chart-bar' size={36} color={colors.dove} />
           <Text style={s.emptyTitle}>Not enough weigh-ins here yet</Text>
           <Text style={s.emptyBody}>
-            {`A trend needs at least two weigh-ins in this range, and you have ${rangeTrend.length}.`}
+            {'Log at least two weigh-ins in this range to see a trend.'}
             {weightEntries.length > rangeTrend.length
               ? ' Try a longer range.'
               : ' Tern can then draw a line that filters out daily noise.'}

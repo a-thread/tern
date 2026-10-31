@@ -144,7 +144,7 @@ export default function HealthDataScreen() {
           <FootNote>
             {settings.trackMovement
               ? 'Without steps, movement you log is how a day becomes a goal day.'
-              : 'Without steps, turn on movement in Settings → Steps and activity to reach goal days by logging activity.'}
+              : 'No steps? Turn on movement in Steps and activity to count logged workouts toward your goal.'}
           </FootNote>
         ) : (
           <>

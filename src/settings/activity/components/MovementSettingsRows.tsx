@@ -45,7 +45,7 @@ export function MovementSettingsRows() {
           <Divider />
           <Row
             title='Counts as a goal day'
-            sub={`At ${settings.movementGoalMinutes} minutes, even if steps fall short. Walks and runs are already in your steps`}
+            sub={`${settings.movementGoalMinutes} minutes of movement makes it a goal day, even if your steps fall short. Walks and runs already count as steps.`}
             right={
               <Stepper
                 value={settings.movementGoalMinutes}

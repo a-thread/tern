@@ -14,7 +14,7 @@ export function todayTipText(
     case Tip.Waypoints:
       return {
         lead: 'Waypoints are for showing up.',
-        rest: 'Logging, moving, resting and reaching the goals you set are measured. Go to Journey tab to see how many points each earn.',
+        rest: 'You earn them for logging, moving, resting and hitting your goals. See what each is worth on Journey.',
       };
     default:
       return {

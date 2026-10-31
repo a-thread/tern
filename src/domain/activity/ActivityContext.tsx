@@ -99,7 +99,7 @@ export function ActivityProvider({
   restDays: RestDaysRepository;
   children: React.ReactNode;
 }) {
-  const { settings } = useSettings();
+  const { settings, ready: settingsReady } = useSettings();
   const today = useDayKey();
   const movement = useMovement();
   // With movement tracked, enough of it in a day makes a goal day too.
@@ -200,6 +200,9 @@ export function ActivityProvider({
   // Steps are only judged while they can be read: with Health Connect
   // disconnected or "read steps" switched off, what was earned stays put.
   const stepsReadable = status === StepsStatus.Connected && readSteps;
+  // Nothing is judged before the settings arrive: until then the goal is only the default,
+  // and an award written that early would make an empty phone look in use, skipping the wizard.
+  const judging = ready && settingsReady;
 
   // Lowering the goal to collect the award and raising it again doesn't
   // keep it: today is judged against the goal it ends up with.
@@ -208,7 +211,7 @@ export function ActivityProvider({
   useAward(
     WaypointSource.Steps,
     goalReachedToday || movedToGoalToday,
-    ready && movement.ready && (stepsReadable || movementGoal > 0),
+    judging && movement.ready && (stepsReadable || movementGoal > 0),
   );
 
   // A day is either a goal day or a rest day, never both: a rest day taken
@@ -216,7 +219,7 @@ export function ActivityProvider({
   // taking one "just in case" is never better than waiting to see.
   const restCounts =
     todayIsRest && !((stepsReadable && goalReachedToday) || movedToGoalToday);
-  useAward(WaypointSource.Rest, restCounts, ready);
+  useAward(WaypointSource.Rest, restCounts, judging);
 
   // A streak milestone pays a one-time bonus on the day the streak gets there, so it needs
   // today's goal reached (a streak of 7 that ended yesterday was paid yesterday). If today's
@@ -227,7 +230,7 @@ export function ActivityProvider({
   useAward(
     WaypointSource.Streak,
     reachedToday && bonus > 0,
-    ready && movement.ready && (stepsReadable || movementGoal > 0),
+    judging && movement.ready && (stepsReadable || movementGoal > 0),
     bonus > 0 ? bonus : streakBonus(streak + 1),
   );
 

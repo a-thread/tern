@@ -152,15 +152,14 @@ export function AdaptiveTargetCard() {
           </Pressable>
         </View>
         <Text style={s.point}>
-          {`Over the last ${AdaptiveTarget.WINDOW_DAYS} days, Tern compares what you logged with how your trend weight moved. Eating 2,050 a day while your trend drops ${formatWeight(1.2, 1)} in three weeks means you use about 2,250. A steady trend means you use about what you eat; a rising one, a little less.`}
+          {`Tern compares what you've logged over the last ${AdaptiveTarget.WINDOW_DAYS} days with how your trend weight moved, to work out how much you actually use.`}
         </Text>
         <Text style={s.point}>
-          That counts everything you do: workouts, walking, work. It also
-          absorbs small habits in how you log, so it can be more accurate than
-          any calorie estimate for a single workout.
+          That includes everything you do, from workouts to walking, so it's
+          often closer than an estimate for any single activity.
         </Text>
         <Text style={s.point}>
-          {`It needs ${AdaptiveTarget.MIN_LOGGED_DAYS} of the last ${AdaptiveTarget.WINDOW_DAYS} days fully logged (days with nothing logged are left out, never counted as eating nothing) and at least ${AdaptiveTarget.MIN_WEIGH_INS} weigh-ins. A suggestion never aims below 1,200, or for losing more than 1% of your weight a week.`}
+          {`It needs ${AdaptiveTarget.MIN_LOGGED_DAYS} fully logged days out of the last ${AdaptiveTarget.WINDOW_DAYS}, and at least ${AdaptiveTarget.MIN_WEIGH_INS} weigh-ins. Days with nothing logged are skipped. It never suggests below 1,200, or losing more than 1% of your weight a week.`}
         </Text>
       </BottomSheet>
     </>

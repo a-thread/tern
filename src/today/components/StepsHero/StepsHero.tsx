@@ -80,21 +80,32 @@ export function StepsHero({
         <View style={s.top}>
           <Text style={s.greeting}>{title}</Text>
           <View style={s.chips}>
+            {/* Either chip opens the card that explains streaks and freezes. */}
             {isToday && streak > 0 ? (
-              <View style={s.streakChip}>
+              <Pressable
+                style={s.streakChip}
+                onPress={() => navigation.navigate('Streak')}
+                hitSlop={6}
+                accessibilityRole='button'
+                accessibilityLabel={`${streak}-day streak`}
+                accessibilityHint='Explains streaks and freezes'
+              >
                 <Text style={s.streakText}>
                   ☀ {streak} {streak === 1 ? 'day' : 'days'}
                 </Text>
-              </View>
+              </Pressable>
             ) : null}
             {isToday && freezes > 0 ? (
-              <View
+              <Pressable
                 style={s.streakChip}
-                accessible
+                onPress={() => navigation.navigate('Streak')}
+                hitSlop={6}
+                accessibilityRole='button'
                 accessibilityLabel={`${freezes} streak ${freezes === 1 ? 'freeze' : 'freezes'}`}
+                accessibilityHint='Explains streaks and freezes'
               >
                 <Text style={s.streakText}>❄ {freezes}</Text>
-              </View>
+              </Pressable>
             ) : null}
           </View>
         </View>

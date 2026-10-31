@@ -8,10 +8,16 @@ import { SettingsProvider } from '../domain/settings/SettingsContext';
 import { WaypointsProvider } from '../domain/waypoints/WaypointsContext';
 import WaypointsScreen from './waypoints/WaypointsScreen';
 import MilestoneScreen from './milestone/MilestoneScreen';
+import DestinationScreen from './destination/DestinationScreen';
+import StreakScreen from '../today/streak/StreakScreen';
 
-// The waypoints card only asks whether a goal day can be reached today, and what was skipped.
+// The waypoints card asks whether a goal day can be reached today and what was skipped; the
+// streak card, the streak and freezes held.
 jest.mock('@/domain/activity/ActivityContext', () => ({
-  useActivity: () => ({ goalReachable: true }),
+  useActivity: () => ({ goalReachable: true, streak: 12, freezes: 1 }),
+}));
+jest.mock('@/domain/movement/MovementContext', () => ({
+  useMovement: () => ({ enabled: false }),
 }));
 jest.mock('@/domain/food/FoodContext', () => ({
   useFood: () => ({ skippedMeals: [] }),
@@ -72,5 +78,34 @@ describe('milestone card', () => {
     expect(ui.getByText('Milestone reached')).toBeTruthy();
     expect(ui.getByText(/a rare patch of land/)).toBeTruthy();
     expect(ui.getByText(/^Cape Verde · /)).toBeTruthy();
+  });
+});
+
+describe('destination card', () => {
+  const destinationProps = screenProps({
+    waypoints: 1000,
+  }) as React.ComponentProps<typeof DestinationScreen>;
+
+  it('shows a photo with its credit, and facts about the stop', async () => {
+    const ui = open(<DestinationScreen {...destinationProps} />);
+    await waitFor(() => expect(ui.getByText('The Azores')).toBeTruthy());
+    expect(ui.getByLabelText('Photo of The Azores')).toBeTruthy();
+    expect(
+      ui.getByText('Photo: Jules Verne Times Two · CC BY-SA 4.0'),
+    ).toBeTruthy();
+    expect(ui.getByText(/nine volcanic islands/)).toBeTruthy();
+    // It opens from Journey, so there's no link back to it.
+    expect(ui.queryByText('See your journey ›')).toBeNull();
+  });
+});
+
+describe('streak card', () => {
+  it('shows what is held now and how freezes are earned and capped', async () => {
+    const ui = open(<StreakScreen />);
+    expect(ui.getByText('☀ 12 days')).toBeTruthy();
+    expect(ui.getByText('❄ 1 of 2 freezes')).toBeTruthy();
+    expect(ui.getByText(/every 7 days in a row/)).toBeTruthy();
+    // Explaining streaks isn't about the journey, so there's no link to it.
+    expect(ui.queryByText('See your journey ›')).toBeNull();
   });
 });

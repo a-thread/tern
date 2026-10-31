@@ -15,6 +15,7 @@
     "jest.config.js",
     "android",
     "ios",
-    "supabase/functions/**/index.ts"
+    "supabase/functions/**/index.ts",
+    "scripts/buildJourneyMap.ts"
   ]
 }

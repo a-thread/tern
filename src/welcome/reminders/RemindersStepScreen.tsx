@@ -6,6 +6,8 @@ import { describeReminders } from '@/domain/settings/models/reminderPlan';
 import { WizardStep } from '../components/WizardStep/WizardStep';
 import { useWizard } from '../hooks/useWizard';
 import { WizardStep as Step } from '../models/wizardSteps';
+import { space } from '@shared/theme';
+import { StyleSheet } from 'react-native';
 
 /**
  * The last screen: meal and weigh-in reminders. "Turn on reminders" lets the phone ask to send
@@ -30,7 +32,7 @@ export default function RemindersStepScreen() {
       }}
       secondary={{ label: 'Not now', onPress: () => wizard.finish() }}
     >
-      <Group>
+      <Group style={s.body}>
         {settings.trackFood ? (
           <ToggleRow
             title='Meal reminders'
@@ -65,3 +67,9 @@ export default function RemindersStepScreen() {
     </WizardStep>
   );
 }
+
+const s = StyleSheet.create({
+  body: {
+    marginTop: space.md,
+  },
+});
