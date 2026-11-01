@@ -36,13 +36,20 @@ export class Meals {
  * any UI that shows meal-logging progress. A skipped meal counts exactly like
  * a logged one, so the rule rewards a complete log, never skipping or eating more.
  */
+/** Whether a meal is done: logged, or marked as skipped. */
+export function mealDone(
+  meal: FoodEntry['meal'],
+  log: FoodEntry[],
+  skipped: readonly FoodEntry['meal'][] = [],
+): boolean {
+  return skipped.includes(meal) || log.some((f) => f.meal === meal);
+}
+
 export function allMealsLogged(
   log: FoodEntry[],
   skipped: readonly FoodEntry['meal'][] = [],
 ): boolean {
-  return Meals.CORE.every(
-    (meal) => skipped.includes(meal) || log.some((f) => f.meal === meal),
-  );
+  return Meals.CORE.every((meal) => mealDone(meal, log, skipped));
 }
 
 export function mealTotals(log: FoodEntry[], meal: FoodEntry['meal']) {

@@ -4,7 +4,7 @@ import { useDayKey } from '@shared/hooks/useDayKey';
 import { useViewedDay } from '@shared/state/ViewedDayContext';
 import { useActivity } from './domain/activity/ActivityContext';
 import { useFood } from './domain/food/FoodContext';
-import { allMealsLogged } from './domain/food/models/meals';
+import { allMealsLogged, mealDone } from './domain/food/models/meals';
 import { Meal } from './domain/food/models/foodEntry';
 import { useMedication } from './domain/medication/MedicationContext';
 import { useMood } from './domain/mood/MoodContext';
@@ -36,14 +36,12 @@ export function useDoneToday(): { done: DoneToday; ready: boolean } {
   if (isToday) {
     const todaysFood = food.loadedDay === today;
     // Logged, or marked as skipped: either way there's nothing to remind about.
-    const mealDone = (meal: Meal) =>
-      todaysFood &&
-      (food.foodLog.some((f) => f.meal === meal) ||
-        food.skippedMeals.includes(meal));
+    const doneToday = (meal: Meal) =>
+      todaysFood && mealDone(meal, food.foodLog, food.skippedMeals);
     viewed.current = {
       meals: todaysFood && allMealsLogged(food.foodLog, food.skippedMeals),
-      lunch: mealDone(Meal.Lunch),
-      dinner: mealDone(Meal.Dinner),
+      lunch: doneToday(Meal.Lunch),
+      dinner: doneToday(Meal.Dinner),
       water: water.enabled && water.reached,
       mood: mood.enabled && mood.onDay !== undefined,
     };

@@ -75,9 +75,11 @@ export default function ExerciseDetailScreen({ navigation, route }: Props) {
   };
 
   const save = () => {
-    // A change goes back to the list it was opened from; a new entry closes the flow.
-    if (editing) {
+    // A change goes back to the list it was opened from; a new entry closes the flow. An entry
+    // opened to change that has since gone just goes back, rather than logging a copy.
+    if (entryId) {
       if (
+        !editing ||
         update(editing.id, { minutes, effort, distanceM: distanceM || null })
       ) {
         navigation.goBack();

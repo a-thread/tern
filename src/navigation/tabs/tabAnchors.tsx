@@ -6,7 +6,10 @@ import type { TabParamList } from './types';
 export type TabName = keyof TabParamList;
 export type TabAnchors = Record<TabName, React.RefObject<View | null>>;
 
-/** Null outside the tab navigator (a screen rendered on its own, as in tests). */
+/**
+ * Null outside the tab navigator (a screen rendered on its own, as in tests), so this one is
+ * optional and made with `createContext`, not `createRequiredContext`.
+ */
 const TabAnchorsContext = createContext<TabAnchors | null>(null);
 
 /**
@@ -18,12 +21,16 @@ export function TabAnchorsProvider({
 }: {
   children: (anchors: TabAnchors) => React.ReactNode;
 }) {
-  const anchors: TabAnchors = {
-    Today: useRef<View>(null),
-    Food: useRef<View>(null),
-    Trends: useRef<View>(null),
-    Journey: useRef<View>(null),
-  };
+  const today = useRef<View>(null);
+  const food = useRef<View>(null);
+  const trends = useRef<View>(null);
+  const journey = useRef<View>(null);
+  const anchors = useRef<TabAnchors>({
+    Today: today,
+    Food: food,
+    Trends: trends,
+    Journey: journey,
+  }).current;
   return (
     <TabAnchorsContext.Provider value={anchors}>
       {children(anchors)}

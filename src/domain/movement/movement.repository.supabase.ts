@@ -65,7 +65,8 @@ export function createSupabaseMovementRepository(
       );
     },
     async update(entry) {
-      await ok(
+      // A row the server won't change (too old a day) isn't an error, so check one was.
+      const changed = await rows<{ id: string }>(
         db
           .from('movement_entries')
           .update({
@@ -74,8 +75,10 @@ export function createSupabaseMovementRepository(
             effort: entry.effort,
             distance_m: entry.distanceM ?? null,
           })
-          .eq('id', entry.id),
+          .eq('id', entry.id)
+          .select('id'),
       );
+      if (changed.length === 0) throw new Error('Movement entry not updated');
     },
     async remove(id) {
       await ok(db.from('movement_entries').delete().eq('id', id));
