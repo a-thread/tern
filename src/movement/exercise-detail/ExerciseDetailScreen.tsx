@@ -44,18 +44,24 @@ const GUIDE: { effort: Effort; text: string }[] = [
   },
 ];
 
-/** One exercise's details: how long (on a ruler), how hard, and how far where it applies. */
+/**
+ * One exercise's details: how long (on a ruler), how hard, and how far where it applies. Opened
+ * from a logged entry (`entryId`), it starts from that entry and saves changes to it.
+ */
 export default function ExerciseDetailScreen({ navigation, route }: Props) {
   const insets = useSafeAreaInsets();
-  const { activity, day } = route.params;
+  const { activity, day, entryId } = route.params;
   const info = ACTIVITY_INFO[activity];
-  const { add } = useMovement();
+  const { add, update, entries } = useMovement();
   const { units } = useUnits();
+  const editing = entryId ? entries.find((e) => e.id === entryId) : undefined;
   const [minutes, setMinutes] = useState<number>(
-    MovementLimits.DEFAULT_MINUTES,
+    editing?.minutes ?? MovementLimits.DEFAULT_MINUTES,
   );
-  const [effort, setEffort] = useState<Effort>(Effort.Moderate);
-  const [distanceM, setDistanceM] = useState<number>(0);
+  const [effort, setEffort] = useState<Effort>(
+    editing?.effort ?? Effort.Moderate,
+  );
+  const [distanceM, setDistanceM] = useState<number>(editing?.distanceM ?? 0);
 
   const stepDistance = (dir: 1 | -1) => {
     const shown = Math.round(distanceToDisplay(distanceM, units) * 10) / 10;
@@ -69,6 +75,15 @@ export default function ExerciseDetailScreen({ navigation, route }: Props) {
   };
 
   const save = () => {
+    // A change goes back to the list it was opened from; a new entry closes the flow.
+    if (editing) {
+      if (
+        update(editing.id, { minutes, effort, distanceM: distanceM || null })
+      ) {
+        navigation.goBack();
+      }
+      return;
+    }
     if (add({ day, activity, minutes, effort, distanceM: distanceM || null })) {
       navigation.getParent()?.goBack();
     }
@@ -146,7 +161,7 @@ export default function ExerciseDetailScreen({ navigation, route }: Props) {
 
       <View style={[s.footer, { paddingBottom: insets.bottom + space.md }]}>
         <Pressable style={s.save} onPress={save} accessibilityRole='button'>
-          <Text style={s.saveText}>Save</Text>
+          <Text style={s.saveText}>{editing ? 'Save changes' : 'Save'}</Text>
         </Pressable>
       </View>
     </View>

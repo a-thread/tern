@@ -97,6 +97,17 @@ export default function ExercisesScreen({ navigation, route }: Props) {
                   ]
                     .filter(Boolean)
                     .join(' · ')}
+                  // Logged by hand on a day that can still be logged: tap to change it.
+                  onPress={
+                    e.source === MovementSource.Manual && canLog
+                      ? () =>
+                          navigation.navigate('ExerciseDetail', {
+                            activity: e.activity,
+                            day,
+                            entryId: e.id,
+                          })
+                      : undefined
+                  }
                   right={
                     e.source === MovementSource.Manual && canLog ? (
                       <Pressable

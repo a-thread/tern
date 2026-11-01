@@ -493,6 +493,15 @@ describe('isQuietToday', () => {
     }
   });
 
+  it('quietens a meal reminder once its own meal is done, without waiting for the rest', () => {
+    const lunch = { id: 'tern-meals-midday', key: ReminderKey.Meals };
+    const dinner = { id: 'tern-meals-evening', key: ReminderKey.Meals };
+    const lunchDone = { ...NOTHING_DONE, lunch: true };
+    expect(isQuietToday(lunch, lunchDone)).toBe(true);
+    expect(isQuietToday(dinner, lunchDone)).toBe(false);
+    expect(isQuietToday(dinner, { ...NOTHING_DONE, dinner: true })).toBe(true);
+  });
+
   it('quietens each reminder only for its own goal', () => {
     expect(isQuietToday(meals, { ...NOTHING_DONE, meals: true })).toBe(true);
     expect(isQuietToday(weighIn, { ...NOTHING_DONE, meals: true })).toBe(false);

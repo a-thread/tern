@@ -158,7 +158,7 @@ export function DoneList({
               fromHealthApp
                 ? `Includes workouts from ${healthAppName()}`
                 : editable
-                  ? 'Add more, or remove one'
+                  ? 'Add more, or change one'
                   : undefined
             }
             icon={<DoneBadge />}

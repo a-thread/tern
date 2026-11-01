@@ -86,12 +86,19 @@ export function JourneyMap({
   progress,
   lap,
   replayKey = 0,
+  tipRefs,
 }: {
   /** How far through the current migration, 0 to 1. */
   progress: number;
   /** Which migration this is: 1 for the first. */
   lap: number;
   replayKey?: number;
+  /** The zoom button, the view toggle and the map itself, for Journey's tips to point at. */
+  tipRefs?: {
+    zoom: React.RefObject<View | null>;
+    view: React.RefObject<View | null>;
+    map: React.RefObject<View | null>;
+  };
 }) {
   const { settings, updateSettings } = useSettings();
   const view = settings.journeyView;
@@ -296,6 +303,8 @@ export function JourneyMap({
     >
       <Animated.View style={[StyleSheet.absoluteFill, moveStyle]}>
         <Pressable
+          ref={tipRefs?.map}
+          collapsable={false}
           style={StyleSheet.absoluteFill}
           onPress={onPress}
           accessibilityRole='button'
@@ -399,6 +408,8 @@ export function JourneyMap({
       <View style={s.controls}>
         {/* The same as a double tap: out to the whole route, or back in to the leg. */}
         <Pressable
+          ref={tipRefs?.zoom}
+          collapsable={false}
           onPress={toggleWhole}
           hitSlop={6}
           style={[s.pill, s.pillButton]}
@@ -413,7 +424,11 @@ export function JourneyMap({
             color={colors.onDark}
           />
         </Pressable>
-        <View style={[s.pill, s.toggle]}>
+        <View
+          ref={tipRefs?.view}
+          collapsable={false}
+          style={[s.pill, s.toggle]}
+        >
           {[
             {
               to: JourneyView.Map,

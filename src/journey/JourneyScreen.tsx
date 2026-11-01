@@ -15,6 +15,8 @@ import {
 } from '@shared/components/ui';
 import { useRootNavigation } from '../navigation/useAppNavigation';
 import { JourneyMap } from './components/JourneyMap/JourneyMap';
+import { useJourneyTips } from './hooks/useJourneyTips';
+import { TipOverlay } from '@shared/components/TipOverlay/TipOverlay';
 import { useReplayOnFocus } from '@shared/hooks/useReplayOnFocus';
 import { usePullToRefresh } from '@shared/hooks/usePullToRefresh';
 import { AnimatedNumber } from '@shared/components/AnimatedNumber/AnimatedNumber';
@@ -60,6 +62,8 @@ export default function JourneyScreen() {
   const { waypoints, events, reload } = useWaypoints();
   const refreshControl = usePullToRefresh([reload]);
   const scrollY = useRef(new Animated.Value(0)).current;
+  const rootRef = useRef<View>(null);
+  const tips = useJourneyTips({ rootRef });
   const days = daysWithWaypoints(events);
   const { settings } = useSettings();
   const { goalReachable } = useActivity();
@@ -83,7 +87,11 @@ export default function JourneyScreen() {
     : null;
 
   return (
-    <View style={{ flex: 1, backgroundColor: colors.paper }}>
+    <View
+      ref={rootRef}
+      collapsable={false}
+      style={{ flex: 1, backgroundColor: colors.paper }}
+    >
       <LinearGradient
         colors={[...gradients.journey]}
         style={[s.hero, { paddingTop: insets.top + 8 }]}
@@ -102,11 +110,13 @@ export default function JourneyScreen() {
           style={s.heroHeader}
         />
 
-        <View style={{ marginTop: space.sm }}>
+        {/* Right under the title, like the card under Today's. */}
+        <View>
           <JourneyMap
             progress={migration.progress}
             lap={migration.lap}
             replayKey={replayKey}
+            tipRefs={tips.mapRefs}
           />
         </View>
 
@@ -268,6 +278,17 @@ export default function JourneyScreen() {
           />
         </Animated.View>
       </View>
+      {tips.shown && tips.text ? (
+        <TipOverlay
+          rect={tips.shown.rect}
+          lead={tips.text.lead}
+          rest={tips.text.rest}
+          position={tips.shown.position}
+          total={tips.shown.total}
+          onGotIt={tips.gotIt}
+          onSkip={tips.skipAll}
+        />
+      ) : null}
     </View>
   );
 }

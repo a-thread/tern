@@ -5,6 +5,7 @@ import { useViewedDay } from '@shared/state/ViewedDayContext';
 import { useActivity } from './domain/activity/ActivityContext';
 import { useFood } from './domain/food/FoodContext';
 import { allMealsLogged } from './domain/food/models/meals';
+import { Meal } from './domain/food/models/foodEntry';
 import { useMedication } from './domain/medication/MedicationContext';
 import { useMood } from './domain/mood/MoodContext';
 import { type DoneToday } from './domain/settings/models/reminderPlan';
@@ -25,12 +26,24 @@ export function useDoneToday(): { done: DoneToday; ready: boolean } {
   const mood = useMood();
   const meds = useMedication();
 
-  const viewed = useRef({ meals: false, water: false, mood: false });
+  const viewed = useRef({
+    meals: false,
+    lunch: false,
+    dinner: false,
+    water: false,
+    mood: false,
+  });
   if (isToday) {
+    const todaysFood = food.loadedDay === today;
+    // Logged, or marked as skipped: either way there's nothing to remind about.
+    const mealDone = (meal: Meal) =>
+      todaysFood &&
+      (food.foodLog.some((f) => f.meal === meal) ||
+        food.skippedMeals.includes(meal));
     viewed.current = {
-      meals:
-        food.loadedDay === today &&
-        allMealsLogged(food.foodLog, food.skippedMeals),
+      meals: todaysFood && allMealsLogged(food.foodLog, food.skippedMeals),
+      lunch: mealDone(Meal.Lunch),
+      dinner: mealDone(Meal.Dinner),
       water: water.enabled && water.reached,
       mood: mood.enabled && mood.onDay !== undefined,
     };

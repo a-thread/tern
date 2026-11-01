@@ -155,6 +155,59 @@ describe('MovementProvider', () => {
     );
   });
 
+  it('changes logged movement, and the goal day follows the new minutes', async () => {
+    const { result } = await setup();
+    await act(async () => {
+      result.current.movement.add({
+        day: today(),
+        activity: Activity.Strength,
+        minutes: 10,
+        effort: Effort.Easy,
+      });
+    });
+    const id = result.current.movement.entries[0].id;
+    let ok = false;
+    await act(async () => {
+      ok = result.current.movement.update(id, {
+        minutes: 75,
+        effort: Effort.Hard,
+      });
+    });
+    expect(ok).toBe(true);
+    expect(result.current.movement.entries[0]).toMatchObject({
+      id,
+      minutes: 75,
+      effort: Effort.Hard,
+    });
+    expect(result.current.movement.todayMinutes).toBe(75);
+  });
+
+  it("won't change an entry to an impossible length, or one that doesn't exist", async () => {
+    const { result } = await setup();
+    await act(async () => {
+      result.current.movement.add({
+        day: today(),
+        activity: Activity.Swim,
+        minutes: 20,
+        effort: null,
+      });
+    });
+    const id = result.current.movement.entries[0].id;
+    let ok = true;
+    await act(async () => {
+      ok = result.current.movement.update(id, { minutes: 0, effort: null });
+    });
+    expect(ok).toBe(false);
+    await act(async () => {
+      ok = result.current.movement.update('nope', {
+        minutes: 30,
+        effort: null,
+      });
+    });
+    expect(ok).toBe(false);
+    expect(result.current.movement.todayMinutes).toBe(20);
+  });
+
   it('logs walks and runs without counting them toward a goal day, since steps already do', async () => {
     const { result } = await setup();
     const before = result.current.points.waypoints;

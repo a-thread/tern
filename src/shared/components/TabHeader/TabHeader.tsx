@@ -35,6 +35,7 @@ export function TabHeader({
   accessory,
   tone = TabHeaderTone.Light,
   style,
+  gearRef,
 }: {
   /** Text, or a control such as the Food tab's day switcher. */
   eyebrow: React.ReactNode;
@@ -44,6 +45,8 @@ export function TabHeader({
   tone?: TabHeaderTone;
   /** Layout overrides, e.g. Journey drops the padding its hero already has. */
   style?: ViewStyle;
+  /** The settings gear, for a tip to point at. */
+  gearRef?: React.RefObject<View | null>;
 }) {
   const navigation = useRootNavigation();
   const ink = INK[tone];
@@ -66,6 +69,8 @@ export function TabHeader({
       <View style={s.actions}>
         {accessory}
         <Pressable
+          ref={gearRef}
+          collapsable={false}
           onPress={() => navigation.navigate('Settings')}
           hitSlop={8}
           style={s.gear}

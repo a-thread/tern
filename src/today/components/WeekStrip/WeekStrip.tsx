@@ -32,6 +32,7 @@ export function WeekStrip({
     day: selectedDay,
     today: todayKey,
     isToday,
+    editable,
     setDay: onSelect,
     showToday,
   } = useViewedDay();
@@ -94,9 +95,24 @@ export function WeekStrip({
       <Text style={s.caption}>{factForDay(todayKey)}</Text>
       {/* A rest day taken can always be undone; once the goal is reached a new one can't be taken. */}
       {!isToday ? (
-        <Pressable onPress={showToday} hitSlop={8} accessibilityRole='button'>
-          <Text style={[s.restLink, s.backLink]}>Back to today</Text>
-        </Pressable>
+        <View style={s.pastLinks}>
+          {/* Yesterday's rest day can still be undone; older days are settled. */}
+          {editable && week.find((d) => d.day === selectedDay)?.chosenRest ? (
+            <Pressable
+              onPress={() => {
+                easeLayout(); // the page glides to its new shape
+                undoRestDay(selectedDay);
+              }}
+              hitSlop={8}
+              accessibilityRole='button'
+            >
+              <Text style={s.restLink}>Undo yesterday's rest day</Text>
+            </Pressable>
+          ) : null}
+          <Pressable onPress={showToday} hitSlop={8} accessibilityRole='button'>
+            <Text style={[s.restLink, s.backLink]}>Back to today</Text>
+          </Pressable>
+        </View>
       ) : restLink && todayIsRest ? (
         // Wrapped in a view Android won't flatten away, so the tip on Today can measure it;
         // it hugs the text, so the tip's outline does too.
@@ -165,4 +181,9 @@ const s = StyleSheet.create({
   restAnchor: { alignSelf: 'center', marginTop: space.sm },
   anchored: { marginTop: 0 },
   backLink: { color: colors.coral },
+  pastLinks: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    gap: space.lg,
+  },
 });

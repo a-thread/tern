@@ -48,6 +48,18 @@ type MovementContextValue = {
     effort: Effort | null;
     distanceM?: number | null;
   }) => boolean;
+  /**
+   * Changes how long, how hard and how far a manual entry was, on a day it can still be logged
+   * for. False if it can't be changed (a workout from the health app, or an older day).
+   */
+  update: (
+    id: string,
+    input: {
+      minutes: number;
+      effort: Effort | null;
+      distanceM?: number | null;
+    },
+  ) => boolean;
   /** Removes a manual entry; workouts from Health Connect can't be removed here. */
   remove: (id: string) => void;
   /** Entries from `from` to `to` inclusive, for Trends. */
@@ -149,6 +161,39 @@ export function MovementProvider({
     [repo, today, change],
   );
 
+  const update = useCallback<MovementContextValue['update']>(
+    (id, { minutes, effort, distanceM = null }) => {
+      const target = entries.find((e) => e.id === id);
+      if (
+        !target ||
+        target.source !== MovementSource.Manual ||
+        !isLoggableDay(target.day, today) ||
+        !isValidMinutes(minutes)
+      ) {
+        return false;
+      }
+      const changed: MovementEntry = {
+        ...target,
+        minutes,
+        effort,
+        distanceM:
+          distanceM && distanceM > 0
+            ? Math.min(Math.round(distanceM), MovementLimits.MAX_DISTANCE_M)
+            : null,
+      };
+      change(
+        (prev) => prev.map((e) => (e.id === id ? changed : e)),
+        repo.update(changed),
+        {
+          log: 'Could not update movement',
+          toast: "Couldn't save that change — please try again.",
+        },
+      );
+      return true;
+    },
+    [entries, repo, today, change],
+  );
+
   const remove = useCallback(
     (id: string) => {
       const target = entries.find((e) => e.id === id);
@@ -179,6 +224,7 @@ export function MovementProvider({
       goalMinutesByDay: goalByDay,
       todayGoalMinutes,
       add,
+      update,
       remove,
       loadRange: load,
       workoutsAvailable: !!workouts,
@@ -194,6 +240,7 @@ export function MovementProvider({
       goalByDay,
       todayGoalMinutes,
       add,
+      update,
       remove,
       load,
       workouts,

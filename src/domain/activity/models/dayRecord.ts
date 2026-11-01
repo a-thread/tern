@@ -73,12 +73,11 @@ export function buildDays(input: BuildDaysInput): DayRecord[] {
   );
 
   // Chosen rest days use the allowance first, so a detected day earlier in the
-  // week never crowds one the user picked. One on which the goal was reached
-  // anyway doesn't use it: the day was walked, so the week keeps its rest days
-  // (and history reads the same as before rest days stopped giving way).
+  // week never crowds one the user picked. One walked to the goal anyway uses it
+  // too, from `RestDayRules.WALKED_COUNTS_FROM` on (see `usesRestDay`).
   const chosenPerWeek = new Map<string, number>();
   for (const k of keys) {
-    if (restDays.has(k) && !reached(k)) {
+    if (restDays.has(k) && usesRestDay(k, reached(k))) {
       const w = weekStartKey(k);
       chosenPerWeek.set(w, (chosenPerWeek.get(w) ?? 0) + 1);
     }
@@ -145,6 +144,21 @@ export function computeStreak(days: DayRecord[]): number {
   }
   return streak;
 }
+
+/** How rest days count against the week. */
+export class RestDayRules {
+  /**
+   * From this day on, a rest day taken and then walked to the goal anyway still uses up one of
+   * the week's rest days, both in what's left to take and in how many past days Tern covers on
+   * its own. Before it, such a day didn't use one, and those weeks are left reading as they
+   * always have, so no existing streak changes.
+   */
+  static readonly WALKED_COUNTS_FROM = '2026-11-01';
+}
+
+/** Whether a rest day taken on `day` uses up one of its week's rest days. */
+const usesRestDay = (day: string, reachedGoal: boolean) =>
+  !reachedGoal || day >= RestDayRules.WALKED_COUNTS_FROM;
 
 /** How streak freezes are earned and held. */
 export class StreakFreezes {
@@ -227,7 +241,8 @@ export function weekOf(days: DayRecord[], today: string): DayRecord[] {
 
 /**
  * Rest days still available this week (chosen and detected both count). A rest
- * day on which the goal was reached anyway doesn't use one, as in `buildDays`.
+ * day taken counts even if the goal was reached anyway, by the same rule as
+ * `buildDays` (`usesRestDay`), so what's left and what's covered always agree.
  */
 export function restDaysLeft(
   days: DayRecord[],
@@ -235,7 +250,7 @@ export function restDaysLeft(
   restPerWeek: number,
 ): number {
   const used = weekOf(days, today).filter(
-    (d) => d.state === DayState.Rest && !d.reachedGoal,
+    (d) => d.state === DayState.Rest && usesRestDay(d.day, d.reachedGoal),
   ).length;
   return Math.max(restPerWeek - used, 0);
 }

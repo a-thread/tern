@@ -20,6 +20,7 @@ import RootNavigator from '../navigation/RootNavigator';
 import { initialSettings } from '../domain/settings/models/appSettings';
 import { syncReminders } from '../domain/settings/reminders';
 import { useSettings } from '../domain/settings/SettingsContext';
+import { Tips } from '../domain/settings/models/onboarding';
 
 jest.mock('../domain/settings/reminders', () => ({
   SyncResult: { Ok: 'ok', Denied: 'denied' },
@@ -273,7 +274,9 @@ describe('setup wizard', () => {
     await screen.findByText(/Tap a day to look back/, {}, { timeout: 4000 });
     await act(async () => fireEvent.press(screen.getByText(/Skip tips/)));
     await waitFor(() =>
-      expect(settingsRef.current!.settings.onboarding.tipsSeen).toHaveLength(3),
+      expect(settingsRef.current!.settings.onboarding.tipsSeen).toHaveLength(
+        Tips.TODAY.length,
+      ),
     );
     expect(screen.queryByText('Got it')).toBeNull();
   }, 15000);

@@ -29,6 +29,7 @@ export function useTips({
   relevant,
   anchors,
   rootRef,
+  outside = [],
   ready,
   settleMs = 600,
 }: {
@@ -38,6 +39,11 @@ export function useTips({
   anchors: Partial<Record<Tip, React.RefObject<View | null>>>;
   /** The screen's root view, to tell whether an anchor is on screen. */
   rootRef: React.RefObject<View | null>;
+  /**
+   * Tips whose anchor sits outside the screen's root, such as the tab bar below it. They only
+   * need to be found, not inside the root.
+   */
+  outside?: readonly Tip[];
   ready: boolean;
   settleMs?: number;
 }) {
@@ -68,8 +74,9 @@ export function useTips({
       // Point only at something on screen right now: not missing, not scrolled away. A tip
       // that applies but can't be found still shows, without pointing, and says why in
       // development.
-      const onScreen =
-        r !== null && root !== null && y >= 0 && y + r.height <= root.height;
+      const onScreen = outside.includes(tip)
+        ? r !== null && r.height > 0
+        : r !== null && root !== null && y >= 0 && y + r.height <= root.height;
       if (!onScreen && __DEV__)
         console.warn(`Tip "${tip}" shown without pointing`, {
           root,
