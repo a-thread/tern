@@ -56,7 +56,7 @@ export default function TodayScreen() {
         collapsable={false}
         style={[s.root, { paddingTop: insets.top }]}
       >
-        <TodayHeader chipRef={chipRef} />
+        <TodayHeader chipRef={chipRef} gearRef={tips.gearRef} />
 
         <ScrollView
           refreshControl={refreshControl}

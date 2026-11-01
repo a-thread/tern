@@ -8,15 +8,17 @@ import { useActivity } from '@/domain/activity/ActivityContext';
 import { Tip, Tips } from '@/domain/settings/models/onboarding';
 import { showsRestLink } from '../models/restLink';
 import { todayTipText } from '../models/todayTips';
+import { useTabAnchors } from '../../navigation/tabs/tabAnchors';
 
 /** Lets the week strip's rings fill before a tip points at them. */
 const SETTLE_MS = 900;
 
 /**
- * The one-time tips on Today: the week strip, the rest-day link, then the waypoints chip. They
- * wait while `hold` is true (a celebration, the water sheet) and while a past day is in view.
- * The rest-day tip only applies while there's a rest-day link (not once the goal is reached, or
- * with none left); otherwise it's skipped and left out of the count.
+ * The one-time tips on Today: the week strip, the rest-day link, the waypoints chip, the
+ * settings gear, then each tab along the bottom. They wait while `hold` is true (a celebration,
+ * the water sheet) and while a past day is in view. The rest-day tip only applies while there's
+ * a rest-day link (not once the goal is reached, or with none left), and the Food tab's only
+ * while there is one; otherwise they're skipped and left out of the count.
  */
 export function useTodayTips({
   rootRef,
@@ -29,6 +31,8 @@ export function useTodayTips({
 }) {
   const stripRef = useRef<View>(null);
   const restRef = useRef<View>(null);
+  const gearRef = useRef<View>(null);
+  const tabs = useTabAnchors();
   const { settings } = useSettings();
   const { isToday } = useViewedDay();
   const activity = useActivity();
@@ -40,13 +44,24 @@ export function useTodayTips({
 
   const tips = useTips({
     group: Tips.TODAY,
-    relevant: Tips.TODAY.filter((t) => t !== Tip.RestDay || restLink),
+    relevant: Tips.TODAY.filter(
+      (t) =>
+        (t !== Tip.RestDay || restLink) &&
+        (t !== Tip.TabFood || settings.trackFood),
+    ),
     anchors: {
       [Tip.WeekStrip]: stripRef,
       [Tip.RestDay]: restRef,
       [Tip.Waypoints]: chipRef,
+      [Tip.Settings]: gearRef,
+      [Tip.TabToday]: tabs?.Today,
+      [Tip.TabFood]: tabs?.Food,
+      [Tip.TabTrends]: tabs?.Trends,
+      [Tip.TabJourney]: tabs?.Journey,
     },
     rootRef,
+    // The tab bar sits below the screen, so its tips point outside it.
+    outside: [Tip.TabToday, Tip.TabFood, Tip.TabTrends, Tip.TabJourney],
     ready: isToday && !hold,
     settleMs: SETTLE_MS,
   });
@@ -54,6 +69,7 @@ export function useTodayTips({
   return {
     stripRef,
     restRef,
+    gearRef,
     ...tips,
     text: tips.shown
       ? todayTipText(tips.shown.tip, settings.restDaysPerWeek)

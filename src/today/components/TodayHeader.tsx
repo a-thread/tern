@@ -19,8 +19,11 @@ import { useRootNavigation } from '../../navigation/useAppNavigation';
  */
 export function TodayHeader({
   chipRef,
+  gearRef,
 }: {
   chipRef: React.RefObject<View | null>;
+  /** The settings gear, for the tip about Settings. */
+  gearRef?: React.RefObject<View | null>;
 }) {
   const navigation = useRootNavigation();
   // Follows the week strip: a past day that was tapped is named here too, not just below.
@@ -34,6 +37,7 @@ export function TodayHeader({
     <TabHeader
       eyebrow={formatLongDate(day)}
       title={dayWord(day, today)}
+      gearRef={gearRef}
       accessory={
         <Pressable
           onPress={() => navigation.navigate('Waypoints', { streak })}

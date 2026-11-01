@@ -2,7 +2,7 @@ import React from 'react';
 import { renderHook, act, waitFor } from '@testing-library/react-native';
 
 import { createMemoryBackend, type Backend } from '../../BackendContext';
-import { dayKey } from '@shared/utils/date';
+import { addDays, dayKey } from '@shared/utils/date';
 import { SettingsProvider, useSettings } from '../settings/SettingsContext';
 import { FoodProvider } from '../food/FoodContext';
 import { WaypointsProvider, useWaypoints } from '../waypoints/WaypointsContext';
@@ -25,8 +25,10 @@ const stepsRepo = (
     status === StepsStatus.Connected ? { [todayKey]: todaySteps } : {},
 });
 
-async function setup(steps: StepsRepository) {
+/** `restDays` are taken before the app opens, as if on earlier days. */
+async function setup(steps: StepsRepository, restDays: string[] = []) {
   const backend: Backend = { ...createMemoryBackend(), steps };
+  for (const day of restDays) await backend.restDays.add(day);
   const wrapper = ({ children }: { children: React.ReactNode }) => (
     <SettingsProvider repo={backend.settings}>
       <WaypointsProvider repo={backend.waypoints}>
@@ -54,6 +56,26 @@ async function setup(steps: StepsRepository) {
   });
   return { ...hook, backend };
 }
+
+describe('undoing a rest day', () => {
+  const yesterday = addDays(todayKey, -1);
+  const twoDaysAgo = addDays(todayKey, -2);
+  const restOn = (days: { day: string; chosenRest: boolean }[], day: string) =>
+    days.find((d) => d.day === day)?.chosenRest;
+
+  it("undoes yesterday's rest day", async () => {
+    const { result } = await setup(stepsRepo(1000), [yesterday]);
+    expect(restOn(result.current.activity.days, yesterday)).toBe(true);
+    await act(async () => result.current.activity.undoRestDay(yesterday));
+    expect(restOn(result.current.activity.days, yesterday)).toBe(false);
+  });
+
+  it('leaves older rest days alone: those days are settled', async () => {
+    const { result } = await setup(stepsRepo(1000), [twoDaysAgo]);
+    await act(async () => result.current.activity.undoRestDay(twoDaysAgo));
+    expect(restOn(result.current.activity.days, twoDaysAgo)).toBe(true);
+  });
+});
 
 describe('ActivityProvider awards', () => {
   it('awards the step-goal waypoints once when today reaches the goal', async () => {
@@ -163,8 +185,8 @@ describe('rest days', () => {
     expect(sources).toContain('steps');
     expect(sources).toContain('rest');
     expect(result.current.activity.todayIsRest).toBe(true);
-    // The day was walked, so the week keeps its rest day for another time.
-    expect(result.current.activity.restLeft).toBe(2);
+    // It was still taken, so it isn't handed back to take again.
+    expect(result.current.activity.restLeft).toBe(1);
   });
 
   it('keeps the streak through a rest day, and stops at the weekly allowance', async () => {

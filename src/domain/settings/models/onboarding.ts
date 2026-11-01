@@ -5,16 +5,35 @@ export enum Tip {
   Waypoints = 'waypoints',
   FoodSkipMeal = 'foodSkipMeal',
   FoodSwipe = 'foodSwipe',
+  Settings = 'settings',
+  TabToday = 'tabToday',
+  TabFood = 'tabFood',
+  TabTrends = 'tabTrends',
+  TabJourney = 'tabJourney',
+  MapZoom = 'mapZoom',
+  MapView = 'mapView',
+  MapStops = 'mapStops',
 }
 
 /** Each screen's tips, in the order they are shown there. */
 export class Tips {
+  /** Today's own parts, then where Settings is, then each tab along the bottom. */
   static readonly TODAY: readonly Tip[] = [
     Tip.WeekStrip,
     Tip.RestDay,
     Tip.Waypoints,
+    Tip.Settings,
+    Tip.TabToday,
+    Tip.TabFood,
+    Tip.TabTrends,
+    Tip.TabJourney,
   ];
   static readonly FOOD: readonly Tip[] = [Tip.FoodSkipMeal, Tip.FoodSwipe];
+  static readonly JOURNEY: readonly Tip[] = [
+    Tip.MapZoom,
+    Tip.MapView,
+    Tip.MapStops,
+  ];
 }
 
 /**

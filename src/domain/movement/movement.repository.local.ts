@@ -28,6 +28,19 @@ export function createLocalMovementRepository(db: LocalDb): MovementRepository {
         ],
       );
     },
+    async update(entry) {
+      await db.run(
+        `UPDATE movement_entries SET activity = ?, minutes = ?, effort = ?, distance_m = ?
+         WHERE id = ?`,
+        [
+          entry.activity,
+          entry.minutes,
+          entry.effort,
+          entry.distanceM ?? null,
+          entry.id,
+        ],
+      );
+    },
     async remove(id) {
       await db.run('DELETE FROM movement_entries WHERE id = ?', [id]);
     },

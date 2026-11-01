@@ -91,6 +91,8 @@ export default function FoodScreen() {
       <TabHeader
         eyebrow={<DaySwitcher />}
         title='Food'
+        // What comes first (a section label, or the water card) brings its own space above it.
+        style={s.header}
         accessory={
           isToday ? null : (
             <Pressable
@@ -377,6 +379,7 @@ function SkippedRow({ text, onUndo }: { text: string; onUndo?: () => void }) {
 }
 
 const s = StyleSheet.create({
+  header: { paddingBottom: 0 },
   backChip: {
     backgroundColor: colors.coralTint,
     borderRadius: radius.md,

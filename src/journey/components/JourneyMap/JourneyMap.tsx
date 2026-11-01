@@ -86,12 +86,19 @@ export function JourneyMap({
   progress,
   lap,
   replayKey = 0,
+  tipRefs,
 }: {
   /** How far through the current migration, 0 to 1. */
   progress: number;
   /** Which migration this is: 1 for the first. */
   lap: number;
   replayKey?: number;
+  /** The zoom button, the view toggle and the map itself, for Journey's tips to point at. */
+  tipRefs?: {
+    zoom: React.RefObject<View | null>;
+    view: React.RefObject<View | null>;
+    map: React.RefObject<View | null>;
+  };
 }) {
   const { settings, updateSettings } = useSettings();
   const view = settings.journeyView;
@@ -284,160 +291,172 @@ export function JourneyMap({
   };
 
   return (
-    <View
-      {...frameProps}
-      // Each view keeps its own proportions: the flat map is shorter than the globe.
-      style={[s.frame, { aspectRatio: JourneyMapShapes.WIDTH / shape.height }]}
-      testID='journey-map'
-      onLayout={(e) => {
-        setWidth(e.nativeEvent.layout.width);
-        frameProps.onLayout();
-      }}
-    >
-      <Animated.View style={[StyleSheet.absoluteFill, moveStyle]}>
-        <Pressable
-          style={StyleSheet.absoluteFill}
-          onPress={onPress}
-          accessibilityRole='button'
-          accessibilityLabel={
-            next >= 0
-              ? `Map of the migration. Heading to ${Milestones.STOPS[next].name}`
-              : 'Map of the migration'
-          }
-          accessibilityHint='Shows the name of the nearest stop. Use the Zoom in and Zoom out actions to zoom.'
-          accessibilityActions={[
-            { name: 'zoomIn', label: 'Zoom in' },
-            { name: 'zoomOut', label: 'Zoom out' },
-          ]}
-          onAccessibilityAction={(e) =>
-            onAccessibilityAction(e.nativeEvent.actionName)
-          }
-        >
-          <Svg
-            width='100%'
-            height='100%'
-            viewBox={`0 0 ${JourneyMapShapes.WIDTH} ${shape.height}`}
+    // The visible frame, for the tip about stops (the layer inside it moves and scales).
+    <View ref={tipRefs?.map} collapsable={false}>
+      <View
+        {...frameProps}
+        // Each view keeps its own proportions: the flat map is shorter than the globe.
+        style={[
+          s.frame,
+          { aspectRatio: JourneyMapShapes.WIDTH / shape.height },
+        ]}
+        testID='journey-map'
+        onLayout={(e) => {
+          setWidth(e.nativeEvent.layout.width);
+          frameProps.onLayout();
+        }}
+      >
+        <Animated.View style={[StyleSheet.absoluteFill, moveStyle]}>
+          <Pressable
+            style={StyleSheet.absoluteFill}
+            onPress={onPress}
+            accessibilityRole='button'
+            accessibilityLabel={
+              next >= 0
+                ? `Map of the migration. Heading to ${Milestones.STOPS[next].name}`
+                : 'Map of the migration'
+            }
+            accessibilityHint='Shows the name of the nearest stop. Use the Zoom in and Zoom out actions to zoom.'
+            accessibilityActions={[
+              { name: 'zoomIn', label: 'Zoom in' },
+              { name: 'zoomOut', label: 'Zoom out' },
+            ]}
+            onAccessibilityAction={(e) =>
+              onAccessibilityAction(e.nativeEvent.actionName)
+            }
           >
-            {/* The zoom and turn, drawn as part of the map so it stays sharp close up. */}
-            <G
-              transform={`translate(${zoom.x / scale}, ${zoom.y / scale}) rotate(${zoom.rotate}) scale(${zoom.scale})`}
+            <Svg
+              width='100%'
+              height='100%'
+              viewBox={`0 0 ${JourneyMapShapes.WIDTH} ${shape.height}`}
             >
-              <MapBase shape={shape} path={path} lap={lap} k={k} />
-              <AnimatedPath
-                d={path}
-                fill='none'
-                stroke={colors.route}
-                strokeWidth={2.2 / k}
-                strokeLinecap='round'
-                strokeLinejoin='round'
-                strokeDasharray={total}
-                strokeDashoffset={dash as unknown as number}
-              />
-
-              {Milestones.STOPS.map((stop, i) => {
-                const p = pointAt(shape, stopIndex(i));
-                const reached = i < next || next < 0;
-                return i === next ? (
-                  <Circle
-                    key={stop.id}
-                    cx={p.x}
-                    cy={p.y}
-                    r={4 / k}
-                    fill={colors.sun}
-                  />
-                ) : reached ? (
-                  <Circle
-                    key={stop.id}
-                    cx={p.x}
-                    cy={p.y}
-                    r={2.6 / k}
-                    fill={colors.route}
-                  />
-                ) : (
-                  <Circle
-                    key={stop.id}
-                    cx={p.x}
-                    cy={p.y}
-                    r={2.6 / k}
-                    fill='none'
-                    stroke={colors.routeAhead}
-                    strokeWidth={1.2 / k}
-                  />
-                );
-              })}
-
-              {/* Seen from above, so it can turn about its body to face any way it flies. */}
+              {/* The zoom and turn, drawn as part of the map so it stays sharp close up. */}
               <G
-                transform={`translate(${bird.x}, ${bird.y}) rotate(${bird.rotate})`}
+                transform={`translate(${zoom.x / scale}, ${zoom.y / scale}) rotate(${zoom.rotate}) scale(${zoom.scale})`}
               >
-                <SvgImage
-                  href={TernIcon.SOURCE}
-                  x={-TernIcon.ANCHOR.x * birdW}
-                  y={-TernIcon.ANCHOR.y * birdH}
-                  width={birdW}
-                  height={birdH}
+                <MapBase shape={shape} path={path} lap={lap} k={k} />
+                <AnimatedPath
+                  d={path}
+                  fill='none'
+                  stroke={colors.route}
+                  strokeWidth={2.2 / k}
+                  strokeLinecap='round'
+                  strokeLinejoin='round'
+                  strokeDasharray={total}
+                  strokeDashoffset={dash as unknown as number}
                 />
+
+                {Milestones.STOPS.map((stop, i) => {
+                  const p = pointAt(shape, stopIndex(i));
+                  const reached = i < next || next < 0;
+                  return i === next ? (
+                    <Circle
+                      key={stop.id}
+                      cx={p.x}
+                      cy={p.y}
+                      r={4 / k}
+                      fill={colors.sun}
+                    />
+                  ) : reached ? (
+                    <Circle
+                      key={stop.id}
+                      cx={p.x}
+                      cy={p.y}
+                      r={2.6 / k}
+                      fill={colors.route}
+                    />
+                  ) : (
+                    <Circle
+                      key={stop.id}
+                      cx={p.x}
+                      cy={p.y}
+                      r={2.6 / k}
+                      fill='none'
+                      stroke={colors.routeAhead}
+                      strokeWidth={1.2 / k}
+                    />
+                  );
+                })}
+
+                {/* Seen from above, so it can turn about its body to face any way it flies. */}
+                <G
+                  transform={`translate(${bird.x}, ${bird.y}) rotate(${bird.rotate})`}
+                >
+                  <SvgImage
+                    href={TernIcon.SOURCE}
+                    x={-TernIcon.ANCHOR.x * birdW}
+                    y={-TernIcon.ANCHOR.y * birdH}
+                    width={birdW}
+                    height={birdH}
+                  />
+                </G>
               </G>
-            </G>
-          </Svg>
-        </Pressable>
-      </Animated.View>
+            </Svg>
+          </Pressable>
+        </Animated.View>
 
-      {label && tapped ? (
-        <View
-          pointerEvents='none'
-          style={[s.label, { left: label.left, top: label.top }]}
-        >
-          <FadeIn key={tapped.stop}>
-            <Text style={s.labelText} numberOfLines={1}>
-              {label.text}
-            </Text>
-          </FadeIn>
-        </View>
-      ) : null}
+        {label && tapped ? (
+          <View
+            pointerEvents='none'
+            style={[s.label, { left: label.left, top: label.top }]}
+          >
+            <FadeIn key={tapped.stop}>
+              <Text style={s.labelText} numberOfLines={1}>
+                {label.text}
+              </Text>
+            </FadeIn>
+          </View>
+        ) : null}
 
-      <View style={s.controls}>
-        {/* The same as a double tap: out to the whole route, or back in to the leg. */}
-        <Pressable
-          onPress={toggleWhole}
-          hitSlop={6}
-          style={[s.pill, s.pillButton]}
-          accessibilityRole='button'
-          accessibilityLabel={
-            whole ? 'Zoom to the tern' : 'Show the whole route'
-          }
-        >
-          <Icon
-            name={whole ? 'crosshairs-gps' : 'arrow-expand'}
-            size={14}
-            color={colors.onDark}
-          />
-        </Pressable>
-        <View style={[s.pill, s.toggle]}>
-          {[
-            {
-              to: JourneyView.Map,
-              icon: 'map-outline' as const,
-              name: 'Flat map',
-            },
-            { to: JourneyView.Globe, icon: 'earth' as const, name: 'Globe' },
-          ].map(({ to, icon, name }) => (
-            <Pressable
-              key={to}
-              onPress={() => toggle(to)}
-              hitSlop={6}
-              style={[s.toggleButton, view === to && s.toggleOn]}
-              accessibilityRole='button'
-              accessibilityLabel={name}
-              accessibilityState={{ selected: view === to }}
-            >
-              <Icon
-                name={icon}
-                size={15}
-                color={view === to ? colors.onDark : colors.routeAhead}
-              />
-            </Pressable>
-          ))}
+        <View style={s.controls}>
+          {/* The same as a double tap: out to the whole route, or back in to the leg. */}
+          <Pressable
+            ref={tipRefs?.zoom}
+            collapsable={false}
+            onPress={toggleWhole}
+            hitSlop={6}
+            style={[s.pill, s.pillButton]}
+            accessibilityRole='button'
+            accessibilityLabel={
+              whole ? 'Zoom to the tern' : 'Show the whole route'
+            }
+          >
+            <Icon
+              name={whole ? 'crosshairs-gps' : 'arrow-expand'}
+              size={14}
+              color={colors.onDark}
+            />
+          </Pressable>
+          <View
+            ref={tipRefs?.view}
+            collapsable={false}
+            style={[s.pill, s.toggle]}
+          >
+            {[
+              {
+                to: JourneyView.Map,
+                icon: 'map-outline' as const,
+                name: 'Flat map',
+              },
+              { to: JourneyView.Globe, icon: 'earth' as const, name: 'Globe' },
+            ].map(({ to, icon, name }) => (
+              <Pressable
+                key={to}
+                onPress={() => toggle(to)}
+                hitSlop={6}
+                style={[s.toggleButton, view === to && s.toggleOn]}
+                accessibilityRole='button'
+                accessibilityLabel={name}
+                accessibilityState={{ selected: view === to }}
+              >
+                <Icon
+                  name={icon}
+                  size={15}
+                  color={view === to ? colors.onDark : colors.routeAhead}
+                />
+              </Pressable>
+            ))}
+          </View>
         </View>
       </View>
     </View>

@@ -180,6 +180,44 @@ describe('buildDays', () => {
     expect(by['2026-09-16']).toBe('rest');
   });
 
+  it("before the rule's date, a walked rest day leaves the week's rest days alone", () => {
+    // TODAY is in September, before RestDayRules.WALKED_COUNTS_FROM.
+    const d = days({
+      stepsByDay: {
+        '2026-09-14': 9000,
+        '2026-09-15': 500,
+        // The rest of the week walked, so only the 15th is left to cover.
+        '2026-09-16': 9000,
+        '2026-09-17': 9000,
+        '2026-09-18': 9000,
+        '2026-09-19': 9000,
+        '2026-09-20': 9000,
+      },
+      restDays: new Set(['2026-09-14']),
+      autoDetect: true,
+    });
+    expect(restDaysLeft(d, '2026-09-20', 2)).toBe(1); // only the detected day
+  });
+
+  it("from the rule's date, a walked rest day uses one up, in what's left and what's covered", () => {
+    const d = days({
+      today: '2026-11-08',
+      stepsByDay: {
+        '2026-11-02': 9000,
+        '2026-11-03': 500,
+        '2026-11-04': 400,
+      },
+      restDays: new Set(['2026-11-02']),
+      autoDetect: true,
+    });
+    const by = Object.fromEntries(d.map((x) => [x.day, x.state]));
+    expect(by['2026-11-02']).toBe('rest');
+    // The allowance of 2 is the walked rest day and one detected day.
+    expect(by['2026-11-03']).toBe('rest');
+    expect(by['2026-11-04']).toBe('partial');
+    expect(restDaysLeft(d, '2026-11-08', 2)).toBe(0);
+  });
+
   it('counts a rest day on which the goal was reached toward the streak', () => {
     const d = days({
       stepsByDay: {

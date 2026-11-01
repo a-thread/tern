@@ -35,7 +35,10 @@ const yoga: MovementEntry = {
 // The local repository has to behave like the memory one the Contexts are tested against.
 describe.each<[string, () => Promise<MovementRepository>]>([
   ['memory', async () => createMemoryMovementRepository()],
-  ['local', async () => createLocalMovementRepository(await createMigratedSqlJsDb())],
+  [
+    'local',
+    async () => createLocalMovementRepository(await createMigratedSqlJsDb()),
+  ],
 ])('%s movement repository', (_name, create) => {
   it('loads entries in a range, oldest first, with effort and distance kept', async () => {
     const repo = await create();
@@ -43,6 +46,20 @@ describe.each<[string, () => Promise<MovementRepository>]>([
     await repo.add(yoga);
     await repo.add({ ...swim, id: 'c', day: '2026-10-25' });
     expect(await repo.load('2026-10-18', '2026-10-18')).toEqual([yoga, swim]);
+  });
+
+  it('changes an entry in place, keeping its day and when it was logged', async () => {
+    const repo = await create();
+    await repo.add(swim);
+    await repo.update({
+      ...swim,
+      minutes: 55,
+      effort: Effort.Hard,
+      distanceM: null,
+    });
+    expect(await repo.load('2026-10-18', '2026-10-18')).toEqual([
+      { ...swim, minutes: 55, effort: Effort.Hard, distanceM: null },
+    ]);
   });
 
   it('removes an entry', async () => {

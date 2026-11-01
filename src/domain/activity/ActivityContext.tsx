@@ -68,7 +68,11 @@ type ActivityContextValue = {
   connect: () => Promise<StepsStatus>;
   /** Take today as a rest day. False if the week's allowance is used up. */
   takeRestDay: () => boolean;
-  undoRestDay: () => void;
+  /**
+   * Undoes the rest day taken on `day` (today unless given). Only today or yesterday: older days
+   * are settled. Waypoints a finished day already earned stay; the streak is worked out again.
+   */
+  undoRestDay: (day?: string) => void;
 };
 
 const [ActivityContext, useActivity] =
@@ -234,10 +238,14 @@ export function ActivityProvider({
     return true;
   }, [todayIsRest, restLeft, today, restRepo, persist]);
 
-  const undoRestDay = useCallback(() => {
-    setRestList((prev) => prev.filter((d) => d !== today));
-    persist(restRepo.remove(today), REST_FAILURE);
-  }, [today, restRepo, persist]);
+  const undoRestDay = useCallback(
+    (day: string = today) => {
+      if (day !== today && day !== addDays(today, -1)) return;
+      setRestList((prev) => prev.filter((d) => d !== day));
+      persist(restRepo.remove(day), REST_FAILURE);
+    },
+    [today, restRepo, persist],
+  );
 
   const refresh = useCallback(
     async () => (await load())?.status ?? 'failed',

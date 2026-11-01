@@ -74,7 +74,8 @@ src/
   a `typography` token already covers.
 - **Repositories**: `ok(query)` for writes and `rows<T>(query)` for selects (`@shared/backend/query`).
 - **Contexts** load with `useLoader`, save with `usePersist`, or use `useSyncedList` for an
-  optimistic list. Create them with `createRequiredContext`.
+  optimistic list. Create them with `createRequiredContext`; one that is deliberately optional
+  (null outside its provider, like `tabAnchors`) uses `createContext` and says why.
 - **Confirmations** use `confirm()` from `@shared/utils/confirm`, not `Alert.alert` directly.
 - **Health data**: steps and workouts come from the phone's health app through `createHealthStepsRepository`
   / `createHealthWorkouts` (Apple Health on iPhone, Health Connect on Android); adapters take a small

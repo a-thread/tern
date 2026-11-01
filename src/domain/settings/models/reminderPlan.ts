@@ -33,10 +33,14 @@ export class Reminders {
 
   static readonly WATER_EVERY_HOURS = { min: 1, max: 4 };
 
+  /** The two meal reminders: around lunch, and around dinner. */
+  static readonly MIDDAY_MEALS_ID = 'tern-meals-midday';
+  static readonly EVENING_MEALS_ID = 'tern-meals-evening';
+
   /** Fixed ids; medication reminders use `tern-med-<id>`. */
   static readonly ALL_IDS = [
-    'tern-meals-midday',
-    'tern-meals-evening',
+    Reminders.MIDDAY_MEALS_ID,
+    Reminders.EVENING_MEALS_ID,
     'tern-weigh-in',
     'tern-mood',
   ];
@@ -81,6 +85,10 @@ export type DoneToday = {
   rest: boolean;
   /** Core meals logged or marked "nothing today". */
   meals: boolean;
+  /** Lunch logged, or marked "nothing today": the midday reminder is about it. */
+  lunch: boolean;
+  /** Dinner logged, or marked "nothing today": the evening reminder is about it. */
+  dinner: boolean;
   /** Weighed in, or the weigh-in skipped. */
   weighIn: boolean;
   /** The water goal is reached. */
@@ -94,6 +102,8 @@ export type DoneToday = {
 export const NOTHING_DONE: DoneToday = {
   rest: false,
   meals: false,
+  lunch: false,
+  dinner: false,
   weighIn: false,
   water: false,
   mood: false,
@@ -112,7 +122,12 @@ export function isQuietToday(
   if (done.rest) return true;
   switch (r.key) {
     case ReminderKey.Meals:
-      return done.meals;
+      // Each meal reminder is about one meal, so that meal being done quiets it too.
+      return (
+        done.meals ||
+        (r.id === Reminders.MIDDAY_MEALS_ID && done.lunch) ||
+        (r.id === Reminders.EVENING_MEALS_ID && done.dinner)
+      );
     case ReminderKey.WeighIn:
       return done.weighIn;
     case ReminderKey.Water:
@@ -238,7 +253,7 @@ export function planReminders(
   if (trackFood && c.mealLog.on) {
     plan.push(
       {
-        id: 'tern-meals-midday',
+        id: Reminders.MIDDAY_MEALS_ID,
         key: ReminderKey.Meals,
         title: LUNCH_MESSAGES[0].title,
         body: LUNCH_MESSAGES[0].body,
@@ -246,7 +261,7 @@ export function planReminders(
         ...at(c.mealLog.midday),
       },
       {
-        id: 'tern-meals-evening',
+        id: Reminders.EVENING_MEALS_ID,
         key: ReminderKey.Meals,
         title: DINNER_MESSAGES[0].title,
         body: DINNER_MESSAGES[0].body,

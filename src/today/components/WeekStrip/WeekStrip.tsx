@@ -12,6 +12,7 @@ import { factForDay } from './utils/ternFacts';
 import { dayRingLabel } from './utils/dayRingLabel';
 import { DayState } from '@shared/models/dayState';
 import { showsRestLink } from '../../models/restLink';
+import { confirm } from '@shared/utils/confirm';
 
 /**
  * This week's seven rings, a fact for the day, and the rest-day link. Tapping a
@@ -32,11 +33,13 @@ export function WeekStrip({
     day: selectedDay,
     today: todayKey,
     isToday,
+    editable,
     setDay: onSelect,
     showToday,
   } = useViewedDay();
   const { settings } = useSettings();
   const {
+    days,
     week,
     stepsReadable,
     restLeft,
@@ -50,6 +53,27 @@ export function WeekStrip({
     todayIsRest,
     restLeft,
   });
+  // Yesterday's rest day, if undoing it would change anything: a day short of the goal would
+  // just be covered again by auto-detect. Looked up in all days, as yesterday may be last week.
+  const viewed = days.find((d) => d.day === selectedDay);
+  const undoable =
+    editable &&
+    !isToday &&
+    viewed?.chosenRest === true &&
+    (viewed.reachedGoal || !settings.autoDetectRestDays);
+  const undoYesterday = () =>
+    confirm({
+      title: "Undo yesterday's rest day?",
+      message: viewed?.reachedGoal
+        ? 'You reached your goal anyway, so the day still counts, and the rest day it used is free again.'
+        : "Yesterday becomes a missed day, which can end your streak. It can't be taken as a rest day again.",
+      action: 'Undo',
+      destructive: !viewed?.reachedGoal,
+      onConfirm: () => {
+        easeLayout(); // the page glides to its new shape
+        undoRestDay(selectedDay);
+      },
+    });
   const movementGoal = settings.trackMovement
     ? settings.movementGoalMinutes
     : 0;
@@ -94,9 +118,21 @@ export function WeekStrip({
       <Text style={s.caption}>{factForDay(todayKey)}</Text>
       {/* A rest day taken can always be undone; once the goal is reached a new one can't be taken. */}
       {!isToday ? (
-        <Pressable onPress={showToday} hitSlop={8} accessibilityRole='button'>
-          <Text style={[s.restLink, s.backLink]}>Back to today</Text>
-        </Pressable>
+        <View style={s.pastLinks}>
+          {/* Yesterday's rest day can still be undone; older days are settled. */}
+          {undoable ? (
+            <Pressable
+              onPress={undoYesterday}
+              hitSlop={8}
+              accessibilityRole='button'
+            >
+              <Text style={s.restLink}>Undo yesterday's rest day</Text>
+            </Pressable>
+          ) : null}
+          <Pressable onPress={showToday} hitSlop={8} accessibilityRole='button'>
+            <Text style={[s.restLink, s.backLink]}>Back to today</Text>
+          </Pressable>
+        </View>
       ) : restLink && todayIsRest ? (
         // Wrapped in a view Android won't flatten away, so the tip on Today can measure it;
         // it hugs the text, so the tip's outline does too.
@@ -165,4 +201,9 @@ const s = StyleSheet.create({
   restAnchor: { alignSelf: 'center', marginTop: space.sm },
   anchored: { marginTop: 0 },
   backLink: { color: colors.coral },
+  pastLinks: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    gap: space.lg,
+  },
 });
