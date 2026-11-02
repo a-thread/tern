@@ -30,11 +30,15 @@ is a conventional commit (the `PR title` check enforces it):
 | `feat!: …` or a `BREAKING CHANGE:` footer                   | major (minor while below 1.0) |
 | `chore`, `ci`, `docs`, `refactor`, `test`, `style`, `build` | none                          |
 
-On each push to `main` the workflow runs typecheck, lint and tests, works out the version from
-the commits since the last `v*` tag, builds, uploads to the Play internal track (and TestFlight
-once iOS is on), and only then creates the `vX.Y.Z` tag and GitHub release with notes from the
-PR titles. A failed release leaves no tag, so the next merge retries with everything since the
-last one. Merges that land during a release are picked up by the next run.
+On each push to `main` the workflow works out the version from the commits since the last `v*`
+tag and builds, while typecheck, lint and tests run alongside. Only when those pass does it
+upload to the Play internal track (and TestFlight once iOS is on), and only then create the
+`vX.Y.Z` tag and GitHub release with notes from the PR titles. A failed release leaves no tag, so
+the next merge retries with everything since the last one. Merges that land during a release are
+picked up by the next run.
+
+Android builds for phones only (`armeabi-v7a`, `arm64-v8a`, set in the build-android action), so
+the Play build doesn't install on x86 emulators or x86 Chromebooks.
 
 The version comes from the tag, through `APP_VERSION` in [app.config.ts](../app.config.ts);
 `app.json`'s `version` is only the local fallback. Build numbers come from EAS.
