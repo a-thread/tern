@@ -13,8 +13,7 @@ on:
 permissions:
   contents: read
 
-# One release at a time. Merges that land meanwhile collapse into the next run, which picks up
-# every commit since the last tag.
+# Serialize releases; the next run picks up commits since the last tag.
 concurrency:
   group: release-${{ github.event_name }}
   cancel-in-progress: false
@@ -77,8 +76,8 @@ jobs:
           expo-token: ${{ secrets.EXPO_TOKEN }}
 
   submit-android:
-    needs: [version, android]
-    if: needs.version.outputs.next != ''
+    needs: android
+    if: github.event_name == 'push'
     runs-on: ubuntu-24.04
     timeout-minutes: 15
     environment: production
@@ -90,8 +89,7 @@ jobs:
 
   # eas submit waits in the free EAS Submit queue, hence the long timeout.
   submit-ios:
-    needs: [version, ios]
-    if: needs.version.outputs.next != ''
+    needs: ios
     runs-on: ubuntu-24.04
     timeout-minutes: 60
     environment: production
@@ -101,12 +99,13 @@ jobs:
         with:
           expo-token: ${{ secrets.EXPO_TOKEN }}
 
-  # Tags only after every upload that ran succeeded (iOS counts only when it ran).
+  # Publish after uploads succeed; skipped iOS jobs are allowed, but failed builds are not.
   publish:
-    needs: [version, submit-android, submit-ios]
+    needs: [version, ios, submit-android, submit-ios]
     if: >-
       !cancelled() && needs.version.outputs.next != '' &&
       needs.submit-android.result == 'success' &&
+      contains(fromJSON('["success", "skipped"]'), needs.ios.result) &&
       contains(fromJSON('["success", "skipped"]'), needs.submit-ios.result)
     runs-on: ubuntu-24.04
     timeout-minutes: 5
