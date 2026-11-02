@@ -8,7 +8,11 @@ What it relies on, if a key ever needs replacing:
 
 - GitHub secrets: `EXPO_TOKEN` (an Expo robot user's token) and `PLAY_SERVICE_ACCOUNT_JSON`
   (the JSON key of `github-service@tern-509703.iam.gserviceaccount.com`, which uploads
-  straight to Play and so skips the EAS Submit queue).
+  straight to Play and so skips the EAS Submit queue). Optionally `RELEASE_TOKEN`: a
+  fine-grained personal access token for this repo only, with Contents and Workflows read and
+  write. The release job tags with it, because the default `GITHUB_TOKEN` is refused (HTTP 403)
+  when the release commit changes a file in `.github/workflows/`. Without it those releases
+  upload but don't tag; tag them by hand. It expires, so renew it when GitHub emails.
 - EAS: the Android keystore (back it up with `npx eas-cli credentials`) and the environment
   variables `EXPO_PUBLIC_SUPABASE_URL`, `EXPO_PUBLIC_SUPABASE_ANON_KEY`,
   `EXPO_PUBLIC_USDA_API_KEY`.
