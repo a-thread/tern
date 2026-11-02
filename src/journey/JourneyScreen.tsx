@@ -106,11 +106,9 @@ export default function JourneyScreen() {
           }
           title='Journey'
           tone={TabHeaderTone.OnDark}
-          // The hero already pads the sides and the top.
           style={s.heroHeader}
         />
 
-        {/* Right under the title, like the card under Today's. */}
         <View>
           <JourneyMap
             progress={migration.progress}
@@ -298,7 +296,7 @@ const s = StyleSheet.create({
   heroTotal: { alignItems: 'center', marginTop: 6 },
   heroShadow: { position: 'absolute', top: 0, left: 0, right: 0, height: 14 },
   hero: { paddingHorizontal: space.lg, paddingBottom: space.lg },
-  heroHeader: { paddingHorizontal: 0, paddingBottom: 0 },
+  heroHeader: { paddingHorizontal: 0, paddingBottom: space.md },
   heroNumber: {
     fontFamily: font.displayMedium,
     fontSize: 34,
