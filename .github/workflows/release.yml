@@ -50,7 +50,7 @@ jobs:
           fi
 
   android:
-    needs: [check, version]
+    needs: version
     if: github.event_name == 'workflow_dispatch' || needs.version.outputs.next != ''
     runs-on: ubuntu-24.04
     timeout-minutes: 45
@@ -64,7 +64,7 @@ jobs:
 
   # Included once the repo variable IOS_RELEASES is 'true' (after iOS credentials exist in EAS).
   ios:
-    needs: [check, version]
+    needs: version
     if: needs.version.outputs.next != '' && vars.IOS_RELEASES == 'true'
     runs-on: macos-26
     timeout-minutes: 60
@@ -76,7 +76,7 @@ jobs:
           expo-token: ${{ secrets.EXPO_TOKEN }}
 
   submit-android:
-    needs: android
+    needs: [check, android]
     if: github.event_name == 'push'
     runs-on: ubuntu-24.04
     timeout-minutes: 15
@@ -89,7 +89,7 @@ jobs:
 
   # eas submit waits in the free EAS Submit queue, hence the long timeout.
   submit-ios:
-    needs: ios
+    needs: [check, ios]
     runs-on: ubuntu-24.04
     timeout-minutes: 60
     environment: production

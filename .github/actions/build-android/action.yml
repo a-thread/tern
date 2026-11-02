@@ -46,6 +46,8 @@ runs:
         # Keep the build folder so R8's mapping.txt can be uploaded to Play for deobfuscation.
         export EAS_LOCAL_BUILD_WORKINGDIR="$RUNNER_TEMP/eas-build"
         export EAS_LOCAL_BUILD_SKIP_CLEANUP=1
+        # Phones only: skipping x86/x86_64 (emulators, a few Chromebooks) halves the C++ compile.
+        export ORG_GRADLE_PROJECT_reactNativeArchitectures=armeabi-v7a,arm64-v8a
         npx eas build --platform android --profile "$PROFILE" --local --non-interactive \
           --output "$RUNNER_TEMP/tern-android.$ext"
         mapping="$(find "$EAS_LOCAL_BUILD_WORKINGDIR" -path '*/outputs/mapping/release/mapping.txt' -print -quit)"
