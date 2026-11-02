@@ -24,7 +24,7 @@ Track all the things that help you meet your goals:
   - log workouts and how hard they felt
   - take rest days that preserve your momentum
 - **Food**
-  - track calories, macros or neither!
+  - track calories, macros or neither
     - nothing warns you for going over, and exercise never earns food back
   - control how food is displayed:
     - foods get a NOVA processing level as information, never a judgment
