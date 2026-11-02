@@ -31,4 +31,20 @@ describe('LegalLinks', () => {
     expect(open).toHaveBeenCalledWith(LegalUrls.PRIVACY);
     open.mockRestore();
   });
+
+  it('says so when the page can’t be opened', async () => {
+    const open = jest
+      .spyOn(Linking, 'openURL')
+      .mockRejectedValue(new Error('no browser'));
+    const warn = jest.spyOn(console, 'warn').mockImplementation(() => {});
+    const ui = render(
+      <ToastProvider>
+        <LegalLinks />
+      </ToastProvider>,
+    );
+    fireEvent.press(ui.getByText('Privacy Policy'));
+    expect(await ui.findByText("Couldn't open the page.")).toBeTruthy();
+    open.mockRestore();
+    warn.mockRestore();
+  });
 });

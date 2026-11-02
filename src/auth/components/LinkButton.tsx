@@ -11,7 +11,7 @@ export function LinkButton({
   onPress: () => void;
 }) {
   return (
-    <Pressable onPress={onPress} hitSlop={8}>
+    <Pressable onPress={onPress} hitSlop={8} accessibilityRole='button'>
       <Text style={s.link}>{label}</Text>
     </Pressable>
   );

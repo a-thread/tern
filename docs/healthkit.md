@@ -14,14 +14,16 @@ Android, and `BackendContext` uses those.
 
 ## Status
 
-- Verified here: types, lint, the 748 Jest tests (mapping, permission status, platform selection),
+- Verified here: types, lint, the Jest tests (mapping, permission status, platform selection),
   and that the Expo config resolves to the right `Info.plist` keys and entitlement
   (`npx expo config --type introspect`).
-- **Not yet verified on a device:** the app has not been run on an iPhone. The HealthKit library is
-  built on Nitro Modules, which doesn't compile on iOS with the old architecture (`could not build
-  module 'glog'`), so the app uses the new architecture, Expo 54's default. If HealthKit still fails,
-  the fallback is `react-native-health` behind the same `HealthKitApi`, so only `createHealthKitApi`
-  changes.
+- **Builds:** a production build compiles on EAS and is accepted by App Store Connect for
+  TestFlight. The HealthKit library is built on Nitro Modules, which doesn't compile on iOS with the
+  old architecture (`could not build module 'glog'`), so the app uses the new architecture, Expo
+  54's default.
+- **Not yet verified on a device:** reading steps and workouts on a real iPhone. If HealthKit fails
+  there, the fallback is `react-native-health` behind the same `HealthKitApi`, so only
+  `createHealthKitApi` changes.
 
 ## Turning it on
 
