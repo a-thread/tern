@@ -3,7 +3,7 @@ import { Linking, StyleSheet, View } from 'react-native';
 
 import { space } from '@shared/theme';
 import { useToast } from '@shared/state/ToastContext';
-import { LinkButton } from '../../../components/LinkButton';
+import { LinkButton } from '@/auth/components/LinkButton';
 import { legalLinks } from './utils/legalLinks';
 
 /** The terms and privacy links under the paywall's fine print, side by side. */
