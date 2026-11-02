@@ -17,11 +17,11 @@ Android, and `BackendContext` uses those.
 - Verified here: types, lint, the 748 Jest tests (mapping, permission status, platform selection),
   and that the Expo config resolves to the right `Info.plist` keys and entitlement
   (`npx expo config --type introspect`).
-- **Not yet verified on a device:** the app has not been built or run on an iPhone. `newArchEnabled`
-  is `false` and the HealthKit library is built on Nitro Modules; its docs don't say outright that Nitro
-  works on the old architecture, so the first dev build is the real test. If it fails, the fallback is
-  `react-native-health` (old-architecture friendly, but little maintained) behind the same
-  `HealthKitApi`, so only `createHealthKitApi` changes.
+- **Not yet verified on a device:** the app has not been run on an iPhone. The HealthKit library is
+  built on Nitro Modules, which doesn't compile on iOS with the old architecture (`could not build
+  module 'glog'`), so the app uses the new architecture, Expo 54's default. If HealthKit still fails,
+  the fallback is `react-native-health` behind the same `HealthKitApi`, so only `createHealthKitApi`
+  changes.
 
 ## Turning it on
 
@@ -61,4 +61,6 @@ reminders shorten their window to fit (`rotationDays` in `reminderPlan.ts`).
   advertising, not stored in iCloud, not shared. Say so in the review notes.
 - Declare the capability on the App ID (EAS does it from the entitlement) and answer the App Privacy
   questions to match [index.html](index.html) (health data is read on the device, not collected).
-- `NSHealthShareUsageDescription` is in `app.json`; there is deliberately no update description.
+- `NSHealthShareUsageDescription` is in `app.json`. So is `NSHealthUpdateUsageDescription`, even though
+  Tern never writes: the HealthKit library references the write APIs, and App Store Connect rejects
+  the upload without it (ITMS-90683). Its text says Tern only reads.

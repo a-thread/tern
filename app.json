@@ -52,7 +52,7 @@
         "@kingstinct/react-native-healthkit",
         {
           "NSHealthShareUsageDescription": "Tern reads your step counts and workouts from Apple Health to show your daily movement and streak. Nothing is shared or sold.",
-          "NSHealthUpdateUsageDescription": false,
+          "NSHealthUpdateUsageDescription": "Tern only reads from Apple Health. It never writes or changes your health data.",
           "background": false
         }
       ],
@@ -77,7 +77,6 @@
         "projectId": "5a0739df-fa83-452d-8c31-92cd473ffa80"
       }
     },
-    "owner": "purlieus-systems",
-    "newArchEnabled": false
+    "owner": "purlieus-systems"
   }
 }

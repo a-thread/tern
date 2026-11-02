@@ -15,6 +15,7 @@ import { LinkButton } from '../components/LinkButton';
 import { LinkColumn } from '../components/LinkColumn';
 import { SubmitButton } from '../components/SubmitButton';
 import { useSubmit } from '../hooks/useSubmit';
+import { LegalLinks } from './components/LegalLinks/LegalLinks';
 import { PlanChoice } from './components/PlanChoice/PlanChoice';
 
 const STORE = storeName();
@@ -112,6 +113,7 @@ export default function PaywallScreen({ onBack }: { onBack: () => void }) {
       <Text style={s.fine}>
         {`Paid through ${STORE}. Renews until you cancel in ${STORE}. If Plus ever ends, nothing is deleted: Tern keeps working on this phone.`}
       </Text>
+      <LegalLinks />
 
       <LinkColumn>
         <LinkButton label='Restore a purchase' onPress={restorePurchase} />
