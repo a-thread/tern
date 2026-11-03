@@ -46,14 +46,12 @@ runs:
       run: |
         ext=apk
         if [ "$PROFILE" = "production" ]; then ext=aab; fi
-        # Keep the build folder so R8's mapping.txt can be uploaded to Play for deobfuscation.
+        # Keep the build folder for R8's mapping.txt.
         export EAS_LOCAL_BUILD_WORKINGDIR="$RUNNER_TEMP/eas-build"
         export EAS_LOCAL_BUILD_SKIP_CLEANUP=1
-        # Phones only: skipping x86/x86_64 (emulators, a few Chromebooks) halves the C++ compile.
+        # Phone ABIs only; skipping emulator targets speeds up C++ compilation.
         export ORG_GRADLE_PROJECT_reactNativeArchitectures=armeabi-v7a,arm64-v8a
-        # The C++ comes from the modules' own CMake projects (expo-modules-core, nitro, screens);
-        # CMake reads these as the default launcher for each of them. Paths under the fixed
-        # working folder are hashed relative to it, so caches match from run to run.
+        # Use ccache for module CMake builds; fixed working paths keep cache keys stable.
         export CMAKE_C_COMPILER_LAUNCHER=ccache CMAKE_CXX_COMPILER_LAUNCHER=ccache
         export CCACHE_BASEDIR="$EAS_LOCAL_BUILD_WORKINGDIR"
         npx eas build --platform android --profile "$PROFILE" --local --non-interactive \
