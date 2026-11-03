@@ -1,21 +1,22 @@
-# Continuous release. Every push to main runs the checks; when the commits since the last v* tag
-# include a feat or fix, it builds on GitHub runners (`eas build --local`, no EAS build quota),
-# uploads to the Play internal track / TestFlight, and only then tags vX.Y.Z with release notes.
-# A failed release leaves no tag, so the next merge retries with everything since the last one.
-# workflow_dispatch builds an Android preview APK for testing and never submits.
+# Pushes publish feat/fix changes since the last tag; manual runs preview unless `release` is set.
 name: Release
 
 on:
   push:
     branches: [main]
   workflow_dispatch:
+    inputs:
+      release:
+        description: Release to the stores now, even with no app change since the last tag
+        type: boolean
+        default: false
 
 permissions:
   contents: read
 
 # Serialize releases; the next run picks up commits since the last tag.
 concurrency:
-  group: release-${{ github.event_name }}
+  group: release-${{ (github.event_name == 'push' || inputs.release) && 'publish' || 'preview' }}
   cancel-in-progress: false
 
 jobs:
@@ -31,7 +32,9 @@ jobs:
         with:
           fetch-depth: 0
       - id: next
-        if: github.event_name == 'push'
+        if: github.event_name == 'push' || inputs.release
+        env:
+          FORCE: ${{ inputs.release && '1' || '' }}
         run: |
           version="$(bash .github/scripts/next-version.sh)"
           echo "version=$version" >> "$GITHUB_OUTPUT"
@@ -50,7 +53,7 @@ jobs:
           fi
 
   android:
-    needs: version
+    needs: [check, version]
     if: github.event_name == 'workflow_dispatch' || needs.version.outputs.next != ''
     runs-on: ubuntu-24.04
     timeout-minutes: 45
@@ -58,13 +61,13 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: ./.github/actions/build-android
         with:
-          profile: ${{ github.event_name == 'push' && 'production' || 'preview' }}
+          profile: ${{ (github.event_name == 'push' || inputs.release) && 'production' || 'preview' }}
           app-version: ${{ needs.version.outputs.next }}
           expo-token: ${{ secrets.EXPO_TOKEN }}
 
   # Included once the repo variable IOS_RELEASES is 'true' (after iOS credentials exist in EAS).
   ios:
-    needs: version
+    needs: [check, version]
     if: needs.version.outputs.next != '' && vars.IOS_RELEASES == 'true'
     runs-on: macos-26
     timeout-minutes: 60
@@ -76,8 +79,8 @@ jobs:
           expo-token: ${{ secrets.EXPO_TOKEN }}
 
   submit-android:
-    needs: [check, android]
-    if: github.event_name == 'push'
+    needs: android
+    if: github.event_name == 'push' || inputs.release
     runs-on: ubuntu-24.04
     timeout-minutes: 15
     environment: production
@@ -89,7 +92,7 @@ jobs:
 
   # eas submit waits in the free EAS Submit queue, hence the long timeout.
   submit-ios:
-    needs: [check, ios]
+    needs: ios
     runs-on: ubuntu-24.04
     timeout-minutes: 60
     environment: production

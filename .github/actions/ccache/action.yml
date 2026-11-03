@@ -1,23 +1,21 @@
 name: ccache
 description: >-
-  Installs ccache and restores main's newest compiler cache for `platform`, so a native build only
-  recompiles the C, C++ and Objective-C files that changed. The build step turns it on (USE_CCACHE
-  for iOS, the CMake launchers for Android); save the cache afterwards under the `key` output.
+  Installs ccache and restores the platform cache. Enable it in the build (USE_CCACHE for iOS,
+  CMake launchers for Android), then run with `save: 'true'` to show stats and save the cache.
 
 inputs:
   platform:
     description: android or ios; each keeps its own cache
     required: true
-
-outputs:
-  key:
-    description: The key to save the cache under once the build is done
-    value: ${{ steps.restore.outputs.cache-primary-key }}
+  save:
+    description: "'true' after the build: print stats and, on main, save the cache"
+    default: 'false'
 
 runs:
   using: composite
   steps:
     - name: Install ccache
+      if: inputs.save != 'true'
       shell: bash
       run: |
         if ! command -v ccache >/dev/null; then
@@ -30,17 +28,33 @@ runs:
         {
           echo "CCACHE_DIR=$RUNNER_TEMP/ccache"
           echo "CCACHE_MAXSIZE=500M"
-          # Each runner image installs the NDK and Xcode afresh, so compare compilers by content, not mtime.
-          echo "CCACHE_COMPILERCHECK=content"
+          # Ask the compiler for its version: on iOS `clang` is the xcrun shim, whose bytes stay
+          # the same across Xcode versions, so hashing the file wouldn't notice an Xcode bump.
+          echo "CCACHE_COMPILERCHECK=%compiler% -v"
         } >> "$GITHUB_ENV"
-    # Only main saves (releases run there); other refs restore main's newest cache.
+    # The native code comes from node_modules, so one cache per lockfile; only main saves it.
     - id: restore
+      if: inputs.save != 'true'
       uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
       with:
         path: ${{ runner.temp }}/ccache
-        key: ccache-${{ inputs.platform }}-${{ runner.os }}-${{ hashFiles('package-lock.json') }}-${{ github.run_id }}
-        restore-keys: |
-          ccache-${{ inputs.platform }}-${{ runner.os }}-${{ hashFiles('package-lock.json') }}-
-          ccache-${{ inputs.platform }}-${{ runner.os }}-
-    - shell: bash
-      run: ccache --zero-stats
+        key: ccache-${{ inputs.platform }}-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
+        restore-keys: ccache-${{ inputs.platform }}-${{ runner.os }}-
+    - if: inputs.save != 'true'
+      shell: bash
+      env:
+        HIT: ${{ steps.restore.outputs.cache-hit }}
+      run: |
+        echo "CCACHE_EXACT_HIT=$HIT" >> "$GITHUB_ENV"
+        ccache --zero-stats
+
+    - if: inputs.save == 'true'
+      shell: bash
+      run: ccache --show-stats
+    - if: >-
+        inputs.save == 'true' && env.CCACHE_EXACT_HIT != 'true' &&
+        github.ref_name == github.event.repository.default_branch
+      uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+      with:
+        path: ${{ runner.temp }}/ccache
+        key: ccache-${{ inputs.platform }}-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
