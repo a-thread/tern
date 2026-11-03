@@ -3,6 +3,8 @@ import { View, Text, StyleSheet } from 'react-native';
 import { colors, space, typography } from '@shared/theme';
 import { DayState } from '@shared/models/dayState';
 import { LegendDot } from './LegendDot';
+import { useDayNotes } from '@/domain/day-notes/DayNotesContext';
+import { notedDays } from '@/domain/day-notes/models/dayNote';
 
 /* ------------------------------------------------------------------ */
 /* Step bars                                                            */
@@ -12,6 +14,8 @@ export type DayBar = {
   label: string;
   value: number;
   state: DayState;
+  /** Daily bars only: the day, so a day with a note gets a dot under its bar. */
+  day?: string;
 };
 
 export function StepBars({
@@ -28,6 +32,10 @@ export function StepBars({
   showLegend?: boolean;
   showLabels?: boolean;
 }) {
+  const notes = useDayNotes();
+  const noted = notedDays(notes.enabled ? notes.notes : []);
+  const isNoted = (d: DayBar) => d.day !== undefined && noted.has(d.day);
+  const anyNoted = days.some(isNoted);
   const max = Math.max(...days.map((d) => d.value), goal ?? 0, 1);
   const goalPct = goal ? Math.min((goal / max) * 100, 100) : null;
   // Many thin bars (a month, half a year) sit closer together.
@@ -75,6 +83,16 @@ export function StepBars({
           </View>
         ) : null}
       </View>
+      {/* Under the bars rather than on them, so a tall bar never hides its dot. */}
+      {anyNoted ? (
+        <View style={[cs.noteRow, { gap }]}>
+          {days.map((d, i) => (
+            <View key={i} style={cs.noteCol}>
+              {isNoted(d) ? <View style={cs.noteDot} /> : null}
+            </View>
+          ))}
+        </View>
+      ) : null}
       {showLabels ? (
         <View style={[cs.labelRow, { gap }]}>
           {days.map((d, i) => (
@@ -84,19 +102,26 @@ export function StepBars({
           ))}
         </View>
       ) : null}
-      {showLegend ? (
+      {showLegend || anyNoted ? (
         <View style={cs.legend}>
-          <LegendDot color={colors.glacier} label='goal met' />
-          <LegendDot
-            color={colors.card}
-            label='partial'
-            border={colors.glacier}
-          />
-          <LegendDot
-            color={colors.driftwoodTint}
-            label='rest'
-            border={colors.driftwood}
-          />
+          {showLegend ? (
+            <>
+              <LegendDot color={colors.glacier} label='goal met' />
+              <LegendDot
+                color={colors.card}
+                label='partial'
+                border={colors.glacier}
+              />
+              <LegendDot
+                color={colors.driftwoodTint}
+                label='rest'
+                border={colors.driftwood}
+              />
+            </>
+          ) : null}
+          {anyNoted ? (
+            <LegendDot color={colors.driftwood} label='note' />
+          ) : null}
         </View>
       ) : null}
     </View>
@@ -136,6 +161,14 @@ const cs = StyleSheet.create({
     height: '100%',
   },
   bar: { width: '100%', borderTopLeftRadius: 3, borderTopRightRadius: 3 },
+  noteRow: { flexDirection: 'row', marginTop: 3, height: 5 },
+  noteCol: { flex: 1, alignItems: 'center' },
+  noteDot: {
+    width: 5,
+    height: 5,
+    borderRadius: 2.5,
+    backgroundColor: colors.driftwood,
+  },
   labelRow: { flexDirection: 'row', marginTop: 4 },
   barLabel: { ...typography.tick, flex: 1, textAlign: 'center' },
   legend: {

@@ -17,6 +17,7 @@ const LOGGED_TABLES = [
   'mood_checkins',
   'meal_checkins',
   'movement_entries',
+  'day_notes',
 ] as const;
 
 export function createSupabaseSettingsRepository(

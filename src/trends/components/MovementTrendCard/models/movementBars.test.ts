@@ -13,6 +13,13 @@ describe('movement bars', () => {
     expect(bars[6]).toMatchObject({ value: 35, state: DayState.Goal });
     expect(bars[5]).toMatchObject({ value: 10, state: DayState.Partial });
     expect(bars[4]).toMatchObject({ value: 0, state: DayState.None });
+    expect(bars[6].day).toBe(TODAY);
+    expect(bars[0].day).toBe('2026-10-02');
+  });
+
+  it('leaves weekly bars undated', () => {
+    const bars = bucketMinutes(byDay, 30, TrendRange.SixMonths, TODAY);
+    expect(bars.every((b) => b.day === undefined)).toBe(true);
   });
 
   it('marks a goal day only from minutes that count toward one', () => {

@@ -158,6 +158,16 @@ describe('bucketSteps', () => {
     expect(bars.map((b) => b.state)).toEqual(['none', 'none']);
   });
 
+  it('dates daily bars, so a noted day can be marked, and not weekly ones', () => {
+    const week = bucketSteps(history, TrendRange.Week);
+    expect(week.map((b) => b.day)).toEqual(history.slice(-7).map((d) => d.day));
+    expect(
+      bucketSteps(history, TrendRange.SixMonths).every(
+        (b) => b.day === undefined,
+      ),
+    ).toBe(true);
+  });
+
   it('copes with less history than the range', () => {
     expect(bucketSteps(dayRecords(3), TrendRange.Week)).toHaveLength(3);
     expect(bucketSteps(dayRecords(3), TrendRange.SixMonths)).toHaveLength(1);

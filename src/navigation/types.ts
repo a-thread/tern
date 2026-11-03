@@ -10,6 +10,7 @@ export type SettingsStackParamList = {
   WeightSettings: undefined;
   WaterSettings: undefined;
   MoodSettings: undefined;
+  NotesSettings: undefined;
   RemindersSettings: undefined;
   DataSettings: undefined;
   StepGoal: undefined;
@@ -46,6 +47,8 @@ export type RootStackParamList = {
   LogFood: { meal: FoodEntry['meal'] };
   LogWeight: undefined;
   CheckIn: undefined;
+  /** The viewed day's note. */
+  DayNote: undefined;
   /** How a meal sat, on the viewed day. */
   MealCheckIn: { meal: FoodEntry['meal'] };
   /** The movement logging flow; `day` is today unless logging for yesterday. */

@@ -13,6 +13,7 @@ import FoodSettingsScreen from './food/FoodSettingsScreen';
 import WeightSettingsScreen from './weight/WeightSettingsScreen';
 import WaterSettingsScreen from './water/WaterSettingsScreen';
 import MoodSettingsScreen from './mood/MoodSettingsScreen';
+import NotesSettingsScreen from './notes/NotesSettingsScreen';
 import RemindersSettingsScreen from './reminders/RemindersSettingsScreen';
 import DataSettingsScreen from './data/DataSettingsScreen';
 import type { SettingsStackParamList } from '../navigation/types';
@@ -32,6 +33,7 @@ export default function SettingsStack() {
       <Stack.Screen name='WeightSettings' component={WeightSettingsScreen} />
       <Stack.Screen name='WaterSettings' component={WaterSettingsScreen} />
       <Stack.Screen name='MoodSettings' component={MoodSettingsScreen} />
+      <Stack.Screen name='NotesSettings' component={NotesSettingsScreen} />
       <Stack.Screen
         name='RemindersSettings'
         component={RemindersSettingsScreen}

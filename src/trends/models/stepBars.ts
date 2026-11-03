@@ -3,7 +3,13 @@ import { DayState } from '@shared/models/dayState';
 import { monthName, weekdayLetter } from '@shared/utils/date';
 import { TrendRanges, TrendRange } from './trendRange';
 
-export type StepBar = { label: string; value: number; state: DayState };
+/** `day` is set on daily bars only, not on weekly averages. */
+export type StepBar = {
+  label: string;
+  value: number;
+  state: DayState;
+  day?: string;
+};
 
 /**
  * Build step-chart bars: daily bars for a week or month, or weekly averages
@@ -13,6 +19,7 @@ export function bucketSteps(days: DayRecord[], range: TrendRange): StepBar[] {
   if (range === TrendRange.Week || range === TrendRange.Month) {
     return days.slice(-TrendRanges.DAYS[range]).map((d) => ({
       label: range === TrendRange.Week ? weekdayLetter(d.day) : '',
+      day: d.day,
       value: d.steps,
       // The steps chart is about steps: a rest day that reached the goal anyway is drawn as one,
       // matching the goal days counted beside it.

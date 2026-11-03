@@ -63,6 +63,11 @@ export type AppSettings = {
   waterGoalOz: number;
   /** Optional daily mood and stress check-in; off by default so it stays out of the way. */
   trackMood: boolean;
+  /**
+   * A free-text note per day, from Today. On by default, unlike the other optional
+   * tracking: it never reminds or asks, so it costs nothing until someone writes one.
+   */
+  trackNotes: boolean;
   /** Optional check-in after each meal (fullness and how you feel); off by default. */
   checkInAfterMeals: boolean;
   /** Optional movement logging; off by default so it stays out of the way. */
@@ -115,6 +120,7 @@ export const initialSettings: AppSettings = {
   trackWater: false,
   waterGoalOz: WaterGoal.DEFAULT_OZ,
   trackMood: false,
+  trackNotes: true,
   checkInAfterMeals: false,
   trackMovement: false,
   movementGoalMinutes: MovementGoal.DEFAULT,

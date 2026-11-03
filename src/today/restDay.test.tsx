@@ -24,6 +24,7 @@ import { MedicationProvider } from '../domain/medication/MedicationContext';
 import { WaterProvider } from '../domain/water/WaterContext';
 import { MoodProvider } from '../domain/mood/MoodContext';
 import { MovementProvider } from '../domain/movement/MovementContext';
+import { DayNotesProvider } from '../domain/day-notes/DayNotesContext';
 import {
   ActivityProvider,
   useActivity,
@@ -94,7 +95,9 @@ function Providers({
                             steps={backend.steps}
                             restDays={backend.restDays}
                           >
-                            {children}
+                            <DayNotesProvider repo={backend.dayNotes}>
+                              {children}
+                            </DayNotesProvider>
                           </ActivityProvider>
                         </MovementProvider>
                       </MoodProvider>

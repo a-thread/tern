@@ -15,6 +15,7 @@ export type TernExport = {
   skippedMeals: unknown[];
   skippedWeighIns: unknown[];
   movementEntries: unknown[];
+  dayNotes: unknown[];
 };
 
 /** The lists in an export, each one table's rows. */
@@ -32,6 +33,7 @@ export class TernExportLists {
     'skippedMeals',
     'skippedWeighIns',
     'movementEntries',
+    'dayNotes',
   ] as const satisfies readonly (keyof TernExport)[];
 }
 

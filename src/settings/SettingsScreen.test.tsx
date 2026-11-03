@@ -78,6 +78,7 @@ describe('Settings index', () => {
       'Weight',
       'Water',
       'Mood and stress',
+      'Notes',
       'Medication',
       'Reminders',
       'Health data',

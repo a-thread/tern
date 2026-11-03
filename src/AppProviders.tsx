@@ -34,6 +34,10 @@ import {
   MovementProvider,
   useMovement,
 } from './domain/movement/MovementContext';
+import {
+  DayNotesProvider,
+  useDayNotes,
+} from './domain/day-notes/DayNotesContext';
 import { useBackend, type Backend } from './BackendContext';
 import { assertProviderOrder, type ProviderSpec } from './providerOrder';
 
@@ -117,6 +121,11 @@ const PROVIDERS: readonly Entry[] = [
     ),
   },
   {
+    name: 'dayNotes',
+    needs: ['settings'],
+    wrap: (c, b) => <DayNotesProvider repo={b.dayNotes}>{c}</DayNotesProvider>,
+  },
+  {
     name: 'movement',
     needs: ['settings', 'waypoints'],
     wrap: (c, b) => (
@@ -169,6 +178,7 @@ function LoadGate({ children }: { children: React.ReactNode }) {
     useMood().ready,
     useMealCheckIns().ready,
     useMovement().ready,
+    useDayNotes().ready,
     useWaypoints().ready,
     useActivity().ready,
   ].every(Boolean);

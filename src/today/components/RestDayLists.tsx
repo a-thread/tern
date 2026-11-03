@@ -6,6 +6,7 @@ import { useViewedDay } from '@shared/state/ViewedDayContext';
 import { IntakeBars } from '@shared/components/IntakeBars/IntakeBars';
 import { useFood } from '@/domain/food/FoodContext';
 import { DoneList } from './DoneList/DoneList';
+import { DayNoteCard } from './DayNoteCard/DayNoteCard';
 
 /**
  * The quiet lists under the rest scene: what was done, the food if any was logged, and "Log
@@ -34,6 +35,7 @@ export function RestDayLists({
         </Pressable>
       ) : null}
       <DoneList quietWhenEmpty />
+      <DayNoteCard />
       {foodLog.length > 0 ? <IntakeBars /> : null}
     </>
   );

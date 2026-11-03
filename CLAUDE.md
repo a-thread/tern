@@ -13,7 +13,7 @@ Expo / React Native / TypeScript. All app code lives under `src/`.
 src/
   AppProviders.tsx  AuthGate.tsx  BackendContext.tsx  providerOrder.ts   composition root
   navigation/                   RootNavigator, the route registry (types.ts), useAppNavigation
-  <tab or flow>/                today, food, trends, journey, settings, auth, movement, check-in, log-weight
+  <tab or flow>/                today, food, trends, journey, settings, auth, movement, check-in, day-note, log-weight
     <Name>Screen.tsx            one screen, or <Name>Stack.tsx for a navigator
     <screen>/                   a sub-screen: its own folder, same shape as this one
       <Name>Screen.tsx

@@ -114,6 +114,13 @@ export class LocalSchema {
     // 2: meta, for phones that ran an earlier step 1 without it (it was added to step 1
     // before release). Phones that already have it from step 1 skip it.
     `CREATE TABLE IF NOT EXISTS meta (key TEXT PRIMARY KEY NOT NULL, value TEXT NOT NULL)`,
+
+    // 3: a free-text note per day
+    `CREATE TABLE day_notes (
+       day TEXT PRIMARY KEY NOT NULL,
+       note TEXT NOT NULL,
+       updated_at TEXT NOT NULL
+     )`,
   ];
 
   /** Every table holding the person's data, for export and "delete my data". */
@@ -131,5 +138,6 @@ export class LocalSchema {
     'mood_checkins',
     'meal_checkins',
     'movement_entries',
+    'day_notes',
   ] as const;
 }
