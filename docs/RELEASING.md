@@ -30,6 +30,12 @@ is a conventional commit (the `PR title` check enforces it):
 | `feat!: …` or a `BREAKING CHANGE:` footer                   | major (minor while below 1.0) |
 | `chore`, `ci`, `docs`, `refactor`, `test`, `style`, `build` | none                          |
 
+Only commits that change what ships count: `src/`, `assets/`, `App.tsx`, `app.json`,
+`app.config.ts`, `eas.json`, `package.json`, `package-lock.json` and `babel.config.js` (the list
+is in [next-version.sh](../.github/scripts/next-version.sh)). A `fix:` that only touches CI,
+docs, `supabase/` or `scripts/` doesn't release on its own; its bump joins the next app change.
+An empty `fix: triggering release` commit no longer forces one either.
+
 On each push to `main` the workflow works out the version from the commits since the last `v*`
 tag and builds, while typecheck, lint and tests run alongside. Only when those pass does it
 upload to the Play internal track (and TestFlight once iOS is on), and only then create the
@@ -39,6 +45,11 @@ picked up by the next run.
 
 Android builds for phones only (`armeabi-v7a`, `arm64-v8a`, set in the build-android action), so
 the Play build doesn't install on x86 emulators or x86 Chromebooks.
+
+Both builds keep a ccache of compiled native code ([ccache action](../.github/actions/ccache/action.yml)),
+saved from `main`, so a release only recompiles the C, C++ and Objective-C that changed. Each
+build log ends with `ccache --show-stats`; a low hit rate after a release that didn't touch
+native dependencies means the cache isn't matching.
 
 The version comes from the tag, through `APP_VERSION` in [app.config.ts](../app.config.ts);
 `app.json`'s `version` is only the local fallback. Build numbers come from EAS.

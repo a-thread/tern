@@ -31,19 +31,35 @@ runs:
           pods-${{ runner.os }}-${{ hashFiles('package-lock.json', 'app.json') }}-
           pods-${{ runner.os }}-
     - uses: ./.github/actions/setup
+    - id: ccache
+      uses: ./.github/actions/ccache
+      with:
+        platform: ios
     - name: Build
       shell: bash
       env:
         EXPO_TOKEN: ${{ inputs.expo-token }}
         APP_VERSION: ${{ inputs.app-version }}
+        # Expo's Podfile reads this and points the Pods' compilers at React Native's ccache wrapper.
+        USE_CCACHE: '1'
       run: |
+        # A fixed working folder (EAS picks a random one) so ccache's paths match from run to run.
+        export EAS_LOCAL_BUILD_WORKINGDIR="$RUNNER_TEMP/eas-build"
+        export CCACHE_BASEDIR="$EAS_LOCAL_BUILD_WORKINGDIR"
         npx eas build --platform ios --profile production --local --non-interactive \
           --output "$RUNNER_TEMP/tern-ios.ipa"
+    - shell: bash
+      run: ccache --show-stats
     - if: github.ref_name == github.event.repository.default_branch
       uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
       with:
         path: ~/Library/Caches/CocoaPods
         key: ${{ steps.pods-cache.outputs.cache-primary-key }}
+    - if: github.ref_name == github.event.repository.default_branch
+      uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+      with:
+        path: ${{ runner.temp }}/ccache
+        key: ${{ steps.ccache.outputs.key }}
     - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
       with:
         name: ios-production

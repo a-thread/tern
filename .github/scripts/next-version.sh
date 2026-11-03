@@ -5,7 +5,11 @@
 #   feat:                    → minor
 #   fix: / perf: / revert:   → patch
 #   anything else (ci, chore, docs, refactor, test, style, build) → no release
+# Only commits that touch what ships in the app count, so a fix: to CI, docs or supabase/ waits
+# for the next app change instead of releasing an identical build.
 set -euo pipefail
+
+shipped=(src assets App.tsx app.json app.config.ts eas.json package.json package-lock.json babel.config.js)
 
 last="$(git describe --tags --abbrev=0 --match 'v[0-9]*' 2>/dev/null || true)"
 range="${last:+$last..}HEAD"
@@ -26,7 +30,7 @@ while IFS= read -r -d $'\x1e' commit; do
   elif printf '%s' "$subject" | grep -Eq '^(fix|perf|revert)(\([^)]*\))?:'; then
     raise patch
   fi
-done < <(git log --format='%s%n%b%x1e' "$range")
+done < <(git log --format='%s%n%b%x1e' "$range" -- "${shipped[@]}")
 
 IFS=. read -r major minor patch <<< "$current"
 if [ "$bump" = major ] && [ "$major" -eq 0 ]; then bump=minor; fi
