@@ -43,12 +43,19 @@ jobs:
           else
             echo "::notice::No feat/fix commits since the last release, so nothing to release"
           fi
-      - name: iOS submit needs ascAppId
+      - name: iOS upload needs the App Store Connect key
         if: steps.next.outputs.version != '' && vars.IOS_RELEASES == 'true'
+        env:
+          ASC_API_KEY_ID: ${{ secrets.ASC_API_KEY_ID }}
+          ASC_API_ISSUER_ID: ${{ secrets.ASC_API_ISSUER_ID }}
+          ASC_API_KEY_P8: ${{ secrets.ASC_API_KEY_P8 }}
         run: |
-          asc="$(node -p "require('./eas.json').submit?.production?.ios?.ascAppId ?? ''")"
-          if [ -z "$asc" ]; then
-            echo "::error::eas.json submit.production.ios.ascAppId is missing; iOS submit can't run non-interactively"
+          missing=""
+          for name in ASC_API_KEY_ID ASC_API_ISSUER_ID ASC_API_KEY_P8; do
+            if [ -z "${!name}" ]; then missing="$missing $name"; fi
+          done
+          if [ -n "$missing" ]; then
+            echo "::error::Add the secret(s)$missing (an App Store Connect API key with the App Manager role)"
             exit 1
           fi
 
@@ -66,17 +73,26 @@ jobs:
           expo-token: ${{ secrets.EXPO_TOKEN }}
 
   # Included once the repo variable IOS_RELEASES is 'true' (after iOS credentials exist in EAS).
+  # Builds and uploads in one job: altool needs macOS, and a second macOS job would queue for a
+  # runner again.
   ios:
     needs: [check, version]
     if: needs.version.outputs.next != '' && vars.IOS_RELEASES == 'true'
     runs-on: macos-26
     timeout-minutes: 60
+    environment: production
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: ./.github/actions/build-ios
         with:
           app-version: ${{ needs.version.outputs.next }}
           expo-token: ${{ secrets.EXPO_TOKEN }}
+      - uses: ./.github/actions/submit-ios
+        with:
+          ipa: ${{ runner.temp }}/tern-ios.ipa
+          api-key-id: ${{ secrets.ASC_API_KEY_ID }}
+          api-issuer-id: ${{ secrets.ASC_API_ISSUER_ID }}
+          api-key-p8: ${{ secrets.ASC_API_KEY_P8 }}
 
   submit-android:
     needs: android
@@ -90,26 +106,13 @@ jobs:
         with:
           service-account-json: ${{ secrets.PLAY_SERVICE_ACCOUNT_JSON }}
 
-  # eas submit waits in the free EAS Submit queue, hence the long timeout.
-  submit-ios:
-    needs: ios
-    runs-on: ubuntu-24.04
-    timeout-minutes: 60
-    environment: production
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      - uses: ./.github/actions/submit-ios
-        with:
-          expo-token: ${{ secrets.EXPO_TOKEN }}
-
-  # Publish after uploads succeed; skipped iOS jobs are allowed, but failed builds are not.
+  # Publish after uploads succeed; a skipped ios job is allowed, but a failed one is not.
   publish:
-    needs: [version, ios, submit-android, submit-ios]
+    needs: [version, ios, submit-android]
     if: >-
       !cancelled() && needs.version.outputs.next != '' &&
       needs.submit-android.result == 'success' &&
-      contains(fromJSON('["success", "skipped"]'), needs.ios.result) &&
-      contains(fromJSON('["success", "skipped"]'), needs.submit-ios.result)
+      contains(fromJSON('["success", "skipped"]'), needs.ios.result)
     runs-on: ubuntu-24.04
     timeout-minutes: 5
     permissions:

@@ -8,7 +8,11 @@ What it relies on, if a key ever needs replacing:
 
 - GitHub secrets: `EXPO_TOKEN` (an Expo robot user's token) and `PLAY_SERVICE_ACCOUNT_JSON`
   (the JSON key of `github-service@tern-509703.iam.gserviceaccount.com`, which uploads
-  straight to Play and so skips the EAS Submit queue). Optionally `RELEASE_TOKEN`: a
+  straight to Play and so skips the EAS Submit queue). For iOS, `ASC_API_KEY_ID`,
+  `ASC_API_ISSUER_ID` and `ASC_API_KEY_P8` (the whole .p8 file): an App Store Connect API key
+  with the App Manager role, from Users and Access > Integrations > App Store Connect API. The
+  ios job uploads to TestFlight with it directly, since the EAS Submit queue can take over an
+  hour. Optionally `RELEASE_TOKEN`: a
   fine-grained personal access token for this repo only, with Contents and Workflows read and
   write. The release job tags with it, because the default `GITHUB_TOKEN` is refused (HTTP 403)
   when the release commit changes a file in `.github/workflows/`. Without it those releases
@@ -30,26 +34,25 @@ is a conventional commit (the `PR title` check enforces it):
 | `feat!: …` or a `BREAKING CHANGE:` footer                   | major (minor while below 1.0) |
 | `chore`, `ci`, `docs`, `refactor`, `test`, `style`, `build` | none                          |
 
-Only commits that change what ships count: `src/`, `assets/`, `App.tsx`, `app.json`,
-`app.config.ts`, `eas.json`, `package.json`, `package-lock.json` and `babel.config.js` (the list
-is in [next-version.sh](../.github/scripts/next-version.sh)). A `fix:` that only touches CI,
-docs, `supabase/` or `scripts/` doesn't release on its own; its bump joins the next app change.
-An empty `fix: triggering release` commit no longer forces one either.
+Only commits that change what ships, or how it's built, count (the paths are listed in
+[next-version.sh](../.github/scripts/next-version.sh)). A `fix:` that only touches CI, docs,
+`supabase/` or `scripts/` doesn't release on its own; its bump joins the next app change. To
+release without one (say, after fixing a secret), run Actions > Release > Run workflow with
+`release` ticked: it ships everything since the last tag as at least a patch.
 
-On each push to `main` the workflow works out the version from the commits since the last `v*`
-tag and builds, while typecheck, lint and tests run alongside. Only when those pass does it
-upload to the Play internal track (and TestFlight once iOS is on), and only then create the
-`vX.Y.Z` tag and GitHub release with notes from the PR titles. A failed release leaves no tag, so
-the next merge retries with everything since the last one. Merges that land during a release are
-picked up by the next run.
+On each push to `main` the workflow runs typecheck, lint and tests, works out the version from
+the commits since the last `v*` tag, builds, uploads to the Play internal track (and TestFlight
+once iOS is on), and only then creates the `vX.Y.Z` tag and GitHub release with notes from the
+PR titles. A failed release leaves no tag, so the next merge retries with everything since the
+last one. Merges that land during a release are picked up by the next run.
 
 Android builds for phones only (`armeabi-v7a`, `arm64-v8a`, set in the build-android action), so
 the Play build doesn't install on x86 emulators or x86 Chromebooks.
 
 Both builds keep a ccache of compiled native code ([ccache action](../.github/actions/ccache/action.yml)),
-saved from `main`, so a release only recompiles the C, C++ and Objective-C that changed. Each
-build log ends with `ccache --show-stats`; a low hit rate after a release that didn't touch
-native dependencies means the cache isn't matching.
+saved from `main` once per `package-lock.json`, so a release only recompiles the C, C++ and
+Objective-C that changed. Each build log ends with `ccache --show-stats`; a low hit rate after a
+release that didn't touch native dependencies means the cache isn't matching.
 
 The version comes from the tag, through `APP_VERSION` in [app.config.ts](../app.config.ts);
 `app.json`'s `version` is only the local fallback. Build numbers come from EAS.
@@ -108,8 +111,9 @@ First build and check (see [healthkit.md](healthkit.md) for what to look at):
 
 TestFlight:
 
-1. Set the repository variable `IOS_RELEASES` to `true`. From then on every release also builds
-   iOS and uploads it to TestFlight (it fails early if `ascAppId` is missing).
+1. Add the `ASC_API_*` secrets (see the top of this page), then set the repository variable
+   `IOS_RELEASES` to `true`. From then on every release also builds iOS and uploads it to
+   TestFlight (it fails early if any of the secrets is missing).
 2. In App Store Connect > TestFlight, add testers to an internal group. Builds expire after 90 days.
 
 App Store: screenshots, the privacy policy URL (`docs/index.html`), App Privacy answers, and review
