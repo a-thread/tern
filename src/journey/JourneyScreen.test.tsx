@@ -28,6 +28,9 @@ jest.mock('@react-navigation/native', () => ({
 jest.mock('@shared/hooks/useReplayOnFocus', () => ({
   useReplayOnFocus: () => 0,
 }));
+jest.mock('./hooks/useLightStatusBar', () => ({
+  useLightStatusBar: () => {},
+}));
 
 const metrics = {
   frame: { x: 0, y: 0, width: 360, height: 800 },

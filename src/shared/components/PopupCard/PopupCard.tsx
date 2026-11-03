@@ -102,7 +102,7 @@ const s = StyleSheet.create({
     alignItems: 'center',
   },
   close: { position: 'absolute', top: 10, right: 12, padding: 4, zIndex: 1 },
-  closeText: { color: 'rgba(255,255,255,0.6)', fontSize: 14 },
+  closeText: { color: 'rgba(255,255,255,0.75)', fontSize: 14 },
   link: {
     fontFamily: font.semibold,
     fontSize: 13,
@@ -138,7 +138,7 @@ export const popup = StyleSheet.create({
   sectionTitle: {
     fontFamily: font.body,
     fontSize: 11,
-    color: 'rgba(255,255,255,0.55)',
+    color: 'rgba(255,255,255,0.75)',
     marginBottom: 6,
   },
   line: {
@@ -155,6 +155,6 @@ export const popup = StyleSheet.create({
   soft: {
     fontFamily: font.body,
     fontSize: 11.5,
-    color: 'rgba(255,255,255,0.6)',
+    color: 'rgba(255,255,255,0.75)',
   },
 });

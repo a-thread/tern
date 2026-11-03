@@ -213,7 +213,7 @@ const s = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 10,
   },
-  addText: { fontFamily: font.bold, fontSize: 13.5, color: '#fff' },
+  addText: { fontFamily: font.bold, fontSize: 13.5, color: colors.onAction },
   undo: {
     fontFamily: font.semibold,
     fontSize: 12,

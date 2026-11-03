@@ -331,7 +331,7 @@ const s = StyleSheet.create({
     borderRadius: 10,
     backgroundColor: colors.coral,
   },
-  goText: { color: '#fff', fontFamily: font.semibold, fontSize: 13.5 },
+  goText: { color: colors.onAction, fontFamily: font.semibold, fontSize: 13.5 },
   foot: {
     color: '#7C8B93',
     fontFamily: font.body,

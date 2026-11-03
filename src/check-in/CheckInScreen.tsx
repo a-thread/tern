@@ -475,5 +475,5 @@ const s = StyleSheet.create({
   },
   rowTitle: typography.rowTitle,
   rowSub: { fontFamily: font.body, fontSize: 12, color: colors.ink2 },
-  danger: { color: colors.coral },
+  danger: { color: colors.danger },
 });

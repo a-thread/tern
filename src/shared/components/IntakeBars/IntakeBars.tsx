@@ -323,7 +323,7 @@ const s = StyleSheet.create({
   track: {
     height: 8,
     borderRadius: 4,
-    backgroundColor: colors.doveTint,
+    backgroundColor: colors.progressTrack,
     marginTop: 26,
     marginBottom: 8,
   },
@@ -364,6 +364,11 @@ const s = StyleSheet.create({
     gap: 5,
     marginTop: space.md,
   },
-  dot: { width: 5, height: 5, borderRadius: 3, backgroundColor: colors.track },
+  dot: {
+    width: 5,
+    height: 5,
+    borderRadius: 3,
+    backgroundColor: colors.controlOff,
+  },
   dotOn: { backgroundColor: colors.ink },
 });

@@ -136,5 +136,5 @@ const s = StyleSheet.create({
     marginTop: space.lg,
   },
   row: { paddingHorizontal: 13, paddingVertical: 12 },
-  danger: { ...typography.rowTitle, color: colors.coral },
+  danger: { ...typography.rowTitle, color: colors.danger },
 });

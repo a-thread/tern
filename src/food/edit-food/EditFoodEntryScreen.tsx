@@ -245,7 +245,7 @@ const s = StyleSheet.create({
     alignItems: 'center',
     marginTop: space.lg,
   },
-  bigBtnText: { fontFamily: font.bold, fontSize: 14.5, color: '#fff' },
+  bigBtnText: { fontFamily: font.bold, fontSize: 14.5, color: colors.onAction },
   deleteBtn: { alignItems: 'center', paddingVertical: 13, marginTop: 4 },
   deleteText: {
     fontFamily: font.semibold,

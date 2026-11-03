@@ -69,11 +69,11 @@ const s = StyleSheet.create({
     fontSize: 15,
     color: colors.ink,
   },
-  inputInvalid: { borderColor: colors.coral },
+  inputInvalid: { borderColor: colors.danger },
   fieldError: {
     fontFamily: font.body,
     fontSize: 12,
-    color: colors.coral,
+    color: colors.danger,
     marginTop: 4,
   },
 });

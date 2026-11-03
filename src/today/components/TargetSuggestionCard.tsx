@@ -77,6 +77,6 @@ const s = StyleSheet.create({
     paddingHorizontal: 14,
     paddingVertical: 8,
   },
-  useText: { fontFamily: font.bold, fontSize: 13, color: '#fff' },
+  useText: { fontFamily: font.bold, fontSize: 13, color: colors.onAction },
   notNow: { fontFamily: font.medium, fontSize: 13, color: colors.ink2 },
 });

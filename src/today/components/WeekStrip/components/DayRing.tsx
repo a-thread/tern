@@ -69,7 +69,11 @@ function DayRingBase({
       : today
         ? colors.sun
         : colors.glacier;
-  const track = rest ? '#E4DECE' : frozen ? '#D5E6EA' : colors.border;
+  const track = rest
+    ? colors.ringTrackRest
+    : frozen
+      ? colors.ringTrackFrozen
+      : colors.ringTrack;
   return (
     <View style={{ alignItems: 'center', gap: 4 }}>
       <View

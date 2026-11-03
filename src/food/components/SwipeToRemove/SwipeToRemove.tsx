@@ -118,5 +118,9 @@ const s = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  actionText: { fontFamily: font.semibold, fontSize: 13.5, color: '#fff' },
+  actionText: {
+    fontFamily: font.semibold,
+    fontSize: 13.5,
+    color: colors.onAction,
+  },
 });
