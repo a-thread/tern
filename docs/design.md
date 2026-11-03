@@ -2,14 +2,14 @@
 
 ## The palette rule
 
-`coral (#D8431F)` is the **primary action color only** — the way the bill is one small
+`coral (#C23A19)` is the **primary action color only** — the way the bill is one small
 bright mark on a mostly-white bird. Every other domain has its own hue:
 
 | Domain                | Color                                 |
 | --------------------- | ------------------------------------- |
-| Steps, movement       | glacier `#5FA8B8`                     |
+| Steps, movement       | glacier `#4A90A0`                     |
 | Weight, trends        | deep water `#3E5A6C`                  |
-| Journey, milestones   | aurora `#4E8C7D` + twilight `#6B5B9A` |
+| Journey, milestones   | aurora `#3A7365` + twilight `#6B5B9A` |
 | Streaks, goal moments | midnight sun `#E0A32E`                |
 | Whole foods           | kelp `#5C6B4E`                        |
 | Rest days             | driftwood `#5B4636`                   |

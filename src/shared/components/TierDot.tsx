@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-import { font, typography } from '../theme';
+import { colors, font, tierTextColors, typography } from '../theme';
 
 /** NOVA processing tier. Shows the number by default — not color alone — for a11y; user-togglable in Settings. */
 export function TierDot({
@@ -14,7 +14,18 @@ export function TierDot({
 }) {
   return (
     <View style={[s.tier, { backgroundColor: color }]}>
-      {showNumber ? <Text style={s.tierText}>{tier}</Text> : null}
+      {showNumber ? (
+        <Text
+          style={[
+            s.tierText,
+            {
+              color: tierTextColors[tier as 1 | 2 | 3 | 4] ?? colors.onAction,
+            },
+          ]}
+        >
+          {tier}
+        </Text>
+      ) : null}
     </View>
   );
 }
@@ -30,6 +41,5 @@ const s = StyleSheet.create({
   tierText: {
     fontFamily: font.bold,
     fontSize: typography.small.fontSize,
-    color: '#fff',
   },
 });

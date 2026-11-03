@@ -16,6 +16,7 @@ import {
 import { useRootNavigation } from '../navigation/useAppNavigation';
 import { JourneyMap } from './components/JourneyMap/JourneyMap';
 import { useJourneyTips } from './hooks/useJourneyTips';
+import { useLightStatusBar } from './hooks/useLightStatusBar';
 import { TipOverlay } from '@shared/components/TipOverlay/TipOverlay';
 import { useReplayOnFocus } from '@shared/hooks/useReplayOnFocus';
 import { usePullToRefresh } from '@shared/hooks/usePullToRefresh';
@@ -64,6 +65,7 @@ export default function JourneyScreen() {
   const scrollY = useRef(new Animated.Value(0)).current;
   const rootRef = useRef<View>(null);
   const tips = useJourneyTips({ rootRef });
+  useLightStatusBar();
   const days = daysWithWaypoints(events);
   const { settings } = useSettings();
   const { goalReachable } = useActivity();
@@ -219,7 +221,11 @@ export default function JourneyScreen() {
                         },
                       ]}
                     >
-                      <Icon name='check-bold' size={14} color='#fff' />
+                      <Icon
+                        name='check-bold'
+                        size={14}
+                        color={colors.onAction}
+                      />
                     </View>
                   }
                 />

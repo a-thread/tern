@@ -5,7 +5,7 @@ import { colors } from '../../theme';
 export function ProgressBar({
   value,
   color,
-  track = colors.doveTint,
+  track = colors.progressTrack,
   height = 6,
 }: {
   value: number;

@@ -291,5 +291,5 @@ const s = StyleSheet.create({
     paddingHorizontal: 18,
     paddingVertical: 12,
   },
-  addText: { fontFamily: font.bold, fontSize: 14, color: '#fff' },
+  addText: { fontFamily: font.bold, fontSize: 14, color: colors.onAction },
 });

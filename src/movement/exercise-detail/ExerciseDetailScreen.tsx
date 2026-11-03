@@ -234,5 +234,5 @@ const s = StyleSheet.create({
     paddingVertical: 14,
     alignItems: 'center',
   },
-  saveText: { fontFamily: font.bold, fontSize: 15, color: '#fff' },
+  saveText: { fontFamily: font.bold, fontSize: 15, color: colors.onAction },
 });

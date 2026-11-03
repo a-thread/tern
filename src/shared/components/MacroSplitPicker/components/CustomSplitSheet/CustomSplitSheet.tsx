@@ -137,5 +137,5 @@ const s = StyleSheet.create({
     marginTop: space.lg,
   },
   updateOff: { opacity: 0.4 },
-  updateText: { fontFamily: font.bold, fontSize: 14, color: '#fff' },
+  updateText: { fontFamily: font.bold, fontSize: 14, color: colors.onAction },
 });

@@ -148,7 +148,7 @@ const s = StyleSheet.create({
     alignItems: 'center',
     marginTop: space.lg,
   },
-  bigBtnText: { fontFamily: font.bold, fontSize: 15, color: '#fff' },
+  bigBtnText: { fontFamily: font.bold, fontSize: 15, color: colors.onAction },
   link: { alignItems: 'center', paddingVertical: 13, marginTop: 4 },
   linkText: { fontFamily: font.semibold, fontSize: 13.5, color: colors.coral },
 });

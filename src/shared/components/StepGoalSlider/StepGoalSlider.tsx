@@ -1,7 +1,7 @@
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 
-import { colors, font } from '@shared/theme';
+import { colors, font, typography } from '@shared/theme';
 import { useSliderValue } from '@shared/hooks/useSliderValue';
 import { useSettings } from '@/domain/settings/SettingsContext';
 import { StepGoal } from '@/domain/settings/models/stepGoalHistory';
@@ -123,7 +123,7 @@ const s = StyleSheet.create({
     paddingHorizontal: 6,
     marginTop: 4,
   },
-  sliderEndText: { fontFamily: font.body, fontSize: 10.5, color: colors.ink3 },
+  sliderEndText: typography.tick,
   presetRow: { flexDirection: 'row', gap: 7, marginTop: 14 },
   preset: {
     flex: 1,

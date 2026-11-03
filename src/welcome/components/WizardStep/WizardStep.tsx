@@ -180,7 +180,11 @@ const s = StyleSheet.create({
     paddingVertical: 14,
     alignItems: 'center',
   },
-  primaryText: { fontFamily: font.semibold, fontSize: 15, color: '#fff' },
+  primaryText: {
+    fontFamily: font.semibold,
+    fontSize: 15,
+    color: colors.onAction,
+  },
   secondary: { alignItems: 'center', paddingTop: space.md },
   secondaryText: {
     fontFamily: font.medium,

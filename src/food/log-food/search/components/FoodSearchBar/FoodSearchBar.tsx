@@ -43,7 +43,7 @@ export function FoodSearchBar({
         onPress={onScan}
         accessibilityLabel='Scan a barcode'
       >
-        <Icon name='barcode-scan' size={17} color='#fff' />
+        <Icon name='barcode-scan' size={17} color={colors.onAction} />
       </Pressable>
       {busy ? <ProgressLine /> : null}
     </View>

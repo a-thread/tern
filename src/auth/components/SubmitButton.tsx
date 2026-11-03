@@ -32,7 +32,7 @@ export function SubmitButton({
     >
       {busy ? (
         <View style={s.busyRow}>
-          <ActivityIndicator color='#fff' size='small' />
+          <ActivityIndicator color={colors.onAction} size='small' />
           <Text style={s.buttonText}>{busyLabel}</Text>
         </View>
       ) : (
@@ -51,5 +51,5 @@ const s = StyleSheet.create({
     marginTop: space.sm,
   },
   busyRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  buttonText: { fontFamily: font.bold, fontSize: 14.5, color: '#fff' },
+  buttonText: { fontFamily: font.bold, fontSize: 14.5, color: colors.onAction },
 });

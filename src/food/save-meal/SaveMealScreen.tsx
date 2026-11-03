@@ -153,5 +153,5 @@ const s = StyleSheet.create({
     alignItems: 'center',
     marginTop: space.lg,
   },
-  bigBtnText: { fontFamily: font.bold, fontSize: 15, color: '#fff' },
+  bigBtnText: { fontFamily: font.bold, fontSize: 15, color: colors.onAction },
 });

@@ -36,9 +36,7 @@ export function StepBars({
     <View>
       <View style={[cs.bars, { height, gap }]}>
         {goalPct !== null ? (
-          <View style={[cs.goalLine, { bottom: `${goalPct}%` }]}>
-            <Text style={cs.goalTag}>goal</Text>
-          </View>
+          <View style={[cs.goalLine, { bottom: `${goalPct}%` }]} />
         ) : null}
         {days.map((d, i) => {
           const h = Math.max((d.value / max) * 100, 4);
@@ -46,7 +44,11 @@ export function StepBars({
             d.state === DayState.Goal
               ? { backgroundColor: colors.glacier }
               : d.state === DayState.Partial
-                ? { backgroundColor: colors.glacierTint }
+                ? {
+                    backgroundColor: colors.card,
+                    borderWidth: 1.5,
+                    borderColor: colors.glacier,
+                  }
                 : d.state === DayState.Rest
                   ? {
                       backgroundColor: colors.driftwoodTint,
@@ -59,13 +61,19 @@ export function StepBars({
                         borderWidth: 1,
                         borderColor: colors.glacierDeep,
                       }
-                    : { backgroundColor: colors.doveTint };
+                    : { backgroundColor: colors.progressTrack };
           return (
             <View key={i} style={cs.barCol}>
               <View style={[cs.bar, style, { height: `${h}%` }]} />
             </View>
           );
         })}
+        {/* After the bars, so the label sits on top of them; the line stays behind. */}
+        {goalPct !== null ? (
+          <View style={[cs.goalTagAnchor, { bottom: `${goalPct}%` }]}>
+            <Text style={cs.goalTag}>goal</Text>
+          </View>
+        ) : null}
       </View>
       {showLabels ? (
         <View style={[cs.labelRow, { gap }]}>
@@ -79,7 +87,11 @@ export function StepBars({
       {showLegend ? (
         <View style={cs.legend}>
           <LegendDot color={colors.glacier} label='goal met' />
-          <LegendDot color={colors.glacierTint} label='partial' />
+          <LegendDot
+            color={colors.card}
+            label='partial'
+            border={colors.glacier}
+          />
           <LegendDot
             color={colors.driftwoodTint}
             label='rest'
@@ -106,6 +118,7 @@ const cs = StyleSheet.create({
     borderTopColor: colors.dove,
     borderStyle: 'dashed',
   },
+  goalTagAnchor: { position: 'absolute', right: 0 },
   goalTag: {
     position: 'absolute',
     right: 0,

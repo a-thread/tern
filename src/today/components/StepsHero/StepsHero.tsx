@@ -2,7 +2,7 @@ import React from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 
-import { font, radius, skyFor, space } from '@shared/theme';
+import { colors, font, radius, skyFor, space } from '@shared/theme';
 import { FlightPath } from '@shared/components/FlightPath';
 import { CountUp } from '@shared/components/AnimatedNumber/AnimatedNumber';
 import { useSettings } from '@/domain/settings/SettingsContext';
@@ -175,7 +175,7 @@ const s = StyleSheet.create({
   chips: { flexDirection: 'row', gap: 6 },
   moveChip: {
     alignSelf: 'center',
-    backgroundColor: 'rgba(0,0,0,0.28)',
+    backgroundColor: 'rgba(0,0,0,0.45)',
     borderRadius: 13,
     paddingHorizontal: 12,
     paddingVertical: 6,
@@ -187,19 +187,23 @@ const s = StyleSheet.create({
     paddingHorizontal: 10,
     paddingVertical: 5,
   },
-  streakText: { fontFamily: font.semibold, fontSize: 11.5, color: '#FBFAF7' },
+  streakText: {
+    fontFamily: font.semibold,
+    fontSize: 11.5,
+    color: colors.onDark,
+  },
+  // The count and the line under it sit over the light end of every sky, so they're dark ink, not white.
   stepBig: {
     fontFamily: font.displayMedium,
     fontSize: 32,
-    color: '#FBFAF7',
+    color: colors.onSkyLight,
     textAlign: 'center',
     marginTop: 4,
   },
-  // Sits over the lightest end of every sky gradient (pale blue, peach, gold), so it's dark ink, not white.
   stepSub: {
     fontFamily: font.medium,
     fontSize: 12,
-    color: '#1F2D38',
+    color: colors.onSkyLight,
     textAlign: 'center',
   },
 });

@@ -10,25 +10,37 @@ export const colors = {
   // neutrals
   ink: '#26262B',
   ink2: '#63636A',
-  ink3: '#9C9C9E',
+  /** Placeholders, ticks and quiet labels. The lightest grey that still passes AA on paper (4.7:1), not just on a card. */
+  ink3: '#6C6C71',
   paper: '#F5F3EE',
   card: '#FFFFFF',
   border: '#E7E3D9',
   dove: '#B7BCBA',
+  /** The off track of a switch: a control needs 3:1 against the card, which dove isn't. */
+  controlOff: '#878D8B',
+  /** The empty part of a progress bar: visible at zero, yet still clearly apart from every fill. */
+  progressTrack: '#CBCECB',
+  /** Week ring tracks: the empty ring for a normal, rest and frozen day. */
+  ringTrack: '#B7BCBA',
+  ringTrackRest: '#CDBFA8',
+  ringTrackFrozen: '#A9CAD2',
   doveTint: '#EEEFEC',
   /** The recessed fill behind steppers, segmented controls and search fields. */
   track: '#E8E5DD',
 
   // primary action — use sparingly
-  coral: '#D8431F',
-  coralTint: '#F7DCD3',
+  coral: '#C23A19',
+  /** Pale enough that coral text on it still reads (4.6:1). */
+  coralTint: '#FBEAE4',
+  /** Text and icons on a coral, danger or other filled button. */
+  onAction: '#FFFFFF',
   /** Errors and destructive actions (Delete, Remove). */
   danger: '#B3261E',
 
   // steps + movement
-  glacier: '#5FA8B8',
+  glacier: '#4A90A0',
   glacierTint: '#DDEEF1',
-  glacierDeep: '#3A7B8A',
+  glacierDeep: '#33707E',
 
   // weight + trends
   water: '#3E5A6C',
@@ -37,7 +49,7 @@ export const colors = {
   waterTint: '#E1EAED',
 
   // journey + milestones
-  aurora: '#4E8C7D',
+  aurora: '#3A7365',
   auroraTint: '#DCEBE5',
   violet: '#6B5B9A',
   violetTint: '#E5E0EF',
@@ -45,13 +57,15 @@ export const colors = {
   // streaks + goal moments
   sun: '#E0A32E',
   sunTint: '#FAEDD2',
-  sunDeep: '#9C7015',
+  sunDeep: '#8A6312',
   /** Gold for points, the route and links on the dark cards. */
   sunLight: '#F2C888',
 
   // on the dark heroes and cards
   /** Text over a dark sky or card. */
   onDark: '#FBFAF7',
+  /** Text over the light end of a sky gradient (pale blue, peach, gold), where white can't be read. */
+  onSkyLight: '#1F2D38',
   /** Secondary text over a dark sky or card: softer, but still easy to read on the light end of a gradient. */
   onDarkSoft: 'rgba(251,250,247,0.86)',
   /** A chip or label's backing over a dark sky or card. */
@@ -90,15 +104,23 @@ export const tierColors: Record<1 | 2 | 3 | 4, string> = {
   4: colors.coral,
 };
 
+/** The number on a tier dot: white reads on kelp and coral, but sun is too light for it. */
+export const tierTextColors: Record<1 | 2 | 3 | 4, string> = {
+  1: colors.onAction,
+  2: colors.onAction,
+  3: colors.ink,
+  4: colors.onAction,
+};
+
 export const gradients = {
   /** Today hero, by progress toward the step goal. */
   dawn: ['#2E4257', '#5C6F92', '#A9849E', '#E0A98C'],
   midday: ['#3E5A6C', '#6E8CA0', '#A9C2CE'],
   goalReached: ['#3E5A6C', '#8B7C6B', '#E0A96D', '#F0C888'],
   /** Journey, and the milestone and stop cards. */
-  journey: ['#2A2440', '#4A4372', '#4E8C7D'],
+  journey: ['#2A2440', '#4A4372', '#2F5C51'],
   /** The waypoints and streak cards opened from Today. */
-  waypoints: ['#1A2630', '#3E5A6C', '#8B7C6B'],
+  waypoints: ['#1A2630', '#3E5A6C', '#62564A'],
   rest: ['#3A3327', '#5B4636', '#8A6A4F'],
 } as const;
 

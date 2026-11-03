@@ -73,7 +73,7 @@ const s = StyleSheet.create({
     width: 44,
     height: 26,
     borderRadius: 14,
-    backgroundColor: colors.dove,
+    backgroundColor: colors.controlOff,
     justifyContent: 'center',
   },
   knob: {

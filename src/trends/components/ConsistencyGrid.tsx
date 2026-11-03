@@ -16,7 +16,11 @@ export function ConsistencyGrid({ days }: { days: DayBar['state'][] }) {
           state === DayState.Goal
             ? { backgroundColor: colors.glacier }
             : state === DayState.Partial
-              ? { backgroundColor: colors.glacierTint }
+              ? {
+                  backgroundColor: colors.card,
+                  borderWidth: 1.5,
+                  borderColor: colors.glacier,
+                }
               : state === DayState.Rest
                 ? {
                     backgroundColor: colors.driftwoodTint,
@@ -29,7 +33,7 @@ export function ConsistencyGrid({ days }: { days: DayBar['state'][] }) {
                       borderWidth: 1,
                       borderColor: colors.glacierDeep,
                     }
-                  : { backgroundColor: colors.doveTint };
+                  : { backgroundColor: colors.progressTrack };
         return <View key={i} style={[cs.dot, style]} />;
       })}
     </View>
