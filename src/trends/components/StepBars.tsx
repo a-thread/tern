@@ -4,7 +4,6 @@ import { colors, space, typography } from '@shared/theme';
 import { DayState } from '@shared/models/dayState';
 import { LegendDot } from './LegendDot';
 import { useDayNotes } from '@/domain/day-notes/DayNotesContext';
-import { notedDays } from '@/domain/day-notes/models/dayNote';
 
 /* ------------------------------------------------------------------ */
 /* Step bars                                                            */
@@ -32,8 +31,7 @@ export function StepBars({
   showLegend?: boolean;
   showLabels?: boolean;
 }) {
-  const notes = useDayNotes();
-  const noted = notedDays(notes.enabled ? notes.notes : []);
+  const { noted } = useDayNotes();
   const isNoted = (d: DayBar) => d.day !== undefined && noted.has(d.day);
   const anyNoted = days.some(isNoted);
   const max = Math.max(...days.map((d) => d.value), goal ?? 0, 1);

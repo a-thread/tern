@@ -10,6 +10,7 @@ import { formatLongDate } from '@shared/utils/date';
 import { useRootNavigation } from '@/navigation/useAppNavigation';
 import type { TrendsStackParamList } from '../navigation';
 import { useDayNotes } from '@/domain/day-notes/DayNotesContext';
+import { newestFirst } from '@/domain/day-notes/models/dayNote';
 
 type Props = NativeStackScreenProps<TrendsStackParamList, 'Notes'>;
 
@@ -19,7 +20,7 @@ export default function NotesScreen({ navigation }: Props) {
   const root = useRootNavigation();
   const { setDay } = useViewedDay();
   const { notes } = useDayNotes();
-  const newestFirst = [...notes].reverse();
+  const list = newestFirst(notes);
 
   const openDay = (day: string) => {
     setDay(day);
@@ -42,14 +43,14 @@ export default function NotesScreen({ navigation }: Props) {
           paddingBottom: 40,
         }}
       >
-        {newestFirst.length === 0 ? (
+        {list.length === 0 ? (
           <Text style={s.empty}>
             No notes yet. Write one from Today: how your body feels, what got in
             the way, anything worth remembering.
           </Text>
         ) : (
           <Group style={{ marginTop: space.md }}>
-            {newestFirst.map((n) => (
+            {list.map((n) => (
               <Row
                 key={n.day}
                 title={formatLongDate(n.day)}

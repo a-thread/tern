@@ -1,21 +1,18 @@
 import React from 'react';
 import { StyleSheet, Text } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
-import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
 import { space, typography } from '@shared/theme';
 import { useDayKey } from '@shared/hooks/useDayKey';
 import { addDays, formatShortDate } from '@shared/utils/date';
 import { TrendCard, TrendFigure } from './TrendCard';
 import { TrendRanges, type TrendRange } from '../models/trendRange';
-import type { TrendsStackParamList } from '../navigation';
+import { useTrendsNavigation } from '@/navigation/useAppNavigation';
 import { notesBetween } from '@/domain/day-notes/models/dayNote';
 import { useDayNotes } from '@/domain/day-notes/DayNotesContext';
 
 /** How many days in the range have a note, and the latest one. Tapping opens every note. */
 export default function NotesTrendCard({ range }: { range: TrendRange }) {
-  const navigation =
-    useNavigation<NativeStackNavigationProp<TrendsStackParamList>>();
+  const navigation = useTrendsNavigation();
   const { notes } = useDayNotes();
   const today = useDayKey();
   const inRange = notesBetween(

@@ -1,7 +1,5 @@
 import React from 'react';
 import { Text } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
-import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
 import { colors, typography } from '@shared/theme';
 import { TrendRanges, TrendRange } from '../models/trendRange';
@@ -12,12 +10,11 @@ import { useSettings } from '../../domain/settings/SettingsContext';
 import { noStepsNote } from '../models/noStepsNote';
 import { bucketSteps } from '../models/stepBars';
 import { summarizeSteps } from '../models/stepsSummary';
-import type { TrendsStackParamList } from '../navigation';
+import { useTrendsNavigation } from '@/navigation/useAppNavigation';
 
 /** Average steps for the range with the change since the range before, and a bar per day (or week). */
 export function StepsTrendCard({ range }: { range: TrendRange }) {
-  const navigation =
-    useNavigation<NativeStackNavigationProp<TrendsStackParamList>>();
+  const navigation = useTrendsNavigation();
   const { settings } = useSettings();
   const { days, status, stepsReadable } = useActivity();
   const rangeSteps = summarizeSteps(days, TrendRanges.DAYS[range]);

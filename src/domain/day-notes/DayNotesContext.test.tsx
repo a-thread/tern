@@ -53,11 +53,13 @@ describe('DayNotesProvider', () => {
     });
     expect(result.current.enabled).toBe(false);
     expect(result.current.onDay?.text).toBe('Joint pain');
+    expect(result.current.noted.size).toBe(0);
     await act(async () => {
       settingsOf.current.settings.updateSettings({ trackNotes: true });
     });
     expect(result.current.enabled).toBe(true);
     expect(result.current.onDay?.text).toBe('Joint pain');
+    expect(result.current.noted.has(today)).toBe(true);
   });
 
   it('saves a trimmed note, and writing again replaces it', async () => {

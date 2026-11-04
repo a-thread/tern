@@ -20,7 +20,13 @@ export function TrendCard({
       {children}
     </Card>
   );
-  return onPress ? <Pressable onPress={onPress}>{card}</Pressable> : card;
+  return onPress ? (
+    <Pressable onPress={onPress} accessibilityRole='button'>
+      {card}
+    </Pressable>
+  ) : (
+    card
+  );
 }
 
 /** A card's headline figure and the line explaining it. */

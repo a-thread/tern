@@ -1,6 +1,7 @@
 import {
   cleanDayNote,
   DayNoteText,
+  newestFirst,
   notedDays,
   noteFor,
   notesBetween,
@@ -33,6 +34,15 @@ describe('notes', () => {
     expect(notedDays(list)).toEqual(
       new Set(['2026-10-19', '2026-10-18', '2026-10-25']),
     );
+  });
+
+  it('orders every note newest first, leaving the list as it was', () => {
+    expect(newestFirst(list).map((n) => n.day)).toEqual([
+      '2026-10-25',
+      '2026-10-19',
+      '2026-10-18',
+    ]);
+    expect(list[0].day).toBe('2026-10-19');
   });
 
   it('slices a range inclusively, newest first', () => {

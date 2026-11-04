@@ -21,15 +21,24 @@ type Props = NativeStackScreenProps<RootStackParamList, 'DayNote'>;
  */
 export default function DayNoteScreen({ navigation }: Props) {
   const insets = useSafeAreaInsets();
-  const { day, today } = useViewedDay();
+  const { day, today, editable } = useViewedDay();
   const { onDay, save, clearDay } = useDayNotes();
   const [text, setText] = useState(onDay?.text ?? '');
   const dayLabel = dayWord(day, today);
   const blank = cleanDayNote(text) === undefined;
 
+  // The day can stop being editable while the sheet is open (yesterday, at midnight). The
+  // text stays on screen, so nothing typed is lost without the person seeing why.
+  const closedNote = `${dayLabel} can no longer be changed. Copy your note if you want to keep it.`;
+
   const onSave = () => {
-    save(text);
-    navigation.goBack();
+    // Emptying a saved note deletes it, so it asks first, as Remove does.
+    if (blank && onDay) {
+      remove();
+      return;
+    }
+    // Refused only when the day has closed, which the field already explains.
+    if (save(text)) navigation.goBack();
   };
 
   const remove = () =>
@@ -53,8 +62,8 @@ export default function DayNoteScreen({ navigation }: Props) {
         onLeftPress={() => navigation.goBack()}
         rightLabel='Save'
         onRightPress={onSave}
-        // A blank note with nothing saved has nothing to save; with one saved, Save clears it.
-        rightDisabled={blank && !onDay}
+        // A blank note with nothing saved has nothing to save; with one saved, Save asks to clear it.
+        rightDisabled={!editable || (blank && !onDay)}
       />
 
       <ScrollView
@@ -72,14 +81,13 @@ export default function DayNoteScreen({ navigation }: Props) {
           <Text style={s.sub}>{dayLabel}</Text>
         </View>
 
-        <DayNoteField value={text} onChange={setText} />
+        <DayNoteField
+          value={text}
+          onChange={setText}
+          error={editable ? null : closedNote}
+        />
 
-        <Text style={s.hint}>
-          Only you see this. Looking back, it helps explain a day’s steps and
-          food.
-        </Text>
-
-        {onDay ? (
+        {onDay && editable ? (
           <Group style={{ marginTop: space.lg }}>
             <Pressable
               style={s.row}
@@ -106,13 +114,6 @@ const s = StyleSheet.create({
     letterSpacing: -0.2,
   },
   sub: { ...typography.meta, marginTop: 4 },
-  hint: {
-    ...typography.caption,
-    textAlign: 'center',
-    lineHeight: 17,
-    paddingHorizontal: 12,
-    marginTop: space.lg,
-  },
   row: { paddingHorizontal: 13, paddingVertical: 12 },
   danger: { ...typography.rowTitle, color: colors.danger },
 });

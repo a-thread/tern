@@ -21,12 +21,13 @@ export const noteFor = (notes: DayNote[], day: string): DayNote | undefined =>
 export const notedDays = (notes: DayNote[]): Set<string> =>
   new Set(notes.map((n) => n.day));
 
+/** Every note, newest first. */
+export const newestFirst = (notes: DayNote[]): DayNote[] =>
+  [...notes].sort((a, b) => b.day.localeCompare(a.day));
+
 /** Notes from `from` to `to` inclusive, newest first. */
 export const notesBetween = (
   notes: DayNote[],
   from: string,
   to: string,
-): DayNote[] =>
-  notes
-    .filter((n) => n.day >= from && n.day <= to)
-    .sort((a, b) => b.day.localeCompare(a.day));
+): DayNote[] => newestFirst(notes.filter((n) => n.day >= from && n.day <= to));

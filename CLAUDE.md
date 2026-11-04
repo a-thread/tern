@@ -81,7 +81,7 @@ src/
   / `createHealthWorkouts` (Apple Health on iPhone, Health Connect on Android); adapters take a small
   interface (`HealthKitApi`) so they test without the native library. Say "Apple Health" or "Health
   Connect" in the UI with `healthAppName()`, never a literal.
-- Navigation: `useRootNavigation()` / `useSettingsNavigation()`, not a hand-typed `useNavigation<…>()`.
+- Navigation: `useRootNavigation()` / `useSettingsNavigation()` / `useTrendsNavigation()`, not a hand-typed `useNavigation<…>()`.
 - One component, one responsibility; if it does two things, split it.
 
 ## Accessibility

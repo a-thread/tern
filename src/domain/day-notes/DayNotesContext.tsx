@@ -7,10 +7,15 @@ import { useViewedDay } from '@shared/state/ViewedDayContext';
 import { useSyncedList } from '@shared/hooks/useSyncedList';
 import { addDays } from '@shared/utils/date';
 import { useSettings } from '../settings/SettingsContext';
-import { cleanDayNote, noteFor, type DayNote } from './models/dayNote';
+import {
+  cleanDayNote,
+  notedDays,
+  noteFor,
+  type DayNote,
+} from './models/dayNote';
 
 /** How far back the context keeps notes: enough for the longest Trends range. */
-export const HISTORY_DAYS = 180;
+const HISTORY_DAYS = 180;
 
 type DayNotesContextValue = {
   /** False until notes have loaded once. */
@@ -21,6 +26,8 @@ type DayNotesContextValue = {
   enabled: boolean;
   /** The last 180 days of notes, oldest first. */
   notes: DayNote[];
+  /** The days with a note, for marking charts; empty while notes are switched off. */
+  noted: ReadonlySet<string>;
   /** The viewed day's note (today unless a past day is picked; see `useViewedDay`). */
   onDay: DayNote | undefined;
   /**
@@ -58,6 +65,11 @@ export function DayNotesProvider({
   );
 
   const onDay = noteFor(entries, day);
+  // Built once per change rather than by each chart that marks noted days.
+  const noted = useMemo(
+    () => (enabled ? notedDays(entries) : new Set<string>()),
+    [enabled, entries],
+  );
 
   const clearDay = useCallback(() => {
     if (!editable) return;
@@ -90,8 +102,17 @@ export function DayNotesProvider({
   );
 
   const value = useMemo<DayNotesContextValue>(
-    () => ({ ready, reload, enabled, notes: entries, onDay, save, clearDay }),
-    [ready, reload, enabled, entries, onDay, save, clearDay],
+    () => ({
+      ready,
+      reload,
+      enabled,
+      notes: entries,
+      noted,
+      onDay,
+      save,
+      clearDay,
+    }),
+    [ready, reload, enabled, entries, noted, onDay, save, clearDay],
   );
 
   return (

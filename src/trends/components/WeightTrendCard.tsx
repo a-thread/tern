@@ -1,7 +1,5 @@
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
-import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
 import { colors, font } from '@shared/theme';
 import { Icon } from '@shared/components/ui';
@@ -9,7 +7,7 @@ import { WeightTrend } from '@shared/components/WeightTrend';
 import { TrendRanges, TrendRange } from '../models/trendRange';
 import { TrendCard, TrendHeader } from './TrendCard';
 import { weightTrendFor } from '../models/weightTrend';
-import type { TrendsStackParamList } from '../navigation';
+import { useTrendsNavigation } from '@/navigation/useAppNavigation';
 import { useWeight } from '../../domain/weight/WeightContext';
 import { signedChange } from '../../domain/weight/models/weightEntry';
 import { useSettings } from '../../domain/settings/SettingsContext';
@@ -18,8 +16,7 @@ import { Frequency } from '@shared/models/frequency';
 
 /** The smoothed weight line for the range and how far it moved. Tapping opens the weight detail. */
 export function WeightTrendCard({ range }: { range: TrendRange }) {
-  const navigation =
-    useNavigation<NativeStackNavigationProp<TrendsStackParamList>>();
+  const navigation = useTrendsNavigation();
   const { settings } = useSettings();
   const { weightEntries, weightTrend } = useWeight();
   const { formatWeight, toDisplay, weightLabel } = useUnits();

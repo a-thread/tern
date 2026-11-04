@@ -4,13 +4,18 @@ import { StyleSheet, Text, TextInput, View } from 'react-native';
 import { colors, font, radius, space, typography } from '@shared/theme';
 import { DayNoteText } from '@/domain/day-notes/models/dayNote';
 
-/** The day's note: free text, with how much room is left once the end is near. */
+/**
+ * The day's note: free text, with how much room is left once the end is near, and why it
+ * can't be saved (`error`) right under it.
+ */
 export function DayNoteField({
   value,
   onChange,
+  error,
 }: {
   value: string;
   onChange: (text: string) => void;
+  error?: string | null;
 }) {
   const left = DayNoteText.MAX_LENGTH - value.length;
   return (
@@ -32,6 +37,11 @@ export function DayNoteField({
       {/* Only once the end is in sight, so an empty note isn't counting at you. */}
       {left <= 50 ? (
         <Text style={s.count}>{`${left} characters left`}</Text>
+      ) : null}
+      {error ? (
+        <Text style={s.error} accessibilityLiveRegion='polite'>
+          {error}
+        </Text>
       ) : null}
     </>
   );
@@ -56,5 +66,11 @@ const s = StyleSheet.create({
     textAlign: 'right',
     marginTop: space.xs,
     marginRight: space.xs,
+  },
+  error: {
+    ...typography.small,
+    color: colors.danger,
+    marginTop: space.xs,
+    marginHorizontal: space.xs,
   },
 });
