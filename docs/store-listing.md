@@ -7,11 +7,11 @@ Console and App Store Connect; the headings below match their fields.
 
 ## App name
 
-Tern
+Tern: A Kinder Tracker
 
 ## Short description (80 characters max)
 
-Progress answers to your pace - a kinder tracker that meets you where you're at.
+Progress answers to your pace.
 
 ## Full description (4000 characters max)
 
