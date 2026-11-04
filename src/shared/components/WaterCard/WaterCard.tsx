@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { View, Text, TextInput, Pressable, StyleSheet } from 'react-native';
 
 import { colors, font, radius, space } from '../../theme';
@@ -10,9 +10,20 @@ import { useWater } from '@/domain/water/WaterContext';
 import { useViewedDay } from '../../state/ViewedDayContext';
 import { waterMessage } from './models/waterMessage';
 import WaterGlass from './components/WaterGlass';
+import { useDrinkCelebration } from '../../hooks/useDrinkCelebration';
+import { WaterSplashLayer } from '../WaterSplashLayer/WaterSplashLayer';
 
 /** Today's water on the Food screen: progress toward the goal, quick-add drink sizes and an undo. */
 export default function WaterCard({ bare = false }: { bare?: boolean }) {
+  // Its own splash layer, so the splash draws over the card and, in the water sheet, inside the sheet's Modal.
+  return (
+    <WaterSplashLayer>
+      <WaterCardBody bare={bare} />
+    </WaterSplashLayer>
+  );
+}
+
+function WaterCardBody({ bare }: { bare: boolean }) {
   const { totalOz, goalOz, progress, reached, addWater, undoLast, lastOz } =
     useWater();
   // Before yesterday the day's water is only shown, not added to.
@@ -26,11 +37,23 @@ export default function WaterCard({ bare = false }: { bare?: boolean }) {
   } = useUnits();
   const toast = useToast();
   const [custom, setCustom] = useState<string | null>(null); // the typed amount, while "Other" is open
+  const celebrate = useDrinkCelebration();
+  // The buttons a drink can come from, so the splash comes out of the one that was tapped.
+  const quickRefs = useRef<Record<number, View | null>>({});
+  const customRef = useRef<View>(null);
+
+  /** Logs a drink and, when it saves, splashes water around `from` and buzzes so the tap feels finished. */
+  const add = (oz: number, from: View | null) => {
+    const wasShort = totalOz < goalOz;
+    if (!addWater(oz)) return false;
+    celebrate(wasShort && totalOz + oz >= goalOz, from);
+    return true;
+  };
 
   const addCustom = () => {
     const typed = parseFloat((custom ?? '').replace(',', '.'));
     const oz = Number.isFinite(typed) ? fromDisplayVolume(typed) : NaN;
-    if (!addWater(oz)) {
+    if (!add(oz, customRef.current)) {
       toast.show(
         `Enter an amount up to ${toDisplayVolume(WaterLimits.MAX_DRINK_OZ)} ${volumeLabel}.`,
       );
@@ -80,8 +103,11 @@ export default function WaterCard({ bare = false }: { bare?: boolean }) {
             {quickWaterOz.map((oz) => (
               <Pressable
                 key={oz}
-                onPress={() => addWater(oz)}
-                style={s.quick}
+                ref={(el) => {
+                  quickRefs.current[oz] = el;
+                }}
+                onPress={() => add(oz, quickRefs.current[oz] ?? null)}
+                style={({ pressed }) => [s.quick, pressed && s.quickPressed]}
                 accessibilityRole='button'
                 accessibilityLabel={`Add ${formatVolume(oz)} of water`}
               >
@@ -115,6 +141,7 @@ export default function WaterCard({ bare = false }: { bare?: boolean }) {
                 style={s.input}
               />
               <Pressable
+                ref={customRef}
                 onPress={addCustom}
                 style={s.addBtn}
                 accessibilityRole='button'
@@ -190,6 +217,10 @@ const s = StyleSheet.create({
     backgroundColor: colors.waterTint,
   },
   quickOn: { backgroundColor: colors.doveTint },
+  quickPressed: {
+    backgroundColor: colors.waterLight,
+    transform: [{ scale: 0.94 }],
+  },
   quickText: { fontFamily: font.semibold, fontSize: 12.5, color: colors.water },
   customRow: {
     flexDirection: 'row',
