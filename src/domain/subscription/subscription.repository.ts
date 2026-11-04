@@ -63,3 +63,21 @@ export function createMemorySubscriptionRepository(
     onChange: () => () => {},
   };
 }
+
+/**
+ * A release build with no store key for this platform: nothing can be bought and nobody
+ * has Plus, short of a grant the server knows about. Never the free in-memory store, which
+ * would let an account think it has Plus that the server then refuses every write for.
+ */
+export function createUnavailableSubscriptionRepository(): SubscriptionRepository {
+  return {
+    status: async () => NO_SUBSCRIPTION,
+    plans: async () => [],
+    purchase: async () => {
+      throw new Error('Tern Plus is not available in this build');
+    },
+    restore: async () => NO_SUBSCRIPTION,
+    identify: async () => NO_SUBSCRIPTION,
+    onChange: () => () => {},
+  };
+}

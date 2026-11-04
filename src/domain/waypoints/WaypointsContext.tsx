@@ -119,7 +119,7 @@ export function WaypointsProvider({
       ledger.award(source, points, day).catch((e) => {
         console.warn('Could not save waypoints', e);
         toast.show(
-          "Couldn't save your waypoints — they'll sync when you're back online.",
+          "Couldn't save your waypoints — please try again.",
         );
       });
     },
@@ -142,7 +142,7 @@ export function WaypointsProvider({
       ledger.revoke(source, day).catch((e) => {
         console.warn('Could not save waypoints', e);
         toast.show(
-          "Couldn't save your waypoints — they'll sync when you're back online.",
+          "Couldn't save your waypoints — please try again.",
         );
       });
     },

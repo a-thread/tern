@@ -97,6 +97,7 @@ import { createLocalMovementRepository } from './domain/movement/movement.reposi
 import { createLocalDataRepository } from './domain/settings/dataRepository.local';
 import {
   createMemorySubscriptionRepository,
+  createUnavailableSubscriptionRepository,
   type SubscriptionRepository,
 } from './domain/subscription/subscription.repository';
 import { createStoreSubscriptionRepository } from './domain/subscription/subscription.revenuecat';
@@ -203,10 +204,13 @@ export function createLocalBackend(db: LocalDb): Backend {
 /**
  * Tern Plus. Not part of `Backend`: it outlives signing in and out, since buying comes
  * before the account. Already on in a test build that unlocks it (`plusUnlocked`). Otherwise
- * the store's through RevenueCat when there's a key for this platform, or in memory, where
- * buying is free (development and Expo Go).
+ * the store's through RevenueCat when there's a key for this platform. Without one, in
+ * memory where buying is free in development and Expo Go (`dev`), and unavailable in a
+ * release build, so a missing key shows as no Plus rather than as saves the server refuses.
  */
-export function createSubscriptionRepository(): SubscriptionRepository {
+export function createSubscriptionRepository(
+  dev: boolean = __DEV__,
+): SubscriptionRepository {
   if (plusUnlocked()) {
     return createMemorySubscriptionRepository({
       active: true,
@@ -214,12 +218,15 @@ export function createSubscriptionRepository(): SubscriptionRepository {
       expiresAt: null,
     });
   }
-  return (
-    createStoreSubscriptionRepository() ??
-    createMemorySubscriptionRepository(undefined, undefined, {
-      accountsHavePlus: true,
-    })
-  );
+  const store = createStoreSubscriptionRepository();
+  if (store) return store;
+  if (!dev) {
+    console.warn('No RevenueCat key for this platform: Tern Plus is unavailable');
+    return createUnavailableSubscriptionRepository();
+  }
+  return createMemorySubscriptionRepository(undefined, undefined, {
+    accountsHavePlus: true,
+  });
 }
 
 /**

@@ -42,3 +42,30 @@ describe('Tern Plus unlocked for test builds', () => {
     expect((await createSubscriptionRepository().status()).active).toBe(false);
   });
 });
+
+describe('Tern Plus without a store key', () => {
+  const before = process.env.EXPO_PUBLIC_REVENUECAT_IOS_KEY;
+  const beforeAndroid = process.env.EXPO_PUBLIC_REVENUECAT_ANDROID_KEY;
+  beforeEach(() => {
+    delete process.env.EXPO_PUBLIC_PLUS_UNLOCKED;
+    delete process.env.EXPO_PUBLIC_REVENUECAT_IOS_KEY;
+    delete process.env.EXPO_PUBLIC_REVENUECAT_ANDROID_KEY;
+  });
+  afterEach(() => {
+    if (before !== undefined) process.env.EXPO_PUBLIC_REVENUECAT_IOS_KEY = before;
+    if (beforeAndroid !== undefined)
+      process.env.EXPO_PUBLIC_REVENUECAT_ANDROID_KEY = beforeAndroid;
+  });
+
+  it('never counts a signed-in account as having Plus in a release build', async () => {
+    const repo = createSubscriptionRepository(false);
+    expect((await repo.identify('user-1')).active).toBe(false);
+    expect(await repo.plans()).toEqual([]);
+    await expect(repo.purchase('sample_annual')).rejects.toThrow();
+  });
+
+  it('lets development against Supabase treat accounts as having Plus', async () => {
+    const repo = createSubscriptionRepository(true);
+    expect((await repo.identify('user-1')).active).toBe(true);
+  });
+});
