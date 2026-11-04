@@ -1,26 +1,37 @@
 name: Submit iOS
 description: >-
-  Uploads this run's `ios-production` .ipa to TestFlight with `eas submit`. Free EAS accounts wait
-  in a queue (25+ minutes at times), so give the job a long timeout. Run after actions/checkout.
+  Uploads the .ipa straight to App Store Connect (and so TestFlight) with `xcrun altool` and an App
+  Store Connect API key: a few minutes, with no EAS Submit queue (which took over an hour). macOS
+  only, so it runs in the ios job right after build-ios.
 
 inputs:
-  expo-token:
-    description: EXPO_TOKEN; the App Store Connect API key is stored in EAS credentials
+  ipa:
+    description: Path to the .ipa build-ios produced
+    required: true
+  api-key-id:
+    description: ASC_API_KEY_ID, the App Store Connect API key's Key ID
+    required: true
+  api-issuer-id:
+    description: ASC_API_ISSUER_ID, the team's Issuer ID from the same page
+    required: true
+  api-key-p8:
+    description: ASC_API_KEY_P8, the contents of the key's AuthKey_<id>.p8 file
     required: true
 
 runs:
   using: composite
   steps:
-    - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
-      with:
-        name: ios-production
-        path: dist
-    # `eas submit` evaluates app.json, which loads the Expo config plugins from node_modules,
-    # so the dependencies must be installed. Install scripts aren't needed for that.
-    - uses: ./.github/actions/setup
-      with:
-        ignore-scripts: 'true'
     - shell: bash
       env:
-        EXPO_TOKEN: ${{ inputs.expo-token }}
-      run: npx eas submit --platform ios --profile production --path dist/tern-ios.ipa --non-interactive
+        IPA: ${{ inputs.ipa }}
+        KEY_ID: ${{ inputs.api-key-id }}
+        ISSUER_ID: ${{ inputs.api-issuer-id }}
+        KEY_P8: ${{ inputs.api-key-p8 }}
+      # release.yml's version job checks the secrets exist, before a macOS runner is spent.
+      run: |
+        # altool looks for the key here by its id.
+        keys="$HOME/.appstoreconnect/private_keys"
+        mkdir -p "$keys"
+        printf '%s\n' "$KEY_P8" > "$keys/AuthKey_$KEY_ID.p8"
+        trap 'rm -f "$keys/AuthKey_$KEY_ID.p8"' EXIT
+        xcrun altool --upload-app --type ios --file "$IPA" --apiKey "$KEY_ID" --apiIssuer "$ISSUER_ID"
