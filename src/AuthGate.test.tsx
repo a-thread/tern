@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Pressable, Text } from 'react-native';
+import { Modal, Pressable, Text } from 'react-native';
 import { act, fireEvent, render, screen } from '@testing-library/react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
@@ -142,6 +142,23 @@ describe('AuthGate without an account', () => {
     mockAuth.signingIn = true;
     await act(async () => screen.rerender(app()));
     expect(await screen.findByText('Forgot password?')).toBeTruthy();
+  });
+
+  it('presents the sign-in screens as a modal, so they show over the Settings sheet', async () => {
+    mockAuth.closeSignIn.mockClear();
+    render(app());
+    await screen.findByText('0 rest days');
+
+    mockAuth.signingIn = true;
+    await act(async () => screen.rerender(app()));
+    await screen.findByText('Forgot password?');
+    // A view laid over the root opened behind Settings, a native sheet, and was never seen.
+    const modal = screen.UNSAFE_getByType(Modal);
+    expect(modal.props.visible).toBe(true);
+
+    // Android's back button leaves them, as "Not now" does.
+    fireEvent(modal, 'requestClose');
+    expect(mockAuth.closeSignIn).toHaveBeenCalled();
   });
 
   it('keeps the app where it was under the sign-in screens, so closing them goes back there', async () => {

@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { Modal, StyleSheet, View } from 'react-native';
 import LoadingScreen from '@shared/components/LoadingScreen/LoadingScreen';
 
 import { isBackendConfigured } from '@shared/backend/supabase';
@@ -115,7 +115,11 @@ function ChooseBackend({ children }: { children: React.ReactNode }) {
 
   if (!userId || !remote) {
     return (
-      <SignInOver open={auth.signingIn} screens={<AuthFlow />}>
+      <SignInOver
+        open={auth.signingIn}
+        onClose={auth.closeSignIn}
+        screens={<AuthFlow />}
+      >
         <PhoneBackend>{children}</PhoneBackend>
       </SignInOver>
     );
@@ -127,6 +131,7 @@ function ChooseBackend({ children }: { children: React.ReactNode }) {
     return (
       <SignInOver
         open={auth.signingIn}
+        onClose={auth.closeSignIn}
         screens={<PaywallScreen onBack={auth.closeSignIn} />}
       >
         <PhoneBackend lapsed={{ userId, account: remote.data! }}>
@@ -154,13 +159,19 @@ function ChooseBackend({ children }: { children: React.ReactNode }) {
  * app stays exactly where it was underneath: closing them goes back to Settings, or to the
  * setup wizard, instead of rebuilding the app from Today. While they're open the app is hidden
  * from screen readers. Signing in still swaps the backend, which reloads the app.
+ *
+ * A `Modal`, not a view on top: Settings is itself a native modal sheet, which iOS draws above
+ * everything in the root view, so an overlay there opened unseen behind it. A `Modal` is
+ * presented from the topmost screen, so it lands over the sheet.
  */
 function SignInOver({
   open,
+  onClose,
   screens,
   children,
 }: {
   open: boolean;
+  onClose: () => void;
   screens: React.ReactNode;
   children: React.ReactNode;
 }) {
@@ -173,11 +184,17 @@ function SignInOver({
       >
         {children}
       </View>
-      {open ? (
-        <View style={StyleSheet.absoluteFill} accessibilityViewIsModal>
-          {screens}
-        </View>
-      ) : null}
+      <Modal
+        visible={open}
+        animationType='slide'
+        presentationStyle='fullScreen'
+        // Edge to edge on Android, as the app is, so the screens' safe-area insets still fit.
+        statusBarTranslucent
+        navigationBarTranslucent
+        onRequestClose={onClose}
+      >
+        {open ? screens : null}
+      </Modal>
     </View>
   );
 }
