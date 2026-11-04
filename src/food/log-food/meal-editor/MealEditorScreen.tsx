@@ -54,6 +54,9 @@ export default function MealEditorScreen({ navigation }: Props) {
     commitDraft,
   } = useSavedMeals();
   const [error, setError] = React.useState<string | null>(null);
+  // Foods are added from the search screen, so a "no foods" error is cleared when they arrive.
+  const itemCount = draft?.items.length ?? 0;
+  React.useEffect(() => setError(null), [itemCount]);
 
   if (!draft) {
     return (

@@ -225,6 +225,21 @@ describe('AuthGate signed in', () => {
     warn.mockRestore();
   });
 
+  it('saves to the phone when the server says the account has no Plus, since the account would refuse every save', async () => {
+    mockPlus = createMemorySubscriptionRepository(PLUS);
+    await mockAccount.restDays.add('2026-10-17');
+    mockAccount = { ...mockAccount, syncPlus: async () => false };
+    const warn = jest.spyOn(console, 'warn').mockImplementation(() => {});
+    render(app());
+    // The account's log comes along, so nothing already saved goes missing.
+    expect(await screen.findByText('1 rest days')).toBeTruthy();
+    expect(await screen.findByText(/Your account can't sync yet/)).toBeTruthy();
+    await act(async () => fireEvent.press(screen.getByText('Rest')));
+    expect(await phoneRestDays()).toEqual(['2026-10-17', '2026-10-18']);
+    expect(await accountRestDays()).toEqual(['2026-10-17']);
+    warn.mockRestore();
+  });
+
   it("once Plus has ended, copies the account's log onto the phone and carries on there", async () => {
     mockPlus = createMemorySubscriptionRepository(NO_PLUS);
     await mockAccount.restDays.add('2026-10-18');

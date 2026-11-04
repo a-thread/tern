@@ -184,10 +184,15 @@ function SignInOver({
 
 const s = StyleSheet.create({ fill: { flex: 1 } });
 
+/** Said once the account's log is on the phone because the server doesn't count Plus yet. */
+const NOT_SYNCED_NOTICE =
+  "Your account can't sync yet, so Tern is saving to this phone for now. It moves into your account once Tern Plus is confirmed.";
+
 /**
  * Signed in with Plus. The server's record of Plus is brought up to date first (it's what
  * lets the account be written to), then whatever is on the phone goes into the account
- * before it shows.
+ * before it shows. If the server says the account has no Plus, the account would refuse
+ * every save, so the phone is used instead, with the account's log copied onto it.
  */
 function AccountBackend({
   userId,
@@ -202,26 +207,30 @@ function AccountBackend({
 }) {
   const toast = useToast();
   const [ready, setReady] = useState(!moveIn);
+  const [refused, setRefused] = useState(false);
 
   useEffect(() => {
     if (!moveIn) return;
     let live = true;
-    // Whether the server now counts Plus. Usually the webhook has already done it.
+    // Whether the server now counts Plus (usually the webhook has already done it), or null
+    // when it couldn't be asked: then the account gets the benefit of the doubt.
     const sync = async () => {
       try {
         return (await backend.syncPlus?.()) ?? true;
       } catch (e) {
         console.warn('Could not bring the server up to date with Tern Plus', e);
-        return false;
+        return null;
       }
     };
     sync()
       .then(async (synced) => {
-        // The account would refuse every row: leave the phone's log where it is for next time.
-        if (!synced) {
-          console.warn("The server doesn't count Tern Plus yet; the phone's log stays on it");
+        // The account would refuse every row: stay on the phone, and leave its log there.
+        if (synced === false) {
+          console.warn("The server doesn't count Tern Plus yet; using the phone");
+          if (live) setRefused(true);
           return 0;
         }
+        if (synced === null) return 0;
         const db = await openLocalDb();
         return moveToAccount(createLocalBackend(db).data!, backend.data!, db, userId);
       })
@@ -246,6 +255,15 @@ function AccountBackend({
   }, [backend, moveIn, toast, userId]);
 
   if (!ready) return <LoadingScreen />;
+  if (refused) {
+    return (
+      <PhoneBackend
+        lapsed={{ userId, account: backend.data!, notice: NOT_SYNCED_NOTICE }}
+      >
+        {children}
+      </PhoneBackend>
+    );
+  }
   return <BackendProvider backend={backend}>{children}</BackendProvider>;
 }
 
@@ -258,13 +276,15 @@ function PhoneBackend({
   lapsed,
   children,
 }: {
-  lapsed?: { userId: string; account: DataRepository };
+  /** `notice` replaces the "Plus has ended" message shown once the account's log is copied. */
+  lapsed?: { userId: string; account: DataRepository; notice?: string };
   children: React.ReactNode;
 }) {
   const toast = useToast();
   const [backend, setBackend] = useState<Backend | null>(null);
   const lapsedFor = lapsed?.userId;
   const account = lapsed?.account;
+  const notice = lapsed?.notice;
 
   useEffect(() => {
     let live = true;
@@ -277,7 +297,8 @@ function PhoneBackend({
         try {
           if (await copyToPhone(account, local.data!, db, lapsedFor)) {
             toast.show(
-              'Tern Plus has ended, so your data is kept on this phone now. Renew in Settings › Account and data to sync it again.',
+              notice ??
+                'Tern Plus has ended, so your data is kept on this phone now. Renew in Settings › Account and data to sync it again.',
             );
           }
         } catch (e) {
@@ -305,7 +326,7 @@ function PhoneBackend({
     return () => {
       live = false;
     };
-  }, [toast, lapsedFor, account]);
+  }, [toast, lapsedFor, account, notice]);
 
   if (!backend) return <LoadingScreen />;
   return (
