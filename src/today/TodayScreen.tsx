@@ -20,6 +20,7 @@ import { CelebrationBurst } from './components/CelebrationBurst';
 import WaterSheet from './components/WaterSheet';
 import { useTodayTips } from './hooks/useTodayTips';
 import { TipOverlay } from '@shared/components/TipOverlay/TipOverlay';
+import { WaterSplashLayer } from '@shared/components/WaterSplashLayer/WaterSplashLayer';
 
 /**
  * The Today tab: steps, the week, what is left to do and what is done, and the waypoint
@@ -58,26 +59,29 @@ export default function TodayScreen() {
       >
         <TodayHeader chipRef={chipRef} gearRef={tips.gearRef} />
 
-        <ScrollView
-          refreshControl={refreshControl}
-          contentContainerStyle={s.content}
-        >
-          {rest.showScene ? (
-            <RestDayHero heroRef={heroRef} rest={rest} />
-          ) : (
-            <StepsHero heroRef={heroRef} replayKey={flightKey} />
-          )}
-          <WeekStrip
-            replayKey={replayKey}
-            stripRef={tips.stripRef}
-            restRef={tips.restRef}
-          />
-          {calm ? (
-            <RestDayLists onReveal={reveal} leaving={rest.leaving} />
-          ) : (
-            <DayLists resting={rest.isRest} />
-          )}
-        </ScrollView>
+        {/* Drinks logged from the lists splash over the whole scroll area, not clipped to their card. */}
+        <WaterSplashLayer style={s.splashLayer}>
+          <ScrollView
+            refreshControl={refreshControl}
+            contentContainerStyle={s.content}
+          >
+            {rest.showScene ? (
+              <RestDayHero heroRef={heroRef} rest={rest} />
+            ) : (
+              <StepsHero heroRef={heroRef} replayKey={flightKey} />
+            )}
+            <WeekStrip
+              replayKey={replayKey}
+              stripRef={tips.stripRef}
+              restRef={tips.restRef}
+            />
+            {calm ? (
+              <RestDayLists onReveal={reveal} leaving={rest.leaving} />
+            ) : (
+              <DayLists resting={rest.isRest} />
+            )}
+          </ScrollView>
+        </WaterSplashLayer>
 
         {playing ? (
           <CelebrationBurst playing={playing} onDone={finish} />
@@ -105,5 +109,6 @@ export default function TodayScreen() {
 
 const s = StyleSheet.create({
   root: { flex: 1, backgroundColor: colors.paper },
+  splashLayer: { flex: 1 },
   content: { paddingHorizontal: space.lg, paddingBottom: space.lg },
 });

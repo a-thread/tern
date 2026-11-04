@@ -6,8 +6,7 @@ import { Group, GroupLabel, IconBadge, Row, Icon } from '@shared/components/ui';
 import { useUnits } from '../../domain/settings/hooks/useUnits';
 import { formatMinutes } from '../../domain/settings/models/reminderPlan';
 import { useMedication } from '../../domain/medication/MedicationContext';
-import { useWater } from '../../domain/water/WaterContext';
-import { useOpenWaterSheet } from '../hooks/useWaterSheet';
+import { WaterTodoRow } from './WaterTodoRow/WaterTodoRow';
 import { formatLoggedAt } from '../../domain/weight/models/weightEntry';
 import { useDayItems } from '../hooks/useDayItems';
 import { useRootNavigation } from '../../navigation/useAppNavigation';
@@ -19,10 +18,8 @@ import { useRootNavigation } from '../../navigation/useAppNavigation';
 export function LeftToDoList() {
   const navigation = useRootNavigation();
   const { openItems, lastWeight, isToday } = useDayItems();
-  const { formatWeight, formatVolume, quickWaterOz } = useUnits();
-  const water = useWater();
+  const { formatWeight } = useUnits();
   const { setTaken } = useMedication();
-  const openWaterSheet = useOpenWaterSheet();
 
   if (!openItems.length) return null;
   return (
@@ -31,31 +28,7 @@ export function LeftToDoList() {
       <Group>
         {openItems.map((item) =>
           item.kind === 'water' ? (
-            <Row
-              key='water'
-              title='Water'
-              sub={`${formatVolume(item.totalOz)} of ${formatVolume(item.goalOz)}`}
-              onPress={openWaterSheet}
-              icon={
-                <IconBadge bg={colors.waterTint}>
-                  <Icon name='water-outline' size={16} color={colors.water} />
-                </IconBadge>
-              }
-              right={
-                // Only the button logs a drink; tapping the row opens the water sheet, so a stray tap can't log one.
-                <Pressable
-                  onPress={() => water.addWater(quickWaterOz[0])}
-                  hitSlop={8}
-                  style={s.addBtn}
-                  accessibilityRole='button'
-                  accessibilityLabel={`Add ${formatVolume(quickWaterOz[0])} of water`}
-                >
-                  <Text
-                    style={s.markText}
-                  >{`+${formatVolume(quickWaterOz[0])}`}</Text>
-                </Pressable>
-              }
-            />
+            <WaterTodoRow key='water' />
           ) : item.kind === 'checkIn' ? (
             <Row
               key='check-in'
