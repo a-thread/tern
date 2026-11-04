@@ -112,6 +112,12 @@ const IMPORTS: Record<(typeof TernExportLists.ALL)[number], TableImport> = {
     numbers: ['minutes', 'distance_m'],
     times: ['logged_at'],
   },
+  dayNotes: {
+    table: 'day_notes',
+    columns: ['day', 'note', 'updated_at'],
+    times: ['updated_at'],
+    defaults: { updated_at: now },
+  },
 };
 
 /** One value from a file as the column stores it; null for anything that doesn't fit. */
@@ -201,6 +207,7 @@ export function createLocalDataRepository(db: LocalDb): DataRepository {
         skippedMeals: await all('skipped_meals'),
         skippedWeighIns: await all('skipped_weigh_ins'),
         movementEntries: await all('movement_entries'),
+        dayNotes: await all('day_notes'),
       };
     },
 

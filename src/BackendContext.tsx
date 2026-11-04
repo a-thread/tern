@@ -68,6 +68,12 @@ import {
   type MovementRepository,
 } from './domain/movement/movement.repository';
 import { createSupabaseMovementRepository } from './domain/movement/movement.repository.supabase';
+import {
+  createMemoryDayNotesRepository,
+  type DayNotesRepository,
+} from './domain/day-notes/dayNotes.repository';
+import { createSupabaseDayNotesRepository } from './domain/day-notes/dayNotes.repository.supabase';
+import { createLocalDayNotesRepository } from './domain/day-notes/dayNotes.repository.local';
 import type { WorkoutsSource } from './domain/movement/movement.healthconnect';
 import { createHealthWorkouts } from './domain/movement/movement.health';
 import type { DataRepository } from './domain/settings/dataRepository';
@@ -111,6 +117,7 @@ export type Backend = {
   mood: MoodRepository;
   mealCheckIns: MealCheckInsRepository;
   movement: MovementRepository;
+  dayNotes: DayNotesRepository;
   workouts: WorkoutsSource | null;
   commonFoods: CommonFoodsRepository;
   /**
@@ -140,6 +147,7 @@ export function createMemoryBackend(): Backend {
     mealCheckIns: createMemoryMealCheckInsRepository(),
     commonFoods: createMemoryCommonFoodsRepository(),
     movement: createMemoryMovementRepository(),
+    dayNotes: createMemoryDayNotesRepository(),
     workouts: null,
   };
 }
@@ -185,6 +193,7 @@ export function createLocalBackend(db: LocalDb): Backend {
     mealCheckIns: createLocalMealCheckInsRepository(db),
     commonFoods: createMemoryCommonFoodsRepository(),
     movement: createLocalMovementRepository(db),
+    dayNotes: createLocalDayNotesRepository(db),
     workouts: createHealthWorkouts(),
     data: createLocalDataRepository(db),
     settingsDefaults: phoneSettings,
@@ -238,6 +247,7 @@ export function createRemoteBackend(): Backend {
     mealCheckIns: createSupabaseMealCheckInsRepository(supabase),
     commonFoods: createSupabaseCommonFoodsRepository(supabase),
     movement: createSupabaseMovementRepository(supabase),
+    dayNotes: createSupabaseDayNotesRepository(supabase),
     workouts: createHealthWorkouts(),
     data: createSupabaseDataRepository(supabase),
     syncPlus: createSupabasePlusSync(supabase),

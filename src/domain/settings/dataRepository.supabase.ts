@@ -16,6 +16,7 @@ const TABLES = {
   skippedMeals: 'skipped_meals',
   skippedWeighIns: 'skipped_weigh_ins',
   movementEntries: 'movement_entries',
+  dayNotes: 'day_notes',
 } as const;
 
 /** Each table's key, so paging through it in that order skips and repeats nothing. */
@@ -32,6 +33,7 @@ const KEYS: Record<(typeof TABLES)[keyof typeof TABLES], string[]> = {
   skipped_meals: ['day', 'meal'],
   skipped_weigh_ins: ['day'],
   movement_entries: ['id'],
+  day_notes: ['day'],
 };
 
 // The server caps how many rows one request returns (1000 by default), so a table is read
@@ -68,6 +70,7 @@ export function createSupabaseDataRepository(db: TernClient): DataRepository {
         skippedMeals,
         skippedWeighIns,
         movementEntries,
+        dayNotes,
       ] = await Promise.all([
         db.from('settings').select('data').maybeSingle(),
         all(TABLES.food),
@@ -82,6 +85,7 @@ export function createSupabaseDataRepository(db: TernClient): DataRepository {
         all(TABLES.skippedMeals),
         all(TABLES.skippedWeighIns),
         all(TABLES.movementEntries),
+        all(TABLES.dayNotes),
       ]);
       if (settings.error) throw settings.error;
       return {
@@ -100,6 +104,7 @@ export function createSupabaseDataRepository(db: TernClient): DataRepository {
         skippedMeals,
         skippedWeighIns,
         movementEntries,
+        dayNotes,
       };
     },
 

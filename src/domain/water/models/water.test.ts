@@ -103,6 +103,8 @@ describe('bucketWater / averageDaily', () => {
     expect(bars[5]).toMatchObject({ value: 26, state: 'partial' });
     expect(bars[0]).toMatchObject({ value: 64, state: 'goal' });
     expect(bars[1]).toMatchObject({ value: 0, state: 'none' });
+    expect(bars[6].day).toBe(today);
+    expect(bars[0].day).toBe('2026-09-14');
   });
 
   it('month: thirty unlabelled bars', () => {

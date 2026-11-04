@@ -26,6 +26,7 @@ import { foodSummary } from './models/foodSummary';
 import { weightSummary } from './models/weightSummary';
 import { waterSummary } from './models/waterSummary';
 import { moodSummary } from './models/moodSummary';
+import { notesSummary } from './models/notesSummary';
 import { medicationSummary } from './models/medicationSummary';
 import { dataSummary } from './models/dataSummary';
 import { logHome } from './models/logHome';
@@ -108,6 +109,14 @@ export default function SettingsScreen({ navigation }: Props) {
             title='Mood and stress'
             summary={moodSummary(settings)}
             onPress={() => navigation.navigate('MoodSettings')}
+          />
+          <SectionRow
+            icon='note-text-outline'
+            color={colors.driftwood}
+            tint={colors.driftwoodTint}
+            title='Notes'
+            summary={notesSummary(settings)}
+            onPress={() => navigation.navigate('NotesSettings')}
           />
           <SectionRow
             icon='pill'

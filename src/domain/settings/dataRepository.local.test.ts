@@ -122,10 +122,14 @@ describe('restoring from an export', () => {
       skippedMeals: [],
       skippedWeighIns: [],
       movementEntries: [],
+      dayNotes: [{ user_id: 'u1', day: '2026-10-18', note: 'Joint pain' }],
     });
-    expect(added).toBe(4);
+    expect(added).toBe(5);
     const copy = await data.exportAll();
     expect(copy.settings).toEqual({ stepGoal: 9000 });
+    expect(copy.dayNotes).toEqual([
+      expect.objectContaining({ day: '2026-10-18', note: 'Joint pain' }),
+    ]);
     expect(copy.weight).toEqual([
       { id: 'w', lb: 180.4, logged_at: '2026-10-18T07:00:00.000Z' },
     ]);

@@ -14,6 +14,7 @@ import { foodSummary } from './foodSummary';
 import { weightSummary } from './weightSummary';
 import { waterSummary } from './waterSummary';
 import { moodSummary } from './moodSummary';
+import { notesSummary } from './notesSummary';
 import { medicationSummary } from './medicationSummary';
 
 // The one-line summaries on the Settings index, each owned by its feature.
@@ -113,9 +114,11 @@ describe('settings index summaries', () => {
     ).toMatch(/ml a day$/);
   });
 
-  it('sums up mood and medication', () => {
+  it('sums up mood, notes and medication', () => {
     expect(moodSummary(with_({ trackMood: true }))).toBe('Daily check-in');
     expect(moodSummary(with_({ trackMood: false }))).toBe('Off');
+    expect(notesSummary(with_({ trackNotes: true }))).toBe('On Today');
+    expect(notesSummary(with_({ trackNotes: false }))).toBe('Off');
     expect(medicationSummary(with_({ medications: [] }))).toBe('Optional');
     expect(
       medicationSummary(

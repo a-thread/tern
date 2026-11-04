@@ -2,7 +2,13 @@ import { TrendRanges, TrendRange } from '@/trends/models/trendRange';
 import { addDays, monthName, weekdayLetter } from '@shared/utils/date';
 import { DayState } from '@shared/models/dayState';
 
-export type MovementBar = { label: string; value: number; state: DayState };
+/** `day` is set on daily bars only, not on weekly totals. */
+export type MovementBar = {
+  label: string;
+  value: number;
+  state: DayState;
+  day?: string;
+};
 
 const daysEnding = (today: string, count: number) =>
   Array.from({ length: count }, (_, i) => addDays(today, i - (count - 1)));
@@ -29,6 +35,7 @@ export function bucketMinutes(
   if (range === TrendRange.Week || range === TrendRange.Month) {
     return daysEnding(today, TrendRanges.DAYS[range]).map((day) => ({
       label: range === TrendRange.Week ? weekdayLetter(day) : '',
+      day,
       value: byDay[day] ?? 0,
       state:
         barState(byDay[day] ?? 0, goal) === DayState.None

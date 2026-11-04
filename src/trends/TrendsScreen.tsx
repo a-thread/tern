@@ -15,6 +15,7 @@ import { EnergyTrendCard } from './components/EnergyTrendCard';
 import { MovementTrendCard } from './components/MovementTrendCard/MovementTrendCard';
 import WaterTrendCard from './components/WaterTrendCard/WaterTrendCard';
 import MoodTrendCard from './components/MoodTrendCard';
+import NotesTrendCard from './components/NotesTrendCard';
 import { ConsistencyCard } from './components/ConsistencyCard';
 import { useSettings } from '../domain/settings/SettingsContext';
 import { useFoodDisplay } from '../domain/food/hooks/useFoodDisplay';
@@ -67,6 +68,7 @@ export default function TrendsScreen() {
           <WaterTrendCard range={range} refreshKey={refreshKey} />
         ) : null}
         {settings.trackMood ? <MoodTrendCard range={range} /> : null}
+        {settings.trackNotes ? <NotesTrendCard range={range} /> : null}
 
         <ConsistencyCard range={range} />
 

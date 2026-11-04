@@ -4,6 +4,7 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import TrendsScreen from './TrendsScreen';
 import StepsDetailScreen from './steps-detail/StepsDetailScreen';
 import WeightDetailScreen from './weight-detail/WeightDetailScreen';
+import NotesScreen from './notes/NotesScreen';
 import type { TrendsStackParamList } from './navigation';
 
 const Stack = createNativeStackNavigator<TrendsStackParamList>();
@@ -15,6 +16,7 @@ export default function TrendsStack() {
       <Stack.Screen name='TrendsHome' component={TrendsScreen} />
       <Stack.Screen name='StepsDetail' component={StepsDetailScreen} />
       <Stack.Screen name='WeightDetail' component={WeightDetailScreen} />
+      <Stack.Screen name='Notes' component={NotesScreen} />
     </Stack.Navigator>
   );
 }

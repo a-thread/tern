@@ -7,6 +7,7 @@ import EditFoodEntryScreen from '../food/edit-food/EditFoodEntryScreen';
 import SaveMealScreen from '../food/save-meal/SaveMealScreen';
 import LogWeightScreen from '../log-weight/LogWeightScreen';
 import CheckInScreen from '../check-in/CheckInScreen';
+import DayNoteScreen from '../day-note/DayNoteScreen';
 import MealCheckInScreen from '../check-in/meal-check-in/MealCheckInScreen';
 import MovementStack from '../movement/MovementStack';
 
@@ -51,6 +52,7 @@ export default function RootNavigator() {
         <RootStack.Screen name='LogFood' component={LogFoodStack} />
         <RootStack.Screen name='LogWeight' component={LogWeightScreen} />
         <RootStack.Screen name='CheckIn' component={CheckInScreen} />
+        <RootStack.Screen name='DayNote' component={DayNoteScreen} />
         <RootStack.Screen name='MealCheckIn' component={MealCheckInScreen} />
         <RootStack.Screen name='LogMovement' component={MovementStack} />
         <RootStack.Screen name='EditFood' component={EditFoodEntryScreen} />
