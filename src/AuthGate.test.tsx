@@ -9,6 +9,10 @@ import { type Backend, useBackend } from './BackendContext';
 import type { SubscriptionRepository } from './domain/subscription/subscription.repository';
 import AuthGate from './AuthGate';
 
+// Every test here renders the whole app on sql.js; the first also pays for loading it, which can
+// pass Jest's 5s default on a cold CI runner.
+jest.setTimeout(15000);
+
 // Supabase configured: the real gate, with its sign-in states.
 jest.mock('@shared/backend/supabase', () => ({
   isBackendConfigured: true,
