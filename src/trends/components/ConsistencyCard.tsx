@@ -6,14 +6,14 @@ import { Card, GroupLabel, Icon } from '@shared/components/ui';
 import { TrendRanges, TrendRange } from '../models/trendRange';
 import { ConsistencyGrid } from './ConsistencyGrid';
 import { Insight } from './Insight';
-import { longestProtectedRun } from '../models/stepsSummary';
+import { longestConsecutiveStreak } from '../models/stepsSummary';
 import { useActivity } from '../../domain/activity/ActivityContext';
 
-/** A grid of the range's days by how each went, with the longest stretch kept up. */
+/** A grid of the range's days by how each went, with the longest streak kept up. */
 export function ConsistencyCard({ range }: { range: TrendRange }) {
   const { days } = useActivity();
   const states = days.slice(-TrendRanges.DAYS[range]).map((d) => d.state);
-  const longestRun = longestProtectedRun(states);
+  const longestStreak = longestConsecutiveStreak(states);
 
   return (
     <>
@@ -27,11 +27,11 @@ export function ConsistencyCard({ range }: { range: TrendRange }) {
         <ConsistencyGrid days={states} />
       </Card>
 
-      {longestRun > 1 ? (
+      {streak > 1 ? (
         <Insight
           icon={<Icon name='trending-up' size={15} color={colors.aurora} />}
         >
-          {`Your longest stretch in this period is ${longestRun} days, rest days included.`}
+          {`Your longest streak in this period is ${streak} days, rest days included.`}
         </Insight>
       ) : null}
     </>
