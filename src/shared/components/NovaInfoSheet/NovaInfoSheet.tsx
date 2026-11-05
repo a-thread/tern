@@ -8,14 +8,15 @@ import {
   View,
 } from 'react-native';
 
-import { BottomSheet, Icon } from '@shared/components/ui';
+import { BottomSheet } from '@shared/components/ui';
 import { colors, font, space, tierColors, typography } from '@shared/theme';
+import { TierGroups } from '@/domain/food/models/tierGroups';
 import { TierDot } from '../TierDot';
-import { NovaLevels } from './models/novaLevels';
+import { FoodTypeInfos } from './models/foodTypeInfo';
 
 /**
- * The NOVA scale explained level by level, with familiar examples, as a sheet that slides up
- * from the bottom. Opened from the intake bars and from the food-type picker; `footnote` says
+ * The three food types (Whole, Processed, Ultra-processed) explained with familiar examples, as
+ * a sheet that slides up from the bottom. Opened from the intake bars and from the food-type picker; `footnote` says
  * what the scale means on the screen that opened it.
  */
 export function NovaInfoSheet({
@@ -38,28 +39,37 @@ export function NovaInfoSheet({
           accessibilityRole='button'
           accessibilityLabel='Close'
         >
-          <Icon name='close' size={22} color={colors.ink3} />
+          <Text style={s.close}>×</Text>
         </Pressable>
       </View>
       <ScrollView style={{ maxHeight: height * 0.7 }}>
         <Text style={s.lead}>
-          NOVA is a food-science scale for how processed something is, from 1 to
-          4. It describes the food, not whether you should eat it.
+          NOVA is a food-science scale for how processed something is. Tern
+          groups it into three food types. They describe the food, not whether
+          you should eat it.
         </Text>
-        {NovaLevels.ALL.map((l) => (
-          <View key={l.tier} style={s.row}>
-            <TierDot tier={l.tier} color={tierColors[l.tier]} />
-            <View style={{ flex: 1 }}>
-              <Text style={s.name}>{`${l.tier} · ${l.name}`}</Text>
-              <Text style={s.body}>{l.body}</Text>
-              <Text style={s.body}>
-                <Text style={s.examplesLabel}>For example: </Text>
-                {l.examples}
-              </Text>
-              <Text style={s.choice}>{`Logged as ${l.choice}`}</Text>
+        {TierGroups.ALL.map((g) => {
+          const info = FoodTypeInfos.BY_KEY[g.key];
+          return (
+            <View key={g.key} style={s.row}>
+              <TierDot
+                tier={g.tiers[0]}
+                color={tierColors[g.tiers[0]]}
+                showNumber={false}
+              />
+              <View style={{ flex: 1 }}>
+                <Text
+                  style={s.name}
+                >{`${g.label} · NOVA ${g.tiers.join('–')}`}</Text>
+                <Text style={s.body}>{info.body}</Text>
+                <Text style={s.body}>
+                  <Text style={s.examplesLabel}>For example: </Text>
+                  {info.examples}
+                </Text>
+              </View>
             </View>
-          </View>
-        ))}
+          );
+        })}
         <Text style={s.foot}>{footnote}</Text>
       </ScrollView>
     </BottomSheet>
@@ -74,11 +84,11 @@ const s = StyleSheet.create({
     marginBottom: space.sm,
   },
   title: typography.heading,
+  close: { fontFamily: font.body, fontSize: 24, color: colors.ink3 },
   lead: { ...typography.meta, lineHeight: 18, marginBottom: space.sm },
   row: { flexDirection: 'row', gap: 10, marginTop: space.md },
   name: { fontFamily: font.semibold, fontSize: 13, color: colors.ink },
   body: { ...typography.caption, lineHeight: 17, marginTop: 2 },
   examplesLabel: { fontFamily: font.semibold },
-  choice: { ...typography.tick, marginTop: 3 },
   foot: { ...typography.tick, lineHeight: 16, marginTop: space.lg },
 });

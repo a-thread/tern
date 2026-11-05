@@ -3,7 +3,6 @@ import {
   View,
   Text,
   ScrollView,
-  Pressable,
   StyleSheet,
   type LayoutChangeEvent,
   type NativeScrollEvent,
@@ -18,7 +17,7 @@ import {
   tierColors,
   typography,
 } from '@shared/theme';
-import { GroupLabel, ProgressBar } from '@shared/components/ui';
+import { GroupLabel, InfoDot, ProgressBar } from '@shared/components/ui';
 import { useSettings } from '@/domain/settings/SettingsContext';
 import { useFoodDisplay } from '@/domain/food/hooks/useFoodDisplay';
 import {
@@ -41,20 +40,6 @@ import { IntakePage } from './models/intakePage';
 import { useViewedDay } from '@/shared/state/ViewedDayContext';
 import { dayWord } from '@/shared/utils/date';
 
-function InfoDot({ label, onPress }: { label: string; onPress: () => void }) {
-  return (
-    <Pressable
-      onPress={onPress}
-      hitSlop={10}
-      style={s.info}
-      accessibilityRole='button'
-      accessibilityLabel={label}
-    >
-      <Text style={s.infoText}>i</Text>
-    </Pressable>
-  );
-}
-
 const MACROS = [
   { key: 'protein', label: 'Protein', color: colors.kelp },
   { key: 'carbs', label: 'Carbs', color: colors.glacierDeep },
@@ -71,8 +56,13 @@ export function IntakeBars() {
   const { foodLog: entries } = useFood();
   const totals = dayTotals(entries);
   const { settings } = useSettings();
-  const { showCalories, showMacros, showTiers, hasIntakeSummary } =
-    useFoodDisplay();
+  const {
+    showCalories,
+    showMacros,
+    showTiers,
+    tracksCalories,
+    hasIntakeSummary,
+  } = useFoodDisplay();
   const [width, setWidth] = useState(0);
   const [page, setPage] = useState(0);
   const [info, setInfo] = useState<IntakeInfoKind | null>(null);
@@ -93,7 +83,7 @@ export function IntakeBars() {
     ...(showCalories ? [IntakePage.Calories] : []),
   ];
   if (!pages.length) return null;
-  const shares = tierShares(entries);
+  const shares = tierShares(entries, tracksCalories);
   const zone = resolveZone(settings.calorieZone, settings.calorieTarget);
   const scale = zoneScale(totals.calories, zone);
   const status = zoneStatus(totals.calories, zone);
@@ -273,7 +263,7 @@ export function IntakeBars() {
         <NovaInfoSheet
           visible={novaOpen}
           onClose={() => setNovaOpen(false)}
-          footnote="The bars show each group's share of the day's food, weighted by energy (or by servings when no calories are recorded). There is no target. Levels come from Open Food Facts, and you can change one on any food."
+          footnote="The bars show each group's share of the day's food, weighted by energy (or by servings when you don't track calories). There is no target. Levels come from Open Food Facts, and you can change one on any food."
         />
         <IntakeInfoSheet
           kind={info ?? IntakeInfoKind.Calories}
@@ -309,21 +299,6 @@ const s = StyleSheet.create({
     backgroundColor: colors.ink2,
   },
   titleRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
-  info: {
-    width: 16,
-    height: 16,
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: colors.ink3,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  infoText: {
-    fontFamily: font.semibold,
-    fontSize: typography.small.fontSize,
-    color: colors.ink3,
-    lineHeight: 13,
-  },
   track: {
     height: 8,
     borderRadius: 4,

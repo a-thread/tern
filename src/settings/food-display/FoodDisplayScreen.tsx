@@ -33,7 +33,8 @@ export default function FoodDisplayScreen() {
   const navigation = useNavigation();
   const insets = useSafeAreaInsets();
   const { settings, updateSettings } = useSettings();
-  const { showTiers, showCalories, hasIntakeSummary } = useFoodDisplay();
+  const { showTiers, showCalories, tracksNutrients, hasIntakeSummary } =
+    useFoodDisplay();
 
   return (
     <View
@@ -116,7 +117,7 @@ export default function FoodDisplayScreen() {
               <ToggleRow
                 title='Show intake bars'
                 sub={
-                  settings.trackCalories || settings.trackMacros
+                  tracksNutrients
                     ? 'Nutrient totals at the top of the Food page.'
                     : 'Your processing-level split at the top of the Food page.'
                 }
@@ -125,7 +126,7 @@ export default function FoodDisplayScreen() {
               />
             </Group>
             <FootNote>{intakeBarsNote(settings)}</FootNote>
-            {settings.trackCalories || settings.trackMacros ? (
+            {tracksNutrients ? (
               <FootNote>
                 Tern never shows exercise as "earning back" calories, and
                 won't warn you for going over a target.
