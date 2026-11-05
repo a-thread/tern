@@ -22,7 +22,11 @@ import { MealPicker } from '../components/MealPicker/MealPicker';
 import { MeasurePicker } from '../components/MeasurePicker/MeasurePicker';
 import { useFoodDisplay } from '../../domain/food/hooks/useFoodDisplay';
 import { stepServings, Servings } from '../../domain/food/models/servings';
-import { amountOf, type Measure } from '../../domain/food/models/measure';
+import {
+  amountOf,
+  withVolumeUnits,
+  type Measure,
+} from '../../domain/food/models/measure';
 import { confirm } from '@shared/utils/confirm';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'EditFood'>;
@@ -36,7 +40,10 @@ export default function EditFoodEntryScreen({ navigation, route }: Props) {
   const { showTiers, showTierNumber, showCalories } = useFoodDisplay();
 
   // Entries logged by amount keep how they were measured, so they edit in the same unit.
-  const [measure, setMeasure] = useState<Measure | undefined>(entry?.measure);
+  // Drinks logged before fl oz and ml existed get them too.
+  const [measure, setMeasure] = useState<Measure | undefined>(
+    () => entry?.measure && withVolumeUnits(entry.measure, entry.name),
+  );
   const [servings, setServings] = useState(entry?.servings ?? 1);
   const [servingLabel, setServingLabel] = useState(entry?.servingLabel ?? '');
   const [meal, setMeal] = useState<Meal>(entry?.meal ?? Meal.Breakfast);
