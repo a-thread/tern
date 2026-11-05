@@ -17,8 +17,12 @@ export function useFoodDisplay() {
     tracksCalories: settings.trackFood && settings.trackCalories,
     /** Protein, carbs and fat; tracked on their own switch, apart from calories. */
     showMacros: settings.trackFood && settings.trackMacros,
-    /** Either calories or macros are tracked, so there is an intake summary to show. */
-    tracksIntake:
-      settings.trackFood && (settings.trackCalories || settings.trackMacros),
+    /**
+     * Calories, macros or processing levels are tracked, so the intake bars have a page to show.
+     * Processing levels alone are enough: the split needs no calorie or macro targets.
+     */
+    hasIntakeSummary:
+      settings.trackFood &&
+      (settings.trackCalories || settings.trackMacros || settings.showTiers),
   };
 }

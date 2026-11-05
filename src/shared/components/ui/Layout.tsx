@@ -3,8 +3,21 @@ import { View, Text, StyleSheet, Pressable, ViewStyle } from 'react-native';
 import { colors, font, radius, space, typography } from '../../theme';
 import { Chevron } from './Chevron';
 
-export function GroupLabel({ children }: { children: string }) {
-  return <Text style={s.groupLabel}>{children}</Text>;
+/** A section heading. `accessory` sits right after the text, e.g. an info button. */
+export function GroupLabel({
+  children,
+  accessory,
+}: {
+  children: string;
+  accessory?: React.ReactNode;
+}) {
+  if (!accessory) return <Text style={s.groupLabel}>{children}</Text>;
+  return (
+    <View style={s.groupLabelRow}>
+      <Text style={[s.groupLabel, s.groupLabelInRow]}>{children}</Text>
+      {accessory}
+    </View>
+  );
 }
 
 export function FootNote({ children }: { children: string }) {
@@ -169,6 +182,14 @@ const s = StyleSheet.create({
     marginTop: space.lg,
     marginBottom: 7,
   },
+  groupLabelRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    marginTop: space.lg,
+    marginBottom: 7,
+  },
+  groupLabelInRow: { marginTop: 0, marginBottom: 0 },
   footNote: {
     fontFamily: font.body,
     fontSize: 11,

@@ -1,4 +1,22 @@
-import { bulkToCandidate, selectCommonFoods, type BulkFood, type Candidate } from './build';
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
+
+import {
+  bulkToCandidate,
+  selectCommonFoods,
+  type BulkFood,
+  type Candidate,
+  type Override,
+} from './build';
+
+describe('overrides.json', () => {
+  it('never leaves a hand-picked food without a processing level', () => {
+    const overrides = JSON.parse(
+      readFileSync(join(__dirname, 'overrides.json'), 'utf8'),
+    ) as Override[];
+    expect(overrides.filter((o) => o.tier === null)).toEqual([]);
+  });
+});
 
 const nutrients = (kcal: number, protein = 0, carbs = 0, fat = 0) => [
   { nutrient: { id: 1008, number: '208', unitName: 'kcal' }, amount: kcal },

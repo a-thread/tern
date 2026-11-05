@@ -3,6 +3,12 @@ import { buildCommonIndex, searchCommonFoods } from './commonFoods';
 import { FoodSource } from '../../food/models/foodSource';
 
 const index = buildCommonIndex(commonFoodsSeed);
+
+describe('commonFoodsSeed', () => {
+  it('gives every food a processing level', () => {
+    expect(commonFoodsSeed.filter((f) => f.tier === null)).toEqual([]);
+  });
+});
 const names = (q: string) => searchCommonFoods(index, q).map((r) => r.name);
 
 describe('searchCommonFoods', () => {

@@ -59,7 +59,7 @@ export const commonFoodsSeed: CommonFood[] = [
       { label: 'small egg', grams: 35 },
     ],
     rank: 3,
-    tier: null,
+    tier: 1,
   },
   {
     id: 'egg-scrambled',
@@ -77,7 +77,7 @@ export const commonFoodsSeed: CommonFood[] = [
       { label: 'small egg', grams: 46.4 },
     ],
     rank: 4,
-    tier: null,
+    tier: 1,
   },
   {
     id: 'banana',
@@ -414,7 +414,7 @@ export const commonFoodsSeed: CommonFood[] = [
     fat: 2.1,
     portions: [{ label: 'cup', grams: 160 }],
     rank: 400,
-    tier: null,
+    tier: 1,
   },
   {
     id: 'egg-white',

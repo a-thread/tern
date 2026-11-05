@@ -18,20 +18,37 @@ export class TierGroups {
 
 export type TierShare = TierGroup & {
   calories: number;
-  /** 0 to 1 of the day's calories; 0 for every group when nothing is logged. */
+  /** Servings logged in this group. */
+  servings: number;
+  /**
+   * 0 to 1 of the day's food: by calories when any were recorded, otherwise by servings (someone
+   * tracking processing levels without calories logs foods with no energy). 0 for every group
+   * when nothing is logged.
+   */
   share: number;
 };
 
-/** How a day's calories split across processing groups. Information only: there are no targets. */
+/** How a day's food splits across processing groups. Information only: there are no targets. */
 export function tierShares(
   log: readonly Pick<FoodEntry, 'tier' | 'calories' | 'servings'>[],
 ): TierShare[] {
-  const per = TierGroups.ALL.map((g) => ({
+  const per = TierGroups.ALL.map((g) => {
+    const inGroup = log.filter((f) => g.tiers.includes(f.tier));
+    return {
+      ...g,
+      calories: inGroup.reduce((sum, f) => sum + f.calories * f.servings, 0),
+      servings: inGroup.reduce((sum, f) => sum + f.servings, 0),
+    };
+  });
+  const totalCalories = per.reduce((sum, g) => sum + g.calories, 0);
+  const totalServings = per.reduce((sum, g) => sum + g.servings, 0);
+  return per.map((g) => ({
     ...g,
-    calories: log
-      .filter((f) => g.tiers.includes(f.tier))
-      .reduce((sum, f) => sum + f.calories * f.servings, 0),
+    share:
+      totalCalories > 0
+        ? g.calories / totalCalories
+        : totalServings > 0
+          ? g.servings / totalServings
+          : 0,
   }));
-  const total = per.reduce((sum, g) => sum + g.calories, 0);
-  return per.map((g) => ({ ...g, share: total > 0 ? g.calories / total : 0 }));
 }

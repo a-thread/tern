@@ -53,7 +53,7 @@ describe('useFoodDisplay with food off', () => {
     expect(result.current.display).toMatchObject({
       showCalories: false,
       showMacros: false,
-      tracksIntake: false,
+      hasIntakeSummary: false,
     });
     expect(result.current.settings.settings.trackCalories).toBe(true);
   });
@@ -64,7 +64,7 @@ describe('useFoodDisplay macros', () => {
     const { result } = await setup();
     act(() => result.current.settings.updateSettings({ trackCalories: false }));
     expect(result.current.display.showMacros).toBe(true);
-    expect(result.current.display.tracksIntake).toBe(true);
+    expect(result.current.display.hasIntakeSummary).toBe(true);
 
     act(() =>
       result.current.settings.updateSettings({
@@ -76,14 +76,27 @@ describe('useFoodDisplay macros', () => {
     expect(result.current.display.showCalories).toBe(true);
   });
 
-  it('has no intake to show when neither is tracked', async () => {
+  it('still has an intake summary from processing levels alone', async () => {
     const { result } = await setup();
     act(() =>
       result.current.settings.updateSettings({
         trackCalories: false,
         trackMacros: false,
+        showTiers: true,
       }),
     );
-    expect(result.current.display.tracksIntake).toBe(false);
+    expect(result.current.display.hasIntakeSummary).toBe(true);
+  });
+
+  it('has no intake to show when none of calories, macros or processing levels is tracked', async () => {
+    const { result } = await setup();
+    act(() =>
+      result.current.settings.updateSettings({
+        trackCalories: false,
+        trackMacros: false,
+        showTiers: false,
+      }),
+    );
+    expect(result.current.display.hasIntakeSummary).toBe(false);
   });
 });
