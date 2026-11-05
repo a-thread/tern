@@ -1,6 +1,7 @@
 import { round1, toFiniteNumber } from '@shared/utils/number';
 import type { Tier } from '@/domain/food/models/foodEntry';
 import { singular } from '@/domain/food/models/measure';
+import { isVolumeAmount } from '@/domain/food/models/volume';
 import { getJson } from '@/domain/food/sources/http';
 import type { Portion, SearchResult } from '@/domain/food/sources/searchResult';
 import { FoodSource } from '@/domain/food/models/foodSource';
@@ -23,6 +24,8 @@ export type OffProduct = {
   code?: string;
   product_name?: string;
   brands?: string | string[];
+  /** The package size: "330 ml", "1 l", "200 g". */
+  quantity?: string;
   serving_size?: string;
   serving_quantity?: number | string;
   nutriments?: Record<string, number | string | undefined>;
@@ -108,6 +111,8 @@ export function productToResult(p: OffProduct): SearchResult | null {
     fat: round1(toFiniteNumber(n['fat_100g']) ?? 0),
     tier,
     portions,
+    liquid:
+      isVolumeAmount(p.serving_size) || isVolumeAmount(p.quantity) || undefined,
     source: FoodSource.Off,
   };
 }

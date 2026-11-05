@@ -3,23 +3,34 @@ import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 
 import { colors, font, radius, typography } from '@shared/theme';
 import { Group, Stepper } from '@shared/components/ui';
+import { Units } from '@shared/utils/units';
 import { formatCount } from '@/domain/food/models/servings';
 import { useFoodDisplay } from '@/domain/food/hooks/useFoodDisplay';
+import { useUnits } from '@/domain/settings/hooks/useUnits';
+import { isVolumeUnit, VolumeUnit } from '@/domain/food/models/volume';
+import type { Portion } from '@/domain/food/sources/searchResult';
 import {
   GramSteps,
+  isTypedUnit,
   measureGrams,
   portionOf,
   sentence,
   stepMeasure,
   switchUnit,
-  typedGrams,
+  typedAmount,
   type Measure,
 } from '@/domain/food/models/measure';
 
+const TYPED_LABEL: Record<VolumeUnit, string> = {
+  [VolumeUnit.Ml]: 'Amount in millilitres',
+  [VolumeUnit.FlOz]: 'Amount in fluid ounces',
+};
+
 /**
  * Chooses how much of a food: a unit (the database's household portions, such
- * as "large egg" or "cup", or grams) and how many. Switching unit keeps the
- * weight. A quantity of zero means the typed weight isn't usable yet.
+ * as "large egg" or "cup", fl oz or ml for a drink, or grams) and how many.
+ * Switching unit keeps the weight. Grams and volumes are typed; a quantity of
+ * zero means the typed amount isn't usable yet.
  */
 export function MeasurePicker({
   measure,
@@ -32,23 +43,34 @@ export function MeasurePicker({
   const portion = portionOf(measure);
   const grams = measureGrams(measure);
   const { showCalories } = useFoodDisplay();
+  const { units } = useUnits();
   // Each size says what one of it is worth: "Large egg · 72", "Jumbo egg · 90".
-  const chipLabel = (p: { label: string; grams: number }) =>
-    showCalories
+  // A volume unit is too small for that to mean much, so it's just "fl oz" / "ml".
+  const chipLabel = (p: Portion) => {
+    if (isVolumeUnit(p.label)) return p.label;
+    return showCalories
       ? `${sentence(p.label)} · ${Math.round((measure.per100.calories * p.grams) / 100)} cal`
       : sentence(p.label);
+  };
+  // The volume the user sets for water comes first: ml for metric, fl oz otherwise.
+  const preferred = units === Units.Metric ? VolumeUnit.Ml : VolumeUnit.FlOz;
+  const rank = (p: Portion) =>
+    !isVolumeUnit(p.label) ? 0 : p.label === preferred ? 1 : 2;
+  const chips = [...measure.portions].sort((a, b) => rank(a) - rank(b));
 
   const chooseUnit = (unit: string | null) => {
     const next = switchUnit(measure, unit);
-    if (unit === null) setTyped(formatCount(next.quantity));
+    if (isTypedUnit(next.unit)) setTyped(formatCount(next.quantity));
     onChange(next);
   };
+
+  const volume = isVolumeUnit(measure.unit) ? measure.unit : null;
 
   return (
     <Group>
       {measure.portions.length ? (
         <View style={s.chips}>
-          {measure.portions.map((p, i) => (
+          {chips.map((p, i) => (
             <Chip
               key={`${p.label}-${i}`}
               label={chipLabel(p)}
@@ -63,7 +85,7 @@ export function MeasurePicker({
           />
         </View>
       ) : null}
-      {portion ? (
+      {portion && !volume ? (
         <View style={s.row}>
           <View style={{ flex: 1 }}>
             <Text style={s.rowTitle}>How many</Text>
@@ -77,23 +99,30 @@ export function MeasurePicker({
         </View>
       ) : (
         <View style={s.row}>
-          <Text style={[s.rowTitle, { flex: 1 }]}>Amount</Text>
+          <View style={{ flex: 1 }}>
+            <Text style={s.rowTitle}>Amount</Text>
+            {volume && measure.quantity > 0 ? (
+              <Text style={s.weightNote}>= {grams} g</Text>
+            ) : null}
+          </View>
           <TextInput
             value={typed}
             onChangeText={(v) => {
               const text = v.replace(/[^0-9.,]/g, '');
               setTyped(text);
-              onChange(typedGrams(measure, text));
+              onChange(typedAmount(measure, text));
             }}
             keyboardType='decimal-pad'
             selectTextOnFocus
             maxLength={6}
             placeholder={String(GramSteps.STEP * 10)}
             placeholderTextColor={colors.ink3}
-            accessibilityLabel='Amount in grams'
+            accessibilityLabel={
+              volume ? TYPED_LABEL[volume] : 'Amount in grams'
+            }
             style={[s.rowInput, { minWidth: 70 }]}
           />
-          <Text style={s.rowTitle}>g</Text>
+          <Text style={s.rowTitle}>{volume ?? 'g'}</Text>
         </View>
       )}
     </Group>

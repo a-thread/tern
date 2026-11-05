@@ -29,6 +29,8 @@ export type SearchResult = {
   source?: FoodSource.Common | FoodSource.Off | FoodSource.Usda;
   /** The rest of a common food's description, shown under the name: "meat only, cooked, roasted". */
   detail?: string;
+  /** The source lists it by volume (a drink sold in ml), so fl oz and ml are offered whatever its name. */
+  liquid?: boolean;
   /** How common a food is (1 is the most), used to rank common foods. */
   rank?: number;
 };
