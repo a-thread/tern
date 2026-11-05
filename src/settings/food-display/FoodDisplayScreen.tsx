@@ -33,7 +33,7 @@ export default function FoodDisplayScreen() {
   const navigation = useNavigation();
   const insets = useSafeAreaInsets();
   const { settings, updateSettings } = useSettings();
-  const { showTiers, showCalories } = useFoodDisplay();
+  const { showTiers, showCalories, hasIntakeSummary } = useFoodDisplay();
 
   return (
     <View
@@ -55,11 +55,7 @@ export default function FoodDisplayScreen() {
         <Group>
           <ToggleRow
             title='Show processing level'
-            sub={
-              settings.trackCalories || settings.trackMacros
-                ? 'Color and NOVA number on each food, and a slide on the intake bars'
-                : 'Color and NOVA number on each food'
-            }
+            sub='Color and NOVA number on each food, and a slide on the intake bars'
             on={settings.showTiers}
             onToggle={(v) => updateSettings({ showTiers: v })}
           />
@@ -113,22 +109,28 @@ export default function FoodDisplayScreen() {
             under Settings → Food → Calorie & macro targets.
           </FootNote>
         )}
-        {settings.trackCalories || settings.trackMacros ? (
+        {hasIntakeSummary ? (
           <>
             <GroupLabel>Intake bars</GroupLabel>
             <Group>
               <ToggleRow
                 title='Show intake bars'
-                sub='Nutrient totals at the top of the Food page.'
+                sub={
+                  settings.trackCalories || settings.trackMacros
+                    ? 'Nutrient totals at the top of the Food page.'
+                    : 'Your processing-level split at the top of the Food page.'
+                }
                 on={settings.showIntakeBars}
                 onToggle={(v) => updateSettings({ showIntakeBars: v })}
               />
             </Group>
             <FootNote>{intakeBarsNote(settings)}</FootNote>
-            <FootNote>
-              Tern never shows exercise as "earning back" calories, and won't
-              warn you for going over a target.
-            </FootNote>
+            {settings.trackCalories || settings.trackMacros ? (
+              <FootNote>
+                Tern never shows exercise as "earning back" calories, and
+                won't warn you for going over a target.
+              </FootNote>
+            ) : null}
           </>
         ) : null}
       </ScrollView>

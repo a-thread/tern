@@ -33,7 +33,7 @@ import { percentsFromMacros } from '@/domain/food/models/macroSplit';
 import { dayTotals } from '@/domain/food/models/foodEntry';
 import { useFood } from '@/domain/food/FoodContext';
 import { tierShares } from './models/tierShares';
-import { NovaInfoSheet } from './components/NovaInfoSheet/NovaInfoSheet';
+import { NovaInfoSheet } from '../NovaInfoSheet/NovaInfoSheet';
 import { IntakeInfoSheet } from './components/IntakeInfoSheet/IntakeInfoSheet';
 import { IntakeInfoKind } from './components/IntakeInfoSheet/models/intakeInfoCopy';
 import { useRootNavigation } from '@/navigation/useAppNavigation';
@@ -64,14 +64,14 @@ const MACROS = [
 /**
  * The viewed day's intake at a glance, heading the Food screen and sitting on Today: calories
  * against a soft target zone, macros against their targets, and the processing-level split.
- * Off by default; turned on and off in Food display settings, and absent while neither calories
- * nor macros are tracked. Neutral by design: nothing turns red and going past a target is never flagged.
+ * Turned on and off in Food display settings, and absent while none of calories, macros or
+ * processing levels are tracked; processing levels alone get the card to themselves. Neutral by design: nothing turns red and going past a target is never flagged.
  */
 export function IntakeBars() {
   const { foodLog: entries } = useFood();
   const totals = dayTotals(entries);
   const { settings } = useSettings();
-  const { showCalories, showMacros, showTiers, tracksIntake } =
+  const { showCalories, showMacros, showTiers, hasIntakeSummary } =
     useFoodDisplay();
   const [width, setWidth] = useState(0);
   const [page, setPage] = useState(0);
@@ -83,7 +83,7 @@ export function IntakeBars() {
   // Each page's own height, so the card is only as tall as the page showing.
   const [heights, setHeights] = useState<Record<string, number>>({});
 
-  if (!settings.showIntakeBars || !tracksIntake) return null;
+  if (!settings.showIntakeBars || !hasIntakeSummary) return null;
 
   // Macros first (while tracked); the processing split only when processing levels are shown;
   // calories last.
@@ -270,7 +270,11 @@ export function IntakeBars() {
           </View>
         ) : null}
 
-        <NovaInfoSheet visible={novaOpen} onClose={() => setNovaOpen(false)} />
+        <NovaInfoSheet
+          visible={novaOpen}
+          onClose={() => setNovaOpen(false)}
+          footnote="The bars show each group's share of the day's food, weighted by energy (or by servings when no calories are recorded). There is no target. Levels come from Open Food Facts, and you can change one on any food."
+        />
         <IntakeInfoSheet
           kind={info ?? IntakeInfoKind.Calories}
           proteinAsMinimum={settings.proteinAsMinimum}

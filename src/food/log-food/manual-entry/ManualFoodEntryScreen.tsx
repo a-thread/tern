@@ -16,6 +16,7 @@ import type { Tier } from '@/domain/food/models/foodEntry';
 import { useFood } from '@/domain/food/FoodContext';
 import { useSavedMeals } from '@/domain/saved-meals/SavedMealsContext';
 import { TierPicker } from '../../components/TierPicker/TierPicker';
+import { FoodTypeLabel } from '../../components/FoodTypeLabel/FoodTypeLabel';
 import { useFoodDisplay } from '@/domain/food/hooks/useFoodDisplay';
 import type { LogFoodStackParamList } from '../navigation';
 
@@ -161,7 +162,7 @@ export default function ManualFoodEntryScreen({ navigation, route }: Props) {
 
         {showTiers ? (
           <>
-            <GroupLabel>Food type</GroupLabel>
+            <FoodTypeLabel />
             <View style={s.card}>
               <TierPicker
                 value={tier}

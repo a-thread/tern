@@ -12,6 +12,7 @@ describe('suggestTier', () => {
     expect(
       suggestTier('Rice', 'white, cooked', 'Cereal Grains and Pasta'),
     ).toBe(1);
+    expect(suggestTier('Egg noodles', 'cooked')).toBe(1);
   });
 
   it('suggests culinary ingredient for oils, butter, sugar and honey', () => {

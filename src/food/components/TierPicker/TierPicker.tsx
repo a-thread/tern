@@ -4,18 +4,18 @@ import { colors, font, radius, tierColors, typography } from '@shared/theme';
 import type { Tier } from '@/domain/food/models/foodEntry';
 import type { SearchResult } from '@/domain/food/sources/searchResult';
 import { TierDot } from '@shared/components/TierDot';
-import { FoodSource } from '@/domain/food/models/foodSource';
+import { tierSuggestionNote } from './utils/tierSuggestionNote';
 
-const tierPickerOptions: { tier: Tier; label: string }[] = [
-  { tier: 1, label: 'Whole' },
-  { tier: 3, label: 'Processed' },
-  { tier: 4, label: 'Ultra-proc.' },
+const tierPickerOptions: { tier: Tier; label: string; a11yLabel: string }[] = [
+  { tier: 1, label: 'Whole', a11yLabel: 'Whole, NOVA 1 or 2' },
+  { tier: 3, label: 'Processed', a11yLabel: 'Processed, NOVA 3' },
+  { tier: 4, label: 'Ultra-proc.', a11yLabel: 'Ultra-processed, NOVA 4' },
 ];
 
 /**
  * Food-type picker: Whole (tiers 1–2) / Processed (3) / Ultra-processed (4).
- * `suggested` shows the auto-suggested note; the user's own tap always wins. `editing` is for a
- * food already logged, whose type was settled when it was added.
+ * `suggested` shows where the pre-picked type came from; the user's own tap always wins. What
+ * each level means lives in the info sheet beside the "Food type" label (`FoodTypeLabel`).
  */
 export function TierPicker({
   value,
@@ -23,16 +23,18 @@ export function TierPicker({
   suggested,
   suggestedBy,
   showNumber = true,
-  editing = false,
 }: {
   value: Tier | null;
   onChange: (tier: Tier) => void;
   suggested?: Tier | null;
-  /** Where the suggestion came from, for the note under the picker. Unset for a food you logged before. */
+  /**
+   * Where the suggestion came from, for the note under the picker. Unset for a food you logged
+   * before, or one you made yourself.
+   */
   suggestedBy?: SearchResult['source'];
   showNumber?: boolean;
-  editing?: boolean;
 }) {
+  const note = tierSuggestionNote(suggested, suggestedBy);
   return (
     <View>
       <View style={s.tierPicker}>
@@ -44,6 +46,9 @@ export function TierPicker({
               key={opt.tier}
               onPress={() => onChange(opt.tier)}
               style={[s.tierOpt, selected && s.tierOptSel]}
+              accessibilityRole='button'
+              accessibilityLabel={opt.a11yLabel}
+              accessibilityState={{ selected }}
             >
               <TierDot
                 tier={opt.tier}
@@ -57,24 +62,16 @@ export function TierPicker({
           );
         })}
       </View>
-      {editing ? (
-        <Text style={s.suggestNote}>
-          Change it if it doesn't fit. Your choice is remembered for this food.
+      {note ? (
+        <Text
+          style={[
+            s.suggestNote,
+            !suggested && { backgroundColor: colors.doveTint },
+          ]}
+        >
+          {note}
         </Text>
-      ) : suggested ? (
-        <Text style={s.suggestNote}>
-          {suggestedBy === FoodSource.Off
-            ? `Suggested from Open Food Facts processing data (NOVA ${suggested}).`
-            : suggestedBy === FoodSource.Common
-              ? `Suggested for this kind of food (NOVA ${suggested}).`
-              : 'The type you chose last time.'}{' '}
-          You can change it — your choice is remembered for this food.
-        </Text>
-      ) : (
-        <Text style={[s.suggestNote, { backgroundColor: colors.doveTint }]}>
-          No processing data for this food — pick whichever fits.
-        </Text>
-      )}
+      ) : null}
     </View>
   );
 }

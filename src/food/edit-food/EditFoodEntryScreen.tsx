@@ -18,6 +18,7 @@ import { Meal, type Tier } from '../../domain/food/models/foodEntry';
 import { useFood } from '../../domain/food/FoodContext';
 import { useViewedDay } from '@shared/state/ViewedDayContext';
 import { TierPicker } from '../components/TierPicker/TierPicker';
+import { FoodTypeLabel } from '../components/FoodTypeLabel/FoodTypeLabel';
 import { MealPicker } from '../components/MealPicker/MealPicker';
 import { MeasurePicker } from '../components/MeasurePicker/MeasurePicker';
 import { useFoodDisplay } from '../../domain/food/hooks/useFoodDisplay';
@@ -172,13 +173,12 @@ export default function EditFoodEntryScreen({ navigation, route }: Props) {
 
         {showTiers ? (
           <>
-            <GroupLabel>Food type</GroupLabel>
+            <FoodTypeLabel />
             <View style={s.card}>
               <TierPicker
                 value={tier}
                 onChange={setTier}
                 suggested={null}
-                editing
                 showNumber={showTierNumber}
               />
             </View>
