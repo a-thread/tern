@@ -1,20 +1,31 @@
 name: Setup
-description: Install Node from .node-version and the npm dependencies. Run after actions/checkout.
-
-inputs:
-  ignore-scripts:
-    description: Skip install scripts (enough for jobs that only run the eas CLI)
-    default: 'false'
+description: >-
+  Install Node from .node-version and the npm dependencies, reusing main's saved node_modules when
+  package-lock.json hasn't changed. Run after actions/checkout.
 
 runs:
   using: composite
   steps:
+    # Exact key only: npm ci deletes node_modules first, so an older one is no use. The OS, arch
+    # and Node version are in the key because some packages build native code on install.
+    - id: modules
+      uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+      with:
+        path: node_modules
+        key: node-modules-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('.node-version', 'package-lock.json') }}
     - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
       with:
         node-version-file: '.node-version'
-        cache: npm
-    - shell: bash
-      env:
-        IGNORE_SCRIPTS: ${{ inputs.ignore-scripts }}
-      run: |
-        if [ "$IGNORE_SCRIPTS" = "true" ]; then npm ci --ignore-scripts; else npm ci; fi
+        # The npm download cache is only needed when installing.
+        cache: ${{ steps.modules.outputs.cache-hit != 'true' && 'npm' || '' }}
+    - if: steps.modules.outputs.cache-hit != 'true'
+      shell: bash
+      run: npm ci
+    # Saved straight after install, before anything else touches node_modules; only main saves.
+    - if: >-
+        steps.modules.outputs.cache-hit != 'true' &&
+        github.ref_name == github.event.repository.default_branch
+      uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+      with:
+        path: node_modules
+        key: ${{ steps.modules.outputs.cache-primary-key }}
