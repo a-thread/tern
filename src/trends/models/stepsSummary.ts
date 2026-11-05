@@ -1,8 +1,8 @@
 import { DayState } from '@shared/models/dayState';
 import { type DayRecord } from '../../domain/activity/models/dayRecord';
 
-/** Longest consecutive run of goal, rest or frozen days; partial and none reset it. */
-export function longestProtectedRun(days: DayState[]): number {
+/** Longest streak of consecutive goal, rest or frozen days; partial and none reset it. */
+export function longestConsecutiveStreak(days: DayState[]): number {
   let longest = 0;
   let current = 0;
   for (const day of days) {

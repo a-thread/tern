@@ -1,18 +1,18 @@
 import { TrendRanges, TrendRange } from './trendRange';
 import { bucketSteps } from './stepBars';
-import { longestProtectedRun, summarizeSteps } from './stepsSummary';
+import { longestConsecutiveStreak, summarizeSteps } from './stepsSummary';
 import { weightTrendFor } from './weightTrend';
 import { DayRecord } from '../../domain/activity/models/dayRecord';
 import { DayState } from '@shared/models/dayState';
 
-describe('longestProtectedRun', () => {
+describe('longestConsecutiveStreak', () => {
   it('returns 0 for an empty array', () => {
-    expect(longestProtectedRun([])).toBe(0);
+    expect(longestConsecutiveStreak([])).toBe(0);
   });
 
-  it('counts a run of goal days', () => {
+  it('counts a streak of goal days', () => {
     const days: DayState[] = [DayState.Goal, DayState.Goal, DayState.Goal];
-    expect(longestProtectedRun(days)).toBe(3);
+    expect(longestConsecutiveStreak(days)).toBe(3);
   });
 
   it('treats rest days as protecting the streak, not breaking it', () => {
@@ -22,7 +22,7 @@ describe('longestProtectedRun', () => {
       DayState.Goal,
       DayState.Goal,
     ];
-    expect(longestProtectedRun(days)).toBe(4);
+    expect(longestConsecutiveStreak(days)).toBe(4);
   });
 
   it('breaks the streak on a partial or missed day', () => {
@@ -34,7 +34,7 @@ describe('longestProtectedRun', () => {
       DayState.Goal,
       DayState.Goal,
     ];
-    expect(longestProtectedRun(days)).toBe(3);
+    expect(longestConsecutiveStreak(days)).toBe(3);
   });
 
   it('resets on none (missed) days', () => {
@@ -44,7 +44,7 @@ describe('longestProtectedRun', () => {
       DayState.None,
       DayState.Goal,
     ];
-    expect(longestProtectedRun(days)).toBe(2);
+    expect(longestConsecutiveStreak(days)).toBe(2);
   });
 });
 

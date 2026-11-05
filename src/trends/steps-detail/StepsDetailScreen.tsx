@@ -20,7 +20,10 @@ import { useActivity } from '../../domain/activity/ActivityContext';
 import { weekdayName } from '@shared/utils/date';
 import { useSettings } from '../../domain/settings/SettingsContext';
 import { bucketSteps } from '../models/stepBars';
-import { longestProtectedRun, summarizeSteps } from '../models/stepsSummary';
+import {
+  longestConsecutiveStreak,
+  summarizeSteps,
+} from '../models/stepsSummary';
 import type { TrendsStackParamList } from '../navigation';
 import { noStepsNote } from '../models/noStepsNote';
 import { DayState } from '@shared/models/dayState';
@@ -41,7 +44,7 @@ export default function StepsDetailScreen({ navigation }: Props) {
   const restDays = inRange.filter(
     (d) => d.state === DayState.Rest && !d.reachedGoal,
   ).length;
-  const longestRun = longestProtectedRun(inRange.map((d) => d.state));
+  const streak = longestConsecutiveStreak(inRange.map((d) => d.state));
 
   const last7 = days.slice(-7);
   const bars = bucketSteps(days, range);
@@ -105,7 +108,7 @@ export default function StepsDetailScreen({ navigation }: Props) {
           <View style={s.statGrid}>
             <StatBox value={goalDays} label='goal days' />
             <StatBox value={restDays} label='rest days' />
-            <StatBox value={longestRun} label='longest run' />
+            <StatBox value={streak} label='longest streak' />
           </View>
         </Card>
 
