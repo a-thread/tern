@@ -4,13 +4,12 @@ import { colors, font, radius, tierColors, typography } from '@shared/theme';
 import type { Tier } from '@/domain/food/models/foodEntry';
 import type { SearchResult } from '@/domain/food/sources/searchResult';
 import { TierDot } from '@shared/components/TierDot';
+import {
+  tierGroupA11yLabel,
+  tierGroupOf,
+  TierGroups,
+} from '@/domain/food/models/tierGroups';
 import { tierSuggestionNote } from './utils/tierSuggestionNote';
-
-const tierPickerOptions: { tier: Tier; label: string; a11yLabel: string }[] = [
-  { tier: 1, label: 'Whole', a11yLabel: 'Whole, NOVA 1 or 2' },
-  { tier: 3, label: 'Processed', a11yLabel: 'Processed, NOVA 3' },
-  { tier: 4, label: 'Ultra-proc.', a11yLabel: 'Ultra-processed, NOVA 4' },
-];
 
 /**
  * Food-type picker: Whole (tiers 1–2) / Processed (3) / Ultra-processed (4).
@@ -38,25 +37,25 @@ export function TierPicker({
   return (
     <View>
       <View style={s.tierPicker}>
-        {tierPickerOptions.map((opt) => {
-          const selected =
-            value === opt.tier || (value === 2 && opt.tier === 1);
+        {TierGroups.ALL.map((group) => {
+          const tier = group.tiers[0];
+          const selected = value !== null && tierGroupOf(value) === group;
           return (
             <Pressable
-              key={opt.tier}
-              onPress={() => onChange(opt.tier)}
+              key={group.key}
+              onPress={() => onChange(tier)}
               style={[s.tierOpt, selected && s.tierOptSel]}
               accessibilityRole='button'
-              accessibilityLabel={opt.a11yLabel}
+              accessibilityLabel={tierGroupA11yLabel(group)}
               accessibilityState={{ selected }}
             >
               <TierDot
-                tier={opt.tier}
-                color={tierColors[opt.tier]}
+                tier={tier}
+                color={tierColors[tier]}
                 showNumber={showNumber}
               />
               <Text style={[s.tierOptLabel, selected && s.tierOptLabelSel]}>
-                {opt.label}
+                {group.shortLabel}
               </Text>
             </Pressable>
           );

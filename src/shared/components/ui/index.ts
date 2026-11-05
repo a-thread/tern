@@ -2,6 +2,7 @@ export { ProgressBar } from './Bars';
 export { BottomSheet } from './BottomSheet';
 export { Chevron } from './Chevron';
 export { Icon, type IconName } from './Icon';
+export { InfoDot } from './InfoDot';
 export {
   GroupLabel,
   FootNote,

@@ -11,10 +11,9 @@ export function GroupLabel({
   children: string;
   accessory?: React.ReactNode;
 }) {
-  if (!accessory) return <Text style={s.groupLabel}>{children}</Text>;
   return (
     <View style={s.groupLabelRow}>
-      <Text style={[s.groupLabel, s.groupLabelInRow]}>{children}</Text>
+      <Text style={s.groupLabel}>{children}</Text>
       {accessory}
     </View>
   );
@@ -178,18 +177,15 @@ const s = StyleSheet.create({
     letterSpacing: 0.4,
     textTransform: 'uppercase',
     color: colors.ink2,
-    marginLeft: space.xs + 2,
-    marginTop: space.lg,
-    marginBottom: 7,
   },
   groupLabelRow: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
+    marginLeft: space.xs + 2,
     marginTop: space.lg,
     marginBottom: 7,
   },
-  groupLabelInRow: { marginTop: 0, marginBottom: 0 },
   footNote: {
     fontFamily: font.body,
     fontSize: 11,

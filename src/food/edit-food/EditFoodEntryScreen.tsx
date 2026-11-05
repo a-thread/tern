@@ -178,7 +178,6 @@ export default function EditFoodEntryScreen({ navigation, route }: Props) {
               <TierPicker
                 value={tier}
                 onChange={setTier}
-                suggested={null}
                 showNumber={showTierNumber}
               />
             </View>
