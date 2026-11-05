@@ -84,6 +84,18 @@ describe('productToResult', () => {
     });
   });
 
+  it('marks a product sold or served by volume as a drink', () => {
+    expect(
+      productToResult({ ...rolledOats, serving_size: '250 ml' })?.liquid,
+    ).toBe(true);
+    expect(productToResult({ ...rolledOats, quantity: '1 l' })?.liquid).toBe(
+      true,
+    );
+    expect(
+      productToResult({ ...rolledOats, serving_size: '40 g' })?.liquid,
+    ).toBeUndefined();
+  });
+
   it('names an unlabelled serving, and has no portion without one', () => {
     expect(
       productToResult({ ...rolledOats, serving_quantity: 30 })?.portions,

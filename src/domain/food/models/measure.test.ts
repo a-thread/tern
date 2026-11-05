@@ -12,7 +12,8 @@ import {
   startingMeasure,
   stepMeasure,
   switchUnit,
-  typedGrams,
+  typedAmount,
+  withVolumeUnits,
   type Measure,
 } from './measure';
 
@@ -77,14 +78,75 @@ describe('measure', () => {
 
   it('scales an amount, and reads a typed weight (zero until it is usable)', () => {
     expect(scaleMeasure(egg, 0.5).quantity).toBe(1);
-    expect(typedGrams(egg, '75')).toMatchObject({ unit: null, quantity: 75 });
-    expect(typedGrams(egg, '').quantity).toBe(0);
-    expect(typedGrams(egg, '0').quantity).toBe(0);
+    expect(typedAmount(egg, '75')).toMatchObject({ unit: null, quantity: 75 });
+    expect(typedAmount(egg, '').quantity).toBe(0);
+    expect(typedAmount(egg, '0').quantity).toBe(0);
   });
 
   it('shows a quantity alone for a stepper', () => {
     expect(quantityText(egg)).toBe('2');
     expect(quantityText({ ...egg, unit: null, quantity: 150 })).toBe('150 g');
+  });
+});
+
+describe('measuring a drink by volume', () => {
+  // Whole milk, per 100 g; a cup weighs 244 g, so a ml is 1.031 g.
+  const milk: Measure = {
+    per100: { calories: 61, protein: 3.2, carbs: 4.8, fat: 3.3 },
+    portions: [
+      { label: 'cup', grams: 244 },
+      { label: 'fl oz', grams: 30.5 },
+      { label: 'ml', grams: 1.031 },
+    ],
+    unit: 'ml',
+    quantity: 250,
+  };
+
+  it('weighs and labels an amount in ml or fl oz', () => {
+    expect(measureGrams(milk)).toBe(257.8);
+    expect(measureLabel(milk)).toBe('250 ml (257.8 g)');
+    expect(measureLabel({ ...milk, unit: 'fl oz', quantity: 8 })).toBe(
+      '8 fl oz (244 g)',
+    );
+    expect(quantityText(milk)).toBe('250 ml');
+    expect(quantityText({ ...milk, unit: 'fl oz', quantity: 8 })).toBe(
+      '8 fl oz',
+    );
+  });
+
+  it('works out nutrition from the volume', () => {
+    expect(amountOf(milk)).toMatchObject({ calories: 157 });
+  });
+
+  it('switches between a cup, fl oz and whole ml', () => {
+    const cup = { ...milk, unit: 'cup', quantity: 1 };
+    expect(switchUnit(cup, 'fl oz')).toMatchObject({ quantity: 8 });
+    expect(switchUnit(cup, 'ml')).toMatchObject({ quantity: 237 });
+    expect(switchUnit(milk, null)).toMatchObject({ unit: null, quantity: 258 });
+  });
+
+  it('steps ten ml or a fluid ounce at a time', () => {
+    expect(stepMeasure(milk, 1).quantity).toBe(260);
+    expect(stepMeasure({ ...milk, quantity: 8 }, -1).quantity).toBe(5);
+    const flOz = { ...milk, unit: 'fl oz', quantity: 8 };
+    expect(stepMeasure(flOz, 1).quantity).toBe(9);
+    expect(stepMeasure({ ...flOz, quantity: 1 }, -1).quantity).toBe(0.5);
+  });
+
+  it('keeps a typed amount in the volume unit chosen', () => {
+    expect(typedAmount(milk, '330')).toMatchObject({
+      unit: 'ml',
+      quantity: 330,
+    });
+    expect(typedAmount({ ...milk, unit: 'cup' }, '330')).toMatchObject({
+      unit: null,
+    });
+  });
+
+  it('offers fl oz and ml on a drink logged before they existed', () => {
+    const old = { ...milk, portions: [milk.portions[0]], unit: 'cup' };
+    expect(withVolumeUnits(old, 'Milk').portions).toHaveLength(3);
+    expect(withVolumeUnits(egg, 'Egg')).toBe(egg);
   });
 });
 
@@ -132,6 +194,29 @@ describe('startingMeasure', () => {
     expect(
       startingMeasure({ ...result, portions: undefined }, 100),
     ).toMatchObject({ unit: null, quantity: 100 });
+  });
+
+  it('starts a drink in its own portion, or in ml when it has none', () => {
+    const juice: SearchResult = {
+      ...result,
+      name: 'Orange juice',
+      calories: 45,
+      portions: [{ label: 'cup', grams: 248 }],
+    };
+    const m = startingMeasure(juice, 100);
+    expect(m.unit).toBe('cup');
+    expect(m.portions.map((p) => p.label)).toEqual(['cup', 'fl oz', 'ml']);
+    expect(
+      startingMeasure(
+        {
+          ...juice,
+          name: 'Sparkling water',
+          portions: undefined,
+          liquid: true,
+        },
+        100,
+      ),
+    ).toMatchObject({ unit: 'ml', quantity: 100 });
   });
 
   it('converts values given for another weight to per 100 g', () => {
