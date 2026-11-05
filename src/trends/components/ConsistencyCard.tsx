@@ -13,7 +13,7 @@ import { useActivity } from '../../domain/activity/ActivityContext';
 export function ConsistencyCard({ range }: { range: TrendRange }) {
   const { days } = useActivity();
   const states = days.slice(-TrendRanges.DAYS[range]).map((d) => d.state);
-  const longestStreak = longestConsecutiveStreak(states);
+  const streak = longestConsecutiveStreak(states);
 
   return (
     <>
