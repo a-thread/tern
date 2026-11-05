@@ -49,10 +49,13 @@ last one. Merges that land during a release are picked up by the next run.
 Android builds for phones only (`armeabi-v7a`, `arm64-v8a`, set in the build-android action), so
 the Play build doesn't install on x86 emulators or x86 Chromebooks.
 
-Both builds keep a ccache of compiled native code ([ccache action](../.github/actions/ccache/action.yml)),
-saved from `main` once per `package-lock.json`, so a release only recompiles the C, C++ and
-Objective-C that changed. Each build log ends with `ccache --show-stats`; a low hit rate after a
-release that didn't touch native dependencies means the cache isn't matching.
+The Android build keeps a ccache of compiled C and C++ ([ccache action](../.github/actions/ccache/action.yml)),
+saved from `main` once per `package-lock.json`. Its log ends with `ccache --show-stats`; a low hit
+rate after a release that didn't touch native dependencies means the cache isn't matching. iOS
+has none: most of its compile is Swift, which ccache can't cache, so expect 15–20 minutes there.
+
+Every job that installs dependencies reuses `node_modules` saved from `main` when
+`package-lock.json` (and `.node-version`) haven't changed, and only runs `npm ci` otherwise.
 
 The version comes from the tag, through `APP_VERSION` in [app.config.ts](../app.config.ts);
 `app.json`'s `version` is only the local fallback. Build numbers come from EAS.

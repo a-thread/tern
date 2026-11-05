@@ -1,12 +1,10 @@
 name: ccache
 description: >-
-  Installs ccache and restores the platform cache. Enable it in the build (USE_CCACHE for iOS,
-  CMake launchers for Android), then run with `save: 'true'` to show stats and save the cache.
+  Android only. Installs ccache and restores the compiler cache, so the build only recompiles the
+  C and C++ that changed; build-android turns it on with the CMake launchers. Run it again with
+  `save: 'true'` after the build to show stats and save the cache.
 
 inputs:
-  platform:
-    description: android or ios; each keeps its own cache
-    required: true
   save:
     description: "'true' after the build: print stats and, on main, save the cache"
     default: 'false'
@@ -19,17 +17,12 @@ runs:
       shell: bash
       run: |
         if ! command -v ccache >/dev/null; then
-          if [ "$RUNNER_OS" = macOS ]; then
-            HOMEBREW_NO_AUTO_UPDATE=1 brew install ccache
-          else
-            sudo apt-get install -y ccache || { sudo apt-get update && sudo apt-get install -y ccache; }
-          fi
+          sudo apt-get install -y ccache || { sudo apt-get update && sudo apt-get install -y ccache; }
         fi
         {
           echo "CCACHE_DIR=$RUNNER_TEMP/ccache"
           echo "CCACHE_MAXSIZE=500M"
-          # Ask the compiler for its version: on iOS `clang` is the xcrun shim, whose bytes stay
-          # the same across Xcode versions, so hashing the file wouldn't notice an Xcode bump.
+          # Ask the compiler for its version, so a new NDK on the runner image starts fresh entries.
           echo "CCACHE_COMPILERCHECK=%compiler% -v"
         } >> "$GITHUB_ENV"
     # The native code comes from node_modules, so one cache per lockfile; only main saves it.
@@ -38,8 +31,8 @@ runs:
       uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
       with:
         path: ${{ runner.temp }}/ccache
-        key: ccache-${{ inputs.platform }}-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
-        restore-keys: ccache-${{ inputs.platform }}-${{ runner.os }}-
+        key: ccache-android-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
+        restore-keys: ccache-android-${{ runner.os }}-
     - if: inputs.save != 'true'
       shell: bash
       env:
@@ -57,4 +50,4 @@ runs:
       uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
       with:
         path: ${{ runner.temp }}/ccache
-        key: ccache-${{ inputs.platform }}-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
+        key: ccache-android-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
