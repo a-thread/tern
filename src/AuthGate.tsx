@@ -206,10 +206,11 @@ const NOT_SYNCED_NOTICE =
   "Your account can't sync yet, so Tern is saving to this phone for now. It moves into your account once Tern Plus is confirmed.";
 
 /**
- * Signed in with Plus. The server's record of Plus is brought up to date first (it's what
- * lets the account be written to), then whatever is on the phone goes into the account
- * before it shows. If the server says the account has no Plus, the account would refuse
- * every save, so the phone is used instead, with the account's log copied onto it.
+ * Signed in with Plus, or with a store that couldn't be reached. The server's record of Plus
+ * is brought up to date first either way (it's what lets the account be written to). If it
+ * says the account has no Plus, the account would refuse every save, so the phone is used
+ * instead, with the account's log copied onto it. Otherwise, with the store's Plus
+ * (`moveIn`), whatever is on the phone goes into the account before it shows.
  */
 function AccountBackend({
   userId,
@@ -223,14 +224,14 @@ function AccountBackend({
   children: React.ReactNode;
 }) {
   const toast = useToast();
-  const [ready, setReady] = useState(!moveIn);
+  const [ready, setReady] = useState(false);
   const [refused, setRefused] = useState(false);
 
   useEffect(() => {
-    if (!moveIn) return;
     let live = true;
     // Whether the server now counts Plus (usually the webhook has already done it), or null
-    // when it couldn't be asked: then the account gets the benefit of the doubt.
+    // when neither the function nor the database answered: offline, so the account gets the
+    // benefit of the doubt, since no save would reach it anyway.
     const sync = async () => {
       try {
         return (await backend.syncPlus?.()) ?? true;
@@ -247,7 +248,8 @@ function AccountBackend({
           if (live) setRefused(true);
           return 0;
         }
-        if (synced === null) return 0;
+        // Nothing is moved on a Plus the store didn't confirm, or the server couldn't.
+        if (synced === null || !moveIn) return 0;
         const db = await openLocalDb();
         return moveToAccount(createLocalBackend(db).data!, backend.data!, db, userId);
       })
