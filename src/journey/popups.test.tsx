@@ -57,7 +57,7 @@ const screenProps = (params: object) =>
 const waypointsProps = screenProps({ streak: 9 }) as React.ComponentProps<
   typeof WaypointsScreen
 >;
-const milestoneProps = screenProps({ waypoints: 1000 }) as React.ComponentProps<
+const milestoneProps = screenProps({ waypoints: 3140 }) as React.ComponentProps<
   typeof MilestoneScreen
 >;
 
@@ -78,13 +78,13 @@ describe('milestone card', () => {
     await waitFor(() => expect(ui.getByText('The Azores')).toBeTruthy());
     expect(ui.getByText('Milestone reached')).toBeTruthy();
     expect(ui.getByText(/a rare patch of land/)).toBeTruthy();
-    expect(ui.getByText(/^Cape Verde · /)).toBeTruthy();
+    expect(ui.getByText(/^The Canary Islands · /)).toBeTruthy();
   });
 });
 
 describe('destination card', () => {
   const destinationProps = screenProps({
-    waypoints: 1000,
+    waypoints: 3140,
   }) as React.ComponentProps<typeof DestinationScreen>;
 
   it('shows a photo with its credit, and facts about the stop', async () => {
@@ -103,7 +103,7 @@ describe('destination card', () => {
 describe('waypoints info card', () => {
   it('explains waypoints and how days are counted', async () => {
     const ui = open(<WaypointsInfoScreen />);
-    await waitFor(() => expect(ui.getByText('1,240')).toBeTruthy());
+    await waitFor(() => expect(ui.getByText('3,600')).toBeTruthy());
     expect(ui.getByText('Your waypoints')).toBeTruthy();
     expect(ui.getByText(/^earned on \d+ days?$/)).toBeTruthy();
     expect(

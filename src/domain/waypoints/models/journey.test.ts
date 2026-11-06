@@ -24,19 +24,19 @@ describe('milestonesFor', () => {
   it('dates each reached stop by replaying the ledger in day order', () => {
     // Deliberately out of order.
     const events = [
-      ev('2026-03-03', 100),
-      ev('2026-03-01', 200),
-      ev('2026-03-05', 400),
+      ev('2026-03-03', 300),
+      ev('2026-03-01', 500),
+      ev('2026-03-05', 1600),
     ];
-    const [first, second, third] = milestonesFor(700, events);
-    expect(first).toMatchObject({ reached: true, reachedOn: '2026-03-03' }); // 200+100 >= 250
-    expect(second).toMatchObject({ reached: true, reachedOn: '2026-03-05' }); // 700 >= 600
+    const [first, second, third] = milestonesFor(2400, events);
+    expect(first).toMatchObject({ reached: true, reachedOn: '2026-03-03' }); // 500+300 >= 760
+    expect(second).toMatchObject({ reached: true, reachedOn: '2026-03-05' }); // 2,400 >= 2,340
     expect(third.reached).toBe(false);
     expect(third.reachedOn).toBeUndefined();
   });
 
   it('counts a stop as reached even when the events behind it are missing', () => {
-    const [first] = milestonesFor(300, []);
+    const [first] = milestonesFor(800, []);
     expect(first).toMatchObject({ reached: true });
     expect(first.reachedOn).toBeUndefined();
   });
@@ -97,7 +97,7 @@ describe('latestMilestone', () => {
 
 describe('the migration loops', () => {
   it('starts the next migration after the last stop, so there is always a next milestone', () => {
-    const past = milestonesFor(Milestones.MIGRATION_LENGTH + 300, []);
+    const past = milestonesFor(Milestones.MIGRATION_LENGTH + 800, []);
     const next = past.find((m) => !m.reached)!;
     expect(next).toMatchObject({ lap: 2, name: Milestones.STOPS[1].name });
     expect(next.waypoints).toBe(

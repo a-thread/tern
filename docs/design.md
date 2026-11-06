@@ -79,6 +79,20 @@ totals. The amounts live in
 | Weigh-in | 5 | logging one, whatever it says |
 | Streak milestone | 25 – 500 | once, on the day a streak reaches 7, 14, 30, 60, 100, 200 and 365 days |
 
+### How far a waypoint goes
+
+The journey is the migration tracked Greenland terns actually fly, in
+[`MigrationRoute`](../src/domain/waypoints/models/migrationRoute.ts): 26 stops, 71,200 km. One
+waypoint is 2.5 km, so a migration is 28,480 waypoints. A typical engaged day (around 75 waypoints,
+plus streak bonuses) gets round in about a year, the same as the bird. A perfect day every day takes
+about seven months. No stop is more than about four weeks from the one before at a typical pace; the
+longest legs are the slow drift west along the Antarctic ice and the open ocean round the Sargasso Sea.
+
+Each phase (south, the southern summer by the ice, north) is as long as the tracked birds flew it on
+average. Within a phase, the distance is shared out between stops by the great-circle length of each leg.
+A test checks both. Sources for the route and the stop facts are in
+[journey-route-sources.md](journey-route-sources.md).
+
 ### Streak freezes
 
 A streak freeze covers one day that would otherwise break a streak. Rest days still come
