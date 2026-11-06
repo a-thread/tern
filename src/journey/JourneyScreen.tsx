@@ -12,6 +12,7 @@ import {
   Card,
   ProgressBar,
   Icon,
+  InfoDot,
 } from '@shared/components/ui';
 import { useRootNavigation } from '../navigation/useAppNavigation';
 import { JourneyMap } from './components/JourneyMap/JourneyMap';
@@ -176,7 +177,16 @@ export default function JourneyScreen() {
           ) : null}
 
           {/* Where the bird is headed comes first, then the stops passed, newest first. */}
-          <GroupLabel>Stops</GroupLabel>
+          <GroupLabel
+            accessory={
+              <InfoDot
+                label='Where the route comes from'
+                onPress={() => navigation.navigate('RouteInfo')}
+              />
+            }
+          >
+            Stops
+          </GroupLabel>
           <Group>
             {[
               ...(next

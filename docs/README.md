@@ -7,6 +7,7 @@ documents.
 | ---------------------------------------------- | ------------------------------------------------------------------- |
 | [architecture.md](architecture.md)             | folder layout, the repository pattern, the waypoints ledger, schema |
 | [design.md](design.md)                         | the palette rule, the design commitments, the earning rules         |
+| [journey-route-sources.md](journey-route-sources.md) | where the migration route, its distances and stop facts come from |
 | [health-connect.md](health-connect.md)         | Android steps: turning it on, what's configured, Play review        |
 | [food-search.md](food-search.md)               | Open Food Facts and USDA, caching, attribution                      |
 | [RELEASING.md](RELEASING.md)                   | EAS builds, the GitHub workflow, submitting to Play                 |

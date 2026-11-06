@@ -142,19 +142,19 @@ describe('legFor', () => {
     expect(leg).toMatchObject({
       fromName: 'Greenland',
       from: 0,
-      next: { name: 'Iceland', waypoints: 250 },
+      next: { name: 'Iceland', waypoints: 760 },
     });
-    expect(legProgress(leg, 100)).toBeCloseTo(0.4);
+    expect(legProgress(leg, 100)).toBeCloseTo(100 / 760);
   });
 
   it('runs between the last stop passed and the next', () => {
-    const leg = legFor(1184, []);
+    const leg = legFor(3560, []);
     expect(leg).toMatchObject({
       fromName: 'The Azores',
-      from: 1000,
-      next: { name: 'Cape Verde', waypoints: 1500 },
+      from: 3140,
+      next: { name: 'The Canary Islands', waypoints: 4280 },
     });
-    expect(legProgress(leg, 1184)).toBeCloseTo(0.368);
+    expect(legProgress(leg, 3560)).toBeCloseTo(420 / 1140);
   });
 
   it('starts again from the colony on a second migration', () => {

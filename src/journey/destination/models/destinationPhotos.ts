@@ -82,6 +82,96 @@ export class DestinationPhotos {
       license: 'CC BY-SA 4.0',
       url: 'https://commons.wikimedia.org/wiki/File:Arctic_tern_(Sterna_paradisaea)_adult_with_juvenile_Flatey.jpg',
     },
+    canaries: {
+      source: require('../../../../assets/destinations/canaries.jpg'),
+      author: 'Bengt Nyman',
+      license: 'CC BY 2.0',
+      url: 'https://commons.wikimedia.org/wiki/File:Sterna_hirundo_EM1B3116_(46730474795).jpg',
+    },
+    bijagos: {
+      source: require('../../../../assets/destinations/bijagos.jpg'),
+      author: 'rangersara',
+      license: 'CC0',
+      url: 'https://commons.wikimedia.org/wiki/File:Thalasseus_albididorsalis,_Langue_de_Barbarie_NP,_Saint-Louis_Region,_Senegal_05.jpg',
+    },
+    'cape-palmas': {
+      source: require('../../../../assets/destinations/cape-palmas.jpg'),
+      author: 'Denis Carrascosa',
+      license: 'CC0',
+      url: 'https://commons.wikimedia.org/wiki/File:2015-11-21_Thalasseus_albididorsalis,_Assinie,_C%C3%B4te_d%27Ivoire.jpg',
+    },
+    'gulf-of-guinea': {
+      source: require('../../../../assets/destinations/gulf-of-guinea.jpg'),
+      author: 'Charles J. Sharp',
+      license: 'CC BY-SA 4.0',
+      url: 'https://commons.wikimedia.org/wiki/File:Brown_noddy_(Anous_stolidus_stolidus)_in_flight.jpg',
+    },
+    angola: {
+      source: require('../../../../assets/destinations/angola.jpg'),
+      author: 'jlrsousa',
+      license: 'CC BY-SA 2.0',
+      url: 'https://commons.wikimedia.org/wiki/File:Beach_of_Coatinha_in_Benguela,_Angola.jpg',
+    },
+    'polar-front': {
+      source: require('../../../../assets/destinations/polar-front.jpg'),
+      author: 'David Stanley',
+      license: 'CC BY 2.0',
+      url: 'https://commons.wikimedia.org/wiki/File:Southern_Ocean_Iceberg_(15784345808).jpg',
+    },
+    'maud-land': {
+      source: require('../../../../assets/destinations/maud-land.jpg'),
+      author: 'NASA ICE',
+      license: 'Public domain',
+      url: 'https://commons.wikimedia.org/wiki/File:Pack_edge_(30205822773).jpg',
+    },
+    brunt: {
+      source: require('../../../../assets/destinations/brunt.jpg'),
+      author: 'NASA/Michael Studinger',
+      license: 'Public domain',
+      url: 'https://commons.wikimedia.org/wiki/File:Brunt_Ice_Shelf_(6245421670).jpg',
+    },
+    peninsula: {
+      source: require('../../../../assets/destinations/peninsula.jpg'),
+      author: 'Greg Lasley',
+      license: 'CC BY-SA 4.0',
+      url: 'https://commons.wikimedia.org/wiki/File:Chick_and_adult_Antarctic_tern.jpg',
+    },
+    'south-orkney': {
+      source: require('../../../../assets/destinations/south-orkney.jpg'),
+      author: 'Morhua',
+      license: 'CC0',
+      url: 'https://commons.wikimedia.org/wiki/File:South_Orkney_Islands.jpg',
+    },
+    tristan: {
+      source: require('../../../../assets/destinations/tristan.jpg'),
+      author: 'michael clarke stuff',
+      license: 'CC BY-SA 2.0',
+      url: 'https://commons.wikimedia.org/wiki/File:Antarctic_Tern.jpg',
+    },
+    'st-helena': {
+      source: require('../../../../assets/destinations/st-helena.jpg'),
+      author: 'Kevstan',
+      license: 'CC BY-SA 4.0',
+      url: 'https://commons.wikimedia.org/wiki/File:White_terns_in_Saint_Helena.jpg',
+    },
+    ascension: {
+      source: require('../../../../assets/destinations/ascension.jpg'),
+      author: 'Drew Avery',
+      license: 'CC BY 2.0',
+      url: 'https://commons.wikimedia.org/wiki/File:Onychoprion_fuscatus_Ascension_Island_1.jpg',
+    },
+    sargasso: {
+      source: require('../../../../assets/destinations/sargasso.jpg'),
+      author: 'James St. John',
+      license: 'CC BY 2.0',
+      url: 'https://commons.wikimedia.org/wiki/File:Sargassum_natans_(brown_algae)_(San_Salvador_Island,_Bahamas)_1_(15867880028).jpg',
+    },
+    scoresby: {
+      source: require('../../../../assets/destinations/scoresby.jpg'),
+      author: 'Hannes Grobe',
+      license: 'CC BY-SA 2.5',
+      url: 'https://commons.wikimedia.org/wiki/File:Greenland-scoresby-sund_hg.jpg',
+    },
   };
 }
 

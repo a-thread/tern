@@ -60,8 +60,8 @@ describe('routeIndex', () => {
   });
 
   it('moves along a leg in step with the waypoints', () => {
-    // Halfway from Iceland (250) to the stopover (600).
-    const half = routeIndex(fraction(425));
+    // Halfway from Iceland (760) to the stopover (2,340).
+    const half = routeIndex(fraction(1550));
     expect(half).toBeCloseTo((stopIndex(0) + stopIndex(1)) / 2);
   });
 });
