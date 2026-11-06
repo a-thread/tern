@@ -60,6 +60,8 @@ export type RootStackParamList = {
   Waypoints: { streak: number };
   /** What the total and day count on Journey mean, from tapping them. */
   WaypointsInfo: undefined;
+  /** Where the migration route comes from, from the info button by the stops on Journey. */
+  RouteInfo: undefined;
   /** Passing a stop: `waypoints` is the stop's running total. */
   Milestone: { waypoints: number };
   /** A stop already passed, from its row on Journey: `waypoints` is the stop's running total. */

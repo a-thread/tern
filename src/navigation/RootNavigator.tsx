@@ -15,6 +15,7 @@ import WaypointsScreen from '../journey/waypoints/WaypointsScreen';
 import MilestoneScreen from '../journey/milestone/MilestoneScreen';
 import DestinationScreen from '../journey/destination/DestinationScreen';
 import WaypointsInfoScreen from '../journey/waypoints-info/WaypointsInfoScreen';
+import RouteInfoScreen from '../journey/route-info/RouteInfoScreen';
 import StreakScreen from '../today/streak/StreakScreen';
 import SettingsStack from '../settings/SettingsStack';
 import WelcomeStack from '../welcome/WelcomeStack';
@@ -75,6 +76,7 @@ export default function RootNavigator() {
           name='WaypointsInfo'
           component={WaypointsInfoScreen}
         />
+        <RootStack.Screen name='RouteInfo' component={RouteInfoScreen} />
         <RootStack.Screen name='Streak' component={StreakScreen} />
         <RootStack.Screen name='RestDay' component={RestDayScreen} />
       </RootStack.Group>

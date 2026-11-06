@@ -85,6 +85,12 @@ describe('Journey stops', () => {
     ]);
   });
 
+  it('opens where the route comes from, from the info button by the stops', async () => {
+    open();
+    fireEvent.press(await screen.findByLabelText('Where the route comes from'));
+    expect(mockNavigate).toHaveBeenCalledWith('RouteInfo');
+  });
+
   it('opens a passed stop’s card from its row', async () => {
     open();
     await screen.findByText('Iceland');
@@ -98,7 +104,9 @@ describe('Journey stops', () => {
 describe('Journey map zoom', () => {
   const tap = { nativeEvent: { pageX: 120, pageY: 60 } };
   const map = () =>
-    screen.getByLabelText('Map of the migration. Heading to The Canary Islands');
+    screen.getByLabelText(
+      'Map of the migration. Heading to The Canary Islands',
+    );
 
   /**
    * Gives the map a size, as laying it out on a phone would. Called directly: fireEvent skips a
@@ -116,7 +124,9 @@ describe('Journey map zoom', () => {
 
   it('names a stop on a single tap, once no second tap has come', async () => {
     open();
-    await screen.findByLabelText('Map of the migration. Heading to The Canary Islands');
+    await screen.findByLabelText(
+      'Map of the migration. Heading to The Canary Islands',
+    );
     await layOut();
     // On the close-up the next stop is right of centre; tap it.
     jest.useFakeTimers();
@@ -134,7 +144,9 @@ describe('Journey map zoom', () => {
 
   it('shows no stop name on a double tap', async () => {
     open();
-    await screen.findByLabelText('Map of the migration. Heading to The Canary Islands');
+    await screen.findByLabelText(
+      'Map of the migration. Heading to The Canary Islands',
+    );
     await layOut();
     jest.useFakeTimers();
     try {
@@ -151,7 +163,9 @@ describe('Journey map zoom', () => {
 
   it('opens close up on the leg, and a double tap goes out to the whole route and back', async () => {
     open();
-    await screen.findByLabelText('Map of the migration. Heading to The Canary Islands');
+    await screen.findByLabelText(
+      'Map of the migration. Heading to The Canary Islands',
+    );
     await layOut();
     expect(screen.getByLabelText('Show the whole route')).toBeTruthy();
     await act(async () => {
@@ -168,7 +182,9 @@ describe('Journey map zoom', () => {
 
   it('stays on the whole route, or the close-up, when switching to the globe and back', async () => {
     open();
-    await screen.findByLabelText('Map of the migration. Heading to The Canary Islands');
+    await screen.findByLabelText(
+      'Map of the migration. Heading to The Canary Islands',
+    );
     await layOut();
     // The close-up carries over.
     await act(async () => fireEvent.press(screen.getByLabelText('Globe')));
@@ -188,7 +204,9 @@ describe('Journey map zoom', () => {
 
   it('has a button that does the same', async () => {
     open();
-    await screen.findByLabelText('Map of the migration. Heading to The Canary Islands');
+    await screen.findByLabelText(
+      'Map of the migration. Heading to The Canary Islands',
+    );
     await layOut();
     await act(async () =>
       fireEvent.press(screen.getByLabelText('Show the whole route')),
@@ -201,7 +219,9 @@ describe('Journey map zoom', () => {
 
   it('zooms for screen readers too', async () => {
     open();
-    await screen.findByLabelText('Map of the migration. Heading to The Canary Islands');
+    await screen.findByLabelText(
+      'Map of the migration. Heading to The Canary Islands',
+    );
     await layOut();
     await act(async () =>
       fireEvent.press(screen.getByLabelText('Show the whole route')),

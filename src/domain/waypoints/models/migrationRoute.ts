@@ -44,6 +44,22 @@ export class MigrationRoute {
     [MigrationPhase.North]: 25_700,
   };
 
+  /** The tracking studies the route is drawn from, for the card that explains it. */
+  static readonly SOURCES: { cite: string; title: string; url: string }[] = [
+    {
+      cite: 'Egevang et al. 2010, PNAS',
+      title:
+        'Tracking of Arctic terns Sterna paradisaea reveals longest animal migration',
+      url: 'https://doi.org/10.1073/pnas.0909493107',
+    },
+    {
+      cite: 'Alerstam et al. 2019, Ecology and Evolution',
+      title:
+        'Hypotheses and tracking results about the longest migration: the case of the arctic tern',
+      url: 'https://doi.org/10.1002/ece3.5459',
+    },
+  ];
+
   /** Where the trip starts and ends: the colony on Sand Island, northeast Greenland. */
   static readonly COLONY: GeoPoint = { lat: 74.3, lon: -20 };
 

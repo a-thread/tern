@@ -1,5 +1,6 @@
 import React from 'react';
-import { render, waitFor } from '@testing-library/react-native';
+import { fireEvent, render, waitFor } from '@testing-library/react-native';
+import { Linking } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import { createMemoryBackend } from '../BackendContext';
@@ -11,6 +12,7 @@ import MilestoneScreen from './milestone/MilestoneScreen';
 import DestinationScreen from './destination/DestinationScreen';
 import StreakScreen from '../today/streak/StreakScreen';
 import WaypointsInfoScreen from './waypoints-info/WaypointsInfoScreen';
+import RouteInfoScreen from './route-info/RouteInfoScreen';
 
 // The waypoints card asks whether a goal day can be reached today and what was skipped; the
 // streak card, the streak and freezes held.
@@ -121,5 +123,25 @@ describe('streak card', () => {
     expect(ui.getByText(/every 7 days in a row/)).toBeTruthy();
     // Explaining streaks isn't about the journey, so there's no link to it.
     expect(ui.queryByText('See your journey ›')).toBeNull();
+  });
+});
+
+describe('route info card', () => {
+  it('says where the route comes from, and opens each paper', async () => {
+    const openURL = jest.spyOn(Linking, 'openURL').mockResolvedValue(undefined);
+    const ui = open(<RouteInfoScreen />);
+    expect(ui.getByText("A real tern's route")).toBeTruthy();
+    expect(ui.getByText('26 stops · 71,200 km')).toBeTruthy();
+    expect(ui.getByText(/34,600 km south/)).toBeTruthy();
+    fireEvent.press(
+      ui.getByLabelText(/^Egevang et al\. 2010, PNAS: .*Opens the paper$/),
+    );
+    expect(openURL).toHaveBeenCalledWith(
+      'https://doi.org/10.1073/pnas.0909493107',
+    );
+    expect(
+      ui.getByLabelText(/^Alerstam et al\. 2019, Ecology and Evolution: /),
+    ).toBeTruthy();
+    openURL.mockRestore();
   });
 });
