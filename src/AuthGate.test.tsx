@@ -293,4 +293,21 @@ describe('AuthGate signed in', () => {
     expect(await phoneRestDays()).toEqual(['2026-10-17']);
     warn.mockRestore();
   });
+
+  it('when the store cannot be reached and the server says no Plus, saves to the phone', async () => {
+    mockPlus = createMemorySubscriptionRepository(NO_PLUS);
+    mockPlus.identify = async () => {
+      throw new Error('offline');
+    };
+    await mockAccount.restDays.add('2026-10-17');
+    mockAccount = { ...mockAccount, syncPlus: async () => false };
+    const warn = jest.spyOn(console, 'warn').mockImplementation(() => {});
+    render(app());
+    expect(await screen.findByText('1 rest days')).toBeTruthy();
+    expect(await screen.findByText(/Your account can't sync yet/)).toBeTruthy();
+    await act(async () => fireEvent.press(screen.getByText('Rest')));
+    expect(await phoneRestDays()).toEqual(['2026-10-17', '2026-10-18']);
+    expect(await accountRestDays()).toEqual(['2026-10-17']);
+    warn.mockRestore();
+  });
 });
