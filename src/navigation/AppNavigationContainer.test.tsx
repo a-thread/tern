@@ -15,6 +15,8 @@ import { Onboarding } from '../domain/settings/models/onboarding';
 import { AppNavigationContainer } from './AppNavigationContainer';
 import RootNavigator from './RootNavigator';
 import { rememberNavigation } from './navigationMemory';
+import * as Notifications from 'expo-notifications';
+import { Reminders } from '../domain/settings/models/reminderPlan';
 
 jest.mock('../domain/settings/reminders', () => ({
   SyncResult: { Ok: 'ok', Denied: 'denied' },
@@ -69,7 +71,10 @@ function openApp(backend: Backend) {
   );
 }
 
-afterEach(() => rememberNavigation(undefined));
+afterEach(() => {
+  rememberNavigation(undefined);
+  jest.mocked(Notifications.useLastNotificationResponse).mockReturnValue(null);
+});
 
 describe('AppNavigationContainer', () => {
   it('starts on the wizard when it is still to do, whatever was remembered (after "Delete my data")', async () => {
@@ -90,5 +95,22 @@ describe('AppNavigationContainer', () => {
     openApp(backend);
     expect(await screen.findByText('Your data')).toBeTruthy();
     expect(screen.queryByText('Progress answers to your pace')).toBeNull();
+  });
+
+  it('opens what a tapped notification asked for: the lunch reminder opens logging lunch', async () => {
+    const backend = createMemoryBackend();
+    await backend.settings.save({
+      ...initialSettings,
+      onboarding: Onboarding.DONE,
+    });
+    const tap = {
+      actionIdentifier: Notifications.DEFAULT_ACTION_IDENTIFIER,
+      notification: {
+        request: { identifier: `${Reminders.MIDDAY_MEALS_ID}-2` },
+      },
+    } as unknown as Notifications.NotificationResponse;
+    jest.mocked(Notifications.useLastNotificationResponse).mockReturnValue(tap);
+    openApp(backend);
+    expect(await screen.findByText('Add to lunch')).toBeTruthy();
   });
 });

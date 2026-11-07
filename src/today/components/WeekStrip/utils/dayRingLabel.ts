@@ -15,6 +15,7 @@ export function dayRingLabel(
     | 'minutes'
     | 'movedToGoal'
     | 'reachedGoal'
+    | 'chosenRest'
     | 'state'
     | 'isToday'
     | 'future'
@@ -33,6 +34,7 @@ function dayStatus(
     | 'minutes'
     | 'movedToGoal'
     | 'reachedGoal'
+    | 'chosenRest'
     | 'state'
     | 'future'
   >,
@@ -42,7 +44,11 @@ function dayStatus(
   switch (d.state) {
     case DayState.Rest:
       // A rest day stays one even if the goal is reached; say so, since the ring can't.
-      return d.reachedGoal ? 'rest day, goal reached' : 'rest day';
+      if (d.reachedGoal) return 'rest day, goal reached';
+      // One Tern counted on its own (auto-detect) says so: it wasn't taken.
+      return d.chosenRest
+        ? 'rest day'
+        : 'under the goal, counted as a rest day';
     case DayState.Frozen:
       return 'covered by a streak freeze';
     case DayState.Goal:

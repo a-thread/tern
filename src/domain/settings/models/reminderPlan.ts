@@ -36,13 +36,15 @@ export class Reminders {
   /** The two meal reminders: around lunch, and around dinner. */
   static readonly MIDDAY_MEALS_ID = 'tern-meals-midday';
   static readonly EVENING_MEALS_ID = 'tern-meals-evening';
+  static readonly WEIGH_IN_ID = 'tern-weigh-in';
+  static readonly MOOD_ID = 'tern-mood';
 
   /** Fixed ids; medication reminders use `tern-med-<id>`. */
   static readonly ALL_IDS = [
     Reminders.MIDDAY_MEALS_ID,
     Reminders.EVENING_MEALS_ID,
-    'tern-weigh-in',
-    'tern-mood',
+    Reminders.WEIGH_IN_ID,
+    Reminders.MOOD_ID,
   ];
 
   static readonly STEP_MINUTES = 15;
@@ -273,7 +275,7 @@ export function planReminders(
   if (trackWeight && c.weighIn.on) {
     const daily = weighInFrequency === Frequency.Daily;
     plan.push({
-      id: 'tern-weigh-in',
+      id: Reminders.WEIGH_IN_ID,
       key: ReminderKey.WeighIn,
       title: daily ? 'Daily weigh-in' : 'Weekly weigh-in',
       body: daily
@@ -296,7 +298,7 @@ export function planReminders(
   }
   if (trackMood && c.mood.on) {
     plan.push({
-      id: 'tern-mood',
+      id: Reminders.MOOD_ID,
       key: ReminderKey.Mood,
       title: 'Mood check-in',
       body: 'How are you feeling today? A quick check-in, if you like.',

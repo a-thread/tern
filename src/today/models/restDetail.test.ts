@@ -1,4 +1,4 @@
-import { restDetail, restReminderNote } from './restDetail';
+import { pastRestCopy, restDetail, restReminderNote } from './restDetail';
 
 describe('restDetail', () => {
   it('shows the steps and the streak', () => {
@@ -41,5 +41,19 @@ describe('restReminderNote', () => {
     expect(restReminderNote({ ...none, meals: true, medication: true })).toBe(
       'Reminders are quiet until tomorrow, except medication',
     );
+  });
+});
+
+describe('pastRestCopy', () => {
+  it('says a rest day that was taken carried the streak', () => {
+    expect(pastRestCopy(true)).toEqual({
+      line: 'A day off. Your streak carried on.',
+    });
+  });
+
+  it('says a rest day Tern counted on its own was under the goal, and where auto-detect lives', () => {
+    const copy = pastRestCopy(false);
+    expect(copy.line).toMatch(/^Under your goal, so Tern counted it/);
+    expect(copy.note).toMatch(/Settings › Rest days/);
   });
 });

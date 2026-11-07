@@ -11,7 +11,7 @@ import {
 } from './dayRecord';
 import { suggestGoal } from './stepGoal';
 import { greetingFor } from '@/today/components/StepsHero/models/greeting';
-import { leftToDo, mealForTime, weighInDue } from '@/today/models/leftToDo';
+import { leftToDo, weighInDue } from '@/today/models/leftToDo';
 import { todaySummary } from '@/today/models/todaySummary';
 import { DayState } from '@shared/models/dayState';
 import { Frequency } from '@shared/models/frequency';
@@ -44,22 +44,25 @@ const weighedYesterday: WeightEntry = {
   loggedAt: new Date(2026, 8, 17, 7, 0).toISOString(),
 };
 
-describe('mealForTime', () => {
-  it('follows the day', () => {
-    expect(mealForTime(new Date(2026, 8, 18, 8))).toBe('breakfast');
-    expect(mealForTime(new Date(2026, 8, 18, 12))).toBe('lunch');
-    expect(mealForTime(new Date(2026, 8, 18, 19))).toBe('dinner');
-  });
-});
-
 describe('leftToDo', () => {
-  it('asks for a generic meal when nothing is logged', () => {
-    const [meal] = leftToDo([], undefined, now);
+  it('asks for breakfast first when nothing is logged, whatever the time', () => {
+    const [meal] = leftToDo([], undefined, new Date(2026, 8, 18, 13, 29));
     expect(meal).toMatchObject({
       kind: 'meal',
-      meal: 'lunch',
-      title: 'Log a meal',
+      meal: Meal.Breakfast,
+      title: 'Log breakfast',
       sub: 'No meals logged yet',
+    });
+  });
+
+  it('moves past a meal marked nothing today', () => {
+    const [meal] = leftToDo([], undefined, now, {
+      skippedMeals: [Meal.Breakfast],
+    });
+    expect(meal).toMatchObject({
+      meal: Meal.Lunch,
+      title: 'Log lunch',
+      sub: '1 of 3 meals logged',
     });
   });
 

@@ -22,3 +22,15 @@ export function restReminderNote(on: RemindersOn): string | undefined {
     ? 'Reminders are quiet until tomorrow, except medication'
     : 'Reminders are quiet until tomorrow';
 }
+
+/**
+ * What a past rest day says. One Tern counted on its own (auto-detect: under the goal, within
+ * the week's allowance) says so, so it doesn't read as a rest day someone thinks they never took.
+ */
+export function pastRestCopy(chosen: boolean): { line: string; note?: string } {
+  if (chosen) return { line: 'A day off. Your streak carried on.' };
+  return {
+    line: 'Under your goal, so Tern counted it as a rest day. Your streak carried on.',
+    note: 'Auto-detect is on in Settings > Rest days',
+  };
+}
