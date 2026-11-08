@@ -51,6 +51,8 @@ export default function MoodTrendCard({ range }: { range: TrendRange }) {
               {inRange.length > 1 ? (
                 <WeightTrend
                   trend={seriesOf(inRange, m.id)}
+                  days={inRange.map((e) => e.day)}
+                  formatValue={(v) => `${m.label.toLowerCase()} ${v}`}
                   spread={0.5}
                   height={60}
                 />

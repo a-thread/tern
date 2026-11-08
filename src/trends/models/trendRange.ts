@@ -20,11 +20,14 @@ export class TrendRanges {
     '6 months': 180,
   };
 
-  /** How the range ends a sentence: "daily average this week". */
+  /**
+   * How the range ends a sentence: "daily average in the last 7 days". Each range is the days
+   * up to today, not a calendar week or month, so it never says "this week" or "this month".
+   */
   static readonly LABEL: Readonly<Record<TrendRange, string>> = {
-    Week: 'this week',
-    Month: 'this month',
-    '6 months': 'over 6 months',
+    Week: 'in the last 7 days',
+    Month: 'in the last 30 days',
+    '6 months': 'in the last 6 months',
   };
 
   /** Half a year is drawn as this many weekly bars (more, and they get too thin to read). */

@@ -9,7 +9,11 @@ import Svg, {
   Stop,
   Text as SvgText,
 } from 'react-native-svg';
+import { View } from 'react-native';
 import { colors } from '../theme';
+import { useChartSelection } from '../hooks/useChartSelection';
+import { formatShortDate } from '../utils/date';
+import { PointTapZones } from './PointTapZones/PointTapZones';
 
 /* ------------------------------------------------------------------ */
 /* Weight trend — the band is the point: it makes daily noise visible   */
@@ -21,15 +25,29 @@ export function WeightTrend({
   spread,
   height = 92,
   goal,
+  days,
+  formatValue = String,
 }: {
   trend: number[];
   spread?: number;
   height?: number;
   /** Optional weight goal; renders a dashed moss reference line. */
   goal?: number;
+  /**
+   * The day of each point, oldest first, one per `trend` value. Given these, tapping the
+   * chart names the nearest point's date and value; tap it again to clear.
+   */
+  days?: readonly string[];
+  /** What a tapped point's value reads as ("172.4 lb"). */
+  formatValue?: (value: number) => string;
 }) {
   const W = 280;
   const H = height;
+  const tappable = days !== undefined && days.length === trend.length;
+  const labels = tappable
+    ? days.map((d, i) => `${formatShortDate(d)} · ${formatValue(trend[i])}`)
+    : [];
+  const { selected, toggle } = useChartSelection(labels);
   if (trend.length === 0)
     return <Svg width='100%' height={H} viewBox={`0 0 ${W} ${H}`} />;
   const min = Math.min(...trend, goal ?? Infinity) - (spread ?? 0.8);
@@ -57,8 +75,9 @@ export function WeightTrend({
     .join(' ');
 
   const [lastX, lastY] = pt(trend[trend.length - 1], trend.length - 1);
+  const picked = selected === null ? null : pt(trend[selected], selected);
 
-  return (
+  const chart = (
     <Svg width='100%' height={H} viewBox={`0 0 ${W} ${H}`}>
       <Defs>
         <LinearGradient id='wfill' x1='0' y1='0' x2='0' y2='1'>
@@ -106,6 +125,29 @@ export function WeightTrend({
         strokeWidth={2.5}
       />
       <Circle cx={lastX} cy={lastY} r={3.8} fill={colors.water} />
+      {picked ? (
+        <Circle
+          cx={picked[0]}
+          cy={picked[1]}
+          r={5}
+          fill={colors.card}
+          stroke={colors.water}
+          strokeWidth={2.5}
+        />
+      ) : null}
     </Svg>
+  );
+  return tappable ? (
+    <View>
+      {chart}
+      <PointTapZones
+        labels={labels}
+        selected={selected}
+        onSelect={toggle}
+        viewBoxWidth={W}
+      />
+    </View>
+  ) : (
+    chart
   );
 }

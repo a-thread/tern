@@ -1,5 +1,5 @@
 import { Meals } from '../../domain/food/models/meals';
-import { type FoodEntry, Meal } from '../../domain/food/models/foodEntry';
+import type { FoodEntry } from '../../domain/food/models/foodEntry';
 import { Frequency } from '@shared/models/frequency';
 import {
   isLoggedToday,
@@ -44,18 +44,9 @@ export function weighInDue(
   return daysSince >= 7;
 }
 
-/** The meal it's most likely time for: breakfast before 11, lunch before 4, then dinner. */
-export function mealForTime(now: Date): FoodEntry['meal'] {
-  const h = now.getHours();
-  if (h < 11) return Meal.Breakfast;
-  if (h < 16) return Meal.Lunch;
-  return Meal.Dinner;
-}
-
 /**
  * What's still open on Today. A meal row until every core meal is logged or
- * marked as skipped (a generic "Log a meal" while none is, then the next
- * missing meal), a weight row when a weigh-in is due (see `weighInDue`; daily
+ * marked as skipped (the first meal still open, by name), a weight row when a weigh-in is due (see `weighInDue`; daily
  * unless told otherwise, never when weight isn't tracked), and a row for each
  * medication not yet taken. Empty means done.
  */
@@ -87,19 +78,20 @@ export function leftToDo(
   );
   if (options.meals === false) {
     // Food isn't tracked: nothing to log.
-  } else if (missing.length === Meals.CORE.length) {
-    items.push({
-      kind: 'meal',
-      meal: mealForTime(now),
-      title: 'Log a meal',
-      sub: 'No meals logged yet',
-    });
   } else if (missing.length > 0) {
+    // Always the first meal still open, by name, so the row says where it goes. (Going by the
+    // clock opened lunch for someone who hadn't logged breakfast yet.)
+    // A meal marked "nothing today" counts towards the total, but until one is actually
+    // logged the row says so, rather than "1 of 3 meals logged" with nothing logged.
+    const covered = Meals.CORE.length - missing.length;
+    const anyLogged = Meals.CORE.some((m) => foodLog.some((f) => f.meal === m));
     items.push({
       kind: 'meal',
       meal: missing[0],
       title: `Log ${missing[0]}`,
-      sub: `${Meals.CORE.length - missing.length} of ${Meals.CORE.length} meals logged`,
+      sub: anyLogged
+        ? `${covered} of ${Meals.CORE.length} meals logged`
+        : 'No meals logged yet',
     });
   }
 

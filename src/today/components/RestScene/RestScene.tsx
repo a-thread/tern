@@ -5,7 +5,7 @@ import { colors, radius, space } from '@shared/theme';
 import { useScenePose } from './hooks/useScenePose';
 import { SceneBackdrop } from './components/SceneBackdrop';
 import { SpriteBird } from './components/SpriteBird';
-import { RestCaption } from './components/RestCaption';
+import { RestCaption, type NoteLink } from './components/RestCaption';
 import { SceneCanvas } from './models/sceneCanvas';
 
 interface RestSceneProps {
@@ -22,6 +22,8 @@ interface RestSceneProps {
   line: string;
   detail: string;
   note?: string;
+  /** A link after the note, to where what it says can be changed. */
+  noteLink?: NoteLink;
 }
 
 /**
@@ -38,6 +40,7 @@ export function RestScene({
   line,
   detail,
   note,
+  noteLink,
 }: RestSceneProps) {
   const pose = useScenePose({ entrance, leaving, onLeft, onTouchdown });
   const { width: windowWidth } = useWindowDimensions();
@@ -59,7 +62,13 @@ export function RestScene({
         <SpriteBird bird={pose.bird} unit={unit} />
       </View>
 
-      <RestCaption title={title} line={line} detail={detail} note={note} />
+      <RestCaption
+        title={title}
+        line={line}
+        detail={detail}
+        note={note}
+        noteLink={noteLink}
+      />
     </View>
   );
 }

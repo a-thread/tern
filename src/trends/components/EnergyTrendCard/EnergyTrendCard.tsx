@@ -1,19 +1,22 @@
 import React, { useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
-import Svg, { Line, Polyline } from 'react-native-svg';
+import Svg, { Circle, Line, Polyline } from 'react-native-svg';
 
 import { colors, space, typography } from '@shared/theme';
-import { TrendCard, TrendFigure } from './TrendCard';
-import { useFocusLoad } from '../hooks/useFocusLoad';
+import { PointTapZones } from '@shared/components/PointTapZones/PointTapZones';
+import { TrendCard, TrendFigure } from '../TrendCard';
+import { useFocusLoad } from '../../hooks/useFocusLoad';
 import { useDayKey } from '@shared/hooks/useDayKey';
+import { useChartSelection } from '@shared/hooks/useChartSelection';
 import { addDays } from '@shared/utils/date';
-import { useFood } from '../../domain/food/FoodContext';
-import { useWeight } from '../../domain/weight/WeightContext';
+import { useFood } from '@/domain/food/FoodContext';
+import { useWeight } from '@/domain/weight/WeightContext';
 import {
   AdaptiveTarget,
   weeklyEnergy,
   type EnergyWeek,
-} from '../../domain/food/models/energyBalance';
+} from '@/domain/food/models/energyBalance';
+import { energyWeekLabel } from './models/energyWeekLabel';
 
 const WEEKS = 8;
 const W = 300;
@@ -76,6 +79,16 @@ export function EnergyTrendCard({
       )
       .filter(Boolean)
       .join(' ');
+  const labels = weeks.map((w) => energyWeekLabel(w));
+  const { selected, toggle } = useChartSelection(labels);
+  // The tapped week: a rule down the chart, and a dot on each line that has a value there.
+  const pickedX = selected === null ? null : x(selected);
+  const pickedDots: { v: number; color: string }[] = [];
+  if (selected !== null) {
+    const { burn, intake } = weeks[selected];
+    if (burn !== null) pickedDots.push({ v: burn, color: colors.aurora });
+    if (intake !== null) pickedDots.push({ v: intake, color: colors.sunDeep });
+  }
 
   return (
     <TrendCard title='Energy estimate'>
@@ -89,37 +102,66 @@ export function EnergyTrendCard({
       />
       {values.length ? (
         <View style={{ marginTop: space.sm }}>
-          <Svg
-            viewBox={`0 0 ${W} ${H}`}
-            width='100%'
-            height={H}
-            accessibilityLabel='Estimated energy use and logged intake by week'
-          >
-            {[0.25, 0.5, 0.75].map((f) => (
-              <Line
-                key={f}
-                x1={0}
-                x2={W}
-                y1={H * f}
-                y2={H * f}
-                stroke={colors.border}
-                strokeWidth={1}
+          <View>
+            <Svg
+              viewBox={`0 0 ${W} ${H}`}
+              width='100%'
+              height={H}
+              accessibilityLabel='Estimated energy use and logged intake by week'
+            >
+              {[0.25, 0.5, 0.75].map((f) => (
+                <Line
+                  key={f}
+                  x1={0}
+                  x2={W}
+                  y1={H * f}
+                  y2={H * f}
+                  stroke={colors.border}
+                  strokeWidth={1}
+                />
+              ))}
+              <Polyline
+                points={line('burn')}
+                fill='none'
+                stroke={colors.aurora}
+                strokeWidth={2.5}
               />
-            ))}
-            <Polyline
-              points={line('burn')}
-              fill='none'
-              stroke={colors.aurora}
-              strokeWidth={2.5}
+              <Polyline
+                points={line('intake')}
+                fill='none'
+                stroke={colors.sunDeep}
+                strokeWidth={2}
+                strokeDasharray='5 4'
+              />
+              {pickedX !== null ? (
+                <Line
+                  x1={pickedX}
+                  x2={pickedX}
+                  y1={0}
+                  y2={H}
+                  stroke={colors.ink3}
+                  strokeWidth={1}
+                />
+              ) : null}
+              {pickedX !== null
+                ? pickedDots.map((d) => (
+                    <Circle
+                      key={d.color}
+                      cx={pickedX}
+                      cy={y(d.v)}
+                      r={4}
+                      fill={d.color}
+                    />
+                  ))
+                : null}
+            </Svg>
+            <PointTapZones
+              labels={labels}
+              selected={selected}
+              onSelect={toggle}
+              viewBoxWidth={W}
             />
-            <Polyline
-              points={line('intake')}
-              fill='none'
-              stroke={colors.sunDeep}
-              strokeWidth={2}
-              strokeDasharray='5 4'
-            />
-          </Svg>
+          </View>
           <Text style={s.legend}>
             <Text style={{ color: colors.aurora }}>━ </Text>what you seem to use
             {'   '}

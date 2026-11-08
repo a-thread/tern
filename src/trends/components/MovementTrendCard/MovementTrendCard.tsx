@@ -74,16 +74,20 @@ export function MovementTrendCard({
             : `a day on average ${TrendRanges.LABEL[range]} · goal day at ${settings.movementGoalMinutes} min`
         }
       />
-      <StepBars
-        days={bars}
-        goal={
-          range === TrendRange.Week || range === TrendRange.Month
-            ? settings.movementGoalMinutes
-            : settings.movementGoalMinutes * 7
-        }
-        showLegend={false}
-        showLabels={range !== TrendRange.Month}
-      />
+      {/* Nothing logged: the line above says so, without an empty chart under it. */}
+      {average === null ? null : (
+        <StepBars
+          days={bars}
+          goal={
+            range === TrendRange.Week || range === TrendRange.Month
+              ? settings.movementGoalMinutes
+              : settings.movementGoalMinutes * 7
+          }
+          showLegend={false}
+          showLabels={range !== TrendRange.Month}
+          formatValue={(bar) => `${bar.value} min${bar.week ? ' in all' : ''}`}
+        />
+      )}
       {extras ? (
         <Text style={{ ...typography.small, marginTop: space.sm }}>
           {extras}

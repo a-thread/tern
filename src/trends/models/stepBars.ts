@@ -2,14 +2,18 @@ import { DayRecord } from '../../domain/activity/models/dayRecord';
 import { DayState } from '@shared/models/dayState';
 import { monthName, weekdayLetter } from '@shared/utils/date';
 import { TrendRanges, TrendRange } from './trendRange';
+import type { BarDays } from './barDate';
 
-/** `day` is set on daily bars only, not on weekly averages. */
-export type StepBar = {
+/** `day` is set on daily bars, `week` on weekly averages. */
+export type StepBar = BarDays & {
   label: string;
   value: number;
   state: DayState;
-  day?: string;
 };
+
+/** A tapped step bar's value: "8,410 steps", or "8,410 steps a day" for a week's average. */
+export const stepsValue = (bar: StepBar): string =>
+  `${bar.value.toLocaleString()} steps${bar.week ? ' a day' : ''}`;
 
 /**
  * Build step-chart bars: daily bars for a week or month, or weekly averages
@@ -46,6 +50,7 @@ export function bucketSteps(days: DayRecord[], range: TrendRange): StepBar[] {
     lastMonth = month;
     return {
       label,
+      week: { from: chunk[0].day, to: chunk[chunk.length - 1].day },
       value,
       state:
         withData.length === 0

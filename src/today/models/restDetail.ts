@@ -22,3 +22,25 @@ export function restReminderNote(on: RemindersOn): string | undefined {
     ? 'Reminders are quiet until tomorrow, except medication'
     : 'Reminders are quiet until tomorrow';
 }
+
+export type PastRestCopy = {
+  line: string;
+  note?: string;
+  /** The note ends in a link to the Rest days settings, where auto-detect is switched. */
+  linksToSettings?: boolean;
+};
+
+/**
+ * What a past rest day says. One set automatically (auto-detect: under the goal, within the
+ * week's allowance) says so, so it doesn't read as a rest day someone thinks they never took,
+ * and links to where that can be turned off. Neutral about the steps: "a lighter day", never
+ * "under your goal".
+ */
+export function pastRestCopy(chosen: boolean): PastRestCopy {
+  if (chosen) return { line: 'A day off. Your streak carried on.' };
+  return {
+    line: 'A lighter day became a rest day. Your streak carried on.',
+    note: 'Set automatically',
+    linksToSettings: true,
+  };
+}

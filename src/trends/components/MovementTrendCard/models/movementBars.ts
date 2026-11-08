@@ -1,13 +1,13 @@
 import { TrendRanges, TrendRange } from '@/trends/models/trendRange';
 import { addDays, monthName, weekdayLetter } from '@shared/utils/date';
 import { DayState } from '@shared/models/dayState';
+import type { BarDays } from '@/trends/models/barDate';
 
-/** `day` is set on daily bars only, not on weekly totals. */
-export type MovementBar = {
+/** `day` is set on daily bars, `week` on weekly totals. */
+export type MovementBar = BarDays & {
   label: string;
   value: number;
   state: DayState;
-  day?: string;
 };
 
 const daysEnding = (today: string, count: number) =>
@@ -62,6 +62,7 @@ export function bucketMinutes(
           : DayState.Partial;
     bars.push({
       label: month !== lastMonth ? month[0] : '',
+      week: { from: week[0], to: week[week.length - 1] },
       value: total,
       state,
     });

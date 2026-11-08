@@ -70,7 +70,7 @@ export function TipOverlay({
     fade.setValue(0);
     Animated.timing(fade, {
       toValue: 1,
-      duration: 220,
+      duration: 160,
       useNativeDriver: true,
     }).start();
   }, [lead, still, fade]);

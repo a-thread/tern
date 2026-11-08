@@ -17,9 +17,13 @@ describe('movement bars', () => {
     expect(bars[0].day).toBe('2026-10-02');
   });
 
-  it('leaves weekly bars undated', () => {
+  it('gives weekly bars the week they cover rather than a day', () => {
     const bars = bucketMinutes(byDay, 30, TrendRange.SixMonths, TODAY);
     expect(bars.every((b) => b.day === undefined)).toBe(true);
+    expect(bars[bars.length - 1].week).toEqual({
+      from: '2026-10-02',
+      to: TODAY,
+    });
   });
 
   it('marks a goal day only from minutes that count toward one', () => {

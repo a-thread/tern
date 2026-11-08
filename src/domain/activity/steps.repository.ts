@@ -37,17 +37,27 @@ export function mockStepsFor(day: string): number {
   return 8300 + (h % 3700); // goal
 }
 
-/** Local-mode steps: deterministic mock history, with today part-way through. */
+/**
+ * Local-mode steps: deterministic mock history, with today part-way through. With `days`, only
+ * the last that many days (today included) have steps; earlier ones have none, as on a phone
+ * with a short history.
+ */
 export function createMemoryStepsRepository(
   now: () => Date = () => new Date(),
+  days?: number,
 ): StepsRepository {
   return {
     status: async () => StepsStatus.Connected,
     connect: async () => StepsStatus.Connected,
     getRange: async (from, to) => {
       const today = dayKey(now());
+      const first = days ? addDays(today, -(days - 1)) : from;
       const out: Record<string, number> = {};
-      for (let d = from; d <= to && d <= today; d = addDays(d, 1)) {
+      for (
+        let d = from > first ? from : first;
+        d <= to && d <= today;
+        d = addDays(d, 1)
+      ) {
         out[d] = d === today ? 6842 : mockStepsFor(d);
       }
       return out;

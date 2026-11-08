@@ -6,3 +6,13 @@
  * Written out in full so Expo can inline it.
  */
 export const sampleSteps = () => process.env.EXPO_PUBLIC_SAMPLE_STEPS === '1';
+
+/**
+ * How many days of sample steps there are, ending today (`EXPO_PUBLIC_SAMPLE_STEP_DAYS`), to
+ * show the app with a short history, like a new install's. Every day when unset or not a
+ * positive whole number.
+ */
+export const sampleStepDays = (): number | undefined => {
+  const n = Number(process.env.EXPO_PUBLIC_SAMPLE_STEP_DAYS);
+  return Number.isInteger(n) && n > 0 ? n : undefined;
+};
