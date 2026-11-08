@@ -16,6 +16,11 @@ import {
   type ReminderConfig,
 } from './models/reminderPlan';
 import {
+  notificationData,
+  reminderTarget,
+  streakAlertTarget,
+} from './models/notificationTarget';
+import {
   planStreakAlerts,
   StreakAlerts,
   type StreakAlertInput,
@@ -109,7 +114,11 @@ export async function syncReminders(
       for (const d of rotated(r, now, quiet, days)) {
         await Notifications.scheduleNotificationAsync({
           identifier: d.id,
-          content: { title: d.title, body: d.body },
+          content: {
+            title: d.title,
+            body: d.body,
+            data: notificationData(reminderTarget(r)),
+          },
           trigger: {
             type: Notifications.SchedulableTriggerInputTypes.DATE,
             date: d.date,
@@ -125,7 +134,11 @@ export async function syncReminders(
       for (const t of restTriggers) {
         await Notifications.scheduleNotificationAsync({
           identifier: t.id,
-          content: { title: r.title, body: r.body },
+          content: {
+            title: r.title,
+            body: r.body,
+            data: notificationData(reminderTarget(r)),
+          },
           trigger:
             'date' in t
               ? {
@@ -146,7 +159,11 @@ export async function syncReminders(
     }
     await Notifications.scheduleNotificationAsync({
       identifier: r.id,
-      content: { title: r.title, body: r.body },
+      content: {
+        title: r.title,
+        body: r.body,
+        data: notificationData(reminderTarget(r)),
+      },
       trigger: r.weekday
         ? {
             type: Notifications.SchedulableTriggerInputTypes.WEEKLY,
@@ -184,7 +201,11 @@ export async function syncStreakAlerts(
   for (const a of plan) {
     await Notifications.scheduleNotificationAsync({
       identifier: a.id,
-      content: { title: a.title, body: a.body },
+      content: {
+        title: a.title,
+        body: a.body,
+        data: notificationData(streakAlertTarget(a.id)),
+      },
       trigger: {
         type: Notifications.SchedulableTriggerInputTypes.DATE,
         date: a.at,

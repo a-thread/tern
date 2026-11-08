@@ -38,6 +38,10 @@ export class Reminders {
   static readonly EVENING_MEALS_ID = 'tern-meals-evening';
   static readonly WEIGH_IN_ID = 'tern-weigh-in';
   static readonly MOOD_ID = 'tern-mood';
+  /** Water reminders are `tern-water-<n>`, one per time of day. */
+  static readonly WATER_ID_PREFIX = 'tern-water';
+  /** Medication reminders are `tern-med-<id>`, one per medication. */
+  static readonly MEDICATION_ID_PREFIX = 'tern-med';
 
   /** Fixed ids; medication reminders use `tern-med-<id>`. */
   static readonly ALL_IDS = [
@@ -161,7 +165,7 @@ export function rotationDays(
 }
 
 export const medicationReminderId = (medicationId: string) =>
-  `tern-med-${medicationId}`;
+  `${Reminders.MEDICATION_ID_PREFIX}-${medicationId}`;
 
 const at = (minutes: number) => ({
   hour: Math.floor(minutes / 60),
@@ -228,7 +232,8 @@ export function remindersOn(
   };
 }
 
-export const waterReminderId = (index: number) => `tern-water-${index}`;
+export const waterReminderId = (index: number) =>
+  `${Reminders.WATER_ID_PREFIX}-${index}`;
 
 /** Water reminder times in minutes, from start through end. */
 export function waterTimes(w: ReminderConfig['water']): number[] {

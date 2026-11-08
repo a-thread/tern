@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, screen } from '@testing-library/react-native';
+import { render, screen, waitFor } from '@testing-library/react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import type { NavigationState } from '@react-navigation/native';
 
@@ -16,7 +16,14 @@ import { AppNavigationContainer } from './AppNavigationContainer';
 import RootNavigator from './RootNavigator';
 import { rememberNavigation } from './navigationMemory';
 import * as Notifications from 'expo-notifications';
-import { Reminders } from '../domain/settings/models/reminderPlan';
+import {
+  Reminders,
+  waterReminderId,
+} from '../domain/settings/models/reminderPlan';
+import {
+  notificationData,
+  NotificationTarget,
+} from '../domain/settings/models/notificationTarget';
 
 jest.mock('../domain/settings/reminders', () => ({
   SyncResult: { Ok: 'ok', Denied: 'denied' },
@@ -73,6 +80,7 @@ function openApp(backend: Backend) {
 
 afterEach(() => {
   rememberNavigation(undefined);
+  jest.mocked(Notifications.clearLastNotificationResponse).mockClear();
   jest.mocked(Notifications.useLastNotificationResponse).mockReturnValue(null);
 });
 
@@ -112,5 +120,50 @@ describe('AppNavigationContainer', () => {
     jest.mocked(Notifications.useLastNotificationResponse).mockReturnValue(tap);
     openApp(backend);
     expect(await screen.findByText('Add to lunch')).toBeTruthy();
+  });
+
+  /** A tap on a notification with this id and data. */
+  const tapOn = (identifier: string, data?: object) =>
+    ({
+      actionIdentifier: Notifications.DEFAULT_ACTION_IDENTIFIER,
+      notification: { request: { identifier, content: { data } } },
+    }) as unknown as Notifications.NotificationResponse;
+
+  it('goes where the notification data says, whatever its id', async () => {
+    const backend = createMemoryBackend();
+    await backend.settings.save({
+      ...initialSettings,
+      onboarding: Onboarding.DONE,
+    });
+    jest
+      .mocked(Notifications.useLastNotificationResponse)
+      .mockReturnValue(
+        tapOn(
+          'renamed-reminder',
+          notificationData(NotificationTarget.LogDinner),
+        ),
+      );
+    openApp(backend);
+    expect(await screen.findByText('Add to dinner')).toBeTruthy();
+  });
+
+  it('leaves a screen that was open in place, rather than closing it', async () => {
+    const backend = createMemoryBackend();
+    await backend.settings.save({
+      ...initialSettings,
+      onboarding: Onboarding.DONE,
+    });
+    // Settings › Data open; a water reminder (Today) is tapped.
+    rememberNavigation(inSettings);
+    jest
+      .mocked(Notifications.useLastNotificationResponse)
+      .mockReturnValue(tapOn(waterReminderId(0)));
+    openApp(backend);
+    expect(await screen.findByText('Your data')).toBeTruthy();
+    // Once the tap is handled, Settings is still open.
+    await waitFor(() =>
+      expect(Notifications.clearLastNotificationResponse).toHaveBeenCalled(),
+    );
+    expect(screen.getByText('Your data')).toBeTruthy();
   });
 });

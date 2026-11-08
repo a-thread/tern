@@ -81,15 +81,17 @@ export function leftToDo(
   } else if (missing.length > 0) {
     // Always the first meal still open, by name, so the row says where it goes. (Going by the
     // clock opened lunch for someone who hadn't logged breakfast yet.)
-    const logged = Meals.CORE.length - missing.length;
+    // A meal marked "nothing today" counts towards the total, but until one is actually
+    // logged the row says so, rather than "1 of 3 meals logged" with nothing logged.
+    const covered = Meals.CORE.length - missing.length;
+    const anyLogged = Meals.CORE.some((m) => foodLog.some((f) => f.meal === m));
     items.push({
       kind: 'meal',
       meal: missing[0],
       title: `Log ${missing[0]}`,
-      sub:
-        logged === 0 && skipped.length === 0
-          ? 'No meals logged yet'
-          : `${logged} of ${Meals.CORE.length} meals logged`,
+      sub: anyLogged
+        ? `${covered} of ${Meals.CORE.length} meals logged`
+        : 'No meals logged yet',
     });
   }
 

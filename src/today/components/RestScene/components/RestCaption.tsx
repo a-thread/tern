@@ -95,8 +95,9 @@ const styles = StyleSheet.create({
     borderTopWidth: StyleSheet.hairlineWidth,
     borderColor: colors.border,
   },
-  // A status line, not part of the day's story: the body face, not the display serif.
-  noteText: { ...typography.meta, color: colors.ink3 },
+  // A status line, not part of the day's story: the body face, not the display serif. It may
+  // shrink, so a long note wraps within the row rather than running past the card.
+  noteText: { ...typography.meta, color: colors.ink3, flexShrink: 1 },
   linkText: {
     ...typography.meta,
     fontFamily: font.semibold,

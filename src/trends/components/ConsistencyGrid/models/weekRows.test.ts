@@ -1,10 +1,9 @@
 import { addDays } from '@shared/utils/date';
 import {
   byWeekday,
-  calendarRows,
-  gridLayout,
+  GridLabels,
   GridLayout,
-  WEEKDAY_LETTERS,
+  gridShape,
   weekRows,
 } from './weekRows';
 
@@ -41,14 +40,6 @@ describe('weekRows', () => {
   });
 });
 
-describe('gridLayout', () => {
-  it('is a calendar for a week or a month, and a strip for six months', () => {
-    expect(gridLayout(2)).toBe(GridLayout.Calendar);
-    expect(gridLayout(6)).toBe(GridLayout.Calendar);
-    expect(gridLayout(27)).toBe(GridLayout.Strip);
-  });
-});
-
 describe('byWeekday', () => {
   it('turns the weeks into a row per weekday', () => {
     const rows = byWeekday(weekRows(run('2026-11-02', 9)));
@@ -58,25 +49,37 @@ describe('byWeekday', () => {
   });
 });
 
-describe('calendarRows', () => {
+describe('gridShape', () => {
   it('lays seven days up to today out as one row in day order, headed by their own letters', () => {
     // Sunday Nov 1 to Saturday Nov 7: a Monday-first calendar would put Sunday on a row alone.
-    expect(calendarRows(run('2026-11-01', 7))).toEqual({
+    expect(gridShape(run('2026-11-01', 7))).toEqual({
+      layout: GridLayout.Calendar,
       letters: ['S', 'M', 'T', 'W', 'T', 'F', 'S'],
       rows: [[0, 1, 2, 3, 4, 5, 6]],
     });
   });
 
   it('keeps seven columns when there are fewer days', () => {
-    expect(calendarRows(run('2026-11-05', 3))).toEqual({
+    expect(gridShape(run('2026-11-05', 3))).toEqual({
+      layout: GridLayout.Calendar,
       letters: ['T', 'F', 'S', '', '', '', ''],
       rows: [[0, 1, 2, null, null, null, null]],
     });
   });
 
-  it('sets out a month in weeks from Monday', () => {
-    const { letters, rows } = calendarRows(run('2026-10-09', 30));
-    expect(letters).toEqual(WEEKDAY_LETTERS);
-    expect(rows).toEqual(weekRows(run('2026-10-09', 30)));
+  it('sets out a month as a calendar in weeks from Monday', () => {
+    expect(gridShape(run('2026-10-09', 30))).toEqual({
+      layout: GridLayout.Calendar,
+      letters: GridLabels.WEEKDAY_LETTERS,
+      rows: weekRows(run('2026-10-09', 30)),
+    });
+  });
+
+  it('turns six months on its side: a row per weekday, a column per week', () => {
+    const days = run('2026-05-12', 180);
+    const shape = gridShape(days);
+    expect(shape.layout).toBe(GridLayout.Strip);
+    expect(shape.letters).toEqual(GridLabels.WEEKDAY_LETTERS);
+    expect(shape.rows).toEqual(byWeekday(weekRows(days)));
   });
 });

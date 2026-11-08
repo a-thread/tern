@@ -55,14 +55,14 @@ describe('leftToDo', () => {
     });
   });
 
-  it('moves past a meal marked nothing today', () => {
+  it('moves past a meal marked nothing today, still saying none is logged', () => {
     const [meal] = leftToDo([], undefined, now, {
       skippedMeals: [Meal.Breakfast],
     });
     expect(meal).toMatchObject({
       meal: Meal.Lunch,
       title: 'Log lunch',
-      sub: '1 of 3 meals logged',
+      sub: 'No meals logged yet',
     });
   });
 

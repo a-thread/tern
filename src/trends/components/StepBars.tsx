@@ -5,7 +5,7 @@ import { ChartTip } from '@shared/components/ChartTip/ChartTip';
 import { useChartSelection } from '@shared/hooks/useChartSelection';
 import { LegendDot } from './LegendDot';
 import { DayStateLegend } from './DayStateLegend/DayStateLegend';
-import { DAY_STATE_STYLE } from '../utils/dayStateStyle';
+import { DayStateLook } from '../utils/dayStateStyle';
 import { DayState } from '@shared/models/dayState';
 import { barDate, type DaySpan } from '../models/barDate';
 import { useDayNotes } from '@/domain/day-notes/DayNotesContext';
@@ -80,7 +80,7 @@ export function StepBars({
             <View
               style={[
                 cs.bar,
-                DAY_STATE_STYLE[d.state],
+                DayStateLook.STYLE[d.state],
                 { height: `${h}%` },
                 selected !== null && selected !== i ? cs.dimmed : null,
               ]}

@@ -13,7 +13,7 @@ import {
 } from '../models/restDetail';
 import { useSettings } from '@/domain/settings/SettingsContext';
 import { remindersOn } from '@/domain/settings/models/reminderPlan';
-import { useRootNavigation } from '@/navigation/useAppNavigation';
+import { useRootNavigation } from '../../navigation/useAppNavigation';
 
 /**
  * The rest scene in place of the sky card, with its copy for the viewed day. Today it promises

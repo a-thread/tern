@@ -41,32 +41,47 @@ export function weekRows(days: readonly { day: string }[]): WeekRow[] {
   return rows;
 }
 
-export const gridLayout = (weeks: number): GridLayout =>
-  weeks > GridLimits.CALENDAR_MAX_WEEKS
-    ? GridLayout.Strip
-    : GridLayout.Calendar;
-
 /** Rows turned into columns: a row per weekday, a slot per week. */
 export const byWeekday = (rows: readonly WeekRow[]): WeekRow[] =>
   Array.from({ length: 7 }, (_, wd) => rows.map((r) => r[wd]));
 
-/** Monday first, as Today's week strip. */
-export const WEEKDAY_LETTERS = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
-
-/** The calendar's column letters and its rows of day indexes. */
-export type CalendarRows = { letters: string[]; rows: WeekRow[] };
+export class GridLabels {
+  /** Monday first, as Today's week strip. */
+  static readonly WEEKDAY_LETTERS: readonly string[] = [
+    'M',
+    'T',
+    'W',
+    'T',
+    'F',
+    'S',
+    'S',
+  ];
+}
 
 /**
- * The calendar for `days`. A week or less is one row in the order the days came, headed by
- * their own weekday letters, the way the bar chart above lays them out: seven days up to today
- * would otherwise split across two Monday-to-Sunday rows, a lone Sunday above the rest. Longer
- * ranges are set out in weeks from Monday (`weekRows`).
+ * The grid's shape for `days`, decided in one place. `letters` head the calendar's columns, or
+ * label the strip's rows; each of `rows` is a row of day indexes (null where there's no day).
  */
-export function calendarRows(days: readonly { day: string }[]): CalendarRows {
+export type GridShape = {
+  layout: GridLayout;
+  letters: readonly string[];
+  rows: WeekRow[];
+};
+
+/**
+ * How the grid sets out `days` (consecutive, oldest first):
+ * - a week or less: one calendar row in the order the days came, headed by their own weekday
+ *   letters, as the bar chart above lays them out (seven days up to today would otherwise split
+ *   across two Monday-to-Sunday rows, a lone Sunday above the rest); fewer than seven keep the
+ *   same seven columns, empty at the end;
+ * - up to `GridLimits.CALENDAR_MAX_WEEKS` weeks: a calendar, a row per week from Monday;
+ * - longer (six months): a strip on its side, a row per weekday and a column per week.
+ */
+export function gridShape(days: readonly { day: string }[]): GridShape {
   if (days.length <= 7) {
-    // Fewer than seven (a new install) keep the same seven columns, empty at the end.
     const pad = 7 - days.length;
     return {
+      layout: GridLayout.Calendar,
       letters: [
         ...days.map((d) => weekdayLetter(d.day)),
         ...Array(pad).fill(''),
@@ -76,5 +91,16 @@ export function calendarRows(days: readonly { day: string }[]): CalendarRows {
         : [],
     };
   }
-  return { letters: WEEKDAY_LETTERS, rows: weekRows(days) };
+  const weeks = weekRows(days);
+  return weeks.length > GridLimits.CALENDAR_MAX_WEEKS
+    ? {
+        layout: GridLayout.Strip,
+        letters: GridLabels.WEEKDAY_LETTERS,
+        rows: byWeekday(weeks),
+      }
+    : {
+        layout: GridLayout.Calendar,
+        letters: GridLabels.WEEKDAY_LETTERS,
+        rows: weeks,
+      };
 }

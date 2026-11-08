@@ -5,16 +5,8 @@ import { DayState } from '@shared/models/dayState';
 import { useChartSelection } from '@shared/hooks/useChartSelection';
 import { formatShortDate } from '@shared/utils/date';
 import { ChartTip } from '@shared/components/ChartTip/ChartTip';
-import { DAY_STATE_STYLE } from '../../utils/dayStateStyle';
-import {
-  byWeekday,
-  calendarRows,
-  GridLayout,
-  gridLayout,
-  weekRows,
-  WEEKDAY_LETTERS,
-  type WeekRow,
-} from './models/weekRows';
+import { DayStateLook } from '../../utils/dayStateStyle';
+import { GridLayout, gridShape, type WeekRow } from './models/weekRows';
 
 /* ------------------------------------------------------------------ */
 /* Consistency grid — the range at a glance, by weekday                 */
@@ -34,21 +26,19 @@ type Day = { day: string; state: DayState };
 /**
  * A cell per day, lined up by weekday so a pattern across the week shows (quieter weekends,
  * say). A month is a small calendar, a row per week from Monday, and a week is one row in day
- * order; six months turns on its side, a column per week. Tapping a square names its date and how it went in a label over
- * it, as tapping a bar does in the charts; tap it again to clear.
+ * order; six months turns on its side, a column per week (`gridShape`). Tapping a square
+ * names its date and how it went in a label over it, as tapping a bar does in the charts; tap
+ * it again to clear.
  */
 export function ConsistencyGrid({ days }: { days: readonly Day[] }) {
   const { selected, toggle } = useChartSelection(days.map((d) => d.day));
   const describe = (d: Day) =>
     `${formatShortDate(d.day)} · ${STATE_WORD[d.state]}`;
-  const weeks = weekRows(days);
-  const layout = gridLayout(weeks.length);
+  const { layout, letters, rows } = gridShape(days);
   const calendar = layout === GridLayout.Calendar;
-  const { letters, rows } = calendarRows(days);
-  const matrix = calendar ? rows : byWeekday(weeks);
   // Where the tapped day sits, so its label can hang over it.
   const pickedRow =
-    selected === null ? -1 : matrix.findIndex((r) => r.includes(selected));
+    selected === null ? -1 : rows.findIndex((r) => r.includes(selected));
 
   const cell = (slot: number | null, key: number) => {
     const shape = [cs.cell, calendar ? cs.calendarCell : cs.stripCell];
@@ -65,7 +55,7 @@ export function ConsistencyGrid({ days }: { days: readonly Day[] }) {
         accessibilityState={{ selected: selected === slot }}
         style={[
           shape,
-          DAY_STATE_STYLE[d.state],
+          DayStateLook.STYLE[d.state],
           selected === slot ? cs.picked : null,
         ]}
       />
@@ -111,11 +101,11 @@ export function ConsistencyGrid({ days }: { days: readonly Day[] }) {
               </Text>
             ))}
           </View>
-          {matrix.map((w, i) => row(w, i))}
+          {rows.map((w, i) => row(w, i))}
         </View>
       ) : (
         <View style={[cs.strip, cs.stripGap]}>
-          {matrix.map((r, i) => row(r, i, WEEKDAY_LETTERS[i]))}
+          {rows.map((r, i) => row(r, i, letters[i]))}
         </View>
       )}
     </>

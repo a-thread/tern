@@ -15,5 +15,5 @@ jest.mock('expo-notifications', () => ({
   __esModule: true,
   ...jest.requireActual('expo-notifications'),
   useLastNotificationResponse: jest.fn(() => null),
-  clearLastNotificationResponse: () => {},
+  clearLastNotificationResponse: jest.fn(),
 }));
