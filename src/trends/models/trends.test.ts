@@ -6,43 +6,77 @@ import { DayRecord } from '../../domain/activity/models/dayRecord';
 import { DayState } from '@shared/models/dayState';
 
 describe('longestConsecutiveStreak', () => {
+  const day = (
+    state: DayState,
+    extra: { reachedGoal?: boolean; isToday?: boolean } = {},
+  ) => ({
+    state,
+    reachedGoal: extra.reachedGoal ?? state === DayState.Goal,
+    isToday: extra.isToday ?? false,
+  });
+  const run = (...states: DayState[]) => states.map((s) => day(s));
+
   it('returns 0 for an empty array', () => {
     expect(longestConsecutiveStreak([])).toBe(0);
   });
 
   it('counts a streak of goal days', () => {
-    const days: DayState[] = [DayState.Goal, DayState.Goal, DayState.Goal];
-    expect(longestConsecutiveStreak(days)).toBe(3);
+    expect(
+      longestConsecutiveStreak(
+        run(DayState.Goal, DayState.Goal, DayState.Goal),
+      ),
+    ).toBe(3);
   });
 
-  it('treats rest days as protecting the streak, not breaking it', () => {
-    const days: DayState[] = [
+  it('holds the streak over a rest day without adding it, as Today does', () => {
+    const days = run(
       DayState.Goal,
       DayState.Rest,
       DayState.Goal,
       DayState.Goal,
-    ];
-    expect(longestConsecutiveStreak(days)).toBe(4);
+    );
+    expect(longestConsecutiveStreak(days)).toBe(3);
   });
 
-  it('breaks the streak on a partial or missed day', () => {
-    const days: DayState[] = [
-      DayState.Goal,
-      DayState.Goal,
-      DayState.Partial,
-      DayState.Goal,
-      DayState.Goal,
-      DayState.Goal,
+  it('holds the streak over a frozen day without adding it', () => {
+    const days = run(DayState.Goal, DayState.Frozen, DayState.Goal);
+    expect(longestConsecutiveStreak(days)).toBe(2);
+  });
+
+  it('adds a rest day on which the goal was reached anyway', () => {
+    const days = [
+      day(DayState.Goal),
+      day(DayState.Rest, { reachedGoal: true }),
+      day(DayState.Goal),
     ];
     expect(longestConsecutiveStreak(days)).toBe(3);
   });
 
-  it('resets on none (missed) days', () => {
-    const days: DayState[] = [
-      DayState.Goal,
-      DayState.Goal,
-      DayState.None,
-      DayState.Goal,
+  it('breaks the streak on a partial or missed day', () => {
+    expect(
+      longestConsecutiveStreak(
+        run(
+          DayState.Goal,
+          DayState.Goal,
+          DayState.Partial,
+          DayState.Goal,
+          DayState.Goal,
+          DayState.Goal,
+        ),
+      ),
+    ).toBe(3);
+    expect(
+      longestConsecutiveStreak(
+        run(DayState.Goal, DayState.Goal, DayState.None, DayState.Goal),
+      ),
+    ).toBe(2);
+  });
+
+  it('does not let today, still in progress, break it', () => {
+    const days = [
+      day(DayState.Goal),
+      day(DayState.Goal),
+      day(DayState.Partial, { isToday: true }),
     ];
     expect(longestConsecutiveStreak(days)).toBe(2);
   });

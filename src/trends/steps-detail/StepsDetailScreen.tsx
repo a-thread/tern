@@ -26,6 +26,7 @@ import {
 } from '../models/stepsSummary';
 import type { TrendsStackParamList } from '../navigation';
 import { noStepsNote } from '../models/noStepsNote';
+import { dayHighlights } from './models/dayHighlights';
 import { DayState } from '@shared/models/dayState';
 
 type Props = NativeStackScreenProps<TrendsStackParamList, 'StepsDetail'>;
@@ -44,25 +45,12 @@ export default function StepsDetailScreen({ navigation }: Props) {
   const restDays = inRange.filter(
     (d) => d.state === DayState.Rest && !d.reachedGoal,
   ).length;
-  const streak = longestConsecutiveStreak(inRange.map((d) => d.state));
+  const streak = longestConsecutiveStreak(inRange);
 
   const last7 = days.slice(-7);
   const bars = bucketSteps(days, range);
-  const withSteps = last7.filter((d) => d.steps > 0);
-  const best = withSteps.reduce<(typeof last7)[number] | null>(
-    (a, d) => (!a || d.steps > a.steps ? d : a),
-    null,
-  );
-  const quietest = withSteps.reduce<(typeof last7)[number] | null>(
-    (a, d) => (!a || d.steps < a.steps ? d : a),
-    null,
-  );
-  const rangeLabel =
-    range === TrendRange.Week
-      ? 'this week'
-      : range === TrendRange.Month
-        ? 'this month'
-        : 'over 6 months';
+  const { strongest: best, quietest } = dayHighlights(last7);
+  const rangeLabel = TrendRanges.LABEL[range];
 
   return (
     <View
@@ -132,18 +120,21 @@ export default function StepsDetailScreen({ navigation }: Props) {
           </View>
         </Card>
 
-        {best && quietest ? (
+        {best ? (
           <>
-            <GroupLabel>This week</GroupLabel>
+            {/* The seven days up to today, not Monday to Sunday like Today's week strip. */}
+            <GroupLabel>Last 7 days</GroupLabel>
             <Card style={{ padding: 0 }}>
               <Row
                 title={weekdayName(best.day)}
                 sub={`${best.steps.toLocaleString()} steps — your strongest day`}
               />
-              <Row
-                title={weekdayName(quietest.day)}
-                sub={`${quietest.steps.toLocaleString()} steps — your quietest`}
-              />
+              {quietest ? (
+                <Row
+                  title={weekdayName(quietest.day)}
+                  sub={`${quietest.steps.toLocaleString()} steps — your quietest`}
+                />
+              ) : null}
             </Card>
           </>
         ) : null}

@@ -1,19 +1,28 @@
 import { DayState } from '@shared/models/dayState';
-import { type DayRecord } from '../../domain/activity/models/dayRecord';
+import {
+  addsToStreak,
+  type DayRecord,
+} from '../../domain/activity/models/dayRecord';
 
-/** Longest streak of consecutive goal, rest or frozen days; partial and none reset it. */
-export function longestConsecutiveStreak(days: DayState[]): number {
+/**
+ * The longest streak in `days`, counted the way Today counts the streak (`computeStreak`): a
+ * goal day adds one (a rest day walked to the goal too), a rest or frozen day holds it without
+ * adding, today doesn't break it while it's in progress, and a partial or missed day ends it.
+ */
+export function longestConsecutiveStreak(
+  days: readonly Pick<DayRecord, 'state' | 'reachedGoal' | 'isToday'>[],
+): number {
   let longest = 0;
   let current = 0;
-  for (const day of days) {
-    if (
-      day === DayState.Goal ||
-      day === DayState.Rest ||
-      day === DayState.Frozen
-    ) {
+  for (const d of days) {
+    if (addsToStreak(d)) {
       current += 1;
       longest = Math.max(longest, current);
-    } else {
+    } else if (
+      d.state !== DayState.Rest &&
+      d.state !== DayState.Frozen &&
+      !d.isToday
+    ) {
       current = 0;
     }
   }

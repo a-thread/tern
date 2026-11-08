@@ -13,7 +13,7 @@ import { useActivity } from '../../domain/activity/ActivityContext';
 export function ConsistencyCard({ range }: { range: TrendRange }) {
   const { days } = useActivity();
   const inRange = days.slice(-TrendRanges.DAYS[range]);
-  const streak = longestConsecutiveStreak(inRange.map((d) => d.state));
+  const streak = longestConsecutiveStreak(inRange);
 
   return (
     <>
@@ -31,7 +31,7 @@ export function ConsistencyCard({ range }: { range: TrendRange }) {
         <Insight
           icon={<Icon name='trending-up' size={15} color={colors.aurora} />}
         >
-          {`Your longest streak in this period is ${streak} days, rest days included.`}
+          {`Your longest streak in this period is ${streak} days.`}
         </Insight>
       ) : null}
     </>
