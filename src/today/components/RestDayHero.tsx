@@ -13,6 +13,7 @@ import {
 } from '../models/restDetail';
 import { useSettings } from '@/domain/settings/SettingsContext';
 import { remindersOn } from '@/domain/settings/models/reminderPlan';
+import { useRootNavigation } from '@/navigation/useAppNavigation';
 
 /**
  * The rest scene in place of the sky card, with its copy for the viewed day. Today it promises
@@ -28,6 +29,7 @@ export function RestDayHero({
   const { isToday } = useViewedDay();
   const { todaySteps, streak, stepsReadable } = useActivity();
   const { settings } = useSettings();
+  const navigation = useRootNavigation();
   // A day outside this week has no record here; it reads as taken, as before.
   const past = pastRestCopy(rest.record?.chosenRest ?? true);
 
@@ -60,6 +62,15 @@ export function RestDayHero({
               }),
             )
           : past.note
+      }
+      noteLink={
+        !isToday && past.linksToSettings
+          ? {
+              label: 'Rest day settings',
+              onPress: () =>
+                navigation.navigate('Settings', { screen: 'RestDays' }),
+            }
+          : undefined
       }
     />
   );

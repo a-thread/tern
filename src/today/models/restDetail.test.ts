@@ -51,9 +51,11 @@ describe('pastRestCopy', () => {
     });
   });
 
-  it('says a rest day Tern counted on its own was under the goal, and where auto-detect lives', () => {
-    const copy = pastRestCopy(false);
-    expect(copy.line).toMatch(/^Under your goal, so Tern counted it/);
-    expect(copy.note).toMatch(/Settings › Rest days/);
+  it('says a rest day set automatically was, without dwelling on the goal, and links to settings', () => {
+    expect(pastRestCopy(false)).toEqual({
+      line: 'A lighter day became a rest day. Your streak carried on.',
+      note: 'Set automatically',
+      linksToSettings: true,
+    });
   });
 });

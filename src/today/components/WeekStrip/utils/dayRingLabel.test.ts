@@ -45,7 +45,7 @@ describe('dayRingLabel', () => {
     ).toMatch(/rest day, goal reached$/);
     expect(
       dayRingLabel({ ...base, state: DayState.Rest, chosenRest: false }, 30),
-    ).toMatch(/under the goal, counted as a rest day$/);
+    ).toMatch(/rest day, set automatically$/);
     expect(dayRingLabel({ ...base, state: DayState.Frozen }, 30)).toMatch(
       /streak freeze$/,
     );

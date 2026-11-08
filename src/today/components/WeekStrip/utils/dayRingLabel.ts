@@ -45,10 +45,8 @@ function dayStatus(
     case DayState.Rest:
       // A rest day stays one even if the goal is reached; say so, since the ring can't.
       if (d.reachedGoal) return 'rest day, goal reached';
-      // One Tern counted on its own (auto-detect) says so: it wasn't taken.
-      return d.chosenRest
-        ? 'rest day'
-        : 'under the goal, counted as a rest day';
+      // One set by auto-detect says so: it wasn't taken.
+      return d.chosenRest ? 'rest day' : 'rest day, set automatically';
     case DayState.Frozen:
       return 'covered by a streak freeze';
     case DayState.Goal:
