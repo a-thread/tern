@@ -4,7 +4,7 @@ import { Text } from 'react-native';
 import { colors, typography } from '@shared/theme';
 import { Card, GroupLabel, Icon } from '@shared/components/ui';
 import { TrendRanges, TrendRange } from '../models/trendRange';
-import { ConsistencyGrid } from './ConsistencyGrid';
+import { ConsistencyGrid } from './ConsistencyGrid/ConsistencyGrid';
 import { Insight } from './Insight';
 import { longestConsecutiveStreak } from '../models/stepsSummary';
 import { useActivity } from '../../domain/activity/ActivityContext';

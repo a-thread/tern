@@ -13,9 +13,9 @@ import {
   PushHeader,
   SegmentedControl,
 } from '@shared/components/ui';
-import { LegendDot } from '../components/LegendDot';
+import { DayStateLegend } from '../components/DayStateLegend/DayStateLegend';
 import { StepBars } from '../components/StepBars';
-import { ConsistencyGrid } from '../components/ConsistencyGrid';
+import { ConsistencyGrid } from '../components/ConsistencyGrid/ConsistencyGrid';
 import { useActivity } from '../../domain/activity/ActivityContext';
 import { weekdayName } from '@shared/utils/date';
 import { useSettings } from '../../domain/settings/SettingsContext';
@@ -109,15 +109,10 @@ export default function StepsDetailScreen({ navigation }: Props) {
               : `Last ${TrendRanges.DAYS[range]} days`}
           </Text>
           <ConsistencyGrid days={inRange} />
-          <View style={s.legend}>
-            <LegendDot color={colors.glacier} label='goal' />
-            <LegendDot color={colors.glacierTint} label='partial' />
-            <LegendDot
-              color={colors.driftwoodTint}
-              border={colors.driftwood}
-              label='rest'
-            />
-          </View>
+          <DayStateLegend
+            frozen={inRange.some((d) => d.state === DayState.Frozen)}
+            style={s.legend}
+          />
         </Card>
 
         {best ? (

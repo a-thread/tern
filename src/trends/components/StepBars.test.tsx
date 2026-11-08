@@ -93,3 +93,56 @@ describe('StepBars taps', () => {
     await waitFor(() => expect(ui.queryAllByRole('button')).toHaveLength(0));
   });
 });
+
+describe('StepBars legend and labels', () => {
+  async function chart(props: Partial<React.ComponentProps<typeof StepBars>>) {
+    const settings = createMemorySettingsRepository();
+    await settings.save({ ...initialSettings, trackNotes: false });
+    return render(
+      <ToastProvider>
+        <SettingsProvider repo={settings}>
+          <ViewedDayProvider>
+            <DayNotesProvider repo={createMemoryDayNotesRepository()}>
+              <StepBars days={[]} {...props} />
+            </DayNotesProvider>
+          </ViewedDayProvider>
+        </SettingsProvider>
+      </ToastProvider>,
+    );
+  }
+  const days = [bar('2026-10-09'), bar('2026-10-10'), bar('2026-11-07')];
+
+  it('names the goal line in the legend, even with the day key hidden', async () => {
+    const ui = await chart({ days, goal: 8000, showLegend: false });
+    await waitFor(() => expect(ui.getByText('goal')).toBeTruthy());
+    expect(ui.queryByText('goal met')).toBeNull();
+  });
+
+  it('keys goal met, partial and rest, and a freeze only when one shows', async () => {
+    const ui = await chart({ days });
+    await waitFor(() => expect(ui.getByText('goal met')).toBeTruthy());
+    expect(ui.getByText('partial')).toBeTruthy();
+    expect(ui.getByText('rest')).toBeTruthy();
+    expect(ui.queryByText('freeze')).toBeNull();
+
+    const frozen = await chart({
+      days: [...days, { ...bar('2026-11-08'), state: DayState.Frozen }],
+    });
+    await waitFor(() => expect(frozen.getByText('freeze')).toBeTruthy());
+  });
+
+  it('shows the first and last dates when there is no label under each bar', async () => {
+    const ui = await chart({ days, showLabels: false });
+    await waitFor(() => expect(ui.getByText('Oct 9')).toBeTruthy());
+    expect(ui.getByText('Nov 7')).toBeTruthy();
+  });
+
+  it('fades the other bars while one is picked', async () => {
+    const ui = await chart({ days });
+    const faded = () =>
+      (JSON.stringify(ui.toJSON()).match(/"opacity":0.4/g) ?? []).length;
+    expect(faded()).toBe(0);
+    fireEvent.press(await ui.findByLabelText('Oct 10'));
+    expect(faded()).toBe(days.length - 1);
+  });
+});
