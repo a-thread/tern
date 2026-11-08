@@ -1,8 +1,11 @@
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet, Pressable } from 'react-native';
 import { colors, space, typography } from '@shared/theme';
 import { DayState } from '@shared/models/dayState';
+import { ChartTip } from '@shared/components/ChartTip/ChartTip';
+import { useChartSelection } from '@shared/hooks/useChartSelection';
 import { LegendDot } from './LegendDot';
+import { barDate, type DaySpan } from '../models/barDate';
 import { useDayNotes } from '@/domain/day-notes/DayNotesContext';
 
 /* ------------------------------------------------------------------ */
@@ -15,14 +18,18 @@ export type DayBar = {
   state: DayState;
   /** Daily bars only: the day, so a day with a note gets a dot under its bar. */
   day?: string;
+  /** Weekly bars only: the days the bar covers. */
+  week?: DaySpan;
 };
 
+/** Tapping a bar names its date (and value, given `formatValue`) over the chart; tap it again to clear. */
 export function StepBars({
   days,
   height = 76,
   goal,
   showLegend = true,
   showLabels = true,
+  formatValue,
 }: {
   days: DayBar[];
   height?: number;
@@ -30,8 +37,14 @@ export function StepBars({
   goal?: number;
   showLegend?: boolean;
   showLabels?: boolean;
+  /** What a tapped bar's value reads as ("8,410 steps"). */
+  formatValue?: (bar: DayBar) => string;
 }) {
   const { noted } = useDayNotes();
+  const dates = days.map((d) => barDate(d) ?? '');
+  const { selected, toggle } = useChartSelection(dates);
+  const describe = (d: DayBar, i: number) =>
+    formatValue ? `${dates[i]} · ${formatValue(d)}` : dates[i];
   const isNoted = (d: DayBar) => d.day !== undefined && noted.has(d.day);
   const anyNoted = days.some(isNoted);
   const max = Math.max(...days.map((d) => d.value), goal ?? 0, 1);
@@ -68,12 +81,41 @@ export function StepBars({
                         borderColor: colors.glacierDeep,
                       }
                     : { backgroundColor: colors.progressTrack };
-          return (
+          const bar = (
+            <View
+              style={[
+                cs.bar,
+                style,
+                { height: `${h}%` },
+                selected !== null && selected !== i ? cs.dimmed : null,
+              ]}
+            />
+          );
+          return dates[i] ? (
+            <Pressable
+              key={i}
+              style={cs.barCol}
+              onPress={() => toggle(i)}
+              // Month bars are thin: reach above and below them, not into the next bar.
+              hitSlop={{ top: space.sm, bottom: space.sm }}
+              accessibilityRole='button'
+              accessibilityLabel={describe(d, i)}
+              accessibilityState={{ selected: selected === i }}
+            >
+              {bar}
+            </Pressable>
+          ) : (
             <View key={i} style={cs.barCol}>
-              <View style={[cs.bar, style, { height: `${h}%` }]} />
+              {bar}
             </View>
           );
         })}
+        {selected !== null ? (
+          <ChartTip
+            text={describe(days[selected], selected)}
+            at={(selected + 0.5) / days.length}
+          />
+        ) : null}
         {/* After the bars, so the label sits on top of them; the line stays behind. */}
         {goalPct !== null ? (
           <View style={[cs.goalTagAnchor, { bottom: `${goalPct}%` }]}>
@@ -159,6 +201,8 @@ const cs = StyleSheet.create({
     height: '100%',
   },
   bar: { width: '100%', borderTopLeftRadius: 3, borderTopRightRadius: 3 },
+  // The other bars step back while one is picked, so it's clear which one the label names.
+  dimmed: { opacity: 0.4 },
   noteRow: { flexDirection: 'row', marginTop: 3, height: 5 },
   noteCol: { flex: 1, alignItems: 'center' },
   noteDot: {

@@ -19,7 +19,7 @@ import { ConsistencyGrid } from '../components/ConsistencyGrid';
 import { useActivity } from '../../domain/activity/ActivityContext';
 import { weekdayName } from '@shared/utils/date';
 import { useSettings } from '../../domain/settings/SettingsContext';
-import { bucketSteps } from '../models/stepBars';
+import { bucketSteps, stepsValue } from '../models/stepBars';
 import {
   longestConsecutiveStreak,
   summarizeSteps,
@@ -98,6 +98,7 @@ export default function StepsDetailScreen({ navigation }: Props) {
               goal={settings.stepGoal}
               height={88}
               showLabels={range !== TrendRange.Month}
+              formatValue={stepsValue}
             />
           ) : (
             <Text style={s.metricSub}>
@@ -119,7 +120,7 @@ export default function StepsDetailScreen({ navigation }: Props) {
               ? 'Last 6 months'
               : `Last ${TrendRanges.DAYS[range]} days`}
           </Text>
-          <ConsistencyGrid days={inRange.map((d) => d.state)} />
+          <ConsistencyGrid days={inRange} />
           <View style={s.legend}>
             <LegendDot color={colors.glacier} label='goal' />
             <LegendDot color={colors.glacierTint} label='partial' />

@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, waitFor } from '@testing-library/react-native';
+import { fireEvent, render, waitFor } from '@testing-library/react-native';
 
 import { ToastProvider } from '@shared/state/ToastContext';
 import { ViewedDayProvider } from '@shared/state/ViewedDayContext';
@@ -20,7 +20,11 @@ const bar = (day?: string): DayBar => ({
   day,
 });
 
-async function show(days: DayBar[], trackNotes = true) {
+async function show(
+  days: DayBar[],
+  trackNotes = true,
+  formatValue?: (bar: DayBar) => string,
+) {
   const repo = createMemoryDayNotesRepository();
   await repo.save({ day: addDays(today, -1), text: 'Joint pain' });
   const settings = createMemorySettingsRepository();
@@ -30,7 +34,11 @@ async function show(days: DayBar[], trackNotes = true) {
       <SettingsProvider repo={settings}>
         <ViewedDayProvider>
           <DayNotesProvider repo={repo}>
-            <StepBars days={days} showLegend={false} />
+            <StepBars
+              days={days}
+              showLegend={false}
+              formatValue={formatValue}
+            />
           </DayNotesProvider>
         </ViewedDayProvider>
       </SettingsProvider>
@@ -49,5 +57,39 @@ describe('StepBars note marks', () => {
     await waitFor(() => expect(weekly.queryByText('note')).toBeNull());
     const off = await show([bar(addDays(today, -1))], false);
     await waitFor(() => expect(off.queryByText('note')).toBeNull());
+  });
+});
+
+describe('StepBars taps', () => {
+  const steps = (b: DayBar) => `${b.value} steps`;
+
+  it('names a tapped day over the chart, moves with the next tap, and clears on a second tap', async () => {
+    const ui = await show([bar('2026-08-01'), bar('2026-08-02')], false, steps);
+    await waitFor(() => expect(ui.getAllByRole('button')).toHaveLength(2));
+    expect(ui.queryByText(/steps$/)).toBeNull();
+
+    fireEvent.press(ui.getByLabelText('Aug 1 · 100 steps'));
+    expect(ui.getByText('Aug 1 · 100 steps')).toBeTruthy();
+
+    fireEvent.press(ui.getByLabelText('Aug 2 · 100 steps'));
+    expect(ui.queryByText('Aug 1 · 100 steps')).toBeNull();
+    expect(ui.getByText('Aug 2 · 100 steps')).toBeTruthy();
+
+    fireEvent.press(ui.getByLabelText('Aug 2 · 100 steps'));
+    expect(ui.queryByText(/steps$/)).toBeNull();
+  });
+
+  it('names a weekly bar by the week it covers', async () => {
+    const ui = await show(
+      [{ ...bar(), week: { from: '2026-07-27', to: '2026-08-02' } }],
+      false,
+    );
+    fireEvent.press(await ui.findByLabelText('Jul 27 – Aug 2'));
+    expect(ui.getByText('Jul 27 – Aug 2')).toBeTruthy();
+  });
+
+  it('leaves a bar with no date untappable', async () => {
+    const ui = await show([bar()], false);
+    await waitFor(() => expect(ui.queryAllByRole('button')).toHaveLength(0));
   });
 });

@@ -2,13 +2,13 @@ import { TrendRanges, TrendRange } from '@/trends/models/trendRange';
 import { monthName, weekdayLetter } from '@shared/utils/date';
 import { round2 } from '@/domain/water/models/waterEntry';
 import { DayState } from '@shared/models/dayState';
+import type { BarDays } from '@/trends/models/barDate';
 
-/** `day` is set on daily bars only, not on weekly averages. */
-export type WaterBar = {
+/** `day` is set on daily bars, `week` on weekly averages. */
+export type WaterBar = BarDays & {
   label: string;
   value: number;
   state: DayState;
-  day?: string;
 };
 
 const dayKeys = (today: string, count: number): string[] => {
@@ -52,6 +52,7 @@ export function bucketWater(
     const month = monthName(week[0]);
     bars.push({
       label: month !== lastMonth ? month[0] : '',
+      week: { from: week[0], to: week[week.length - 1] },
       value: avg,
       state: barState(avg, goalOz),
     });

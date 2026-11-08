@@ -83,6 +83,7 @@ export function MovementTrendCard({
         }
         showLegend={false}
         showLabels={range !== TrendRange.Month}
+        formatValue={(bar) => `${bar.value} min${bar.week ? ' in all' : ''}`}
       />
       {extras ? (
         <Text style={{ ...typography.small, marginTop: space.sm }}>

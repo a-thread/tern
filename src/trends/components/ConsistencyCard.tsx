@@ -12,8 +12,8 @@ import { useActivity } from '../../domain/activity/ActivityContext';
 /** A grid of the range's days by how each went, with the longest streak kept up. */
 export function ConsistencyCard({ range }: { range: TrendRange }) {
   const { days } = useActivity();
-  const states = days.slice(-TrendRanges.DAYS[range]).map((d) => d.state);
-  const streak = longestConsecutiveStreak(states);
+  const inRange = days.slice(-TrendRanges.DAYS[range]);
+  const streak = longestConsecutiveStreak(inRange.map((d) => d.state));
 
   return (
     <>
@@ -24,7 +24,7 @@ export function ConsistencyCard({ range }: { range: TrendRange }) {
             ? 'Last 6 months'
             : `Last ${TrendRanges.DAYS[range]} days`}
         </Text>
-        <ConsistencyGrid days={states} />
+        <ConsistencyGrid days={inRange} />
       </Card>
 
       {streak > 1 ? (

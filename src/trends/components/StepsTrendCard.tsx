@@ -8,7 +8,7 @@ import { StepBars } from './StepBars';
 import { useActivity } from '../../domain/activity/ActivityContext';
 import { useSettings } from '../../domain/settings/SettingsContext';
 import { noStepsNote } from '../models/noStepsNote';
-import { bucketSteps } from '../models/stepBars';
+import { bucketSteps, stepsValue } from '../models/stepBars';
 import { summarizeSteps } from '../models/stepsSummary';
 import { useTrendsNavigation } from '@/navigation/useAppNavigation';
 
@@ -46,6 +46,7 @@ export function StepsTrendCard({ range }: { range: TrendRange }) {
           days={bars}
           goal={settings.stepGoal}
           showLabels={range !== TrendRange.Month}
+          formatValue={stepsValue}
         />
       ) : (
         <Text style={typography.small}>

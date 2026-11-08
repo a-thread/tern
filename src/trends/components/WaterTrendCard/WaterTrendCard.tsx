@@ -52,6 +52,9 @@ export default function WaterTrendCard({
         goal={settings.waterGoalOz}
         showLegend={false}
         showLabels={range !== TrendRange.Month}
+        formatValue={(bar) =>
+          `${formatVolume(bar.value)}${bar.week ? ' a day' : ''}`
+        }
       />
     </TrendCard>
   );
