@@ -9,6 +9,7 @@ import {
 const meal = (id: string, name: string): SavedMeal => ({
   id,
   name,
+  servings: 1,
   createdAt: '2026-10-01T12:00:00.000Z',
   items: [
     {
@@ -36,7 +37,10 @@ const byName = (meals: SavedMeal[]) =>
 // The local repository has to behave like the memory one the Contexts are tested against.
 describe.each<[string, () => Promise<SavedMealsRepository>]>([
   ['memory', async () => createMemorySavedMealsRepository()],
-  ['local', async () => createLocalSavedMealsRepository(await createMigratedSqlJsDb())],
+  [
+    'local',
+    async () => createLocalSavedMealsRepository(await createMigratedSqlJsDb()),
+  ],
 ])('%s saved meals repository', (_name, create) => {
   it('lists saved meals with their items and measures intact', async () => {
     const repo = await create();
@@ -48,11 +52,21 @@ describe.each<[string, () => Promise<SavedMealsRepository>]>([
     ]);
   });
 
+  it('keeps how many servings a meal makes', async () => {
+    const repo = await create();
+    await repo.save({ ...meal('a', 'Chili'), servings: 8 });
+    expect((await repo.list())[0].servings).toBe(8);
+    await repo.save({ ...meal('a', 'Chili'), servings: 6 });
+    expect((await repo.list())[0].servings).toBe(6);
+  });
+
   it('updates a meal by id, and removes it', async () => {
     const repo = await create();
     await repo.save(meal('a', 'Breakfast eggs'));
     await repo.save({ ...meal('a', 'Weekend eggs'), items: [] });
-    expect(await repo.list()).toEqual([{ ...meal('a', 'Weekend eggs'), items: [] }]);
+    expect(await repo.list()).toEqual([
+      { ...meal('a', 'Weekend eggs'), items: [] },
+    ]);
     await repo.remove('a');
     expect(await repo.list()).toEqual([]);
   });

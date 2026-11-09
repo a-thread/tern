@@ -121,6 +121,9 @@ export class LocalSchema {
        note TEXT NOT NULL,
        updated_at TEXT NOT NULL
      )`,
+
+    // 4: how many servings a saved meal makes (more than 1 is a recipe)
+    `ALTER TABLE saved_meals ADD COLUMN servings INTEGER NOT NULL DEFAULT 1`,
   ];
 
   /** Every table holding the person's data, for export and "delete my data". */

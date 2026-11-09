@@ -1,6 +1,10 @@
 import type { TernClient } from '@shared/backend/supabase';
 import { ok, rows } from '@shared/backend/query';
-import type { SavedMeal, SavedMealItem } from './models/savedMeals';
+import {
+  cleanServings,
+  type SavedMeal,
+  type SavedMealItem,
+} from './models/savedMeals';
 import { parseMeasure } from '../food/models/measure';
 import type { SavedMealsRepository } from './savedMeals.repository';
 
@@ -8,6 +12,7 @@ type Row = {
   id: string;
   name: string;
   items: SavedMealItem[];
+  servings: number;
   created_at: string;
 };
 
@@ -20,7 +25,7 @@ export function createSupabaseSavedMealsRepository(
         await rows<Row>(
           db
             .from('saved_meals')
-            .select('id, name, items, created_at')
+            .select('id, name, items, servings, created_at')
             .order('name'),
         )
       ).map((r) => ({
@@ -28,6 +33,7 @@ export function createSupabaseSavedMealsRepository(
         name: r.name,
         // Items are stored as json, so a measure is checked on the way back in.
         items: r.items.map((i) => ({ ...i, measure: parseMeasure(i.measure) })),
+        servings: cleanServings(r.servings),
         createdAt: r.created_at,
       }));
     },
@@ -39,6 +45,7 @@ export function createSupabaseSavedMealsRepository(
             id: meal.id,
             name: meal.name,
             items: meal.items,
+            servings: meal.servings,
             updated_at: new Date().toISOString(),
           },
           { onConflict: 'id' },

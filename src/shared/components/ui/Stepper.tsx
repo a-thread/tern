@@ -3,6 +3,7 @@ import {
   Pressable,
   StyleSheet,
   Text,
+  TextInput,
   View,
   type StyleProp,
   type ViewStyle,
@@ -12,6 +13,7 @@ import { colors, font } from '../../theme';
 /**
  * A − / + control around a value, for servings, scales, times and counts. `compact`
  * is the tighter version for rows that already hold a name and a remove button.
+ * With `onChangeValue` the value can also be typed (tap it and enter a number).
  */
 export function Stepper({
   value,
@@ -22,6 +24,9 @@ export function Stepper({
   valueMinWidth = 40,
   compact = false,
   style,
+  onChangeValue,
+  onEndEditing,
+  valueLabel,
 }: {
   value: string | number;
   onDecrement: () => void;
@@ -31,6 +36,12 @@ export function Stepper({
   valueMinWidth?: number;
   compact?: boolean;
   style?: StyleProp<ViewStyle>;
+  /** Makes the value a text field; gets what was typed. */
+  onChangeValue?: (text: string) => void;
+  /** The field lost focus: show the real value again. */
+  onEndEditing?: () => void;
+  /** Accessibility label of the typed value. */
+  valueLabel?: string;
 }) {
   return (
     <View style={[s.stepper, style]}>
@@ -41,15 +52,32 @@ export function Stepper({
       >
         <Text style={[s.btn, compact && s.btnCompact]}>−</Text>
       </Pressable>
-      <Text
-        style={[
-          s.value,
-          compact && s.valueCompact,
-          { minWidth: valueMinWidth },
-        ]}
-      >
-        {value}
-      </Text>
+      {onChangeValue ? (
+        <TextInput
+          value={String(value)}
+          onChangeText={onChangeValue}
+          onBlur={onEndEditing}
+          keyboardType='decimal-pad'
+          selectTextOnFocus
+          maxLength={6}
+          accessibilityLabel={valueLabel}
+          style={[
+            s.value,
+            compact && s.valueCompact,
+            { minWidth: valueMinWidth, padding: 0 },
+          ]}
+        />
+      ) : (
+        <Text
+          style={[
+            s.value,
+            compact && s.valueCompact,
+            { minWidth: valueMinWidth },
+          ]}
+        >
+          {value}
+        </Text>
+      )}
       <Pressable
         onPress={onIncrement}
         hitSlop={8}

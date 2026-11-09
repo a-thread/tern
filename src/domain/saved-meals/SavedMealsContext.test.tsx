@@ -7,6 +7,7 @@ import { WaypointsProvider, useWaypoints } from '../waypoints/WaypointsContext';
 import { FoodProvider, useFood } from '../food/FoodContext';
 import { SavedMealsProvider, useSavedMeals } from './SavedMealsContext';
 import { itemsToEntries, snapshotItems } from './models/savedMeals';
+import { isDraftDirty } from './models/mealDraft';
 import { type FoodEntry, Meal } from '../food/models/foodEntry';
 import { WaypointSource } from '../waypoints/models/waypoint';
 
@@ -374,6 +375,57 @@ describe('editing a saved meal', () => {
       result.current.saved.commitDraft();
     });
     expect(result.current.saved.meals[0].name).toBe('Big breakfast');
+  });
+});
+
+describe('servings', () => {
+  it('a saved meal makes one serving, and saving over it resets that', async () => {
+    const { result } = await setup();
+    await act(async () => {
+      result.current.saved.saveMeal('Chili', [entry('Beef'), entry('Beans')]);
+    });
+    const id = result.current.saved.meals[0].id;
+    expect(result.current.saved.meals[0].servings).toBe(1);
+
+    act(() => result.current.saved.setMealServings(id, 8));
+    expect(result.current.saved.meals[0].servings).toBe(8);
+
+    await act(async () => {
+      result.current.saved.saveMeal('chili', [entry('Beef')]);
+    });
+    expect(result.current.saved.meals).toHaveLength(1);
+    expect(result.current.saved.meals[0].servings).toBe(1);
+  });
+
+  it('changes the servings in a draft, which then counts as changed and is saved with it', async () => {
+    const { result, backend } = await setup();
+    await act(async () => {
+      result.current.saved.saveMeal('Chili', [entry('Beef')]);
+    });
+    const id = result.current.saved.meals[0].id;
+    act(() => result.current.saved.startDraft(id));
+    expect(isDraftDirty(result.current.saved.draft!)).toBe(false);
+    act(() => result.current.saved.setDraftServings(6));
+    expect(result.current.saved.draft?.servings).toBe(6);
+    expect(isDraftDirty(result.current.saved.draft!)).toBe(true);
+    await act(async () => {
+      result.current.saved.commitDraft();
+    });
+    expect(result.current.saved.meals[0].servings).toBe(6);
+    expect((await backend.savedMeals.list())[0].servings).toBe(6);
+  });
+
+  it('keeps servings whole and between 1 and 100', async () => {
+    const { result } = await setup();
+    act(() => {
+      result.current.saved.startDraft();
+      result.current.saved.setDraftServings(0);
+    });
+    expect(result.current.saved.draft?.servings).toBe(1);
+    act(() => result.current.saved.setDraftServings(250));
+    expect(result.current.saved.draft?.servings).toBe(100);
+    act(() => result.current.saved.setDraftServings(2.6));
+    expect(result.current.saved.draft?.servings).toBe(3);
   });
 });
 

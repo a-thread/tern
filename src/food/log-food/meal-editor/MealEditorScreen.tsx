@@ -19,6 +19,7 @@ import {
   Icon,
 } from '@shared/components/ui';
 import { TextField } from '../../components/TextField/TextField';
+import { MealServingsRow } from '../components/MealServingsRow/MealServingsRow';
 import { useToast } from '@shared/state/ToastContext';
 import { TierDot } from '@shared/components/TierDot';
 import { useFoodDisplay } from '@/domain/food/hooks/useFoodDisplay';
@@ -48,6 +49,7 @@ export default function MealEditorScreen({ navigation }: Props) {
   const {
     draft,
     setDraftName,
+    setDraftServings,
     stepDraftItem,
     removeDraftItem,
     discardDraft,
@@ -146,6 +148,10 @@ export default function MealEditorScreen({ navigation }: Props) {
           accessibilityLabel='Meal name'
           error={error}
         />
+
+        <View style={{ marginTop: space.md }}>
+          <MealServingsRow value={draft.servings} onChange={setDraftServings} />
+        </View>
 
         <GroupLabel>
           {`${draft.items.length} ${draft.items.length === 1 ? 'food' : 'foods'}${showCalories ? ` · ${Math.round(totals.calories)} cal` : ''}`}

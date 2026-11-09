@@ -16,6 +16,7 @@ import { useSavedMeals } from '@/domain/saved-meals/SavedMealsContext';
 import { SavedMealLimits } from '@/domain/saved-meals/models/savedMeals';
 import type { LogFoodStackParamList } from '../navigation';
 import { MealAdder, useMealAdder } from '../components/MealAdder/MealAdder';
+import { MealServingsRow } from '../components/MealServingsRow/MealServingsRow';
 import { confirm } from '@shared/utils/confirm';
 
 type Props = NativeStackScreenProps<LogFoodStackParamList, 'SavedMeal'>;
@@ -24,10 +25,11 @@ type Props = NativeStackScreenProps<LogFoodStackParamList, 'SavedMeal'>;
 export default function SavedMealScreen({ navigation, route }: Props) {
   const { meal: initialMeal, mealId } = route.params;
   const insets = useSafeAreaInsets();
-  const { meals, renameMeal, deleteMeal, startDraft } = useSavedMeals();
+  const { meals, renameMeal, deleteMeal, setMealServings, startDraft } =
+    useSavedMeals();
   const saved = meals.find((m) => m.id === mealId);
   const items = saved?.items ?? [];
-  const adder = useMealAdder(items, initialMeal, navigation);
+  const adder = useMealAdder(items, initialMeal, navigation, saved);
 
   const [name, setName] = useState(saved?.name ?? '');
   const [nameError, setNameError] = useState<string | null>(null);
@@ -113,6 +115,11 @@ export default function SavedMealScreen({ navigation, route }: Props) {
           {nameError ? <Text style={s.error}>{nameError}</Text> : null}
           <Text style={s.sub}>{adder.summary}</Text>
         </View>
+
+        <MealServingsRow
+          value={saved.servings}
+          onChange={(n) => setMealServings(saved.id, n)}
+        />
 
         <MealAdder
           items={items}

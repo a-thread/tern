@@ -17,6 +17,7 @@ import {
 } from './models/mealDraft';
 import {
   cleanName,
+  cleanServings,
   findMealByName,
   snapshotItems,
   sortMeals,
@@ -45,12 +46,16 @@ type SavedMealsContextValue = {
   /** Returns an error message, or null on success. */
   renameMeal: (id: string, name: string) => string | null;
   deleteMeal: (id: string) => void;
+  /** Changes how many servings a saved meal makes; saved straight away. */
+  setMealServings: (id: string, servings: number) => void;
 
   /** The meal being built or edited, or null when none is open. */
   draft: MealDraft | null;
   /** Opens a draft: a copy of an existing meal, or an empty new one. */
   startDraft: (mealId?: string) => void;
   setDraftName: (name: string) => void;
+  /** How many servings the draft makes (whole, 1–100). */
+  setDraftServings: (servings: number) => void;
   addDraftItem: (item: SavedMealItem) => void;
   stepDraftItem: (index: number, delta: number) => void;
   removeDraftItem: (index: number) => void;
@@ -117,11 +122,12 @@ export function SavedMealsProvider({
       const items = snapshotItems(entries);
       const existing = findMealByName(latest.current, clean);
       const meal: SavedMeal = existing
-        ? { ...existing, name: clean, items }
+        ? { ...existing, name: clean, items, servings: 1 }
         : {
             id: newId(),
             name: clean,
             items,
+            servings: 1,
             createdAt: new Date().toISOString(),
           };
 
@@ -158,6 +164,18 @@ export function SavedMealsProvider({
     [repo, persist, commit],
   );
 
+  const setMealServings = useCallback(
+    (id: string, servings: number) => {
+      const meal = latest.current.find((m) => m.id === id);
+      const next = cleanServings(servings);
+      if (!meal || meal.servings === next) return;
+      const changed = { ...meal, servings: next };
+      commit(latest.current.map((m) => (m.id === id ? changed : m)));
+      persist(repo.save(changed));
+    },
+    [repo, persist, commit],
+  );
+
   const deleteMeal = useCallback(
     (id: string) => {
       commit(latest.current.filter((m) => m.id !== id));
@@ -186,6 +204,17 @@ export function SavedMealsProvider({
   const setDraftName = useCallback(
     (name: string) => {
       if (draftRef.current) changeDraft({ ...draftRef.current, name });
+    },
+    [changeDraft],
+  );
+
+  const setDraftServings = useCallback(
+    (servings: number) => {
+      if (draftRef.current)
+        changeDraft({
+          ...draftRef.current,
+          servings: cleanServings(servings),
+        });
     },
     [changeDraft],
   );
@@ -228,11 +257,12 @@ export function SavedMealsProvider({
       ? latest.current.find((m) => m.id === d.id)
       : undefined;
     const meal: SavedMeal = existing
-      ? { ...existing, name: clean, items: d.items }
+      ? { ...existing, name: clean, items: d.items, servings: d.servings }
       : {
           id: d.id ?? newId(),
           name: clean,
           items: d.items,
+          servings: d.servings,
           createdAt: new Date().toISOString(),
         };
 
@@ -255,9 +285,11 @@ export function SavedMealsProvider({
       saveMeal,
       renameMeal,
       deleteMeal,
+      setMealServings,
       draft,
       startDraft,
       setDraftName,
+      setDraftServings,
       addDraftItem,
       stepDraftItem,
       removeDraftItem,
@@ -270,9 +302,11 @@ export function SavedMealsProvider({
       saveMeal,
       renameMeal,
       deleteMeal,
+      setMealServings,
       draft,
       startDraft,
       setDraftName,
+      setDraftServings,
       addDraftItem,
       stepDraftItem,
       removeDraftItem,

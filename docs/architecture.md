@@ -54,6 +54,11 @@ days), `waypoints`, `settings`, `auth` and `health` (the HealthKit wrapper both 
 movement, water and medication read `SettingsContext` and import those types from it. `saved-meals` likewise owns
 `mealDraft`, so `food` no longer imports it back.
 
+A saved meal also has `servings`, a whole number from 1 to 100 (stored in `saved_meals.servings`, default 1). With
+more than one it is a **recipe**: its items are the whole batch, and logging it adds one entry for the recipe
+(`recipeEntry` in `savedMeals.ts`: name of the recipe, `1 serving`, macros per serving, `servings` = how many
+were eaten) instead of one entry per food. Saving entries over an existing meal resets it to 1.
+
 Only `BackendContext` builds repositories. `AppProviders` hands each to its provider as a
 `repo` prop, so nothing below `app/` knows whether it got Supabase or the in-memory version, and a
 screen that wants history asks its Context (`loadHistory`, `loadRange`).

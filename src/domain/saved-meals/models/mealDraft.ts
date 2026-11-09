@@ -42,29 +42,32 @@ export type MealDraft = {
   id: string | null;
   name: string;
   items: SavedMealItem[];
+  servings: number;
   /** What the draft started as, to tell whether anything changed. */
   original: string;
 };
 
-const fingerprint = (name: string, items: SavedMealItem[]) =>
-  JSON.stringify([cleanName(name), items]);
+const fingerprint = (name: string, items: SavedMealItem[], servings: number) =>
+  JSON.stringify([cleanName(name), items, servings]);
 
 export const emptyDraft = (): MealDraft => ({
   id: null,
   name: '',
   items: [],
-  original: fingerprint('', []),
+  servings: SavedMealLimits.MIN_SERVINGS,
+  original: fingerprint('', [], SavedMealLimits.MIN_SERVINGS),
 });
 
 export const draftFromMeal = (meal: SavedMeal): MealDraft => ({
   id: meal.id,
   name: meal.name,
   items: meal.items.map((i) => ({ ...i })),
-  original: fingerprint(meal.name, meal.items),
+  servings: meal.servings,
+  original: fingerprint(meal.name, meal.items, meal.servings),
 });
 
 export const isDraftDirty = (d: MealDraft) =>
-  fingerprint(d.name, d.items) !== d.original;
+  fingerprint(d.name, d.items, d.servings) !== d.original;
 
 /** A message for the user, or null when the draft can be saved. */
 export function validateDraft(d: MealDraft, meals: SavedMeal[]): string | null {
