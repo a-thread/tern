@@ -22,6 +22,7 @@ describe('restDetail', () => {
 describe('restReminderNote', () => {
   const none = {
     meals: false,
+    eat: false,
     weighIn: false,
     water: false,
     mood: false,
@@ -40,6 +41,12 @@ describe('restReminderNote', () => {
     );
     expect(restReminderNote({ ...none, meals: true, medication: true })).toBe(
       'Reminders are quiet until tomorrow, except medication',
+    );
+  });
+
+  it('counts reminders to eat among those quieted', () => {
+    expect(restReminderNote({ ...none, eat: true })).toBe(
+      'Reminders are quiet until tomorrow',
     );
   });
 });

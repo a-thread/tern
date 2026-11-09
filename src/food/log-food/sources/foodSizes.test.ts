@@ -78,3 +78,43 @@ describe('foodSizes', () => {
     expect(sizesKnown(offline)).toBe(true);
   });
 });
+
+describe('a food you logged before it had sizes', () => {
+  beforeEach(() => {
+    clearSizes();
+    fetchProduct.mockReset();
+  });
+
+  // Logged as "2 oz" before its packet size was known: oz and lb only, and no barcode of its own.
+  const logged = food({
+    id: 'logged-oatmeal|key food',
+    source: undefined,
+    portions: [
+      { label: 'oz', grams: 28.35 },
+      { label: 'lb', grams: 453.6 },
+    ],
+    last: { unit: 'oz', quantity: 2 },
+  });
+
+  it('has nothing to fetch on its own', () => {
+    expect(needsSizes(logged)).toBe(false);
+  });
+
+  it('fetches from its database copy, and puts the packet ahead of oz and lb', async () => {
+    fetchProduct.mockResolvedValue({
+      portions: [{ label: 'packet', grams: 35 }],
+    });
+    const linked = {
+      ...logged,
+      sizesFrom: { id: '0851087000687', source: FoodSource.Off },
+    };
+    expect(needsSizes(linked)).toBe(true);
+    await loadSizes(linked);
+    expect(fetchProduct).toHaveBeenCalledWith('0851087000687');
+    expect(withSizes(linked).portions?.map((p) => p.label)).toEqual([
+      'packet',
+      'oz',
+      'lb',
+    ]);
+  });
+});

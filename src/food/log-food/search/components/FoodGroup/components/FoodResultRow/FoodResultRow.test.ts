@@ -1,4 +1,3 @@
-import { Units } from '@shared/utils/units';
 import { FoodSource } from '@/domain/food/models/foodSource';
 import type { SearchResult } from '@/domain/food/sources/searchResult';
 import { resultSubline } from './FoodResultRow';
@@ -13,42 +12,23 @@ const oatmeal: SearchResult = {
   carbs: 77,
   fat: 5.7,
   tier: 4,
+  portions: [{ label: 'packet', grams: 35 }],
 };
 
 describe('resultSubline', () => {
-  it('names the first size and its calories', () => {
-    expect(
-      resultSubline(
-        { ...oatmeal, portions: [{ label: 'packet', grams: 35 }] },
-        FoodSource.Off,
-        true,
-        Units.Imperial,
-      ),
-    ).toBe('Packaged · Key Food · 1 packet · 130 cal');
-  });
-
-  it('without a size, gives calories per ounce on Imperial and per 100 g on Metric', () => {
-    expect(resultSubline(oatmeal, undefined, true, Units.Imperial)).toBe(
-      'Key Food · 105 cal / oz',
-    );
-    expect(resultSubline(oatmeal, undefined, false, Units.Imperial)).toBe(
-      'Key Food · per oz',
-    );
-    expect(resultSubline(oatmeal, undefined, true, Units.Metric)).toBe(
-      'Key Food · 371 cal / 100 g',
+  it('says where a food is from and its brand, and no amount', () => {
+    expect(resultSubline(oatmeal, FoodSource.Off)).toBe('Packaged · Key Food');
+    expect(resultSubline({ ...oatmeal, brand: undefined }, undefined)).toBe(
+      '',
     );
   });
-});
 
-describe('resultSubline while sizes load', () => {
-  it('shows no amount until the sizes arrive', () => {
+  it('uses the detail when there is no brand', () => {
     expect(
       resultSubline(
-        { ...oatmeal, sizesLoading: true },
-        FoodSource.Off,
-        true,
-        Units.Imperial,
+        { ...oatmeal, brand: undefined, detail: 'cooked' },
+        FoodSource.Common,
       ),
-    ).toBe('Packaged · Key Food');
+    ).toBe('Common · cooked');
   });
 });

@@ -50,10 +50,8 @@ export class SizePrefetch {
 }
 
 /**
- * The foods with their sizes filled in as they arrive, fetching them for the first few that
- * came without (so the list can say "1 packet · 130 cal" and the details screen opens on it).
- * Those still on their way are marked `sizesLoading`, so a row waits rather than showing
- * "per oz" and then switching to "1 packet".
+ * The foods with their sizes filled in as they arrive, fetching them ahead of time for the
+ * first few that came without, so opening one goes straight to "1 packet" with no wait.
  */
 export function useListSizes<T extends SearchResult>(foods: T[]): T[] {
   const [version, setVersion] = useState(0);
@@ -76,10 +74,7 @@ export function useListSizes<T extends SearchResult>(foods: T[]): T[] {
     };
   }, [wanted]); // eslint-disable-line react-hooks/exhaustive-deps
   return useMemo(
-    () =>
-      foods.map((f, i) =>
-        isWanted(f, i) ? { ...f, sizesLoading: true } : (withSizes(f) as T),
-      ),
+    () => foods.map((f) => withSizes(f) as T),
     [foods, version], // eslint-disable-line react-hooks/exhaustive-deps
   );
 }

@@ -156,3 +156,34 @@ describe('dishes', () => {
     ).toBe(scoreResult('chicken pho', food('Chicken pho'), FoodSource.Usda));
   });
 });
+
+describe('dedupeFoods and sizes', () => {
+  it('keeps your copy, linked to the database copy when yours has no sizes', () => {
+    const mine = food('Oatmeal', {
+      id: 'logged-oatmeal',
+      brand: 'Key Food',
+      portions: [{ label: 'oz', grams: 28.35 }],
+    });
+    const off = food('Oatmeal', {
+      id: '0851087000687',
+      brand: 'Key Food',
+      source: FoodSource.Off,
+    });
+    const [kept, ...rest] = dedupeFoods([mine, off]);
+    expect(rest).toEqual([]);
+    expect(kept.id).toBe('logged-oatmeal');
+    expect(kept.sizesFrom).toEqual({
+      id: '0851087000687',
+      source: FoodSource.Off,
+    });
+  });
+
+  it('leaves your copy alone when it already has a size', () => {
+    const mine = food('Oatmeal', {
+      id: 'logged-oatmeal',
+      portions: [{ label: 'packet', grams: 35 }],
+    });
+    const off = food('Oatmeal', { id: '1', source: FoodSource.Off });
+    expect(dedupeFoods([mine, off])[0].sizesFrom).toBeUndefined();
+  });
+});

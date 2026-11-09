@@ -7,11 +7,6 @@ import type { SearchResult } from '@/domain/food/sources/searchResult';
 import { useFoodDisplay } from '@/domain/food/hooks/useFoodDisplay';
 import { TierDot } from '@shared/components/TierDot';
 import { FoodSource } from '@/domain/food/models/foodSource';
-import { Units } from '@shared/utils/units';
-import { useUnits } from '@/domain/settings/hooks/useUnits';
-import { WeightUnit, weightGrams } from '@/domain/food/models/weight';
-
-const OUNCE_GRAMS = weightGrams(WeightUnit.Oz);
 
 const SOURCE_TAG: Record<FoodSource, string> = {
   [FoodSource.Mine]: 'Your food',
@@ -21,41 +16,19 @@ const SOURCE_TAG: Record<FoodSource, string> = {
 };
 
 /**
- * The line under a food's name: where it's from, its detail or brand, and the
- * calories for its first portion ("1 packet · 130 cal") when it has one. Without one,
- * per ounce on Imperial ("105 cal / oz") or per its serving on Metric ("371 cal / 100 g").
- * While its sizes are being fetched, no amount is shown yet.
+ * The line under a food's name: where it's from, and its detail or brand. No amount: the
+ * serving is chosen on the details screen, so the list doesn't promise one it may not open on.
  */
 export function resultSubline(
   r: SearchResult,
   from: FoodSource | undefined,
-  showCalories: boolean,
-  units: Units,
 ): string {
-  const per100 = r.servingLabel === '100 g';
-  const portion = per100 ? r.portions?.[0] : undefined;
-  const byOunce = per100 && !portion && units === Units.Imperial;
-  const calFor = (grams: number) => Math.round((r.calories * grams) / 100);
-  // Sizes on their way: no amount yet, rather than "per oz" that then turns into "1 packet".
-  const amount = r.sizesLoading
-    ? undefined
-    : portion
-    ? showCalories
-      ? `1 ${portion.label} · ${calFor(portion.grams)} cal`
-      : `1 ${portion.label}`
-    : byOunce
-      ? showCalories
-        ? `${calFor(OUNCE_GRAMS)} cal / oz`
-        : 'per oz'
-      : showCalories
-        ? `${r.calories} cal / ${r.servingLabel}`
-        : r.servingLabel;
-  return [from ? SOURCE_TAG[from] : undefined, r.brand ?? r.detail, amount]
+  return [from ? SOURCE_TAG[from] : undefined, r.brand ?? r.detail]
     .filter(Boolean)
     .join(' · ');
 }
 
-/** One food from a search or your history: its type dot, name, serving, and a plus to add it. */
+/** One food from a search or your history: its type dot, name, where it's from, and a plus to add it. */
 export function FoodResultRow({
   result,
   from,
@@ -66,8 +39,7 @@ export function FoodResultRow({
   from?: FoodSource;
   onPress: () => void;
 }) {
-  const { showTiers, showTierNumber, showCalories } = useFoodDisplay();
-  const { units } = useUnits();
+  const { showTiers, showTierNumber } = useFoodDisplay();
   return (
     <Row
       icon={
@@ -83,7 +55,7 @@ export function FoodResultRow({
         )
       }
       title={result.name}
-      sub={resultSubline(result, from, showCalories, units)}
+      sub={resultSubline(result, from) || undefined}
       onPress={onPress}
       right={
         <View style={s.plusBtn}>

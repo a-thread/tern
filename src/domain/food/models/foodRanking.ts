@@ -1,6 +1,7 @@
 import type { SearchResult } from '../sources/searchResult';
 import { allWordsPrefix, normalizeText, wordsOf } from './foodQuery';
 import { FoodSource } from './foodSource';
+import { isTypedUnit } from './measure';
 
 /** A food in the one search list, with where it came from. */
 export type RankedFood = SearchResult & { from: FoodSource; score: number };
@@ -116,14 +117,32 @@ export function scoreResult(
 
 /** The same food from several places (or listed twice) shows once; the first, best-scored copy wins. */
 export function dedupeFoods<T extends SearchResult>(list: T[]): T[] {
-  const seen = new Set<string>();
-  return list.filter((r) => {
+  const kept = new Map<string, number>();
+  const out: T[] = [];
+  for (const r of list) {
     const key = `${normalizeText(r.name)}|${normalizeText(r.brand ?? '')}|${Math.round(r.calories / 10)}`;
-    if (seen.has(key)) return false;
-    seen.add(key);
-    return true;
-  });
+    const at = kept.get(key);
+    if (at === undefined) {
+      kept.set(key, out.length);
+      out.push(r);
+      continue;
+    }
+    // Your own copy wins its place, but if it has no sizes (logged before they were known),
+    // it remembers the database copy so they can be fetched.
+    const winner = out[at];
+    if (
+      !hasSizes(winner) &&
+      !winner.sizesFrom &&
+      (r.source === FoodSource.Usda || r.source === FoodSource.Off)
+    )
+      out[at] = { ...winner, sizesFrom: { id: r.id, source: r.source } };
+  }
+  return out;
 }
+
+/** Whether a food has a size of its own (a packet, a cup), not just weights and volumes. */
+export const hasSizes = (r: Pick<SearchResult, 'portions'>) =>
+  !!r.portions?.some((p) => !isTypedUnit(p.label));
 
 /** Scores, sorts and de-duplicates foods from every source into one list. */
 export function rankFoods(

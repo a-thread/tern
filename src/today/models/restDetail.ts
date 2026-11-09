@@ -16,7 +16,8 @@ export function restDetail(steps: number | null, streak: number): string {
  * except medication, which stays on. Nothing to say when no reminder would have fired.
  */
 export function restReminderNote(on: RemindersOn): string | undefined {
-  const quieted = on.meals || on.weighIn || on.water || on.mood || on.streak;
+  const quieted =
+    on.meals || on.eat || on.weighIn || on.water || on.mood || on.streak;
   if (!quieted) return undefined;
   return on.medication
     ? 'Reminders are quiet until tomorrow, except medication'

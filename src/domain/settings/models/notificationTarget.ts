@@ -8,7 +8,10 @@ export enum NotificationTarget {
   LogDinner = 'logDinner',
   LogWeight = 'logWeight',
   CheckIn = 'checkIn',
-  /** Water and medication are marked from their rows on Today, and the streak is shown there. */
+  /**
+   * Water and medication are marked from their rows on Today, and the streak is shown there.
+   * A reminder to eat has nothing to log, so it opens Today too.
+   */
   Today = 'today',
   /** What a streak freeze did, after one held the streak overnight. */
   Streak = 'streak',
@@ -38,6 +41,7 @@ export function reminderTarget(
       return NotificationTarget.LogWeight;
     case ReminderKey.Mood:
       return NotificationTarget.CheckIn;
+    case ReminderKey.Eat:
     case ReminderKey.Water:
     case ReminderKey.Streak:
     case 'medication':
@@ -90,6 +94,7 @@ export function notificationTarget(id: string): NotificationTarget | null {
   if (id === StreakAlerts.OUTCOME_ID) return NotificationTarget.Streak;
   if (
     id === StreakAlerts.AT_RISK_ID ||
+    starts(Reminders.EAT_ID_PREFIX) ||
     starts(Reminders.WATER_ID_PREFIX) ||
     starts(Reminders.MEDICATION_ID_PREFIX)
   ) {

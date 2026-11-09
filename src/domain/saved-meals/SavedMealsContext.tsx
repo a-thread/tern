@@ -43,6 +43,16 @@ type SavedMealsContextValue = {
    * (ignoring case) is replaced, keeping its id; callers should confirm first.
    */
   saveMeal: (name: string, entries: FoodEntry[]) => SaveOutcome;
+  /**
+   * Saves a homemade batch as a recipe: one item for the whole batch, making `servings`
+   * servings, so it can be logged by the serving. A meal already called `name` is not
+   * replaced; the error says so.
+   */
+  saveRecipe: (
+    name: string,
+    batch: SavedMealItem,
+    servings: number,
+  ) => SaveOutcome;
   /** Returns an error message, or null on success. */
   renameMeal: (id: string, name: string) => string | null;
   deleteMeal: (id: string) => void;
@@ -140,6 +150,31 @@ export function SavedMealsProvider({
       );
       persist(repo.save(meal));
       return { ok: true, replaced: Boolean(existing), meal };
+    },
+    [repo, persist, commit],
+  );
+
+  const saveRecipe = useCallback(
+    (name: string, batch: SavedMealItem, servings: number): SaveOutcome => {
+      const problem = validateMealName(name);
+      if (problem) return { ok: false, error: problem };
+      const clean = cleanName(name);
+      const clash = findMealByName(latest.current, clean);
+      if (clash)
+        return {
+          ok: false,
+          error: `You already have a meal called “${clash.name}”. Pick another name, or turn off saving as a recipe.`,
+        };
+      const meal: SavedMeal = {
+        id: newId(),
+        name: clean,
+        items: [batch],
+        servings: cleanServings(servings),
+        createdAt: new Date().toISOString(),
+      };
+      commit(sortMeals([...latest.current, meal]));
+      persist(repo.save(meal));
+      return { ok: true, replaced: false, meal };
     },
     [repo, persist, commit],
   );
@@ -283,6 +318,7 @@ export function SavedMealsProvider({
       meals,
       ready,
       saveMeal,
+      saveRecipe,
       renameMeal,
       deleteMeal,
       setMealServings,
@@ -300,6 +336,7 @@ export function SavedMealsProvider({
       meals,
       ready,
       saveMeal,
+      saveRecipe,
       renameMeal,
       deleteMeal,
       setMealServings,

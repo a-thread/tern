@@ -2,6 +2,8 @@ import { type Medication } from './medication';
 import { Frequency } from '@shared/models/frequency';
 import {
   DINNER_MESSAGES,
+  EAT_EVENING_MESSAGES,
+  EAT_MIDDAY_MESSAGES,
   LUNCH_MESSAGES,
   type ReminderText,
 } from './mealMessages';
@@ -9,6 +11,11 @@ import {
 /** Reminder schedule; times are minutes since midnight, weekdays 1–7 (Sunday–Saturday). */
 export type ReminderConfig = {
   mealLog: { on: boolean; midday: number; evening: number };
+  /**
+   * Reminders to eat, for someone who doesn't track food: nothing to log, just a nudge at
+   * midday and in the evening. Used only while food isn't tracked.
+   */
+  eat: { on: boolean; midday: number; evening: number };
   /** Used for weekly weigh-ins. */
   weighIn: { on: boolean; weekday: number; at: number };
   /** Water reminders from `start` to `end` at `everyHours` intervals. */
@@ -25,6 +32,7 @@ export class Reminders {
 
   static readonly DEFAULTS: ReminderConfig = {
     mealLog: { on: true, midday: 12 * 60 + 30, evening: 19 * 60 },
+    eat: { on: false, midday: 12 * 60 + 30, evening: 19 * 60 },
     weighIn: { on: true, weekday: 1, at: 8 * 60 },
     water: { on: false, start: 9 * 60, end: 19 * 60, everyHours: 2 },
     mood: { on: false, at: 20 * 60 },
@@ -36,6 +44,10 @@ export class Reminders {
   /** The two meal reminders: around lunch, and around dinner. */
   static readonly MIDDAY_MEALS_ID = 'tern-meals-midday';
   static readonly EVENING_MEALS_ID = 'tern-meals-evening';
+  /** The two reminders to eat, used when food isn't tracked. */
+  static readonly EAT_ID_PREFIX = 'tern-eat';
+  static readonly MIDDAY_EAT_ID = 'tern-eat-midday';
+  static readonly EVENING_EAT_ID = 'tern-eat-evening';
   static readonly WEIGH_IN_ID = 'tern-weigh-in';
   static readonly MOOD_ID = 'tern-mood';
   /** Water reminders are `tern-water-<n>`, one per time of day. */
@@ -47,6 +59,8 @@ export class Reminders {
   static readonly ALL_IDS = [
     Reminders.MIDDAY_MEALS_ID,
     Reminders.EVENING_MEALS_ID,
+    Reminders.MIDDAY_EAT_ID,
+    Reminders.EVENING_EAT_ID,
     Reminders.WEIGH_IN_ID,
     Reminders.MOOD_ID,
   ];
@@ -56,6 +70,7 @@ export class Reminders {
 
 export enum ReminderKey {
   Meals = 'meals',
+  Eat = 'eat',
   WeighIn = 'weighIn',
   Water = 'water',
   Mood = 'mood',
@@ -189,6 +204,7 @@ export type PlanExtras = {
 export function remindersOff(c: ReminderConfig): ReminderConfig {
   return {
     mealLog: { ...c.mealLog, on: false },
+    eat: { ...c.eat, on: false },
     weighIn: { ...c.weighIn, on: false },
     water: { ...c.water, on: false },
     mood: { ...c.mood, on: false },
@@ -199,6 +215,8 @@ export function remindersOff(c: ReminderConfig): ReminderConfig {
 /** Each kind of reminder, and whether it will actually fire. */
 export type RemindersOn = {
   meals: boolean;
+  /** Reminders to eat, while food isn't tracked. */
+  eat: boolean;
   weighIn: boolean;
   water: boolean;
   mood: boolean;
@@ -224,6 +242,7 @@ export function remindersOn(
 ): RemindersOn {
   return {
     meals: trackFood && c.mealLog.on,
+    eat: !trackFood && c.eat.on,
     weighIn: trackWeight && c.weighIn.on,
     water: trackWater && c.water.on,
     mood: trackMood && c.mood.on,
@@ -274,6 +293,26 @@ export function planReminders(
         body: DINNER_MESSAGES[0].body,
         variants: DINNER_MESSAGES,
         ...at(c.mealLog.evening),
+      },
+    );
+  }
+  if (!trackFood && c.eat.on) {
+    plan.push(
+      {
+        id: Reminders.MIDDAY_EAT_ID,
+        key: ReminderKey.Eat,
+        title: EAT_MIDDAY_MESSAGES[0].title,
+        body: EAT_MIDDAY_MESSAGES[0].body,
+        variants: EAT_MIDDAY_MESSAGES,
+        ...at(c.eat.midday),
+      },
+      {
+        id: Reminders.EVENING_EAT_ID,
+        key: ReminderKey.Eat,
+        title: EAT_EVENING_MESSAGES[0].title,
+        body: EAT_EVENING_MESSAGES[0].body,
+        variants: EAT_EVENING_MESSAGES,
+        ...at(c.eat.evening),
       },
     );
   }
@@ -359,6 +398,7 @@ export function describeReminders(
 ): Record<ReminderKey, string> {
   return {
     meals: `${formatMinutes(c.mealLog.midday)} and ${formatMinutes(c.mealLog.evening)}`,
+    eat: `${formatMinutes(c.eat.midday)} and ${formatMinutes(c.eat.evening)}`,
     weighIn:
       weighInFrequency === Frequency.Daily
         ? `Every day, ${formatMinutes(c.weighIn.at)}`
@@ -374,6 +414,7 @@ export function describeReminders(
 export function mergeReminders(saved: unknown): ReminderConfig {
   const s = (saved ?? {}) as {
     mealLog?: Partial<ReminderConfig['mealLog']>;
+    eat?: Partial<ReminderConfig['eat']>;
     weighIn?: Partial<ReminderConfig['weighIn']>;
     weeklyWeighIn?: Partial<ReminderConfig['weighIn']>;
     water?: Partial<ReminderConfig['water']>;
@@ -391,6 +432,11 @@ export function mergeReminders(saved: unknown): ReminderConfig {
       on: bool(s.mealLog?.on, d.mealLog.on),
       midday: num(s.mealLog?.midday, d.mealLog.midday),
       evening: num(s.mealLog?.evening, d.mealLog.evening),
+    },
+    eat: {
+      on: bool(s.eat?.on, d.eat.on),
+      midday: num(s.eat?.midday, d.eat.midday),
+      evening: num(s.eat?.evening, d.eat.evening),
     },
     weighIn: {
       on: bool(weigh?.on, d.weighIn.on),

@@ -475,3 +475,44 @@ describe('quick successive saves', () => {
     ]);
   });
 });
+
+describe('saving a homemade batch as a recipe', () => {
+  const batch = {
+    name: 'Chili',
+    servings: 1,
+    servingLabel: 'whole batch',
+    calories: 2400,
+    protein: 160,
+    carbs: 200,
+    fat: 96,
+    tier: 1 as const,
+  };
+
+  it('saves one item for the batch, making that many servings, and persists it', async () => {
+    const { result, backend } = await setup();
+    await act(async () => {
+      expect(result.current.saved.saveRecipe(' Chili ', batch, 8).ok).toBe(
+        true,
+      );
+    });
+    const [meal] = result.current.saved.meals;
+    expect(meal).toMatchObject({ name: 'Chili', servings: 8, items: [batch] });
+    await waitFor(async () =>
+      expect(await backend.savedMeals.list()).toHaveLength(1),
+    );
+  });
+
+  it('never replaces a meal of the same name', async () => {
+    const { result } = await setup();
+    await act(async () => {
+      result.current.saved.saveMeal('chili', [entry('Beans')]);
+    });
+    let outcome: ReturnType<typeof result.current.saved.saveRecipe> | undefined;
+    await act(async () => {
+      outcome = result.current.saved.saveRecipe('Chili', batch, 8);
+    });
+    expect(outcome).toMatchObject({ ok: false });
+    expect(result.current.saved.meals).toHaveLength(1);
+    expect(result.current.saved.meals[0].servings).toBe(1);
+  });
+});

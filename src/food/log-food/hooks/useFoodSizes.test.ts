@@ -33,17 +33,14 @@ describe('useListSizes', () => {
     jest.mocked(loadSizes).mockClear();
   });
 
-  it('marks the top foods as waiting, fetches them, then fills in their sizes', async () => {
+  it('fetches sizes for the top foods ahead of time and fills them in', async () => {
     const foods = Array.from({ length: SizePrefetch.TOP + 2 }, (_, i) =>
       product(i),
     );
     const { result } = renderHook(() => useListSizes(foods));
-    expect(result.current[0].sizesLoading).toBe(true);
-    // Below the top few, nothing is fetched and nothing waits.
-    expect(result.current[SizePrefetch.TOP].sizesLoading).toBeUndefined();
     await act(async () => {});
+    // Only the top few are fetched.
     expect(loadSizes).toHaveBeenCalledTimes(SizePrefetch.TOP);
-    expect(result.current[0].sizesLoading).toBeUndefined();
     expect(result.current[0].portions).toEqual([{ label: 'packet', grams: 35 }]);
     expect(result.current[SizePrefetch.TOP].portions).toBeUndefined();
   });

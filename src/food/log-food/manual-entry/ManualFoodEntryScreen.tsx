@@ -11,7 +11,27 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 
 import { colors, font, radius, space, typography } from '@shared/theme';
-import { Group, GroupLabel, SheetNav } from '@shared/components/ui';
+import {
+  FootNote,
+  Group,
+  GroupLabel,
+  SheetNav,
+  ToggleRow,
+} from '@shared/components/ui';
+import { Units } from '@shared/utils/units';
+import { useUnits } from '@/domain/settings/hooks/useUnits';
+import { weightGrams, WeightUnit } from '@/domain/food/models/weight';
+import {
+  SavedMealLimits,
+  typedYield,
+} from '@/domain/saved-meals/models/savedMeals';
+import {
+  batchItem,
+  homemadeEntry,
+  perServing,
+  typedServingGrams,
+  type Homemade,
+} from './models/homemade';
 import type { Tier } from '@/domain/food/models/foodEntry';
 import { useFood } from '@/domain/food/FoodContext';
 import { useSavedMeals } from '@/domain/saved-meals/SavedMealsContext';
@@ -26,40 +46,97 @@ export default function ManualFoodEntryScreen({ navigation, route }: Props) {
   const { meal, name: initialName, pick } = route.params;
   const insets = useSafeAreaInsets();
   const { addFoodEntry } = useFood();
-  const { addDraftItem } = useSavedMeals();
+  const { addDraftItem, saveRecipe } = useSavedMeals();
   const { showTiers, showTierNumber, tracksCalories, showMacros } =
     useFoodDisplay();
+  // Calories or macros are asked for; without them, the screen is just a name and a serving.
+  const tracksNumbers = tracksCalories || showMacros;
+  const { units } = useUnits();
+  // A serving's weight is typed in the person's own unit.
+  const weightUnit = units === Units.Imperial ? WeightUnit.Oz : null;
+  const gramsPerUnit = weightUnit ? weightGrams(weightUnit) : 1;
 
   const [name, setName] = useState(initialName ?? '');
-  const [serving, setServing] = useState('1 serving');
+  const [nameError, setNameError] = useState<string | null>(null);
+  // Left blank, a serving is saved as "1 serving".
+  const [serving, setServing] = useState('');
+  const [makes, setMakes] = useState('');
+  const [weighs, setWeighs] = useState('');
+  const [asRecipe, setAsRecipe] = useState(true);
   const [calories, setCalories] = useState('');
   const [protein, setProtein] = useState('');
   const [carbs, setCarbs] = useState('');
   const [fat, setFat] = useState('');
-  const [tier, setTier] = useState<Tier>(1);
+  // No type chosen for you: asked for only when food types are tracked, as on the details screen.
+  const [tier, setTier] = useState<Tier | null>(null);
+  const needsTier = showTiers && tier === null;
 
-  const canSave = name.trim().length > 0;
-
-  const save = () => {
-    if (!canSave) return;
-    const food = {
-      name: name.trim(),
-      servings: 1,
-      servingLabel: serving.trim() || '1 serving',
+  // A batch only when logging (a food added to a meal being built is one serving of it).
+  const typedMakes = parseInt(makes, 10);
+  const makesError =
+    !pick &&
+    makes.trim() &&
+    !(typedMakes >= 1 && typedMakes <= SavedMealLimits.MAX_SERVINGS)
+      ? `Enter a whole number from 1 to ${SavedMealLimits.MAX_SERVINGS}.`
+      : null;
+  const makesN = pick || makesError ? 1 : (typedYield(makes) ?? 1);
+  const servingGrams = typedServingGrams(weighs, gramsPerUnit);
+  const weighsError =
+    weighs.trim() && servingGrams === null
+      ? 'Enter what one serving weighs.'
+      : null;
+  const batch = makesN > 1;
+  const homemade: Homemade = {
+    name,
+    serving,
+    makes: makesN,
+    servingGrams,
+    totals: {
       calories: Number(calories) || 0,
       protein: Number(protein) || 0,
       carbs: Number(carbs) || 0,
       fat: Number(fat) || 0,
-      tier,
-    };
+    },
+    // With food types hidden in Settings there's no picker, so an unknown type is stored as 1.
+    tier: tier ?? 1,
+  };
+  const each = perServing(homemade);
+  const eachLine = [
+    tracksCalories ? `${each.calories} cal` : null,
+    ...(showMacros
+      ? [
+          `${each.protein}g protein`,
+          `${each.carbs}g carbs`,
+          `${each.fat}g fat`,
+        ]
+      : []),
+  ]
+    .filter(Boolean)
+    .join(' · ');
+
+  const canSave =
+    name.trim().length > 0 && !makesError && !weighsError && !needsTier;
+
+  const save = () => {
+    if (!canSave) return;
+    const entry = homemadeEntry(homemade, meal);
     if (pick) {
       // Building a saved meal: add to the meal being edited, not today's log.
-      addDraftItem(food);
+      const { meal: _meal, ...item } = entry; // eslint-disable-line @typescript-eslint/no-unused-vars
+      addDraftItem(item);
       // Back to the editor already open underneath, not a second copy of it.
       navigation.popTo('MealEditor');
       return;
     }
-    addFoodEntry({ ...food, meal });
+    if (batch && asRecipe) {
+      // Kept in Meals so the rest of the batch can be logged by the serving.
+      const saved = saveRecipe(name, batchItem(homemade), makesN);
+      if (!saved.ok) {
+        setNameError(saved.error);
+        return;
+      }
+    }
+    addFoodEntry(entry);
     navigation.goBack();
   };
 
@@ -85,33 +162,77 @@ export default function ManualFoodEntryScreen({ navigation, route }: Props) {
         }}
         keyboardShouldPersistTaps='handled'
       >
-        <Text style={s.intro}>
-          {tracksCalories || showMacros
-            ? 'Homemade or missing from the database? Add what you know — you can leave the numbers blank and still log it.'
-            : 'Homemade or missing from the database? A name is all it needs.'}
-        </Text>
+        {tracksNumbers ? (
+          <Text style={s.intro}>
+            Homemade or missing from the database? Add what you know — you can
+            leave the numbers blank and still log it.
+          </Text>
+        ) : null}
 
         <GroupLabel>Basics</GroupLabel>
         <Group>
           <FieldRow
             label='Name'
             value={name}
-            onChangeText={setName}
-            placeholder='e.g. Chili, homemade'
+            onChangeText={(v) => {
+              setName(v);
+              setNameError(null);
+            }}
+            placeholder='Required'
+            error={nameError}
           />
+          {/* What one serving is, as on a nutrition label: "1 bowl", "2 cups". */}
           <FieldRow
-            label='Serving'
+            label='Serving size'
             value={serving}
             onChangeText={setServing}
-            placeholder='e.g. 1 bowl'
+            placeholder='1 bowl'
           />
+          {/* A weight is for logging by the ounce or gram, which only matters with numbers. */}
+          {tracksNumbers ? (
+            <FieldRow
+              label='Serving weighs'
+              value={weighs}
+              onChangeText={(v) => setWeighs(v.replace(/[^0-9.,]/g, ''))}
+              keyboardType='numeric'
+              placeholder='optional'
+              suffix={weightUnit ?? 'g'}
+              suffixAlways
+              accessibilityLabel={`What one serving weighs, in ${weightUnit ? 'ounces' : 'grams'}`}
+              error={weighsError}
+            />
+          ) : null}
+          {pick ? null : (
+            <FieldRow
+              label='Recipe makes'
+              value={makes}
+              onChangeText={(v) => setMakes(v.replace(/[^0-9]/g, ''))}
+              keyboardType='numeric'
+              placeholder='optional'
+              suffix={makesN === 1 ? 'serving' : 'servings'}
+              suffixAlways
+              accessibilityLabel='How many servings it makes'
+              error={makesError}
+            />
+          )}
         </Group>
+        {tracksNumbers ? (
+          <FootNote>
+            {batch
+              ? 'For a pot of chili or a tray of bars: enter the numbers for the whole batch and it works out a serving.'
+              : 'With its weight, you can log it by the ounce or gram later.'}
+          </FootNote>
+        ) : null}
 
         {/* Calories are asked for whenever they're tracked, even with counts hidden, so a
             hidden field never saves a zero into the log. */}
         {tracksCalories || showMacros ? (
           <>
-            <GroupLabel>Nutrition (optional)</GroupLabel>
+            <GroupLabel>
+              {batch
+                ? 'Nutrition for the whole batch (optional)'
+                : 'Nutrition (optional)'}
+            </GroupLabel>
             <Group>
               {tracksCalories ? (
                 <FieldRow
@@ -132,6 +253,7 @@ export default function ManualFoodEntryScreen({ navigation, route }: Props) {
                   keyboardType='numeric'
                   placeholder='—'
                   suffix='g'
+                  suffixAlways
                 />
               ) : null}
               {showMacros ? (
@@ -143,6 +265,7 @@ export default function ManualFoodEntryScreen({ navigation, route }: Props) {
                   keyboardType='numeric'
                   placeholder='—'
                   suffix='g'
+                  suffixAlways
                 />
               ) : null}
               {showMacros ? (
@@ -154,8 +277,26 @@ export default function ManualFoodEntryScreen({ navigation, route }: Props) {
                   keyboardType='numeric'
                   placeholder='—'
                   suffix='g'
+                  suffixAlways
                 />
               ) : null}
+            </Group>
+            {batch && eachLine ? (
+              <FootNote>{`One serving: ${eachLine}`}</FootNote>
+            ) : null}
+          </>
+        ) : null}
+
+        {batch ? (
+          <>
+            <GroupLabel>Recipe</GroupLabel>
+            <Group>
+              <ToggleRow
+                title='Save as a recipe'
+                sub={`Keeps it in Meals, so the rest of the ${makesN} servings can be logged later.`}
+                on={asRecipe}
+                onToggle={setAsRecipe}
+              />
             </Group>
           </>
         ) : null}
@@ -178,13 +319,22 @@ export default function ManualFoodEntryScreen({ navigation, route }: Props) {
           onPress={save}
           disabled={!canSave}
         >
-          <Text style={s.bigBtnText}>Save and log</Text>
+          <Text style={s.bigBtnText}>
+            {needsTier && name.trim()
+              ? 'Choose a food type to save'
+              : batch
+              ? asRecipe
+                ? 'Save recipe and log 1 serving'
+                : 'Log 1 serving'
+              : 'Save and log'}
+          </Text>
         </Pressable>
       </ScrollView>
     </View>
   );
 }
 
+/** A labelled field, with its error (if any) shown right under it. */
 function FieldRow({
   label,
   value,
@@ -192,6 +342,9 @@ function FieldRow({
   placeholder,
   keyboardType,
   suffix,
+  suffixAlways,
+  accessibilityLabel,
+  error,
 }: {
   label: string;
   value: string;
@@ -199,19 +352,33 @@ function FieldRow({
   placeholder?: string;
   keyboardType?: 'default' | 'numeric';
   suffix?: string;
+  /** Show the unit even before anything is typed, so it's clear what to enter ("oz"). */
+  suffixAlways?: boolean;
+  accessibilityLabel?: string;
+  error?: string | null;
 }) {
   return (
-    <View style={s.row}>
-      <Text style={s.rowLabel}>{label}</Text>
-      <TextInput
-        value={value}
-        onChangeText={onChangeText}
-        placeholder={placeholder}
-        placeholderTextColor={colors.ink3}
-        keyboardType={keyboardType}
-        style={s.rowInput}
-      />
-      {suffix && value ? <Text style={s.rowSuffix}>{suffix}</Text> : null}
+    <View>
+      <View style={s.row}>
+        <Text style={s.rowLabel}>{label}</Text>
+        <TextInput
+          value={value}
+          onChangeText={onChangeText}
+          placeholder={placeholder}
+          placeholderTextColor={colors.ink3}
+          keyboardType={keyboardType}
+          accessibilityLabel={accessibilityLabel ?? label}
+          style={s.rowInput}
+        />
+        {suffix && (value || suffixAlways) ? (
+          <Text style={s.rowSuffix}>{suffix}</Text>
+        ) : null}
+      </View>
+      {error ? (
+        <Text style={s.error} accessibilityLiveRegion='polite'>
+          {error}
+        </Text>
+      ) : null}
     </View>
   );
 }
@@ -225,7 +392,8 @@ const s = StyleSheet.create({
     paddingVertical: 11,
     gap: 8,
   },
-  rowLabel: { ...typography.rowTitle, width: 78 },
+  // Wide enough for "Serving weighs" on one line.
+  rowLabel: { ...typography.rowTitle, width: 112 },
   rowInput: {
     flex: 1,
     fontFamily: font.body,
@@ -235,6 +403,13 @@ const s = StyleSheet.create({
     textAlign: 'right',
   },
   rowSuffix: { fontFamily: font.body, fontSize: 13, color: colors.ink2 },
+  error: {
+    ...typography.caption,
+    color: colors.danger,
+    paddingHorizontal: 13,
+    paddingBottom: 10,
+    marginTop: -4,
+  },
   card: {
     backgroundColor: colors.card,
     borderRadius: radius.lg,
