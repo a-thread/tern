@@ -1,5 +1,8 @@
 import {
   gramsPerMl,
+  HouseholdVolume,
+  knownDensity,
+  withHouseholdVolumes,
   isLiquid,
   isVolumeAmount,
   VolumeUnit,
@@ -56,5 +59,66 @@ describe('volume', () => {
   it('leaves room for oz and lb after fl oz and ml, without clashing', () => {
     const all = withWeights(withVolumes([{ label: 'cup', grams: 244 }], 'Milk'));
     expect(all.map((p) => p.label)).toEqual(['cup', 'fl oz', 'ml', 'oz', 'lb']);
+  });
+});
+
+// Sizes as the live APIs gave them (November 2026).
+describe('cups and spoons', () => {
+  const labels = (ps: { label: string }[]) => ps.map((p) => p.label);
+
+  it('reads weight per cup from a cup or spoon the food really has', () => {
+    // Broccoli: 1 cup, chopped = 76 g.
+    expect(knownDensity([{ label: 'cup, chopped', grams: 76 }])).toBeCloseTo(
+      0.321,
+      3,
+    );
+    // Peanut butter: 1 tbsp = 16 g.
+    expect(knownDensity([{ label: 'tbsp', grams: 16 }])).toBeCloseTo(1.082, 3);
+    expect(knownDensity([{ label: '2 tbsp', grams: 32 }])).toBeCloseTo(1.082, 3);
+  });
+
+  it('never guesses: no cup or spoon, ml or fl oz only, or an impossible figure', () => {
+    expect(knownDensity([{ label: 'packet', grams: 35 }])).toBeNull();
+    expect(knownDensity([{ label: 'ml', grams: 1 }])).toBeNull();
+    expect(knownDensity([{ label: 'fl oz', grams: 29.6 }])).toBeNull();
+    expect(knownDensity([{ label: 'cup', grams: 5 }])).toBeNull();
+    expect(knownDensity([{ label: 'cupcake', grams: 60 }])).toBeNull();
+    // Puffed cereal is light, but real.
+    expect(knownDensity([{ label: 'cup', grams: 14 }])).not.toBeNull();
+  });
+
+  it('adds a cup to a food with a known spoon, and spoons only to spooned foods', () => {
+    const pb = withHouseholdVolumes(
+      [{ label: 'tbsp', grams: 16 }],
+      'Peanut butter',
+    );
+    // Spoons first, the cup last.
+    expect(pb).toEqual([
+      { label: 'tbsp', grams: 16 },
+      { label: HouseholdVolume.Tsp, grams: 5.3 },
+      { label: HouseholdVolume.Cup, grams: 256 },
+    ]);
+    const broccoli = withHouseholdVolumes(
+      [
+        { label: 'cup, chopped', grams: 76 },
+        { label: 'serving', grams: 85 },
+      ],
+      'Broccoli, raw',
+    );
+    // It has a cup already; broccoli isn't spooned.
+    expect(labels(broccoli)).toEqual(['cup, chopped', 'serving']);
+    const cheddar = withHouseholdVolumes(
+      [
+        { label: 'slice', grams: 17 },
+        { label: 'tbsp', grams: 7 },
+      ],
+      'Cheese, cheddar',
+    );
+    expect(labels(cheddar)).toEqual(['slice', 'tbsp', 'cup']);
+  });
+
+  it('leaves a food with no cup or spoon alone', () => {
+    const packet = [{ label: 'packet', grams: 35 }];
+    expect(withHouseholdVolumes(packet, 'Oatmeal')).toBe(packet);
   });
 });

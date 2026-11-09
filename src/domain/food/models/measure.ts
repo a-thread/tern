@@ -11,6 +11,7 @@ import {
 } from './servings';
 import {
   isHouseholdVolume,
+  withHouseholdVolumes,
   isVolumeUnit,
   VolumeSteps,
   VolumeUnit,
@@ -249,18 +250,20 @@ export function typedAmount(m: Measure, text: string): Measure {
 }
 
 /**
- * The measure with ounces and pounds on offer, and fl oz and ml when `name` is
- * a drink (entries logged before they were).
+ * The measure with ounces and pounds on offer, a cup (and spoons) when its weight per cup is
+ * known, and fl oz and ml when `name` is a drink (entries logged before they were).
  */
 export function withTypedUnits(m: Measure, name: string): Measure {
-  const portions = withWeights(withVolumes(m.portions, name));
+  const portions = withWeights(
+    withVolumes(withHouseholdVolumes(m.portions, name), name),
+  );
   return portions.length === m.portions.length ? m : { ...m, portions };
 }
 
 /**
  * Where to start when logging `result`, whose values are for `baseGrams`: the
  * unit and amount used last time if it was logged before, else the first
- * portion (one of it), else the weight the values are for (in ml for a drink,
+ * portion (one of it; a tablespoon for oil and butter), else the weight the values are for (in ml for a drink,
  * ounces for Imperial, else grams). Every food gets oz and lb to choose from,
  * and drinks fl oz and ml.
  */
@@ -269,7 +272,8 @@ export function startingMeasure(
   baseGrams: number,
   units: Units,
 ): Measure {
-  const own = result.portions ?? [];
+  // The food's sizes, with a cup and spoons when known (spoons first for oil and butter).
+  const own = withHouseholdVolumes(result.portions ?? [], result.name);
   const portions = withWeights(withVolumes(own, result.name, result.liquid));
   const base = { per100: scaleForGrams(result, baseGrams, 100), portions };
   const last = result.last;

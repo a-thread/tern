@@ -31,6 +31,8 @@ export type SearchResult = {
   detail?: string;
   /** The source lists it by volume (a drink sold in ml), so fl oz and ml are offered whatever its name. */
   liquid?: boolean;
+  /** Set by the search list while it fetches this food's household sizes, so the row waits for them. */
+  sizesLoading?: boolean;
   /** How common a food is (1 is the most), used to rank common foods. */
   rank?: number;
 };

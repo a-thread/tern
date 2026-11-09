@@ -79,6 +79,115 @@ export function gramsPerMl(portions: Portion[]): number {
   return 1;
 }
 
+/** The cup and spoons offered for foods whose weight per cup is known. */
+export enum HouseholdVolume {
+  Cup = 'cup',
+  Tbsp = 'tbsp',
+  Tsp = 'tsp',
+}
+
+const HOUSEHOLD_ML: Record<HouseholdVolume, number> = {
+  [HouseholdVolume.Cup]: ML_PER_FL_OZ * 8,
+  [HouseholdVolume.Tbsp]: ML_PER_FL_OZ / 2,
+  [HouseholdVolume.Tsp]: ML_PER_FL_OZ / 6,
+};
+
+// A cup or spoon at the start of a label, however it goes on: "cup, chopped", "2 tbsp", "cup slices".
+const HOUSEHOLD_LABEL: [RegExp, HouseholdVolume][] = [
+  [/^(\d+(?:[.,]\d+)?\s*)?cups?\b/i, HouseholdVolume.Cup],
+  [/^(\d+(?:[.,]\d+)?\s*)?(tbsp|tablespoons?)\b/i, HouseholdVolume.Tbsp],
+  [/^(\d+(?:[.,]\d+)?\s*)?(tsp|teaspoons?)\b/i, HouseholdVolume.Tsp],
+];
+
+/** How dense a food can plausibly be, in g/ml: puffed cereal is about 0.1, honey 1.4. */
+export class Density {
+  static readonly MIN = 0.05;
+
+  static readonly MAX = 2.5;
+}
+
+/** Foods measured by the spoon as well as the cup: oils, spreads, sauces, sweeteners, spices. */
+export const SPOONED =
+  /\b(oil|butter|honey|syrup|jam|jelly|mayonnaise|mayo|dressing|sauce|ketchup|mustard|sugar|salsa|hummus|spread|salt|spice|cinnamon|vinegar|cream|powder)\b/i;
+
+/** The millilitres a cup or spoon label holds ("cup, chopped" is one cup), or null. */
+function householdMl(label: string): number | null {
+  const text = label.trim();
+  for (const [re, unit] of HOUSEHOLD_LABEL) {
+    const m = re.exec(text);
+    if (!m) continue;
+    const count = m[1] ? parseFloat(m[1].replace(',', '.')) : 1;
+    return count > 0 ? HOUSEHOLD_ML[unit] * count : null;
+  }
+  return null;
+}
+
+/**
+ * Grams per millilitre from a cup or spoon the food really has ("cup, chopped" = 76 g), or
+ * null when it has none or the figure can't be right. Never a guess: ml and fl oz are left
+ * out, since for drinks they may have been added at the weight of water.
+ */
+export function knownDensity(portions: Portion[]): number | null {
+  for (const p of portions) {
+    const ml = householdMl(p.label);
+    if (ml === null) continue;
+    const density = p.grams / ml;
+    return density >= Density.MIN && density <= Density.MAX ? density : null;
+  }
+  return null;
+}
+
+/**
+ * The portions with a cup added, and a tbsp and tsp for spooned foods (`SPOONED`), when the
+ * food's own sizes say what a cup of it weighs. A food with no cup or spoon of its own gets
+ * none: a cup of an unknown food can't be worked out from its weight. Spooned foods list
+ * their spoons first and a cup last, so oil starts on a tablespoon.
+ */
+export function withHouseholdVolumes(
+  portions: Portion[],
+  name: string,
+): Portion[] {
+  const spooned = SPOONED.test(name);
+  const all = withAddedVolumes(portions, name);
+  return spooned ? spoonsFirst(all) : all;
+}
+
+// Where a size goes for a spooned food: tbsp, then tsp, then its other sizes, then a cup.
+const spoonRank = (label: string): number => {
+  const unit = HOUSEHOLD_LABEL.find(([re]) => re.test(label.trim()))?.[1];
+  if (unit === HouseholdVolume.Tbsp) return 0;
+  if (unit === HouseholdVolume.Tsp) return 1;
+  if (unit === HouseholdVolume.Cup) return 3;
+  return 2;
+};
+
+/** Oil and butter go by the spoon: spoons first, a cup last (a cup of oil is 216 g). */
+function spoonsFirst(portions: Portion[]): Portion[] {
+  const sorted = [...portions].sort(
+    (a, b) => spoonRank(a.label) - spoonRank(b.label),
+  );
+  return sorted.every((p, i) => p === portions[i]) ? portions : sorted;
+}
+
+function withAddedVolumes(portions: Portion[], name: string): Portion[] {
+  const density = knownDensity(portions);
+  if (density === null) return portions;
+  const has = (unit: HouseholdVolume) =>
+    portions.some((p) =>
+      HOUSEHOLD_LABEL.some(([re, u]) => u === unit && re.test(p.label.trim())),
+    );
+  const wanted = SPOONED.test(name)
+    ? Object.values(HouseholdVolume)
+    : [HouseholdVolume.Cup];
+  const added = wanted
+    .filter((unit) => !has(unit))
+    .map((unit) => ({
+      label: unit,
+      grams: Math.round(density * HOUSEHOLD_ML[unit] * 10) / 10,
+    }));
+  return added.length ? [...portions, ...added] : portions;
+}
+
 /**
  * Whether a food is a drink: the source said so (`hint`), it already comes in
  * fluid ounces or ml, or its name says it ("Orange juice", "Milk, whole").

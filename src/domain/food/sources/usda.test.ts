@@ -491,3 +491,21 @@ describe('searchUsda request', () => {
     expect(spy).not.toHaveBeenCalled();
   });
 });
+
+describe('spoon names', () => {
+  it('shortens tablespoon and teaspoon to the app’s tbsp and tsp', () => {
+    expect(
+      usdaPortions({
+        fdcId: 1,
+        description: 'Peanut butter',
+        foodMeasures: [
+          { disseminationText: '1 tablespoon', gramWeight: 16, rank: 1 },
+          { disseminationText: '1 teaspoon', gramWeight: 5.3, rank: 2 },
+        ],
+      }),
+    ).toEqual([
+      { label: 'tbsp', grams: 16 },
+      { label: 'tsp', grams: 5.3 },
+    ]);
+  });
+});

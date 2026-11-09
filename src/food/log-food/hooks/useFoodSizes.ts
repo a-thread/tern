@@ -4,6 +4,7 @@ import type { SearchResult } from '@/domain/food/sources/searchResult';
 import {
   loadSizes,
   sizesKnown,
+  sizesSettled,
   withSizes,
 } from '../sources/foodSizes';
 
@@ -51,20 +52,22 @@ export class SizePrefetch {
 /**
  * The foods with their sizes filled in as they arrive, fetching them for the first few that
  * came without (so the list can say "1 packet · 130 cal" and the details screen opens on it).
+ * Those still on their way are marked `sizesLoading`, so a row waits rather than showing
+ * "per oz" and then switching to "1 packet".
  */
 export function useListSizes<T extends SearchResult>(foods: T[]): T[] {
   const [version, setVersion] = useState(0);
+  const isWanted = (f: T, i: number) =>
+    i < SizePrefetch.TOP && !sizesSettled(f);
   const wanted = foods
-    .slice(0, SizePrefetch.TOP)
-    .filter((f) => !sizesKnown(f))
+    .filter(isWanted)
     .map((f) => f.id)
     .join('|');
   useEffect(() => {
     if (!wanted) return undefined;
     let live = true;
     foods
-      .slice(0, SizePrefetch.TOP)
-      .filter((f) => !sizesKnown(f))
+      .filter(isWanted)
       .forEach((f) =>
         loadSizes(f).then(() => live && setVersion((n) => n + 1)),
       );
@@ -73,7 +76,10 @@ export function useListSizes<T extends SearchResult>(foods: T[]): T[] {
     };
   }, [wanted]); // eslint-disable-line react-hooks/exhaustive-deps
   return useMemo(
-    () => foods.map((f) => withSizes(f) as T),
+    () =>
+      foods.map((f, i) =>
+        isWanted(f, i) ? { ...f, sizesLoading: true } : (withSizes(f) as T),
+      ),
     [foods, version], // eslint-disable-line react-hooks/exhaustive-deps
   );
 }

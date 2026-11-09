@@ -39,3 +39,16 @@ describe('resultSubline', () => {
     );
   });
 });
+
+describe('resultSubline while sizes load', () => {
+  it('shows no amount until the sizes arrive', () => {
+    expect(
+      resultSubline(
+        { ...oatmeal, sizesLoading: true },
+        FoodSource.Off,
+        true,
+        Units.Imperial,
+      ),
+    ).toBe('Packaged · Key Food');
+  });
+});

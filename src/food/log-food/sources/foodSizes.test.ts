@@ -6,6 +6,7 @@ import {
   loadSizes,
   needsSizes,
   sizesKnown,
+  sizesSettled,
   withSizes,
 } from './foodSizes';
 
@@ -70,5 +71,10 @@ describe('foodSizes', () => {
     const offline = food({ id: '2222222222222' });
     expect(await loadSizes(offline)).toBeNull();
     expect(sizesKnown(offline)).toBe(false);
+    // The list stops waiting on it; a later look asks again.
+    expect(sizesSettled(offline)).toBe(true);
+    fetchProduct.mockResolvedValueOnce({ portions: [{ label: 'bar', grams: 40 }] });
+    await loadSizes(offline);
+    expect(sizesKnown(offline)).toBe(true);
   });
 });

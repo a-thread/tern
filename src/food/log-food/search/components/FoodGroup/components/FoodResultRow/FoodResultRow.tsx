@@ -24,6 +24,7 @@ const SOURCE_TAG: Record<FoodSource, string> = {
  * The line under a food's name: where it's from, its detail or brand, and the
  * calories for its first portion ("1 packet · 130 cal") when it has one. Without one,
  * per ounce on Imperial ("105 cal / oz") or per its serving on Metric ("371 cal / 100 g").
+ * While its sizes are being fetched, no amount is shown yet.
  */
 export function resultSubline(
   r: SearchResult,
@@ -35,7 +36,10 @@ export function resultSubline(
   const portion = per100 ? r.portions?.[0] : undefined;
   const byOunce = per100 && !portion && units === Units.Imperial;
   const calFor = (grams: number) => Math.round((r.calories * grams) / 100);
-  const amount = portion
+  // Sizes on their way: no amount yet, rather than "per oz" that then turns into "1 packet".
+  const amount = r.sizesLoading
+    ? undefined
+    : portion
     ? showCalories
       ? `1 ${portion.label} · ${calFor(portion.grams)} cal`
       : `1 ${portion.label}`

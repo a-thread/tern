@@ -475,3 +475,73 @@ describe('amountText', () => {
     ).toBe('2 cups, chopped');
   });
 });
+
+describe('startingMeasure with cups and spoons', () => {
+  it('offers a spooned food’s spoons, its other sizes, then a cup, then weights', () => {
+    const peanutButter: SearchResult = {
+      id: 'usda-2707537',
+      name: 'Peanut butter',
+      servingLabel: '100 g',
+      calories: 597,
+      protein: 22.2,
+      carbs: 22.3,
+      fat: 51.1,
+      tier: null,
+      portions: [
+        { label: 'tablespoon', grams: 16 },
+        { label: 'serving', grams: 32 },
+      ],
+    };
+    const m = startingMeasure(peanutButter, 100, Units.Imperial);
+    expect(m).toMatchObject({ unit: 'tablespoon', quantity: 1 });
+    expect(m.portions.map((p) => p.label)).toEqual([
+      'tablespoon',
+      'tsp',
+      'serving',
+      'cup',
+      'oz',
+      'lb',
+    ]);
+  });
+
+  it('starts olive oil on a tablespoon, though USDA lists the cup first', () => {
+    const oil: SearchResult = {
+      id: 'usda-2710176',
+      name: 'Olive oil',
+      servingLabel: '100 g',
+      calories: 884,
+      protein: 0,
+      carbs: 0,
+      fat: 100,
+      tier: null,
+      portions: [
+        { label: 'cup', grams: 224 },
+        { label: 'tbsp', grams: 14 },
+      ],
+    };
+    const m = startingMeasure(oil, 100, Units.Imperial);
+    expect(m).toMatchObject({ unit: 'tbsp', quantity: 1 });
+    expect(m.portions.map((p) => p.label)).toEqual([
+      'tbsp',
+      'tsp',
+      'cup',
+      'oz',
+      'lb',
+    ]);
+  });
+
+  it('keeps a cup where the source put it for foods that aren’t spooned', () => {
+    const milk: SearchResult = {
+      id: 'usda-1',
+      name: 'Milk, whole',
+      servingLabel: '100 g',
+      calories: 61,
+      protein: 3.2,
+      carbs: 4.8,
+      fat: 3.3,
+      tier: null,
+      portions: [{ label: 'cup', grams: 244 }],
+    };
+    expect(startingMeasure(milk, 100, Units.Imperial).unit).toBe('cup');
+  });
+});

@@ -72,19 +72,18 @@ export default function FoodDetailScreen({ navigation, route }: Props) {
 
   // Sizes that arrive after opening: until the amount is touched the food starts over on its
   // first size ("1 packet"); after that (they came late) they're only added to the choices.
+  // Done while rendering, not in an effect, so no frame is ever drawn with the old units.
   const touched = useRef(false);
-  useEffect(() => {
-    if (result === searched || !result.portions?.length || baseGrams === null)
-      return;
-    const extra = result.portions;
-    setMeasure((m) =>
-      !m
-        ? m
-        : touched.current
-          ? addPortions(m, extra)
+  const [settledFor, setSettledFor] = useState(result);
+  if (settledFor !== result) {
+    setSettledFor(result);
+    if (measure && baseGrams !== null && result.portions?.length)
+      setMeasure(
+        touched.current
+          ? addPortions(measure, result.portions)
           : startingMeasure(result, baseGrams, units),
-    );
-  }, [result]); // eslint-disable-line react-hooks/exhaustive-deps
+      );
+  }
   const changeMeasure = (next: Measure) => {
     touched.current = true;
     setMeasure(next);

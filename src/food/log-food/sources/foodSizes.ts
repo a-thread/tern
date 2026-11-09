@@ -10,6 +10,8 @@ export type Sizes = Pick<SearchResult, 'portions' | 'liquid'>;
 // so the search list and the details screen share one request per food.
 const fetched = new Map<string, Sizes | null>();
 const pending = new Map<string, Promise<Sizes | null>>();
+// Requests that failed this session: the list stops waiting on them; opening the food retries.
+const failed = new Set<string>();
 
 /** Whether a food found by searching arrived without its sizes, which its details have. */
 export const needsSizes = (r: SearchResult) =>
@@ -20,6 +22,10 @@ export const needsSizes = (r: SearchResult) =>
 /** Whether the sizes of this food have been asked for and answered. */
 export const sizesKnown = (r: SearchResult) =>
   !needsSizes(r) || fetched.has(r.id);
+
+/** Whether asking for this food's sizes is over: answered, or failed this session. */
+export const sizesSettled = (r: SearchResult) =>
+  sizesKnown(r) || failed.has(r.id);
 
 /** The food with any sizes fetched for it filled in. */
 export function withSizes(r: SearchResult): SearchResult {
@@ -37,6 +43,7 @@ export function loadSizes(r: SearchResult): Promise<Sizes | null> {
   if (fetched.has(r.id)) return Promise.resolve(fetched.get(r.id) ?? null);
   const waiting = pending.get(r.id);
   if (waiting) return waiting;
+  failed.delete(r.id);
   const request = (
     r.source === FoodSource.Usda
       ? getUsdaPortions(r.id).then((portions): Sizes => ({ portions }))
@@ -47,7 +54,10 @@ export function loadSizes(r: SearchResult): Promise<Sizes | null> {
       fetched.set(r.id, found);
       return found;
     })
-    .catch(() => null)
+    .catch(() => {
+      failed.add(r.id);
+      return null;
+    })
     .finally(() => pending.delete(r.id));
   pending.set(r.id, request);
   return request;
@@ -57,4 +67,5 @@ export function loadSizes(r: SearchResult): Promise<Sizes | null> {
 export function clearSizes() {
   fetched.clear();
   pending.clear();
+  failed.clear();
 }

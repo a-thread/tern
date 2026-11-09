@@ -99,12 +99,17 @@ const NOT_A_UNIT = /^(undetermined|racc)$/i;
 const NOT_A_PORTION =
   /^guideline amount|\byields?\b|\bcubic inch|\bwith ice\b|^(oz|ounces?)\b/i;
 
-/** Drops USDA's "not further specified" notes: "breast, NS as to size" → "breast", "fl oz (NFS)" → "fl oz". */
+/**
+ * Drops USDA's "not further specified" notes ("breast, NS as to size" → "breast", "fl oz (NFS)"
+ * → "fl oz") and shortens spoons to the app's own words ("tablespoon" → "tbsp").
+ */
 const withoutNotes = (label: string) =>
   label
     .replace(/\s*\((nfs|no ice)\)/gi, '')
     .replace(/,?\s*\bNS as to [a-z ]+$/i, '')
     .replace(/,\s*NFS$/i, '')
+    .replace(/^tablespoons?\b/i, 'tbsp')
+    .replace(/^teaspoons?\b/i, 'tsp')
     .trim();
 
 /** A leading quantity such as "1", "2", "0.5", "1/2" or "1 1/2", and what follows it. */
