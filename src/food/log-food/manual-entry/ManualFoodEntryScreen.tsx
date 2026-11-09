@@ -28,6 +28,9 @@ import {
 import {
   batchItem,
   homemadeEntry,
+  homemadeItem,
+  numberChars,
+  typedNutrient,
   perServing,
   typedServingGrams,
   type Homemade,
@@ -92,10 +95,10 @@ export default function ManualFoodEntryScreen({ navigation, route }: Props) {
     makes: makesN,
     servingGrams,
     totals: {
-      calories: Number(calories) || 0,
-      protein: Number(protein) || 0,
-      carbs: Number(carbs) || 0,
-      fat: Number(fat) || 0,
+      calories: typedNutrient(calories),
+      protein: typedNutrient(protein),
+      carbs: typedNutrient(carbs),
+      fat: typedNutrient(fat),
     },
     // With food types hidden in Settings there's no picker, so an unknown type is stored as 1.
     tier: tier ?? 1,
@@ -119,11 +122,9 @@ export default function ManualFoodEntryScreen({ navigation, route }: Props) {
 
   const save = () => {
     if (!canSave) return;
-    const entry = homemadeEntry(homemade, meal);
     if (pick) {
       // Building a saved meal: add to the meal being edited, not today's log.
-      const { meal: _meal, ...item } = entry; // eslint-disable-line @typescript-eslint/no-unused-vars
-      addDraftItem(item);
+      addDraftItem(homemadeItem(homemade));
       // Back to the editor already open underneath, not a second copy of it.
       navigation.popTo('MealEditor');
       return;
@@ -136,7 +137,7 @@ export default function ManualFoodEntryScreen({ navigation, route }: Props) {
         return;
       }
     }
-    addFoodEntry(entry);
+    addFoodEntry(homemadeEntry(homemade, meal));
     navigation.goBack();
   };
 
@@ -193,7 +194,7 @@ export default function ManualFoodEntryScreen({ navigation, route }: Props) {
             <FieldRow
               label='Serving weighs'
               value={weighs}
-              onChangeText={(v) => setWeighs(v.replace(/[^0-9.,]/g, ''))}
+              onChangeText={(v) => setWeighs(numberChars(v))}
               keyboardType='numeric'
               placeholder='optional'
               suffix={weightUnit ?? 'g'}
@@ -239,7 +240,7 @@ export default function ManualFoodEntryScreen({ navigation, route }: Props) {
                   key='calories'
                   label='Calories'
                   value={calories}
-                  onChangeText={setCalories}
+                  onChangeText={(v) => setCalories(numberChars(v))}
                   keyboardType='numeric'
                   placeholder='—'
                 />
@@ -249,7 +250,7 @@ export default function ManualFoodEntryScreen({ navigation, route }: Props) {
                   key='protein'
                   label='Protein'
                   value={protein}
-                  onChangeText={setProtein}
+                  onChangeText={(v) => setProtein(numberChars(v))}
                   keyboardType='numeric'
                   placeholder='—'
                   suffix='g'
@@ -261,7 +262,7 @@ export default function ManualFoodEntryScreen({ navigation, route }: Props) {
                   key='carbs'
                   label='Carbs'
                   value={carbs}
-                  onChangeText={setCarbs}
+                  onChangeText={(v) => setCarbs(numberChars(v))}
                   keyboardType='numeric'
                   placeholder='—'
                   suffix='g'
@@ -273,7 +274,7 @@ export default function ManualFoodEntryScreen({ navigation, route }: Props) {
                   key='fat'
                   label='Fat'
                   value={fat}
-                  onChangeText={setFat}
+                  onChangeText={(v) => setFat(numberChars(v))}
                   keyboardType='numeric'
                   placeholder='—'
                   suffix='g'
@@ -406,9 +407,10 @@ const s = StyleSheet.create({
   error: {
     ...typography.caption,
     color: colors.danger,
-    paddingHorizontal: 13,
-    paddingBottom: 10,
-    marginTop: -4,
+    // In line with the row's own inset (13), tucked up under it.
+    paddingHorizontal: space.md + 1,
+    paddingBottom: space.sm,
+    marginTop: -space.xs,
   },
   card: {
     backgroundColor: colors.card,

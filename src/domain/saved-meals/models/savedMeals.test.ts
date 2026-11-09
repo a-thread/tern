@@ -241,6 +241,40 @@ describe('recipes', () => {
     expect(recipeEntry(chili, 1.5, Meal.Dinner)).not.toHaveProperty('measure');
   });
 
+  it('keeps a weighed batch weighed, so a serving can be changed by the ounce', () => {
+    // A pot of 8 bowls of 340 g, 2400 cal in all.
+    const pot = {
+      name: 'Pot chili',
+      servings: 8,
+      items: [
+        {
+          name: 'Pot chili',
+          servings: 1,
+          servingLabel: 'whole batch',
+          calories: 2400,
+          protein: 160,
+          carbs: 200,
+          fat: 96,
+          tier: 1 as const,
+          measure: {
+            per100: { calories: 88.2, protein: 5.9, carbs: 7.4, fat: 3.5 },
+            portions: [{ label: 'bowl', grams: 340 }],
+            unit: 'bowl',
+            quantity: 8,
+          },
+        },
+      ],
+    };
+    const e = recipeEntry(pot, 1.5, Meal.Dinner);
+    expect(e.measure).toMatchObject({ unit: 'bowl', quantity: 1.5 });
+    expect(e).toMatchObject({
+      servings: 1,
+      servingLabel: '1.5 bowls (510 g)',
+      calories: 450,
+      protein: 30,
+    });
+  });
+
   it('gives the entry the tier of the foods making most of the calories', () => {
     // Beef (tier 1) and beans (tier 2) are 800 calories each: the higher tier wins.
     expect(dominantTier(chili.items)).toBe(2);

@@ -146,17 +146,36 @@ export function recipeEntry(
 ): NewFoodEntry {
   const total = savedMealTotals(meal.items);
   const per = (v: number) => Math.round((v / meal.servings) * 10) / 10;
-  return {
+  const base = {
     name: meal.name,
     meal: logMeal,
+    tier: dominantTier(meal.items),
+    tierOverridden: false,
+  };
+  // A homemade batch saved with a serving weight is one weighed item ("8 bowls"): its share
+  // stays weighed ("1 bowl"), so it can be changed by the ounce or gram like the first one.
+  const only = meal.items.length === 1 ? meal.items[0] : null;
+  if (only?.measure) {
+    const share = eaten / meal.servings;
+    const t = (v: number) => Math.round(v * share * 10) / 10;
+    return {
+      ...base,
+      ...amountOf(scaleMeasure(only.measure, share)),
+      // The numbers as saved, not rebuilt from per-100 g.
+      calories: Math.round(total.calories * share),
+      protein: t(total.protein),
+      carbs: t(total.carbs),
+      fat: t(total.fat),
+    };
+  }
+  return {
+    ...base,
     servings: eaten,
     servingLabel: '1 serving',
     calories: Math.round(total.calories / meal.servings),
     protein: per(total.protein),
     carbs: per(total.carbs),
     fat: per(total.fat),
-    tier: dominantTier(meal.items),
-    tierOverridden: false,
   };
 }
 

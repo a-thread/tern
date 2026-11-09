@@ -186,4 +186,10 @@ describe('dedupeFoods and sizes', () => {
     const off = food('Oatmeal', { id: '1', source: FoodSource.Off });
     expect(dedupeFoods([mine, off])[0].sizesFrom).toBeUndefined();
   });
+
+  it('never points a database food at another product for its sizes', () => {
+    const first = food('Oatmeal', { id: '1', source: FoodSource.Off });
+    const second = food('Oatmeal', { id: '2', source: FoodSource.Off });
+    expect(dedupeFoods([first, second])[0].sizesFrom).toBeUndefined();
+  });
 });

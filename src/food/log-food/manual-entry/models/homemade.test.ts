@@ -2,7 +2,9 @@ import { Meal } from '@/domain/food/models/foodEntry';
 import {
   batchItem,
   homemadeEntry,
+  numberChars,
   perServing,
+  typedNutrient,
   servingMeasure,
   typedServingGrams,
   type Homemade,
@@ -64,6 +66,37 @@ describe('homemade', () => {
       calories: 300,
     });
     expect(servingMeasure(chili)).toBeNull();
+  });
+
+  it('keeps the serving size as typed when it has no number, or a fraction', () => {
+    const bowl = { ...chili, serving: 'bowl', servingGrams: 340 };
+    expect(servingMeasure(bowl)).toMatchObject({ unit: 'bowl', quantity: 1 });
+    const half = { ...chili, serving: '1/2 cup', servingGrams: 120 };
+    expect(servingMeasure(half)).toMatchObject({
+      portions: [{ label: 'cup', grams: 240 }],
+      quantity: 0.5,
+    });
+    const blank = { ...chili, serving: '', servingGrams: 340 };
+    expect(servingMeasure(blank)).toMatchObject({
+      unit: 'serving',
+      quantity: 1,
+    });
+  });
+
+  it('weighs the whole batch for a recipe when a serving has a weight', () => {
+    const weighed = { ...chili, servingGrams: 340 };
+    expect(batchItem(weighed).measure).toMatchObject({
+      unit: 'bowl',
+      quantity: 8,
+    });
+    expect(batchItem(chili)).not.toHaveProperty('measure');
+  });
+
+  it('reads nutrition typed with a decimal comma', () => {
+    expect(typedNutrient('62,5')).toBe(62.5);
+    expect(typedNutrient('62.5')).toBe(62.5);
+    expect(typedNutrient('')).toBe(0);
+    expect(numberChars('12a,5g')).toBe('12,5');
   });
 
   it('reads a typed weight in its unit, as grams', () => {

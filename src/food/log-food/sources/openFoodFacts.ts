@@ -1,9 +1,9 @@
 import { round1, toFiniteNumber } from '@shared/utils/number';
 import type { Tier } from '@/domain/food/models/foodEntry';
-import { singular } from '@/domain/food/models/measure';
+import { servingPortion } from '@/domain/food/models/servingText';
 import { isVolumeAmount } from '@/domain/food/models/volume';
 import { getJson } from '@/domain/food/sources/http';
-import type { Portion, SearchResult } from '@/domain/food/sources/searchResult';
+import type { SearchResult } from '@/domain/food/sources/searchResult';
 import { FoodSource } from '@/domain/food/models/foodSource';
 import {
   isFoodApiLogOn,
@@ -36,49 +36,6 @@ export type OffProduct = {
   nutriments?: Record<string, number | string | undefined>;
   nova_group?: number | string;
 };
-
-// A serving written only as a weight or volume ("30 g", "250 ml") has no name of its own.
-const BARE_AMOUNT = /^(g|kg|mg|ml|cl|l|dl)$/i;
-// A weight in ounces or pounds ("1 oz (28 g)", "1 onz"): every food already has those, so it's a serving.
-const WEIGHT_MEASURE = /^(oz|onz|ounces?|lbs?|pounds?)$/i;
-// A household measure, counted in ones: "2 tbsp (32 g)" is a tbsp of 16 g, "0.33 cup (28 g)" a cup of 85 g.
-const HOUSEHOLD_MEASURE: [RegExp, string][] = [
-  [/^(fl\.? ?oz|fluid ounces?)$/i, 'fl oz'],
-  [/^(tsp|teaspoons?)$/i, 'tsp'],
-  [/^(tbsp|tablespoons?)$/i, 'tbsp'],
-  [/^cups?$/i, 'cup'],
-];
-
-/**
- * The portion a product's serving size describes. "1 bar (40 g)" is a bar of
- * 40 g, "2 cookies (30 g)" a cookie of 15 g, "2 tbsp (30 g)" a tbsp of 15 g;
- * a bare weight ("30 g", "1 oz") is just "serving".
- */
-export function servingPortion(
-  servingSize: string | undefined,
-  grams: number,
-): Portion {
-  const text = (servingSize ?? '')
-    .replace(/\(.*?\)/g, ' ')
-    .replace(/\s+/g, ' ')
-    .trim();
-  const m = /^(\d+(?:[.,]\d+)?)\s*([a-z][a-z .-]*)$/i.exec(text);
-  if (!m) return { label: 'serving', grams };
-  const count = parseFloat(m[1].replace(',', '.'));
-  const noun = m[2].trim();
-  if (BARE_AMOUNT.test(noun) || WEIGHT_MEASURE.test(noun))
-    return { label: 'serving', grams };
-  const measure = HOUSEHOLD_MEASURE.find(([re]) => re.test(noun));
-  if (measure && count > 0)
-    return { label: measure[1], grams: Math.round((grams / count) * 10) / 10 };
-  if (Number.isInteger(count) && count > 1) {
-    return {
-      label: singular(noun.toLowerCase()),
-      grams: Math.round((grams / count) * 10) / 10,
-    };
-  }
-  return { label: noun.toLowerCase(), grams };
-}
 
 function firstBrand(brands: OffProduct['brands']): string | undefined {
   const first = Array.isArray(brands) ? brands[0] : brands?.split(',')[0];

@@ -115,6 +115,9 @@ export function scoreResult(
   return score;
 }
 
+const isDatabase = (f: SearchResult) =>
+  f.source === FoodSource.Usda || f.source === FoodSource.Off;
+
 /** The same food from several places (or listed twice) shows once; the first, best-scored copy wins. */
 export function dedupeFoods<T extends SearchResult>(list: T[]): T[] {
   const kept = new Map<string, number>();
@@ -128,12 +131,14 @@ export function dedupeFoods<T extends SearchResult>(list: T[]): T[] {
       continue;
     }
     // Your own copy wins its place, but if it has no sizes (logged before they were known),
-    // it remembers the database copy so they can be fetched.
+    // it remembers the database copy so they can be fetched. A database food that wins
+    // keeps fetching its own sizes, never another product's.
     const winner = out[at];
     if (
+      !isDatabase(winner) &&
       !hasSizes(winner) &&
       !winner.sizesFrom &&
-      (r.source === FoodSource.Usda || r.source === FoodSource.Off)
+      isDatabase(r)
     )
       out[at] = { ...winner, sizesFrom: { id: r.id, source: r.source } };
   }

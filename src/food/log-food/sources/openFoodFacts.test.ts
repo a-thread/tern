@@ -1,9 +1,9 @@
+import { servingPortion } from '@/domain/food/models/servingText';
 import {
   getProductPortions,
   isValidBarcode,
   productToResult,
   searchProducts,
-  servingPortion,
   type OffProduct,
 } from './openFoodFacts';
 import { FoodSource } from '@/domain/food/models/foodSource';

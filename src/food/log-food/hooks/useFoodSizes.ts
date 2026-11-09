@@ -64,11 +64,10 @@ export function useListSizes<T extends SearchResult>(foods: T[]): T[] {
   useEffect(() => {
     if (!wanted) return undefined;
     let live = true;
-    foods
-      .filter(isWanted)
-      .forEach((f) =>
-        loadSizes(f).then(() => live && setVersion((n) => n + 1)),
-      );
+    // One re-render once they've all answered, not one per food.
+    Promise.allSettled(foods.filter(isWanted).map(loadSizes)).then(
+      () => live && setVersion((n) => n + 1),
+    );
     return () => {
       live = false;
     };
