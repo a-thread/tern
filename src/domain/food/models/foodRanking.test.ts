@@ -141,3 +141,18 @@ describe('stableMerge', () => {
     expect(merged.map((r) => r.id)).toEqual(['a']);
   });
 });
+
+describe('dishes', () => {
+  it('puts the food itself above a dish it is only part of', () => {
+    const rice = scoreResult('white rice', food('Rice, white, cooked'), FoodSource.Usda);
+    const dish = scoreResult('white rice', food('Beans and white rice'), FoodSource.Usda);
+    expect(rice).toBeGreaterThan(dish);
+  });
+
+  it('does not penalise a dish the query asks for', () => {
+    // Both are exact matches of the same length; the soup isn't marked down for being soup.
+    expect(
+      scoreResult('chicken soup', food('Chicken soup'), FoodSource.Usda),
+    ).toBe(scoreResult('chicken pho', food('Chicken pho'), FoodSource.Usda));
+  });
+});

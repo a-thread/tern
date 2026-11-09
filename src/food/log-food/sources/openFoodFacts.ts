@@ -5,6 +5,11 @@ import { isVolumeAmount } from '@/domain/food/models/volume';
 import { getJson } from '@/domain/food/sources/http';
 import type { Portion, SearchResult } from '@/domain/food/sources/searchResult';
 import { FoodSource } from '@/domain/food/models/foodSource';
+import {
+  isFoodApiLogOn,
+  logFoodApi,
+  portionsText,
+} from '@/domain/food/sources/foodApiLog';
 
 /**
  * Open Food Facts client: text search and barcode lookup. Data is used under
@@ -34,13 +39,20 @@ export type OffProduct = {
 
 // A serving written only as a weight or volume ("30 g", "250 ml") has no name of its own.
 const BARE_AMOUNT = /^(g|kg|mg|ml|cl|l|dl)$/i;
-// A household measure ("2 tbsp"): the wording is the unit, so it is kept whole.
-const HOUSEHOLD_MEASURE = /^(oz|lb|lbs|fl\.? ?oz|tsp|tbsp|cups?)$/i;
+// A weight in ounces or pounds ("1 oz (28 g)", "1 onz"): every food already has those, so it's a serving.
+const WEIGHT_MEASURE = /^(oz|onz|ounces?|lbs?|pounds?)$/i;
+// A household measure, counted in ones: "2 tbsp (32 g)" is a tbsp of 16 g, "0.33 cup (28 g)" a cup of 85 g.
+const HOUSEHOLD_MEASURE: [RegExp, string][] = [
+  [/^(fl\.? ?oz|fluid ounces?)$/i, 'fl oz'],
+  [/^(tsp|teaspoons?)$/i, 'tsp'],
+  [/^(tbsp|tablespoons?)$/i, 'tbsp'],
+  [/^cups?$/i, 'cup'],
+];
 
 /**
  * The portion a product's serving size describes. "1 bar (40 g)" is a bar of
- * 40 g, "2 cookies (30 g)" a cookie of 15 g; a bare weight ("30 g") is just
- * "serving", and a measure ("2 tbsp (30 g)") keeps its wording.
+ * 40 g, "2 cookies (30 g)" a cookie of 15 g, "2 tbsp (30 g)" a tbsp of 15 g;
+ * a bare weight ("30 g", "1 oz") is just "serving".
  */
 export function servingPortion(
   servingSize: string | undefined,
@@ -54,8 +66,11 @@ export function servingPortion(
   if (!m) return { label: 'serving', grams };
   const count = parseFloat(m[1].replace(',', '.'));
   const noun = m[2].trim();
-  if (BARE_AMOUNT.test(noun)) return { label: 'serving', grams };
-  if (HOUSEHOLD_MEASURE.test(noun)) return { label: text, grams };
+  if (BARE_AMOUNT.test(noun) || WEIGHT_MEASURE.test(noun))
+    return { label: 'serving', grams };
+  const measure = HOUSEHOLD_MEASURE.find(([re]) => re.test(noun));
+  if (measure && count > 0)
+    return { label: measure[1], grams: Math.round((grams / count) * 10) / 10 };
   if (Number.isInteger(count) && count > 1) {
     return {
       label: singular(noun.toLowerCase()),
@@ -117,6 +132,16 @@ export function productToResult(p: OffProduct): SearchResult | null {
   };
 }
 
+/** What a product said about its serving, and the portions we made of it, for the development log. */
+function productLogLine(p: OffProduct): string {
+  const r = productToResult(p);
+  return (
+    `${p.product_name ?? '?'} | ${firstBrand(p.brands) ?? ''}${r ? '' : ' (dropped)'}\n` +
+    `      sent: serving_size=${JSON.stringify(p.serving_size)} serving_quantity=${JSON.stringify(p.serving_quantity)} quantity=${JSON.stringify(p.quantity)}\n` +
+    `      kept: ${portionsText(r?.portions)}`
+  );
+}
+
 async function runSearch(
   q: string,
   signal?: AbortSignal,
@@ -134,6 +159,10 @@ async function runSearch(
   // The same product is often listed under several barcodes; show it once.
   const seen = new Set<string>();
   const out: SearchResult[] = [];
+  logFoodApi(
+    `Open Food Facts search "${q}": ${json.hits?.length ?? 0} products`,
+    isFoodApiLogOn() ? (json.hits ?? []).map(productLogLine) : [],
+  );
   for (const hit of json.hits ?? []) {
     const r = productToResult(hit);
     if (!r) continue;
@@ -195,6 +224,14 @@ export async function getProductByBarcode(
     status?: number;
     product?: OffProduct;
   };
+  logFoodApi(
+    `Open Food Facts barcode ${clean}`,
+    !isFoodApiLogOn()
+      ? []
+      : json.product
+        ? [productLogLine(json.product)]
+        : ['not found'],
+  );
   if (json.status === 0 || !json.product) return { status: 'not-found' };
   const result = productToResult({
     ...json.product,
@@ -203,4 +240,17 @@ export async function getProductByBarcode(
   if (result) return { status: 'found', result };
   const name = (json.product.product_name ?? '').trim();
   return name ? { status: 'no-nutrition', name } : { status: 'not-found' };
+}
+
+/**
+ * A product's declared serving, looked up by its code. Search leaves serving sizes out of
+ * its results, so they are fetched when a product found by searching is opened.
+ */
+export async function getProductPortions(
+  code: string,
+  signal?: AbortSignal,
+): Promise<Pick<SearchResult, 'portions' | 'liquid'>> {
+  const found = await getProductByBarcode(code, signal);
+  if (found.status !== 'found') return {};
+  return { portions: found.result.portions, liquid: found.result.liquid };
 }

@@ -6,11 +6,16 @@ import {
   parseGrams,
   portionGrams,
   scaleForGrams,
-  stepServings,
   Servings,
   type Macros,
 } from './servings';
-import { isVolumeUnit, VolumeSteps, VolumeUnit, withVolumes } from './volume';
+import {
+  isHouseholdVolume,
+  isVolumeUnit,
+  VolumeSteps,
+  VolumeUnit,
+  withVolumes,
+} from './volume';
 import { isWeightUnit, WeightSteps, WeightUnit, withWeights } from './weight';
 
 /**
@@ -62,6 +67,10 @@ const UNIT_ABBREVIATIONS = new Set([
 
 /** "egg" → "eggs" when `count` isn't 1. Leaves labels with numbers, brackets or unit abbreviations alone. */
 export function pluralize(label: string, count: number): string {
+  // "cup, chopped" → "cups, chopped": the unit before the comma takes the plural.
+  const comma = label.indexOf(',');
+  if (comma > 0)
+    return `${pluralize(label.slice(0, comma), count)}${label.slice(comma)}`;
   if (count === 1 || !/^[a-z][a-z -]*$/i.test(label)) return label;
   const words = label.split(' ');
   const last = words[words.length - 1];
@@ -105,6 +114,12 @@ export function quantityText(m: Measure): string {
   return formatCount(m.quantity);
 }
 
+/** The amount in words, with its unit: "2 packets", "0.5 cup", "6 oz", "150 g". */
+export function amountText(m: Measure): string {
+  if (isTypedUnit(m.unit)) return quantityText(m);
+  return `${formatCount(m.quantity)} ${pluralize(m.unit ?? '', m.quantity)}`;
+}
+
 /** The entry fields for this amount: one serving of exactly what was eaten, plus the measure itself. */
 export function amountOf(m: Measure) {
   return {
@@ -130,7 +145,20 @@ const roundTo = (n: number, digits: number) => {
   return Math.round(n * f) / f;
 };
 
-/** One step up or down: a quarter of a portion, ten grams, an ounce, a quarter pound, ten ml or a fluid ounce. */
+/** How a counted portion steps: cups and spoons by a quarter, things you count (a packet, an egg) by a half. */
+export const portionStep = (label: string) =>
+  isHouseholdVolume(label) ? Servings.STEP : PortionSteps.COUNTED;
+
+/** How counted portions step. */
+export class PortionSteps {
+  /** Packets, eggs and slices move by halves; a quarter of an egg is rarely what anyone ate. */
+  static readonly COUNTED = 0.5;
+}
+
+/**
+ * One step up or down: a quarter cup or spoon, half of anything counted, ten grams, an ounce,
+ * a quarter pound, ten ml or a fluid ounce.
+ */
 export function stepMeasure(m: Measure, direction: 1 | -1): Measure {
   if (isWeightUnit(m.unit)) {
     const { step, min, digits } = weightStep(m.unit);
@@ -155,9 +183,13 @@ export function stepMeasure(m: Measure, direction: 1 | -1): Measure {
       ),
     };
   }
+  const step = portionStep(m.unit);
   return {
     ...m,
-    quantity: stepServings(m.quantity, direction * Servings.STEP),
+    quantity: Math.max(
+      step,
+      Math.round((m.quantity + direction * step) / step) * step,
+    ),
   };
 }
 
@@ -263,6 +295,17 @@ export function startingMeasure(
       quantity: Math.max(WeightSteps.OZ_MIN, roundTo(baseGrams / oz.grams, 1)),
     };
   return { ...base, unit: null, quantity: baseGrams };
+}
+
+/**
+ * The measure with `extra` portions offered first (sizes that arrived after it was made),
+ * keeping the unit and amount already chosen.
+ */
+export function addPortions(m: Measure, extra: Portion[]): Measure {
+  const fresh = extra.filter(
+    (p) => !m.portions.some((q) => q.label === p.label),
+  );
+  return fresh.length ? { ...m, portions: [...fresh, ...m.portions] } : m;
 }
 
 const finite = (v: unknown): v is number =>

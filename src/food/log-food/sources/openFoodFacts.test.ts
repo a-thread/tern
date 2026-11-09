@@ -1,4 +1,5 @@
 import {
+  getProductPortions,
   isValidBarcode,
   productToResult,
   searchProducts,
@@ -71,8 +72,21 @@ describe('productToResult', () => {
       grams: 15,
     });
     expect(servingPortion('2 tbsp (30 g)', 30)).toEqual({
-      label: '2 tbsp',
-      grams: 30,
+      label: 'tbsp',
+      grams: 15,
+    });
+    // Live labels: a third of a cup is counted in cups, and an ounce is just the serving.
+    expect(servingPortion('0.33 cup (28 g)', 28)).toEqual({
+      label: 'cup',
+      grams: 84.8,
+    });
+    expect(servingPortion('1 onz (28 g)', 28)).toEqual({
+      label: 'serving',
+      grams: 28,
+    });
+    expect(servingPortion('8 fl oz (240 ml)', 244)).toEqual({
+      label: 'fl oz',
+      grams: 30.5,
     });
     expect(servingPortion('250 ml', 250)).toEqual({
       label: 'serving',
@@ -243,5 +257,39 @@ describe('searchProducts duplicates', () => {
     const r = await searchProducts('apples');
     spy.mockRestore();
     expect(r.map((x) => x.id)).toEqual(['1', '3']);
+  });
+});
+
+describe('getProductPortions', () => {
+  afterEach(() => jest.restoreAllMocks());
+
+  // Search leaves serving sizes out; the product itself has them (live data, November 2026).
+  it('looks the product up by its code and returns its declared serving', async () => {
+    const spy = jest.spyOn(global, 'fetch').mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({
+        status: 1,
+        product: {
+          code: '0851087000687',
+          product_name: 'Peanut Butter',
+          serving_size: '2 tbsp (32 g)',
+          serving_quantity: 32,
+          nutriments: { 'energy-kcal_100g': 562.5 },
+        },
+      }),
+    } as Response);
+    expect(await getProductPortions('0851087000687')).toEqual({
+      portions: [{ label: 'tbsp', grams: 16 }],
+      liquid: undefined,
+    });
+    expect((spy.mock.calls[0] as [string])[0]).toContain(
+      '/api/v2/product/0851087000687.json',
+    );
+  });
+
+  it('returns nothing for a code that is not a barcode', async () => {
+    const spy = jest.spyOn(global, 'fetch');
+    expect(await getProductPortions('Apples-52')).toEqual({});
+    expect(spy).not.toHaveBeenCalled();
   });
 });

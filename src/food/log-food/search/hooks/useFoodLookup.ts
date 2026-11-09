@@ -19,6 +19,7 @@ import { filterRecentMeals } from '../../models/recentMeals';
 import { filterMeals } from '@/domain/saved-meals/models/savedMeals';
 import { useSavedMeals } from '@/domain/saved-meals/SavedMealsContext';
 import { useLoggedFoods } from '../../hooks/useLoggedFoods';
+import { useListSizes } from '../../hooks/useFoodSizes';
 import {
   FoodSearch,
   offEnglishSource,
@@ -165,6 +166,8 @@ export function useFoodLookup({
   useEffect(() => {
     shown.current = { query: trimmed, ids: foods.map((f) => f.id) };
   }, [foods, trimmed]);
+  // Sizes for the top foods that came without ("1 packet" rather than "100 g").
+  const sized = useListSizes(foods);
 
   // "No matches" only once every source has answered this query, not while one is still waiting to ask.
   const settled = sources.every(
@@ -185,7 +188,7 @@ export function useFoodLookup({
     yourMeals,
     pastMeals,
     recent,
-    foods,
+    foods: sized,
     pending,
     failedLabels: failed.map((x) => x.label),
     failedAll: failed.length === sources.length,

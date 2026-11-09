@@ -7,6 +7,11 @@ import type { SearchResult } from '@/domain/food/sources/searchResult';
 import { useFoodDisplay } from '@/domain/food/hooks/useFoodDisplay';
 import { TierDot } from '@shared/components/TierDot';
 import { FoodSource } from '@/domain/food/models/foodSource';
+import { Units } from '@shared/utils/units';
+import { useUnits } from '@/domain/settings/hooks/useUnits';
+import { WeightUnit, weightGrams } from '@/domain/food/models/weight';
+
+const OUNCE_GRAMS = weightGrams(WeightUnit.Oz);
 
 const SOURCE_TAG: Record<FoodSource, string> = {
   [FoodSource.Mine]: 'Your food',
@@ -17,22 +22,30 @@ const SOURCE_TAG: Record<FoodSource, string> = {
 
 /**
  * The line under a food's name: where it's from, its detail or brand, and the
- * calories for its first portion ("1 large egg · 72 cal") when it has one,
- * otherwise per its serving ("143 cal / 100 g").
+ * calories for its first portion ("1 packet · 130 cal") when it has one. Without one,
+ * per ounce on Imperial ("105 cal / oz") or per its serving on Metric ("371 cal / 100 g").
  */
 export function resultSubline(
   r: SearchResult,
   from: FoodSource | undefined,
   showCalories: boolean,
+  units: Units,
 ): string {
-  const portion = r.servingLabel === '100 g' ? r.portions?.[0] : undefined;
+  const per100 = r.servingLabel === '100 g';
+  const portion = per100 ? r.portions?.[0] : undefined;
+  const byOunce = per100 && !portion && units === Units.Imperial;
+  const calFor = (grams: number) => Math.round((r.calories * grams) / 100);
   const amount = portion
     ? showCalories
-      ? `1 ${portion.label} · ${Math.round((r.calories * portion.grams) / 100)} cal`
+      ? `1 ${portion.label} · ${calFor(portion.grams)} cal`
       : `1 ${portion.label}`
-    : showCalories
-      ? `${r.calories} cal / ${r.servingLabel}`
-      : r.servingLabel;
+    : byOunce
+      ? showCalories
+        ? `${calFor(OUNCE_GRAMS)} cal / oz`
+        : 'per oz'
+      : showCalories
+        ? `${r.calories} cal / ${r.servingLabel}`
+        : r.servingLabel;
   return [from ? SOURCE_TAG[from] : undefined, r.brand ?? r.detail, amount]
     .filter(Boolean)
     .join(' · ');
@@ -50,6 +63,7 @@ export function FoodResultRow({
   onPress: () => void;
 }) {
   const { showTiers, showTierNumber, showCalories } = useFoodDisplay();
+  const { units } = useUnits();
   return (
     <Row
       icon={
@@ -65,7 +79,7 @@ export function FoodResultRow({
         )
       }
       title={result.name}
-      sub={resultSubline(result, from, showCalories)}
+      sub={resultSubline(result, from, showCalories, units)}
       onPress={onPress}
       right={
         <View style={s.plusBtn}>

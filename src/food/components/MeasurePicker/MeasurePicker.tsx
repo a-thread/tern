@@ -5,16 +5,14 @@ import { colors, font, radius, typography } from '@shared/theme';
 import { Group, Stepper } from '@shared/components/ui';
 import { Units } from '@shared/utils/units';
 import { formatCount } from '@/domain/food/models/servings';
-import { useFoodDisplay } from '@/domain/food/hooks/useFoodDisplay';
 import { useUnits } from '@/domain/settings/hooks/useUnits';
 import { VolumeUnit } from '@/domain/food/models/volume';
-import { WeightUnit } from '@/domain/food/models/weight';
-import type { Portion } from '@/domain/food/sources/searchResult';
+import { weightNote, WeightUnit } from '@/domain/food/models/weight';
 import {
+  amountText,
   GramSteps,
   isTypedUnit,
   measureGrams,
-  portionOf,
   sentence,
   stepMeasure,
   switchUnit,
@@ -42,7 +40,7 @@ const UNIT_NAME: Record<string, string> = {
   [VolumeUnit.FlOz]: 'Fluid ounces',
 };
 
-// The order the switch offers weights in: the user's own system first.
+// The order weights and volumes are offered in: the user's own system first.
 const WEIGHT_ORDER: Record<Units, TypedChoice[]> = {
   [Units.Imperial]: [WeightUnit.Oz, WeightUnit.Lb, null],
   [Units.Metric]: [null, WeightUnit.Oz, WeightUnit.Lb],
@@ -53,10 +51,10 @@ const VOLUME_ORDER: Record<Units, TypedChoice[]> = {
 };
 
 /**
- * Chooses how much of a food. The chips are the food's household portions
- * ("large egg", "cup"), counted with a stepper. Next to the typed amount a
- * small switch picks g, oz or lb (and ml or fl oz for a drink). Switching
- * unit keeps the weight; a quantity of zero means the typed amount isn't
+ * Chooses how much of a food: first the unit, from one unlabelled list (the food's own sizes,
+ * then weights, and volumes for a drink), then how much of it. Counted sizes ("packet") use a
+ * stepper; weights and volumes are typed. The amount is named with its unit and what it
+ * weighs. Switching unit keeps the weight; a quantity of zero means a typed amount isn't
  * usable yet.
  */
 export function MeasurePicker({
@@ -66,23 +64,19 @@ export function MeasurePicker({
   measure: Measure;
   onChange: (next: Measure) => void;
 }) {
-  const [typed, setTyped] = useState(String(formatCount(measure.quantity)));
-  const portion = portionOf(measure);
-  const grams = measureGrams(measure);
-  const { showCalories } = useFoodDisplay();
   const { units } = useUnits();
-  // Each size says what one of it is worth: "Large egg · 72", "Jumbo egg · 90".
-  const chipLabel = (p: Portion) =>
-    showCalories
-      ? `${sentence(p.label)} · ${Math.round((measure.per100.calories * p.grams) / 100)} cal`
-      : sentence(p.label);
-  // Typed units (oz, lb, fl oz, ml) live in the switch, not the chips.
-  const chips = measure.portions.filter((p) => !isTypedUnit(p.label));
+  const [typed, setTyped] = useState(String(formatCount(measure.quantity)));
 
-  // g is always on offer; the rest only when the food has the portion.
+  const counted = !isTypedUnit(measure.unit);
+  const typedUnit = counted ? null : measure.unit;
+
+  // Every unit in one list: the food's sizes, then weights, then volumes it offers.
   const has = (unit: TypedChoice) =>
     unit === null || measure.portions.some((p) => p.label === unit);
-  const choices = [...WEIGHT_ORDER[units], ...VOLUME_ORDER[units]].filter(has);
+  const unitList: (string | null)[] = [
+    ...measure.portions.filter((p) => !isTypedUnit(p.label)).map((p) => p.label),
+    ...[...WEIGHT_ORDER[units], ...VOLUME_ORDER[units]].filter(has),
+  ];
 
   const chooseUnit = (unit: string | null) => {
     const next = switchUnit(measure, unit);
@@ -90,128 +84,100 @@ export function MeasurePicker({
     onChange(next);
   };
 
-  const counted = !!portion && !isTypedUnit(measure.unit);
-  const typedUnit = isTypedUnit(measure.unit) ? measure.unit : null;
+  // "1.5 packets · 1.9 oz": the amount, and what it weighs in the person's units unless it's typed in them.
+  const weight = weightNote(
+    measureGrams(measure),
+    units,
+    counted ? undefined : typedUnit,
+  )?.slice(2);
+  const note = measure.quantity > 0 ? [amountText(measure), weight] : [];
 
   return (
     <Group>
-      {chips.length ? (
-        <View style={s.chips}>
-          {chips.map((p, i) => (
-            <Chip
-              key={`${p.label}-${i}`}
-              label={chipLabel(p)}
-              on={measure.unit === p.label}
-              onPress={() => chooseUnit(p.label)}
-            />
-          ))}
-        </View>
-      ) : null}
-      {counted ? (
-        <View style={s.row}>
-          <View style={{ flex: 1 }}>
-            <Text style={s.rowTitle}>How many</Text>
-            <Text style={s.weightNote}>= {grams} g</Text>
-          </View>
-          <Stepper
-            value={formatCount(measure.quantity)}
-            onDecrement={() => onChange(stepMeasure(measure, -1))}
-            onIncrement={() => onChange(stepMeasure(measure, 1))}
-          />
-        </View>
-      ) : (
-        <View style={s.row}>
-          <View style={{ flex: 1 }}>
-            <Text style={s.rowTitle}>Amount</Text>
-            {typedUnit !== null && measure.quantity > 0 ? (
-              <Text style={s.weightNote}>= {grams} g</Text>
-            ) : null}
-          </View>
-          <TextInput
-            value={typed}
-            onChangeText={(v) => {
-              const text = v.replace(/[^0-9.,]/g, '');
-              setTyped(text);
-              onChange(typedAmount(measure, text));
-            }}
-            keyboardType='decimal-pad'
-            selectTextOnFocus
-            maxLength={6}
-            placeholder={String(GramSteps.STEP * 10)}
-            placeholderTextColor={colors.ink3}
-            accessibilityLabel={
-              typedUnit === null ? GRAMS_LABEL : TYPED_LABEL[typedUnit]
-            }
-            style={[s.rowInput, { minWidth: 70 }]}
-          />
-        </View>
-      )}
-      <View style={s.unitRow}>
-        <Text style={s.unitTitle}>{counted ? 'Or by' : 'Unit'}</Text>
-        <View style={s.switch} accessibilityRole='radiogroup'>
-          {choices.map((unit) => {
-            const on = !counted && typedUnit === unit;
+      <View style={s.units}>
+        <View
+          style={s.list}
+          accessibilityRole='radiogroup'
+          accessibilityLabel='Unit'
+        >
+          {unitList.map((unit) => {
+            const on = measure.unit === unit;
+            const typedName = isTypedUnit(unit) ? UNIT_NAME[unit ?? 'g'] : null;
             return (
               <Pressable
                 key={unit ?? 'g'}
                 onPress={() => chooseUnit(unit)}
-                hitSlop={6}
-                style={[s.segment, on && s.segmentOn]}
+                hitSlop={4}
+                style={[s.option, on && s.optionOn]}
                 accessibilityRole='radio'
-                accessibilityLabel={UNIT_NAME[unit ?? 'g']}
+                accessibilityLabel={typedName ?? sentence(unit ?? '')}
                 accessibilityState={{ selected: on, checked: on }}
               >
-                <Text style={[s.segmentText, on && s.segmentTextOn]}>
-                  {unit ?? 'g'}
+                <Text style={[s.optionText, on && s.optionTextOn]}>
+                  {typedName ? (unit ?? 'g') : sentence(unit ?? '')}
                 </Text>
               </Pressable>
             );
           })}
         </View>
       </View>
+      <View style={s.row}>
+        <View style={{ flex: 1 }}>
+          <Text style={s.rowTitle}>How much</Text>
+          {note.length ? (
+            <Text style={s.caption}>{note.filter(Boolean).join(' · ')}</Text>
+          ) : null}
+        </View>
+        {counted ? (
+          <Stepper
+            value={formatCount(measure.quantity)}
+            onDecrement={() => onChange(stepMeasure(measure, -1))}
+            onIncrement={() => onChange(stepMeasure(measure, 1))}
+            decrementLabel='Less'
+            incrementLabel='More'
+          />
+        ) : (
+          <View style={s.typed}>
+            <TextInput
+              value={typed}
+              onChangeText={(v) => {
+                const text = v.replace(/[^0-9.,]/g, '');
+                setTyped(text);
+                onChange(typedAmount(measure, text));
+              }}
+              keyboardType='decimal-pad'
+              selectTextOnFocus
+              maxLength={6}
+              placeholder={String(GramSteps.STEP * 10)}
+              placeholderTextColor={colors.ink3}
+              accessibilityLabel={
+                typedUnit === null ? GRAMS_LABEL : TYPED_LABEL[typedUnit]
+              }
+              style={s.input}
+            />
+            <Text style={s.rowTitle}>{typedUnit ?? 'g'}</Text>
+          </View>
+        )}
+      </View>
     </Group>
   );
 }
 
-function Chip({
-  label,
-  on,
-  onPress,
-}: {
-  label: string;
-  on: boolean;
-  onPress: () => void;
-}) {
-  return (
-    <Pressable
-      onPress={onPress}
-      style={[s.chip, on && s.chipOn]}
-      accessibilityRole='button'
-      accessibilityState={{ selected: on }}
-    >
-      <Text style={[s.chipText, on && s.chipTextOn]}>{label}</Text>
-    </Pressable>
-  );
-}
-
 const s = StyleSheet.create({
-  chips: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 8,
-    paddingHorizontal: 13,
-    paddingTop: 12,
-    paddingBottom: 4,
-  },
-  chip: {
+  units: { paddingHorizontal: 13, paddingVertical: 12 },
+  caption: typography.caption,
+  list: { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
+  option: {
+    minWidth: 40,
+    alignItems: 'center',
     paddingHorizontal: 11,
     paddingVertical: 6,
     borderRadius: radius.sm,
     backgroundColor: colors.doveTint,
   },
-  chipOn: { backgroundColor: colors.ink },
-  chipText: { fontFamily: font.medium, fontSize: 12.5, color: colors.ink2 },
-  chipTextOn: { color: colors.paper },
+  optionOn: { backgroundColor: colors.ink },
+  optionText: { fontFamily: font.medium, fontSize: 12.5, color: colors.ink2 },
+  optionTextOn: { color: colors.paper },
   row: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -219,37 +185,10 @@ const s = StyleSheet.create({
     paddingVertical: 12,
     gap: 8,
   },
-  unitRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 13,
-    paddingBottom: 12,
-    gap: 8,
-  },
-  unitTitle: typography.caption,
-  switch: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 4,
-    padding: 3,
-    borderRadius: radius.sm,
-    backgroundColor: colors.doveTint,
-  },
-  segment: {
-    minWidth: 40,
-    alignItems: 'center',
-    paddingHorizontal: 9,
-    paddingVertical: 5,
-    borderRadius: radius.sm,
-  },
-  segmentOn: { backgroundColor: colors.ink },
-  segmentText: { fontFamily: font.medium, fontSize: 12.5, color: colors.ink2 },
-  segmentTextOn: { color: colors.paper },
   rowTitle: typography.rowTitle,
-  weightNote: { ...typography.caption, marginTop: 1 },
-  rowInput: {
-    flex: 1,
+  typed: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+  input: {
+    minWidth: 60,
     fontFamily: font.body,
     fontSize: 13.5,
     color: colors.ink2,

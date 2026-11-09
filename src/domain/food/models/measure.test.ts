@@ -1,7 +1,9 @@
 import { Units } from '@shared/utils/units';
 import type { SearchResult } from '../sources/searchResult';
 import {
+  addPortions,
   amountOf,
+  amountText,
   measureGrams,
   measureLabel,
   nounFor,
@@ -54,9 +56,14 @@ describe('measure', () => {
     expect(amountOf({ ...egg, quantity: 3 }).calories).toBe(215);
   });
 
-  it('steps by a quarter portion, or ten grams', () => {
-    expect(stepMeasure(egg, 1).quantity).toBe(2.25);
-    expect(stepMeasure({ ...egg, quantity: 0.25 }, -1).quantity).toBe(0.25);
+  it('steps eggs by a half, cups by a quarter, or grams by ten', () => {
+    expect(stepMeasure(egg, 1).quantity).toBe(2.5);
+    expect(stepMeasure({ ...egg, quantity: 0.5 }, -1).quantity).toBe(0.5);
+    // An older quarter amount lands back on the half-step grid.
+    expect(stepMeasure({ ...egg, quantity: 0.25 }, 1).quantity).toBe(1);
+    expect(stepMeasure({ ...egg, unit: 'cup', quantity: 1 }, 1).quantity).toBe(
+      1.25,
+    );
     expect(stepMeasure({ ...egg, unit: null, quantity: 100 }, 1).quantity).toBe(
       110,
     );
@@ -422,5 +429,49 @@ describe('measuring by ounces and pounds', () => {
         Units.Imperial,
       ),
     ).toMatchObject({ unit: 'tbsp', quantity: 1 });
+  });
+});
+
+describe('addPortions', () => {
+  const m: Measure = {
+    per100: { calories: 34, protein: 2.8, carbs: 6.6, fat: 0.4 },
+    portions: [{ label: 'oz', grams: 28.35 }],
+    unit: 'oz',
+    quantity: 3,
+  };
+
+  it('offers sizes that arrived later first, keeping the amount chosen', () => {
+    expect(
+      addPortions(m, [
+        { label: 'cup, chopped', grams: 76 },
+        { label: 'oz', grams: 28.35 },
+      ]),
+    ).toEqual({
+      ...m,
+      portions: [
+        { label: 'cup, chopped', grams: 76 },
+        { label: 'oz', grams: 28.35 },
+      ],
+    });
+  });
+
+  it('returns the same measure when nothing is new', () => {
+    expect(addPortions(m, [{ label: 'oz', grams: 28.35 }])).toBe(m);
+  });
+});
+
+describe('amountText', () => {
+  it('names the amount with its unit', () => {
+    expect(amountText({ ...egg, quantity: 2 })).toBe('2 large eggs');
+    expect(amountText({ ...egg, quantity: 1 })).toBe('1 large egg');
+    expect(amountText({ ...egg, unit: null, quantity: 150 })).toBe('150 g');
+    expect(
+      amountText({
+        ...egg,
+        portions: [{ label: 'cup, chopped', grams: 76 }],
+        unit: 'cup, chopped',
+        quantity: 2,
+      }),
+    ).toBe('2 cups, chopped');
   });
 });

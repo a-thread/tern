@@ -18,11 +18,25 @@ export class FoodRanking {
     [FoodSource.Usda]: 0,
     [FoodSource.Off]: 0,
   };
+  /** A dish the query only appears in ("Beans and white rice" for "white rice") sinks by this much. */
+  static readonly DISH_PENALTY = 120;
   /** Rows near the top don't move for a late result unless it beats them by this much. */
   static readonly PIN_MARGIN = 300;
   static readonly PINNED_ROWS = 5;
   static readonly LIMIT = 30;
 }
+
+// Words that make a name a dish or a mix rather than the food itself (singular, as wordsOf gives them).
+const DISH_WORDS = new Set([
+  'and',
+  'with',
+  'sandwich',
+  'salad',
+  'soup',
+  'stew',
+  'casserole',
+  'sauce',
+]);
 
 /** Every word of the query starts a word of the food's name, detail, brand or aliases. */
 export function matchesQuery(
@@ -85,6 +99,9 @@ export function scoreResult(
   }
 
   score -= Math.min(nameWords.length, 8) * 10;
+  // Someone typing "white rice" wants the rice, not a dish made with it.
+  if (nameWords.some((w) => DISH_WORDS.has(w) && !q.includes(w)))
+    score -= FoodRanking.DISH_PENALTY;
   score += FoodRanking.SOURCE_BONUS[from];
   if (r.rank !== undefined) score += Math.max(0, 100 - r.rank / 30);
   if (r.tier !== null) score += 10;

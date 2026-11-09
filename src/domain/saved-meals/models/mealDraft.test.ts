@@ -168,14 +168,15 @@ describe('stepItemServings with a measure', () => {
   const items = [{ ...item('Eggs'), ...eggs }];
 
   it('steps a measured item in its own unit and updates its label and calories', () => {
+    // Eggs are counted, so they move by halves.
     const [up] = stepItemServings(items, 0, 0.25);
     expect(up).toMatchObject({
       servings: 1,
-      servingLabel: '2.25 large eggs (112.5 g)',
+      servingLabel: '2.5 large eggs (125 g)',
     });
-    expect(up.measure?.quantity).toBe(2.25);
-    expect(up.calories).toBe(161);
+    expect(up.measure?.quantity).toBe(2.5);
+    expect(up.calories).toBe(179);
     const [down] = stepItemServings(items, 0, -0.25);
-    expect(down.measure?.quantity).toBe(1.75);
+    expect(down.measure?.quantity).toBe(1.5);
   });
 });

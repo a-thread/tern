@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
+  ActivityIndicator,
   View,
   Text,
   TextInput,
@@ -29,17 +30,23 @@ import {
   Servings,
 } from '@/domain/food/models/servings';
 import {
+  addPortions,
   amountOf,
+  amountText,
   measureGrams,
   startingMeasure,
   type Measure,
 } from '@/domain/food/models/measure';
+import { logFoodApi, portionsText } from '@/domain/food/sources/foodApiLog';
+import { useFoodSizes } from '../hooks/useFoodSizes';
 import type { LogFoodStackParamList } from '../navigation';
 
 type Props = NativeStackScreenProps<LogFoodStackParamList, 'FoodDetail'>;
 
 export default function FoodDetailScreen({ navigation, route }: Props) {
-  const { meal: initialMeal, result, pick } = route.params;
+  const { meal: initialMeal, result: searched, pick } = route.params;
+  // Sizes search left out: already here if the list fetched them, else on their way.
+  const { food: result, loading: sizesLoading } = useFoodSizes(searched);
   const insets = useSafeAreaInsets();
   const { addFoodEntry } = useFood();
   const { addDraftItem } = useSavedMeals();
@@ -54,6 +61,34 @@ export default function FoodDetailScreen({ navigation, route }: Props) {
   const [measure, setMeasure] = useState<Measure | null>(() =>
     baseGrams !== null ? startingMeasure(result, baseGrams, units) : null,
   );
+  // Development only: the portions this food arrived with and the units the picker ended up offering.
+  useEffect(() => {
+    logFoodApi(`Opened "${result.name}" (${result.source ?? 'logged'})`, [
+      `from source: ${portionsText(result.portions)}`,
+      `picker offers: ${measure ? portionsText(measure.portions) : `servings of ${result.servingLabel}`}`,
+      `starts on: ${measure ? `${measure.quantity} ${measure.unit ?? 'g'}` : `${result.servings ?? 1} × ${result.servingLabel}`}`,
+    ]);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Sizes that arrive after opening: until the amount is touched the food starts over on its
+  // first size ("1 packet"); after that (they came late) they're only added to the choices.
+  const touched = useRef(false);
+  useEffect(() => {
+    if (result === searched || !result.portions?.length || baseGrams === null)
+      return;
+    const extra = result.portions;
+    setMeasure((m) =>
+      !m
+        ? m
+        : touched.current
+          ? addPortions(m, extra)
+          : startingMeasure(result, baseGrams, units),
+    );
+  }, [result]); // eslint-disable-line react-hooks/exhaustive-deps
+  const changeMeasure = (next: Measure) => {
+    touched.current = true;
+    setMeasure(next);
+  };
   const gramsValue = measure ? measureGrams(measure) : null;
   const [servings, setServings] = useState(result.servings ?? 1);
   const [servingLabel, setServingLabel] = useState(result.servingLabel);
@@ -62,7 +97,7 @@ export default function FoodDetailScreen({ navigation, route }: Props) {
   const [tier, setTier] = useState<Tier | null>(result.tier);
   const needsTier = showTiers && tier === null;
   const needsAmount = measure !== null && (gramsValue ?? 0) <= 0;
-  const blocked = needsTier || needsAmount;
+  const blocked = needsTier || needsAmount || sizesLoading;
 
   // What is being logged, scaled to the amount eaten.
   const shown = measure
@@ -139,23 +174,43 @@ export default function FoodDetailScreen({ navigation, route }: Props) {
           <View style={s.calCard}>
             {showCalories ? (
               <View>
-                <Text style={s.calBig}>{Math.round(shown.calories)}</Text>
+                <Text style={s.calBig}>
+                  {sizesLoading ? '–' : Math.round(shown.calories)}
+                </Text>
                 <Text style={s.calLabel}>calories</Text>
               </View>
             ) : null}
             {showMacros ? (
               <View style={s.macroMini}>
-                <MacroMini value={shown.protein} label='protein' />
-                <MacroMini value={shown.carbs} label='carbs' />
-                <MacroMini value={shown.fat} label='fat' />
+                <MacroMini
+                  value={sizesLoading ? null : shown.protein}
+                  label='protein'
+                />
+                <MacroMini
+                  value={sizesLoading ? null : shown.carbs}
+                  label='carbs'
+                />
+                <MacroMini value={sizesLoading ? null : shown.fat} label='fat' />
               </View>
             ) : null}
           </View>
         ) : null}
 
         <GroupLabel>Portion</GroupLabel>
-        {measure ? (
-          <MeasurePicker measure={measure} onChange={setMeasure} />
+        {sizesLoading ? (
+          <Group>
+            <View style={s.row} accessibilityLiveRegion='polite'>
+              <ActivityIndicator size='small' color={colors.ink3} />
+              <Text style={s.loadingText}>Finding serving sizes…</Text>
+            </View>
+          </Group>
+        ) : measure ? (
+          <MeasurePicker
+            // A fresh picker once the sizes arrive, so its typed amount follows the new start.
+            key={result === searched ? 'searched' : 'with-sizes'}
+            measure={measure}
+            onChange={changeMeasure}
+          />
         ) : (
           <Group>
             <View style={s.row}>
@@ -213,13 +268,13 @@ export default function FoodDetailScreen({ navigation, route }: Props) {
           disabled={blocked}
         >
           <Text style={s.bigBtnText}>
-            {needsAmount
-              ? 'Enter an amount to add'
+            {sizesLoading
+              ? 'Finding serving sizes…'
+              : needsAmount
+                ? 'Enter an amount to add'
               : needsTier
                 ? 'Choose a food type to add'
-                : pick
-                  ? 'Add to meal'
-                  : `Add to ${meal}`}
+                : `Add ${measure ? `${amountText(measure)} ` : ''}to ${pick ? 'meal' : meal}`}
           </Text>
         </Pressable>
       </ScrollView>
@@ -227,10 +282,13 @@ export default function FoodDetailScreen({ navigation, route }: Props) {
   );
 }
 
-function MacroMini({ value, label }: { value: number; label: string }) {
+/** One macro in grams, or a dash while the amount isn't settled. */
+function MacroMini({ value, label }: { value: number | null; label: string }) {
   return (
     <View>
-      <Text style={s.macroVal}>{Math.round(value)}g</Text>
+      <Text style={s.macroVal}>
+        {value === null ? '–' : `${Math.round(value)}g`}
+      </Text>
       <Text style={s.macroLabel}>{label}</Text>
     </View>
   );
@@ -238,6 +296,7 @@ function MacroMini({ value, label }: { value: number; label: string }) {
 
 const s = StyleSheet.create({
   head: { paddingVertical: space.md },
+  loadingText: { ...typography.meta, flex: 1 },
   name: {
     fontFamily: font.display,
     fontSize: 21,

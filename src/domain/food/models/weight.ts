@@ -1,3 +1,4 @@
+import { Units } from '@shared/utils/units';
 import type { Portion } from '../sources/searchResult';
 
 /**
@@ -26,8 +27,29 @@ const GRAMS: Record<WeightUnit, number> = {
   [WeightUnit.Lb]: 453.6,
 };
 
+/** What one of a weight unit weighs in grams. */
+export const weightGrams = (unit: WeightUnit) => GRAMS[unit];
+
 export const isWeightUnit = (unit: string | null): unit is WeightUnit =>
   unit === WeightUnit.Oz || unit === WeightUnit.Lb;
+
+/**
+ * What an amount weighs, in the person's own units: "= 1.2 oz" on Imperial, "= 35 g" on
+ * Metric. `typed` is the unit an amount is typed in (null for grams), or undefined when it is
+ * counted ("2 packets"). Null when the typed unit is already a weight in their units.
+ */
+export function weightNote(
+  grams: number,
+  units: Units,
+  typed?: string | null,
+): string | null {
+  const imperial = units === Units.Imperial;
+  if (typed !== undefined && (imperial ? isWeightUnit(typed) : typed === null))
+    return null;
+  return imperial
+    ? `= ${Math.round((grams / GRAMS[WeightUnit.Oz]) * 10) / 10} oz`
+    : `= ${Math.round(grams * 10) / 10} g`;
+}
 
 /** The portions with ounces and pounds added, unless the food already has them. */
 export function withWeights(portions: Portion[]): Portion[] {

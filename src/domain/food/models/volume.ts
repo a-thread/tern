@@ -45,6 +45,10 @@ const KNOWN_VOLUMES: [RegExp, number][] = [
 // A declared serving given in a volume ("330 ml", "1 l", "12 fl oz").
 const VOLUME_AMOUNT = /\d\s*(ml|cl|dl|l|fl\.? ?oz)\b/i;
 
+/** A cup or spoon ("cup", "cup, chopped", "tbsp"): measured in quarters, unlike things counted whole. */
+export const isHouseholdVolume = (label: string) =>
+  /^(cups?|tbsp|tsp|tablespoons?|teaspoons?)\b/i.test(label.trim());
+
 export const isVolumeUnit = (unit: string | null): unit is VolumeUnit =>
   unit === VolumeUnit.Ml || unit === VolumeUnit.FlOz;
 
