@@ -21,6 +21,7 @@ import { FoodTypeLabel } from '../../components/FoodTypeLabel/FoodTypeLabel';
 import { MeasurePicker } from '../../components/MeasurePicker/MeasurePicker';
 import { MealPicker } from '../../components/MealPicker/MealPicker';
 import { useFoodDisplay } from '@/domain/food/hooks/useFoodDisplay';
+import { useUnits } from '@/domain/settings/hooks/useUnits';
 import {
   gramsOf,
   scaleForGrams,
@@ -49,8 +50,9 @@ export default function FoodDetailScreen({ navigation, route }: Props) {
   // amount: pick a household unit ("large egg", "cup") and how many, or type a
   // weight. Anything else ("1 bar") uses servings.
   const baseGrams = gramsOf(result.servingLabel);
+  const { units } = useUnits();
   const [measure, setMeasure] = useState<Measure | null>(() =>
-    baseGrams !== null ? startingMeasure(result, baseGrams) : null,
+    baseGrams !== null ? startingMeasure(result, baseGrams, units) : null,
   );
   const gramsValue = measure ? measureGrams(measure) : null;
   const [servings, setServings] = useState(result.servings ?? 1);

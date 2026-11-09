@@ -5,6 +5,7 @@ import {
   VolumeUnit,
   withVolumes,
 } from './volume';
+import { withWeights } from './weight';
 
 describe('volume', () => {
   it('knows a drink by its name, its units or its source', () => {
@@ -50,5 +51,10 @@ describe('volume', () => {
   it('leaves anything else alone', () => {
     const portions = [{ label: 'medium apple', grams: 182 }];
     expect(withVolumes(portions, 'Apple')).toBe(portions);
+  });
+
+  it('leaves room for oz and lb after fl oz and ml, without clashing', () => {
+    const all = withWeights(withVolumes([{ label: 'cup', grams: 244 }], 'Milk'));
+    expect(all.map((p) => p.label)).toEqual(['cup', 'fl oz', 'ml', 'oz', 'lb']);
   });
 });

@@ -4,6 +4,7 @@ import {
   tidyPortionLabel,
   typicalPortions,
 } from './commonFoodPortions';
+import { withWeights } from '../../food/models/weight';
 
 const labels = (ps: { label: string }[]) => ps.map((p) => p.label);
 
@@ -141,6 +142,21 @@ describe('typicalPortions', () => {
       'chicken breast',
     );
     expect(labels(sliced)).toEqual(['breast', 'oz', 'medium slice']);
+  });
+
+  it('offers an ounce once, and the typed units still add no second one', () => {
+    const ps = typicalPortions(
+      [
+        { label: 'oz, cooked', grams: 28.4 },
+        { label: 'oz', grams: 28.4 },
+        { label: 'medium slice', grams: 60 },
+      ],
+      'Chicken breast',
+      'chicken breast',
+    );
+    expect(labels(ps).filter((l) => l === 'oz')).toHaveLength(1);
+    expect(ps.find((p) => p.label === 'oz')?.grams).toBe(28.35);
+    expect(labels(withWeights(ps)).filter((l) => l === 'oz')).toHaveLength(1);
   });
 
   it('counts bacon by the slice, and wine by the glass', () => {

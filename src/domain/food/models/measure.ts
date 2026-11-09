@@ -1,4 +1,5 @@
 import { round1 } from '@shared/utils/number';
+import { Units } from '@shared/utils/units';
 import type { Portion, SearchResult } from '../sources/searchResult';
 import {
   formatCount,
@@ -10,6 +11,7 @@ import {
   type Macros,
 } from './servings';
 import { isVolumeUnit, VolumeSteps, VolumeUnit, withVolumes } from './volume';
+import { isWeightUnit, WeightSteps, WeightUnit, withWeights } from './weight';
 
 /**
  * How a logged amount was measured, kept with the entry so it can be changed
@@ -21,7 +23,7 @@ export type Measure = {
   per100: Macros;
   /** The household units on offer besides grams, e.g. "large egg" = 50 g. */
   portions: Portion[];
-  /** What `quantity` counts: a portion's label (a `VolumeUnit` for a drink by volume), or null for grams. */
+  /** What `quantity` counts: a portion's label (a `VolumeUnit` or `WeightUnit` when typed), or null for grams. */
   unit: string | null;
   /** How many of `unit` (a weight in grams when `unit` is null). */
   quantity: number;
@@ -92,14 +94,14 @@ export function measureLabel(m: Measure): string {
   return `${formatCount(m.quantity)} ${pluralize(p.label, m.quantity)} (${measureGrams(m)} g)`;
 }
 
-/** Whether the amount is typed rather than counted: a weight in grams, or a volume. */
+/** Whether the amount is typed rather than counted: grams, ounces, pounds, or a volume. */
 export const isTypedUnit = (unit: string | null) =>
-  unit === null || isVolumeUnit(unit);
+  unit === null || isVolumeUnit(unit) || isWeightUnit(unit);
 
 /** The amount alone, for a stepper: "2" for two eggs, "150 g" for a weight, "250 ml" for a drink. */
 export function quantityText(m: Measure): string {
   if (m.unit === null) return `${formatCount(m.quantity)} g`;
-  if (isVolumeUnit(m.unit)) return `${formatCount(m.quantity)} ${m.unit}`;
+  if (isTypedUnit(m.unit)) return `${formatCount(m.quantity)} ${m.unit}`;
   return formatCount(m.quantity);
 }
 
@@ -118,8 +120,25 @@ const volumeStep = (unit: VolumeUnit) =>
     ? { step: VolumeSteps.ML_STEP, min: VolumeSteps.ML_MIN }
     : { step: VolumeSteps.FL_OZ_STEP, min: VolumeSteps.FL_OZ_MIN };
 
-/** One step up or down: a quarter of a portion, ten grams, ten ml or a fluid ounce. */
+const weightStep = (unit: WeightUnit) =>
+  unit === WeightUnit.Oz
+    ? { step: WeightSteps.OZ_STEP, min: WeightSteps.OZ_MIN, digits: 1 }
+    : { step: WeightSteps.LB_STEP, min: WeightSteps.LB_MIN, digits: 2 };
+
+const roundTo = (n: number, digits: number) => {
+  const f = 10 ** digits;
+  return Math.round(n * f) / f;
+};
+
+/** One step up or down: a quarter of a portion, ten grams, an ounce, a quarter pound, ten ml or a fluid ounce. */
 export function stepMeasure(m: Measure, direction: 1 | -1): Measure {
+  if (isWeightUnit(m.unit)) {
+    const { step, min, digits } = weightStep(m.unit);
+    return {
+      ...m,
+      quantity: Math.max(min, roundTo(m.quantity + direction * step, digits)),
+    };
+  }
   if (isVolumeUnit(m.unit)) {
     const { step, min } = volumeStep(m.unit);
     return {
@@ -160,6 +179,14 @@ export function switchUnit(m: Measure, unit: string | null): Measure {
       unit: target.label,
       quantity: Math.max(VolumeSteps.ML_MIN, Math.round(grams / target.grams)),
     };
+  if (isWeightUnit(target.label)) {
+    const { min, digits } = weightStep(target.label);
+    return {
+      ...m,
+      unit: target.label,
+      quantity: Math.max(min, roundTo(grams / target.grams, digits)),
+    };
+  }
   return {
     ...m,
     unit: target.label,
@@ -177,33 +204,41 @@ export const scaleMeasure = (m: Measure, factor: number): Measure => ({
 });
 
 /**
- * Typing an amount: `text` in the volume unit chosen, else in grams, or zero
- * while it isn't a sensible number.
+ * Typing an amount: `text` in the volume or weight unit chosen, else in grams,
+ * or zero while it isn't a sensible number. The cap (5000 g) is on what a
+ * weight comes to; ounces are kept to a tenth and pounds to a hundredth.
  */
-export const typedAmount = (m: Measure, text: string): Measure => ({
-  ...m,
-  unit: isVolumeUnit(m.unit) ? m.unit : null,
-  quantity: parseGrams(text) ?? 0,
-});
+export function typedAmount(m: Measure, text: string): Measure {
+  const unit = isTypedUnit(m.unit) ? m.unit : null;
+  const weight = isWeightUnit(unit) ? portionOf({ ...m, unit }) : null;
+  const n = parseGrams(text, weight?.grams);
+  const digits = isWeightUnit(unit) ? weightStep(unit).digits : 2;
+  return { ...m, unit, quantity: n === null ? 0 : roundTo(n, digits) };
+}
 
-/** The measure with fl oz and ml on offer when `name` is a drink (entries logged before they were). */
-export function withVolumeUnits(m: Measure, name: string): Measure {
-  const portions = withVolumes(m.portions, name);
-  return portions === m.portions ? m : { ...m, portions };
+/**
+ * The measure with ounces and pounds on offer, and fl oz and ml when `name` is
+ * a drink (entries logged before they were).
+ */
+export function withTypedUnits(m: Measure, name: string): Measure {
+  const portions = withWeights(withVolumes(m.portions, name));
+  return portions.length === m.portions.length ? m : { ...m, portions };
 }
 
 /**
  * Where to start when logging `result`, whose values are for `baseGrams`: the
  * unit and amount used last time if it was logged before, else the first
- * portion (one of it), else the weight the values are for (in ml for a drink).
- * Drinks also get fl oz and ml to choose from.
+ * portion (one of it), else the weight the values are for (in ml for a drink,
+ * ounces for Imperial, else grams). Every food gets oz and lb to choose from,
+ * and drinks fl oz and ml.
  */
 export function startingMeasure(
   result: SearchResult,
   baseGrams: number,
+  units: Units,
 ): Measure {
   const own = result.portions ?? [];
-  const portions = withVolumes(own, result.name, result.liquid);
+  const portions = withWeights(withVolumes(own, result.name, result.liquid));
   const base = { per100: scaleForGrams(result, baseGrams, 100), portions };
   const last = result.last;
   if (last) {
@@ -219,6 +254,13 @@ export function startingMeasure(
       ...base,
       unit: VolumeUnit.Ml,
       quantity: Math.round(baseGrams / ml.grams),
+    };
+  const oz = portions.find((p) => p.label === WeightUnit.Oz);
+  if (units === Units.Imperial && oz)
+    return {
+      ...base,
+      unit: WeightUnit.Oz,
+      quantity: Math.max(WeightSteps.OZ_MIN, roundTo(baseGrams / oz.grams, 1)),
     };
   return { ...base, unit: null, quantity: baseGrams };
 }
