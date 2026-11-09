@@ -16,29 +16,19 @@ const SOURCE_TAG: Record<FoodSource, string> = {
 };
 
 /**
- * The line under a food's name: where it's from, its detail or brand, and the
- * calories for its first portion ("1 large egg · 72 cal") when it has one,
- * otherwise per its serving ("143 cal / 100 g").
+ * The line under a food's name: where it's from, and its detail or brand. No amount: the
+ * serving is chosen on the details screen, so the list doesn't promise one it may not open on.
  */
 export function resultSubline(
   r: SearchResult,
   from: FoodSource | undefined,
-  showCalories: boolean,
 ): string {
-  const portion = r.servingLabel === '100 g' ? r.portions?.[0] : undefined;
-  const amount = portion
-    ? showCalories
-      ? `1 ${portion.label} · ${Math.round((r.calories * portion.grams) / 100)} cal`
-      : `1 ${portion.label}`
-    : showCalories
-      ? `${r.calories} cal / ${r.servingLabel}`
-      : r.servingLabel;
-  return [from ? SOURCE_TAG[from] : undefined, r.brand ?? r.detail, amount]
+  return [from ? SOURCE_TAG[from] : undefined, r.brand ?? r.detail]
     .filter(Boolean)
     .join(' · ');
 }
 
-/** One food from a search or your history: its type dot, name, serving, and a plus to add it. */
+/** One food from a search or your history: its type dot, name, where it's from, and a plus to add it. */
 export function FoodResultRow({
   result,
   from,
@@ -49,7 +39,7 @@ export function FoodResultRow({
   from?: FoodSource;
   onPress: () => void;
 }) {
-  const { showTiers, showTierNumber, showCalories } = useFoodDisplay();
+  const { showTiers, showTierNumber } = useFoodDisplay();
   return (
     <Row
       icon={
@@ -65,7 +55,7 @@ export function FoodResultRow({
         )
       }
       title={result.name}
-      sub={resultSubline(result, from, showCalories)}
+      sub={resultSubline(result, from) || undefined}
       onPress={onPress}
       right={
         <View style={s.plusBtn}>

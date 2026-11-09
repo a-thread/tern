@@ -22,9 +22,10 @@ import {
 import { Frequency } from '@shared/models/frequency';
 
 const config = (
-  over: Partial<{ meals: boolean; weighIn: boolean }> = {},
+  over: Partial<{ meals: boolean; eat: boolean; weighIn: boolean }> = {},
 ): ReminderConfig => ({
   mealLog: { ...Reminders.DEFAULTS.mealLog, on: over.meals ?? false },
+  eat: { ...Reminders.DEFAULTS.eat, on: over.eat ?? false },
   weighIn: {
     ...Reminders.DEFAULTS.weighIn,
     on: over.weighIn ?? false,
@@ -52,6 +53,28 @@ describe('planReminders', () => {
     expect(
       planReminders(config({ meals: true }), { trackFood: false }),
     ).toEqual([]);
+  });
+
+  it('schedules reminders to eat only while food is not tracked', () => {
+    const c = config({ meals: true, eat: true });
+    c.eat.evening = 20 * 60 + 30;
+    const untracked = planReminders(c, { trackFood: false });
+    expect(untracked.map((r) => [r.id, r.key, r.hour, r.minute])).toEqual([
+      [Reminders.MIDDAY_EAT_ID, ReminderKey.Eat, 12, 30],
+      [Reminders.EVENING_EAT_ID, ReminderKey.Eat, 20, 30],
+    ]);
+    expect(untracked.every((r) => !/log|add/i.test(r.body))).toBe(true);
+    expect(
+      planReminders(c, { trackFood: true }).map((r) => r.key),
+    ).toEqual([ReminderKey.Meals, ReminderKey.Meals]);
+  });
+
+  it('starts with reminders to eat off, and keeps saved ones', () => {
+    expect(Reminders.DEFAULTS.eat.on).toBe(false);
+    expect(mergeReminders({}).eat).toEqual(Reminders.DEFAULTS.eat);
+    expect(
+      mergeReminders({ eat: { on: true, evening: 1260 } }).eat,
+    ).toEqual({ ...Reminders.DEFAULTS.eat, on: true, evening: 1260 });
   });
 
   it('follows edited times and weekday', () => {
@@ -178,6 +201,7 @@ describe('time helpers', () => {
     expect(formatMinutes(19 * 60 + 5)).toBe('7:05 pm');
     expect(describeReminders(Reminders.DEFAULTS)).toEqual({
       meals: '12:30 pm and 7:00 pm',
+      eat: '12:30 pm and 7:00 pm',
       weighIn: 'Sundays, 8:00 am',
       water: 'Every 2 hours, 9:00 am to 7:00 pm',
       streak:
@@ -521,8 +545,11 @@ describe('isQuietToday', () => {
 
   it('quietens everything but medication on a rest day', () => {
     const rest = { ...NOTHING_DONE, rest: true };
-    for (const r of [meals, weighIn, water, mood])
+    const eat = { id: Reminders.EVENING_EAT_ID, key: ReminderKey.Eat };
+    for (const r of [meals, eat, weighIn, water, mood])
       expect(isQuietToday(r, rest)).toBe(true);
     expect(isQuietToday(dose('a'), rest)).toBe(false);
+    // Nothing is logged, so only a rest day quiets a reminder to eat.
+    expect(isQuietToday(eat, { ...NOTHING_DONE, meals: true })).toBe(false);
   });
 });

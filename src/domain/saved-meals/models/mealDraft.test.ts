@@ -73,6 +73,7 @@ describe('drafts', () => {
     id: 'm1',
     name: 'Usual breakfast',
     items: [item('Oats'), item('Banana')],
+    servings: 1,
     createdAt: '2026-09-20T00:00:00Z',
   };
   const other: SavedMeal = { ...saved, id: 'm2', name: 'Lunch' };
@@ -94,6 +95,19 @@ describe('drafts', () => {
       true,
     );
     expect(isDraftDirty({ ...emptyDraft(), name: 'x' })).toBe(true);
+  });
+
+  it('counts a change of servings as a change', () => {
+    const d = draftFromMeal(saved);
+    expect(d.servings).toBe(1);
+    expect(emptyDraft().servings).toBe(1);
+    expect(isDraftDirty({ ...d, servings: 8 })).toBe(true);
+    expect(
+      isDraftDirty({
+        ...draftFromMeal({ ...saved, servings: 8 }),
+        servings: 8,
+      }),
+    ).toBe(false);
   });
 
   it('validates the name, the items and clashes with other meals', () => {
@@ -154,14 +168,15 @@ describe('stepItemServings with a measure', () => {
   const items = [{ ...item('Eggs'), ...eggs }];
 
   it('steps a measured item in its own unit and updates its label and calories', () => {
+    // Eggs are counted, so they move by halves.
     const [up] = stepItemServings(items, 0, 0.25);
     expect(up).toMatchObject({
       servings: 1,
-      servingLabel: '2.25 large eggs (112.5 g)',
+      servingLabel: '2.5 large eggs (125 g)',
     });
-    expect(up.measure?.quantity).toBe(2.25);
-    expect(up.calories).toBe(161);
+    expect(up.measure?.quantity).toBe(2.5);
+    expect(up.calories).toBe(179);
     const [down] = stepItemServings(items, 0, -0.25);
-    expect(down.measure?.quantity).toBe(1.75);
+    expect(down.measure?.quantity).toBe(1.5);
   });
 });

@@ -47,7 +47,18 @@ export default function RemindersStepScreen() {
               })
             }
           />
-        ) : null}
+        ) : (
+          <ToggleRow
+            title='Reminders to eat'
+            sub={`${when.eat}, with nothing to log`}
+            on={reminders.eat.on}
+            onToggle={(on) =>
+              updateSettings({
+                reminders: { ...reminders, eat: { ...reminders.eat, on } },
+              })
+            }
+          />
+        )}
         {settings.trackWeight ? (
           <ToggleRow
             title='Weigh-in reminder'

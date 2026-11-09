@@ -3,6 +3,7 @@ import React from 'react';
 import { colors } from '@shared/theme';
 import { IconBadge, Row, Icon } from '@shared/components/ui';
 import {
+  isRecipe,
   savedMealTotals,
   type SavedMeal,
 } from '@/domain/saved-meals/models/savedMeals';
@@ -17,7 +18,8 @@ export function SavedMealRow({
   onPress: () => void;
 }) {
   const { showCalories } = useFoodDisplay();
-  const cals = Math.round(savedMealTotals(meal.items).calories);
+  // A recipe shows one serving, since that is what gets logged.
+  const cals = Math.round(savedMealTotals(meal.items).calories / meal.servings);
   const n = meal.items.length;
   return (
     <Row
@@ -27,7 +29,7 @@ export function SavedMealRow({
         </IconBadge>
       }
       title={meal.name}
-      sub={`${n} ${n === 1 ? 'food' : 'foods'}${showCalories ? ` · ${cals} cal` : ''}`}
+      sub={`${n} ${n === 1 ? 'food' : 'foods'}${showCalories ? ` · ${cals} cal${isRecipe(meal) ? ' per serving' : ''}` : ''}`}
       chevron
       onPress={onPress}
     />

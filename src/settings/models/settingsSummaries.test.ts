@@ -57,6 +57,13 @@ describe('settings index summaries', () => {
       foodSummary(with_({ trackCalories: false, trackMacros: false })),
     ).toBe('Calories off');
     expect(foodSummary(with_({ trackFood: false }))).toBe('Off');
+    const eat = {
+      ...initialSettings.reminders,
+      eat: { ...initialSettings.reminders.eat, on: true },
+    };
+    expect(foodSummary(with_({ trackFood: false, reminders: eat }))).toBe(
+      'Reminders to eat',
+    );
   });
 
   it('sums up only what is tracked when calories and macros differ', () => {
@@ -135,6 +142,7 @@ describe('settings index summaries', () => {
   it('counts only reminders that will fire: on, and for something tracked', () => {
     const all = {
       mealLog: { ...initialSettings.reminders.mealLog, on: true },
+      eat: { ...initialSettings.reminders.eat, on: true },
       weighIn: { ...initialSettings.reminders.weighIn, on: true },
       water: { ...initialSettings.reminders.water, on: true },
       mood: { ...initialSettings.reminders.mood, on: true },
@@ -160,11 +168,22 @@ describe('settings index summaries', () => {
         }),
       ),
     ).toBe(2);
-    // Meal reminders go quiet with food off, like the others with their feature.
+    // With food off, meal reminders go quiet and the reminders to eat take their place.
     expect(
       activeReminderCount(
         with_({
           reminders: all,
+          trackFood: false,
+          trackWeight: false,
+          trackWater: false,
+          trackMood: false,
+        }),
+      ),
+    ).toBe(2);
+    expect(
+      activeReminderCount(
+        with_({
+          reminders: { ...all, eat: { ...all.eat, on: false } },
           trackFood: false,
           trackWeight: false,
           trackWater: false,

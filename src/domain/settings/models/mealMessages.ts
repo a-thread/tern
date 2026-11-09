@@ -36,6 +36,29 @@ export const DINNER_MESSAGES: readonly ReminderText[] = [
   },
 ];
 
+/**
+ * Reminders to eat, for someone who doesn't track food. Nothing to log and no "should":
+ * a kind word so the day doesn't slip by, and something in the evening so hunger doesn't
+ * arrive at bedtime.
+ */
+export const EAT_MIDDAY_MESSAGES: readonly ReminderText[] = [
+  { title: 'Time to eat', body: 'A little something now, if you haven’t yet.' },
+  { title: 'Lunch', body: 'Have you had a chance to eat today?' },
+  { title: 'Midday', body: 'A good moment for a bite to eat.' },
+  { title: 'A gentle nudge', body: 'Something to eat would be good about now.' },
+  { title: 'Lunch time', body: 'Take a little break and have something to eat.' },
+  { title: 'Midday', body: 'Lunch, whenever you can fit it in.' },
+];
+
+export const EAT_EVENING_MESSAGES: readonly ReminderText[] = [
+  { title: 'Dinner', body: 'Time for something to eat before the evening winds down.' },
+  { title: 'Before bed', body: 'Have you eaten tonight? A little something now helps later.' },
+  { title: 'This evening', body: 'A good moment for dinner, if you haven’t had it.' },
+  { title: 'A gentle nudge', body: 'Something to eat now, so you’re not hungry at bedtime.' },
+  { title: 'Supper', body: 'Dinner, or even a snack, before the night gets late.' },
+  { title: 'Evening', body: 'Have something to eat while there’s still time.' },
+];
+
 /** Which message to use on a given day. Consecutive days always differ. */
 export function variantFor<T>(variants: readonly T[], dayNumber: number): T {
   const n = variants.length;

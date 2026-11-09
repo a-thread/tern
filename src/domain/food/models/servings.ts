@@ -36,10 +36,23 @@ export function scaleForGrams(
   };
 }
 
-/** Parses a typed amount ("40", "40.5", "40,5"); null unless it is a sensible weight. */
-export function parseGrams(text: string): number | null {
-  const g = parseFloat(text.replace(',', '.'));
-  return Number.isFinite(g) && g > 0 && g <= 5000 ? g : null;
+/** The most one typed amount can weigh, whatever unit it is typed in. */
+export class TypedLimits {
+  static readonly MAX_GRAMS = 5000;
+}
+
+/**
+ * Parses a typed amount ("40", "40.5", "40,5"); null unless it is sensible.
+ * The cap is on what it weighs: `gramsPerUnit` is what one of the unit typed
+ * in weighs (1 for grams), so 176 oz passes and 177 oz doesn't.
+ */
+export function parseGrams(text: string, gramsPerUnit = 1): number | null {
+  const n = parseFloat(text.replace(',', '.'));
+  return Number.isFinite(n) &&
+    n > 0 &&
+    n * gramsPerUnit <= TypedLimits.MAX_GRAMS
+    ? n
+    : null;
 }
 
 /** How servings step up and down. */

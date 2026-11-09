@@ -1,7 +1,9 @@
 import {
+  getUsdaPortionsWithKey,
   measureToPortion,
   searchUsdaWithKey,
   usdaFoodToResult,
+  usdaPortions,
   type UsdaFood,
 } from './usda';
 import { FoodSource } from '../models/foodSource';
@@ -82,9 +84,11 @@ describe('usdaFoodToResult', () => {
         },
       ],
     });
+    // USDA's usual amount ("Quantity not specified") is kept as the serving, after the rest.
     expect(r?.portions).toEqual([
       { label: 'cup', grams: 158 },
       { label: 'tbsp', grams: 10 },
+      { label: 'serving', grams: 100 },
     ]);
   });
 
@@ -299,6 +303,158 @@ describe('real search-result shape', () => {
   });
 });
 
+// Real data from live responses (November 2026): search measures and food details.
+describe('portions that make sense to a person', () => {
+  const food = (measures: UsdaFood['foodPortions'], description = 'Milk') =>
+    usdaPortions({ fdcId: 1, description, foodPortions: measures });
+
+  it('drops guideline amounts, cooked yields, cubic inches, drinks with ice and ounces', () => {
+    expect(
+      food([
+        { disseminationText: '1 cup', gramWeight: 244, rank: 1 },
+        {
+          disseminationText: 'Guideline amount per fl oz of beverage',
+          gramWeight: 2.5,
+          rank: 2,
+        },
+        {
+          disseminationText: 'Guideline amount per cup of hot cereal',
+          gramWeight: 61,
+          rank: 3,
+        },
+        { disseminationText: '1 oz yields', gramWeight: 20, rank: 4 },
+        { disseminationText: '1 oz, cooked', gramWeight: 28.35, rank: 5 },
+        { disseminationText: '1 cubic inch', gramWeight: 17, rank: 6 },
+        { disseminationText: '1 fl oz (with ice)', gramWeight: 23, rank: 7 },
+        { disseminationText: '1 fl oz (no ice)', gramWeight: 31, rank: 8 },
+        { disseminationText: '1 fl oz (NFS)', gramWeight: 31, rank: 9 },
+      ]),
+    ).toEqual([
+      { label: 'cup', grams: 244 },
+      { label: 'fl oz', grams: 31 },
+    ]);
+  });
+
+  it('joins a Foundation unit and how it is cut: "cup, chopped", "cup, shredded"', () => {
+    expect(
+      food(
+        [
+          {
+            amount: 1,
+            modifier: 'chopped',
+            measureUnit: { name: 'cup' },
+            gramWeight: 76,
+            sequenceNumber: 1,
+          },
+          {
+            amount: 1,
+            portionDescription: 'shredded',
+            measureUnit: { name: 'cup' },
+            gramWeight: 105,
+            sequenceNumber: 2,
+          },
+          {
+            amount: 1,
+            measureUnit: { name: 'slice' },
+            gramWeight: 17,
+            sequenceNumber: 3,
+          },
+        ],
+        'Broccoli, raw',
+      ),
+    ).toEqual([
+      { label: 'cup, chopped', grams: 76 },
+      { label: 'cup, shredded', grams: 105 },
+      { label: 'slice', grams: 17 },
+    ]);
+  });
+
+  it('reads RACC, NLEA serving and "Quantity not specified" as one serving, last', () => {
+    expect(
+      food([
+        { amount: 1, measureUnit: { name: 'RACC' }, gramWeight: 85 },
+        {
+          amount: 1,
+          modifier: 'cup',
+          measureUnit: { name: 'undetermined' },
+          gramWeight: 194,
+        },
+        {
+          amount: 1,
+          modifier: 'NLEA serving',
+          measureUnit: { name: 'undetermined' },
+          gramWeight: 126,
+        },
+      ]),
+    ).toEqual([
+      { label: 'cup', grams: 194 },
+      { label: 'serving', grams: 85 },
+    ]);
+  });
+
+  it('leaves the serving out when another portion already weighs the same', () => {
+    expect(
+      food([
+        { disseminationText: '1 breast, NS as to size', gramWeight: 130, rank: 1 },
+        { disseminationText: 'Quantity not specified', gramWeight: 130, rank: 2 },
+      ]),
+    ).toEqual([{ label: 'breast', grams: 130 }]);
+  });
+
+  it('reads an SR Legacy "serving 2 oz" as the serving', () => {
+    expect(
+      food([
+        {
+          amount: 1,
+          modifier: 'serving 2 oz',
+          measureUnit: { name: 'undetermined' },
+          gramWeight: 56,
+        },
+      ]),
+    ).toEqual([{ label: 'serving', grams: 56 }]);
+  });
+
+  it('keeps the serving when it is all there is', () => {
+    expect(
+      food([{ disseminationText: 'Quantity not specified', gramWeight: 45 }]),
+    ).toEqual([{ label: 'serving', grams: 45 }]);
+  });
+});
+
+describe('getUsdaPortions', () => {
+  afterEach(() => jest.restoreAllMocks());
+
+  it("fetches a food's details by its id and returns their portions", async () => {
+    const spy = jest.spyOn(global, 'fetch').mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({
+        fdcId: 747447,
+        description: 'Broccoli, raw',
+        foodPortions: [
+          {
+            amount: 1,
+            modifier: 'chopped',
+            measureUnit: { name: 'cup' },
+            gramWeight: 76,
+          },
+        ],
+      }),
+    } as Response);
+    expect(await getUsdaPortionsWithKey('usda-747447', 'abc123')).toEqual([
+      { label: 'cup, chopped', grams: 76 },
+    ]);
+    const [url] = spy.mock.calls[0] as [string];
+    expect(url).toContain('/fdc/v1/food/747447?api_key=abc123');
+  });
+
+  it('asks for nothing without a key or for an id that is not USDA', async () => {
+    const spy = jest.spyOn(global, 'fetch');
+    expect(await getUsdaPortionsWithKey('usda-1', undefined)).toEqual([]);
+    expect(await getUsdaPortionsWithKey('0851087000687', 'abc')).toEqual([]);
+    expect(spy).not.toHaveBeenCalled();
+  });
+});
+
 describe('searchUsda request', () => {
   afterEach(() => jest.restoreAllMocks());
 
@@ -333,5 +489,23 @@ describe('searchUsda request', () => {
     expect(await searchUsdaWithKey('apple', undefined)).toEqual([]);
     expect(await searchUsdaWithKey('apple', '')).toEqual([]);
     expect(spy).not.toHaveBeenCalled();
+  });
+});
+
+describe('spoon names', () => {
+  it('shortens tablespoon and teaspoon to the app’s tbsp and tsp', () => {
+    expect(
+      usdaPortions({
+        fdcId: 1,
+        description: 'Peanut butter',
+        foodMeasures: [
+          { disseminationText: '1 tablespoon', gramWeight: 16, rank: 1 },
+          { disseminationText: '1 teaspoon', gramWeight: 5.3, rank: 2 },
+        ],
+      }),
+    ).toEqual([
+      { label: 'tbsp', grams: 16 },
+      { label: 'tsp', grams: 5.3 },
+    ]);
   });
 });

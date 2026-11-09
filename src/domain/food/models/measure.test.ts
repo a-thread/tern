@@ -1,6 +1,9 @@
+import { Units } from '@shared/utils/units';
 import type { SearchResult } from '../sources/searchResult';
 import {
+  addPortions,
   amountOf,
+  amountText,
   measureGrams,
   measureLabel,
   nounFor,
@@ -13,7 +16,7 @@ import {
   stepMeasure,
   switchUnit,
   typedAmount,
-  withVolumeUnits,
+  withTypedUnits,
   type Measure,
 } from './measure';
 
@@ -53,9 +56,18 @@ describe('measure', () => {
     expect(amountOf({ ...egg, quantity: 3 }).calories).toBe(215);
   });
 
-  it('steps by a quarter portion, or ten grams', () => {
-    expect(stepMeasure(egg, 1).quantity).toBe(2.25);
+  it('steps eggs by a half, cups by a quarter, or grams by ten', () => {
+    expect(stepMeasure(egg, 1).quantity).toBe(2.5);
+    expect(stepMeasure({ ...egg, quantity: 0.5 }, -1).quantity).toBe(0.5);
+    // An older quarter amount goes up to the next half, and never up when stepping down.
+    expect(stepMeasure({ ...egg, quantity: 0.25 }, 1).quantity).toBe(0.5);
     expect(stepMeasure({ ...egg, quantity: 0.25 }, -1).quantity).toBe(0.25);
+    expect(stepMeasure({ ...egg, quantity: 0.33 }, -1).quantity).toBe(0.33);
+    expect(stepMeasure({ ...egg, quantity: 0.75 }, -1).quantity).toBe(0.5);
+    expect(stepMeasure({ ...egg, quantity: 0.75 }, 1).quantity).toBe(1);
+    expect(stepMeasure({ ...egg, unit: 'cup', quantity: 1 }, 1).quantity).toBe(
+      1.25,
+    );
     expect(stepMeasure({ ...egg, unit: null, quantity: 100 }, 1).quantity).toBe(
       110,
     );
@@ -145,8 +157,13 @@ describe('measuring a drink by volume', () => {
 
   it('offers fl oz and ml on a drink logged before they existed', () => {
     const old = { ...milk, portions: [milk.portions[0]], unit: 'cup' };
-    expect(withVolumeUnits(old, 'Milk').portions).toHaveLength(3);
-    expect(withVolumeUnits(egg, 'Egg')).toBe(egg);
+    expect(withTypedUnits(old, 'Milk').portions.map((p) => p.label)).toEqual([
+      'cup',
+      'fl oz',
+      'ml',
+      'oz',
+      'lb',
+    ]);
   });
 });
 
@@ -164,7 +181,7 @@ describe('startingMeasure', () => {
   };
 
   it('starts with one of the first portion', () => {
-    expect(startingMeasure(result, 100)).toMatchObject({
+    expect(startingMeasure(result, 100, Units.Metric)).toMatchObject({
       unit: 'large egg',
       quantity: 1,
       per100: { calories: 143 },
@@ -176,23 +193,29 @@ describe('startingMeasure', () => {
       startingMeasure(
         { ...result, last: { unit: 'large egg', quantity: 3 } },
         100,
+        Units.Metric,
       ),
     ).toMatchObject({ unit: 'large egg', quantity: 3 });
     expect(
-      startingMeasure({ ...result, last: { unit: null, quantity: 80 } }, 100),
+      startingMeasure(
+        { ...result, last: { unit: null, quantity: 80 } },
+        100,
+        Units.Metric,
+      ),
     ).toMatchObject({ unit: null, quantity: 80 });
     // A unit the food no longer offers falls back to the first portion.
     expect(
       startingMeasure(
         { ...result, last: { unit: 'jumbo egg', quantity: 3 } },
         100,
+        Units.Metric,
       ),
     ).toMatchObject({ unit: 'large egg', quantity: 1 });
   });
 
   it('starts in grams when there are no portions', () => {
     expect(
-      startingMeasure({ ...result, portions: undefined }, 100),
+      startingMeasure({ ...result, portions: undefined }, 100, Units.Metric),
     ).toMatchObject({ unit: null, quantity: 100 });
   });
 
@@ -203,9 +226,15 @@ describe('startingMeasure', () => {
       calories: 45,
       portions: [{ label: 'cup', grams: 248 }],
     };
-    const m = startingMeasure(juice, 100);
+    const m = startingMeasure(juice, 100, Units.Metric);
     expect(m.unit).toBe('cup');
-    expect(m.portions.map((p) => p.label)).toEqual(['cup', 'fl oz', 'ml']);
+    expect(m.portions.map((p) => p.label)).toEqual([
+      'cup',
+      'fl oz',
+      'ml',
+      'oz',
+      'lb',
+    ]);
     expect(
       startingMeasure(
         {
@@ -215,6 +244,7 @@ describe('startingMeasure', () => {
           liquid: true,
         },
         100,
+        Units.Metric,
       ),
     ).toMatchObject({ unit: 'ml', quantity: 100 });
   });
@@ -226,7 +256,7 @@ describe('startingMeasure', () => {
       calories: 60,
       portions: undefined,
     };
-    expect(startingMeasure(logged, 40)).toMatchObject({
+    expect(startingMeasure(logged, 40, Units.Metric)).toMatchObject({
       per100: { calories: 150 },
       quantity: 40,
     });
@@ -290,5 +320,232 @@ describe('wording', () => {
     expect(nounFor('Sweet potato, raw')).toBe('sweet potato');
     expect(nounFor('Chicken breast meat only, cooked')).toBeNull();
     expect(nounFor('')).toBeNull();
+  });
+});
+
+describe('measuring by ounces and pounds', () => {
+  const withWeight: Measure = {
+    ...egg,
+    portions: [
+      ...egg.portions,
+      { label: 'oz', grams: 28.35 },
+      { label: 'lb', grams: 453.6 },
+    ],
+  };
+  const grams: Measure = { ...withWeight, unit: null, quantity: 170 };
+
+  it('weighs and labels an amount in oz or lb', () => {
+    const oz = { ...withWeight, unit: 'oz', quantity: 6 };
+    expect(measureGrams(oz)).toBe(170.1);
+    expect(measureLabel(oz)).toBe('6 oz (170.1 g)');
+    expect(quantityText(oz)).toBe('6 oz');
+    expect(measureLabel({ ...withWeight, unit: 'lb', quantity: 1.5 })).toBe(
+      '1.5 lb (680.4 g)',
+    );
+  });
+
+  it('types in oz and lb, keeping the unit', () => {
+    const oz = { ...withWeight, unit: 'oz', quantity: 1 };
+    expect(typedAmount(oz, '6.25')).toMatchObject({
+      unit: 'oz',
+      quantity: 6.3,
+    });
+    expect(typedAmount({ ...oz, unit: 'lb' }, '2,5')).toMatchObject({
+      unit: 'lb',
+      quantity: 2.5,
+    });
+    expect(typedAmount(oz, '').quantity).toBe(0);
+  });
+
+  it('caps a typed amount at 5000 g in each unit', () => {
+    const oz = { ...withWeight, unit: 'oz', quantity: 1 };
+    expect(typedAmount(oz, '176').quantity).toBe(176);
+    expect(typedAmount(oz, '177').quantity).toBe(0);
+    const lb = { ...oz, unit: 'lb' };
+    expect(typedAmount(lb, '11').quantity).toBe(11);
+    expect(typedAmount(lb, '11.1').quantity).toBe(0);
+    expect(typedAmount(grams, '5000').quantity).toBe(5000);
+    expect(typedAmount(grams, '5001').quantity).toBe(0);
+  });
+
+  it('switches g → lb → g and g → oz → g without drifting far', () => {
+    const lb = switchUnit(grams, 'lb');
+    expect(lb).toMatchObject({ unit: 'lb', quantity: 0.37 });
+    expect(measureGrams(switchUnit(lb, null))).toBeCloseTo(170, -1);
+    const oz = switchUnit(grams, 'oz');
+    expect(oz).toMatchObject({ unit: 'oz', quantity: 6 });
+    expect(switchUnit(oz, null)).toMatchObject({ unit: null, quantity: 170 });
+  });
+
+  it('does not snap oz and lb to quarters', () => {
+    expect(switchUnit({ ...grams, quantity: 100 }, 'oz').quantity).toBe(3.5);
+  });
+
+  it('steps an ounce or a quarter pound at a time', () => {
+    const oz = { ...withWeight, unit: 'oz', quantity: 6 };
+    expect(stepMeasure(oz, 1).quantity).toBe(7);
+    expect(stepMeasure({ ...oz, quantity: 1 }, -1).quantity).toBe(0.5);
+    const lb = { ...oz, unit: 'lb', quantity: 1 };
+    expect(stepMeasure(lb, 1).quantity).toBe(1.25);
+    expect(stepMeasure({ ...lb, quantity: 0.25 }, -1).quantity).toBe(0.25);
+  });
+
+  it('survives storage', () => {
+    const oz = { ...withWeight, unit: 'oz', quantity: 6 };
+    expect(parseMeasure(JSON.parse(JSON.stringify(oz)))).toEqual(oz);
+  });
+
+  it('gives an old entry oz and lb, once', () => {
+    const old = withTypedUnits(egg, 'Egg');
+    expect(old.portions.map((p) => p.label)).toEqual([
+      'large egg',
+      'cup',
+      'oz',
+      'lb',
+    ]);
+    expect(withTypedUnits(old, 'Egg')).toBe(old);
+  });
+
+  it('starts in oz for Imperial and grams for Metric when nothing else says', () => {
+    const result: SearchResult = {
+      id: 'off-1',
+      name: 'Hummus',
+      servingLabel: '100 g',
+      calories: 166,
+      protein: 8,
+      carbs: 14,
+      fat: 10,
+      tier: null,
+    };
+    expect(startingMeasure(result, 100, Units.Imperial)).toMatchObject({
+      unit: 'oz',
+      quantity: 3.5,
+    });
+    expect(startingMeasure(result, 100, Units.Metric)).toMatchObject({
+      unit: null,
+      quantity: 100,
+    });
+    // A household portion still comes first.
+    expect(
+      startingMeasure(
+        { ...result, portions: [{ label: 'tbsp', grams: 15 }] },
+        100,
+        Units.Imperial,
+      ),
+    ).toMatchObject({ unit: 'tbsp', quantity: 1 });
+  });
+});
+
+describe('addPortions', () => {
+  const m: Measure = {
+    per100: { calories: 34, protein: 2.8, carbs: 6.6, fat: 0.4 },
+    portions: [{ label: 'oz', grams: 28.35 }],
+    unit: 'oz',
+    quantity: 3,
+  };
+
+  it('offers sizes that arrived later first, keeping the amount chosen', () => {
+    expect(
+      addPortions(m, [
+        { label: 'cup, chopped', grams: 76 },
+        { label: 'oz', grams: 28.35 },
+      ]),
+    ).toEqual({
+      ...m,
+      portions: [
+        { label: 'cup, chopped', grams: 76 },
+        { label: 'oz', grams: 28.35 },
+      ],
+    });
+  });
+
+  it('returns the same measure when nothing is new', () => {
+    expect(addPortions(m, [{ label: 'oz', grams: 28.35 }])).toBe(m);
+  });
+});
+
+describe('amountText', () => {
+  it('names the amount with its unit', () => {
+    expect(amountText({ ...egg, quantity: 2 })).toBe('2 large eggs');
+    expect(amountText({ ...egg, quantity: 1 })).toBe('1 large egg');
+    expect(amountText({ ...egg, unit: null, quantity: 150 })).toBe('150 g');
+    expect(
+      amountText({
+        ...egg,
+        portions: [{ label: 'cup, chopped', grams: 76 }],
+        unit: 'cup, chopped',
+        quantity: 2,
+      }),
+    ).toBe('2 cups, chopped');
+  });
+});
+
+describe('startingMeasure with cups and spoons', () => {
+  it('offers a spooned food’s spoons, its other sizes, then a cup, then weights', () => {
+    const peanutButter: SearchResult = {
+      id: 'usda-2707537',
+      name: 'Peanut butter',
+      servingLabel: '100 g',
+      calories: 597,
+      protein: 22.2,
+      carbs: 22.3,
+      fat: 51.1,
+      tier: null,
+      portions: [
+        { label: 'tablespoon', grams: 16 },
+        { label: 'serving', grams: 32 },
+      ],
+    };
+    const m = startingMeasure(peanutButter, 100, Units.Imperial);
+    expect(m).toMatchObject({ unit: 'tablespoon', quantity: 1 });
+    expect(m.portions.map((p) => p.label)).toEqual([
+      'tablespoon',
+      'tsp',
+      'serving',
+      'cup',
+      'oz',
+      'lb',
+    ]);
+  });
+
+  it('starts olive oil on a tablespoon, though USDA lists the cup first', () => {
+    const oil: SearchResult = {
+      id: 'usda-2710176',
+      name: 'Olive oil',
+      servingLabel: '100 g',
+      calories: 884,
+      protein: 0,
+      carbs: 0,
+      fat: 100,
+      tier: null,
+      portions: [
+        { label: 'cup', grams: 224 },
+        { label: 'tbsp', grams: 14 },
+      ],
+    };
+    const m = startingMeasure(oil, 100, Units.Imperial);
+    expect(m).toMatchObject({ unit: 'tbsp', quantity: 1 });
+    expect(m.portions.map((p) => p.label)).toEqual([
+      'tbsp',
+      'tsp',
+      'cup',
+      'oz',
+      'lb',
+    ]);
+  });
+
+  it('keeps a cup where the source put it for foods that aren’t spooned', () => {
+    const milk: SearchResult = {
+      id: 'usda-1',
+      name: 'Milk, whole',
+      servingLabel: '100 g',
+      calories: 61,
+      protein: 3.2,
+      carbs: 4.8,
+      fat: 3.3,
+      tier: null,
+      portions: [{ label: 'cup', grams: 244 }],
+    };
+    expect(startingMeasure(milk, 100, Units.Imperial).unit).toBe('cup');
   });
 });

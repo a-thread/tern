@@ -6,6 +6,7 @@ import { useSettings } from '../../domain/settings/SettingsContext';
 import { SettingsPage } from '../components/SettingsPage';
 import { StreakReminderRows } from '../components/StreakReminderRows';
 import { MealReminderRows } from '../components/MealReminderRows';
+import { EatReminderRows } from '../components/EatReminderRows';
 import { WeightReminderRows } from '../components/WeightReminderRows';
 import { WaterReminderRows } from '../components/WaterReminderRows';
 import { MoodReminderRows } from '../components/MoodReminderRows';
@@ -43,11 +44,8 @@ export default function RemindersSettingsScreen() {
 
       <GroupLabel>Meals</GroupLabel>
       <Group>
-        {settings.trackFood ? (
-          <MealReminderRows />
-        ) : (
-          off('Food', 'FoodSettings')
-        )}
+        {/* Without food tracking there's nothing to log, but a reminder to eat still helps. */}
+        {settings.trackFood ? <MealReminderRows /> : <EatReminderRows />}
       </Group>
 
       <GroupLabel>Weigh-in</GroupLabel>

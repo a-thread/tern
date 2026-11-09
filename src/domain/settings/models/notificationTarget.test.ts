@@ -22,6 +22,7 @@ describe('notificationTarget', () => {
     [`${Reminders.WEIGH_IN_ID}-rest-2`, NotificationTarget.LogWeight],
     [Reminders.MOOD_ID, NotificationTarget.CheckIn],
     [`${Reminders.MOOD_ID}-rest-5`, NotificationTarget.CheckIn],
+    [`${Reminders.EVENING_EAT_ID}-2`, NotificationTarget.Today],
     [waterReminderId(2), NotificationTarget.Today],
     [`${waterReminderId(0)}-rest-1`, NotificationTarget.Today],
     [medicationReminderId('abc-123'), NotificationTarget.Today],
@@ -54,6 +55,9 @@ describe('reminderTarget', () => {
     expect(
       reminderTarget({ id: Reminders.MOOD_ID, key: ReminderKey.Mood }),
     ).toBe(NotificationTarget.CheckIn);
+    expect(
+      reminderTarget({ id: Reminders.MIDDAY_EAT_ID, key: ReminderKey.Eat }),
+    ).toBe(NotificationTarget.Today);
     expect(
       reminderTarget({ id: waterReminderId(1), key: ReminderKey.Water }),
     ).toBe(NotificationTarget.Today);

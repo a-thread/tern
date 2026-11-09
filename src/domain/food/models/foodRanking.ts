@@ -1,6 +1,7 @@
 import type { SearchResult } from '../sources/searchResult';
 import { allWordsPrefix, normalizeText, wordsOf } from './foodQuery';
 import { FoodSource } from './foodSource';
+import { isTypedUnit } from './measure';
 
 /** A food in the one search list, with where it came from. */
 export type RankedFood = SearchResult & { from: FoodSource; score: number };
@@ -18,11 +19,25 @@ export class FoodRanking {
     [FoodSource.Usda]: 0,
     [FoodSource.Off]: 0,
   };
+  /** A dish the query only appears in ("Beans and white rice" for "white rice") sinks by this much. */
+  static readonly DISH_PENALTY = 120;
   /** Rows near the top don't move for a late result unless it beats them by this much. */
   static readonly PIN_MARGIN = 300;
   static readonly PINNED_ROWS = 5;
   static readonly LIMIT = 30;
 }
+
+// Words that make a name a dish or a mix rather than the food itself (singular, as wordsOf gives them).
+const DISH_WORDS = new Set([
+  'and',
+  'with',
+  'sandwich',
+  'salad',
+  'soup',
+  'stew',
+  'casserole',
+  'sauce',
+]);
 
 /** Every word of the query starts a word of the food's name, detail, brand or aliases. */
 export function matchesQuery(
@@ -85,6 +100,9 @@ export function scoreResult(
   }
 
   score -= Math.min(nameWords.length, 8) * 10;
+  // Someone typing "white rice" wants the rice, not a dish made with it.
+  if (nameWords.some((w) => DISH_WORDS.has(w) && !q.includes(w)))
+    score -= FoodRanking.DISH_PENALTY;
   score += FoodRanking.SOURCE_BONUS[from];
   if (r.rank !== undefined) score += Math.max(0, 100 - r.rank / 30);
   if (r.tier !== null) score += 10;
@@ -97,16 +115,39 @@ export function scoreResult(
   return score;
 }
 
+const isDatabase = (f: SearchResult) =>
+  f.source === FoodSource.Usda || f.source === FoodSource.Off;
+
 /** The same food from several places (or listed twice) shows once; the first, best-scored copy wins. */
 export function dedupeFoods<T extends SearchResult>(list: T[]): T[] {
-  const seen = new Set<string>();
-  return list.filter((r) => {
+  const kept = new Map<string, number>();
+  const out: T[] = [];
+  for (const r of list) {
     const key = `${normalizeText(r.name)}|${normalizeText(r.brand ?? '')}|${Math.round(r.calories / 10)}`;
-    if (seen.has(key)) return false;
-    seen.add(key);
-    return true;
-  });
+    const at = kept.get(key);
+    if (at === undefined) {
+      kept.set(key, out.length);
+      out.push(r);
+      continue;
+    }
+    // Your own copy wins its place, but if it has no sizes (logged before they were known),
+    // it remembers the database copy so they can be fetched. A database food that wins
+    // keeps fetching its own sizes, never another product's.
+    const winner = out[at];
+    if (
+      !isDatabase(winner) &&
+      !hasSizes(winner) &&
+      !winner.sizesFrom &&
+      isDatabase(r)
+    )
+      out[at] = { ...winner, sizesFrom: { id: r.id, source: r.source } };
+  }
+  return out;
 }
+
+/** Whether a food has a size of its own (a packet, a cup), not just weights and volumes. */
+export const hasSizes = (r: Pick<SearchResult, 'portions'>) =>
+  !!r.portions?.some((p) => !isTypedUnit(p.label));
 
 /** Scores, sorts and de-duplicates foods from every source into one list. */
 export function rankFoods(

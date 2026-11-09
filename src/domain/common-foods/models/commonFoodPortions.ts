@@ -1,6 +1,6 @@
 import type { Portion } from '../../food/sources/searchResult';
 import { singular } from '../../food/models/measure';
-import { LIQUID_WORDS } from '../../food/models/volume';
+import { isSpooned, LIQUID_WORDS } from '../../food/models/volume';
 
 /**
  * Picks the portions people actually use for a common food, in the order to
@@ -49,8 +49,6 @@ const GENERIC_ITEM = /^(fruit|berry|berries|whole|item|each|regular)$/i;
 // Below this, one item is too small to be the default ("1 blueberry"); a cup is.
 const SMALL_ITEM_GRAMS = 30;
 
-const SPOONED =
-  /\b(oil|butter|honey|syrup|jam|jelly|mayonnaise|mayo|dressing|sauce|ketchup|mustard|sugar|salsa|hummus|spread)\b/i;
 const OUNCE_FIRST =
   /\b(cheese|almonds?|walnuts?|cashews?|pecans?|pistachios?|peanuts|hazelnuts?|macadamias?|nuts|seeds|ground beef|ground turkey|salmon|tuna|cod|tilapia|fish|shrimp|steak)\b/i;
 const MEAT = /\b(beef|pork|lamb|chicken|turkey|veal|duck)\b/i;
@@ -131,7 +129,7 @@ export function typicalPortions(
   const list = real.length ? real : tidy;
 
   const liquid = LIQUID_WORDS.test(foodName);
-  const spooned = SPOONED.test(foodName);
+  const spooned = isSpooned(foodName);
   const ounceFirst = OUNCE_FIRST.test(foodName);
   const meat = MEAT.test(foodName);
 

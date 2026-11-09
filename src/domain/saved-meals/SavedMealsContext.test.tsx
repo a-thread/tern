@@ -7,6 +7,7 @@ import { WaypointsProvider, useWaypoints } from '../waypoints/WaypointsContext';
 import { FoodProvider, useFood } from '../food/FoodContext';
 import { SavedMealsProvider, useSavedMeals } from './SavedMealsContext';
 import { itemsToEntries, snapshotItems } from './models/savedMeals';
+import { isDraftDirty } from './models/mealDraft';
 import { type FoodEntry, Meal } from '../food/models/foodEntry';
 import { WaypointSource } from '../waypoints/models/waypoint';
 
@@ -92,6 +93,23 @@ describe('saving meals', () => {
       'Apple',
     ]);
     expect((await backend.savedMeals.list())[0].items).toHaveLength(2);
+  });
+
+  it('never replaces a recipe with one day of foods', async () => {
+    const { result } = await setup();
+    await act(async () => {
+      result.current.saved.saveRecipe(
+        'Chili',
+        { ...entry('Chili'), servingLabel: 'whole batch' },
+        8,
+      );
+    });
+    let outcome: ReturnType<typeof result.current.saved.saveMeal> | undefined;
+    await act(async () => {
+      outcome = result.current.saved.saveMeal('chili', [entry('Soup')]);
+    });
+    expect(outcome).toMatchObject({ ok: false });
+    expect(result.current.saved.meals[0].servings).toBe(8);
   });
 
   it('refuses a blank name or an empty meal', async () => {
@@ -377,6 +395,60 @@ describe('editing a saved meal', () => {
   });
 });
 
+describe('servings', () => {
+  it('a saved meal makes one serving, and once a recipe it is not saved over', async () => {
+    const { result } = await setup();
+    await act(async () => {
+      result.current.saved.saveMeal('Chili', [entry('Beef'), entry('Beans')]);
+    });
+    const id = result.current.saved.meals[0].id;
+    expect(result.current.saved.meals[0].servings).toBe(1);
+
+    act(() => result.current.saved.setMealServings(id, 8));
+    expect(result.current.saved.meals[0].servings).toBe(8);
+
+    let outcome: ReturnType<typeof result.current.saved.saveMeal> | undefined;
+    await act(async () => {
+      outcome = result.current.saved.saveMeal('chili', [entry('Beef')]);
+    });
+    expect(outcome).toMatchObject({ ok: false });
+    expect(result.current.saved.meals).toHaveLength(1);
+    expect(result.current.saved.meals[0].servings).toBe(8);
+    expect(result.current.saved.meals[0].items).toHaveLength(2);
+  });
+
+  it('changes the servings in a draft, which then counts as changed and is saved with it', async () => {
+    const { result, backend } = await setup();
+    await act(async () => {
+      result.current.saved.saveMeal('Chili', [entry('Beef')]);
+    });
+    const id = result.current.saved.meals[0].id;
+    act(() => result.current.saved.startDraft(id));
+    expect(isDraftDirty(result.current.saved.draft!)).toBe(false);
+    act(() => result.current.saved.setDraftServings(6));
+    expect(result.current.saved.draft?.servings).toBe(6);
+    expect(isDraftDirty(result.current.saved.draft!)).toBe(true);
+    await act(async () => {
+      result.current.saved.commitDraft();
+    });
+    expect(result.current.saved.meals[0].servings).toBe(6);
+    expect((await backend.savedMeals.list())[0].servings).toBe(6);
+  });
+
+  it('keeps servings whole and between 1 and 100', async () => {
+    const { result } = await setup();
+    act(() => {
+      result.current.saved.startDraft();
+      result.current.saved.setDraftServings(0);
+    });
+    expect(result.current.saved.draft?.servings).toBe(1);
+    act(() => result.current.saved.setDraftServings(250));
+    expect(result.current.saved.draft?.servings).toBe(100);
+    act(() => result.current.saved.setDraftServings(2.6));
+    expect(result.current.saved.draft?.servings).toBe(3);
+  });
+});
+
 describe('logging a saved meal at a different size', () => {
   it('adds every item scaled, and leaves the saved meal unchanged', async () => {
     const { result } = await setup();
@@ -421,5 +493,46 @@ describe('quick successive saves', () => {
     expect(result.current.saved.meals[0].items.map((i) => i.name)).toEqual([
       'Sandwich',
     ]);
+  });
+});
+
+describe('saving a homemade batch as a recipe', () => {
+  const batch = {
+    name: 'Chili',
+    servings: 1,
+    servingLabel: 'whole batch',
+    calories: 2400,
+    protein: 160,
+    carbs: 200,
+    fat: 96,
+    tier: 1 as const,
+  };
+
+  it('saves one item for the batch, making that many servings, and persists it', async () => {
+    const { result, backend } = await setup();
+    await act(async () => {
+      expect(result.current.saved.saveRecipe(' Chili ', batch, 8).ok).toBe(
+        true,
+      );
+    });
+    const [meal] = result.current.saved.meals;
+    expect(meal).toMatchObject({ name: 'Chili', servings: 8, items: [batch] });
+    await waitFor(async () =>
+      expect(await backend.savedMeals.list()).toHaveLength(1),
+    );
+  });
+
+  it('never replaces a meal of the same name', async () => {
+    const { result } = await setup();
+    await act(async () => {
+      result.current.saved.saveMeal('chili', [entry('Beans')]);
+    });
+    let outcome: ReturnType<typeof result.current.saved.saveRecipe> | undefined;
+    await act(async () => {
+      outcome = result.current.saved.saveRecipe('Chili', batch, 8);
+    });
+    expect(outcome).toMatchObject({ ok: false });
+    expect(result.current.saved.meals).toHaveLength(1);
+    expect(result.current.saved.meals[0].servings).toBe(1);
   });
 });

@@ -25,7 +25,7 @@ import { useFoodDisplay } from '../../domain/food/hooks/useFoodDisplay';
 import { stepServings, Servings } from '../../domain/food/models/servings';
 import {
   amountOf,
-  withVolumeUnits,
+  withTypedUnits,
   type Measure,
 } from '../../domain/food/models/measure';
 import { confirm } from '@shared/utils/confirm';
@@ -41,9 +41,9 @@ export default function EditFoodEntryScreen({ navigation, route }: Props) {
   const { showTiers, showTierNumber, showCalories } = useFoodDisplay();
 
   // Entries logged by amount keep how they were measured, so they edit in the same unit.
-  // Drinks logged before fl oz and ml existed get them too.
+  // Entries logged before oz and lb (and fl oz and ml for drinks) existed get them too.
   const [measure, setMeasure] = useState<Measure | undefined>(
-    () => entry?.measure && withVolumeUnits(entry.measure, entry.name),
+    () => entry?.measure && withTypedUnits(entry.measure, entry.name),
   );
   const [servings, setServings] = useState(entry?.servings ?? 1);
   const [servingLabel, setServingLabel] = useState(entry?.servingLabel ?? '');

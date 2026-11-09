@@ -9,39 +9,55 @@ import { useFood } from '@/domain/food/FoodContext';
 import { MealPicker } from '@/food/components/MealPicker/MealPicker';
 import { useFoodDisplay } from '@/domain/food/hooks/useFoodDisplay';
 import {
+  isRecipe,
   itemsToEntries,
+  recipeEntry,
   scaleServings,
+  type SavedMeal,
   type SavedMealItem,
 } from '@/domain/saved-meals/models/savedMeals';
 import { loggedAsResult } from '../../models/recentFoods';
 import { scaledTotals, stepScale } from '@/domain/saved-meals/models/mealDraft';
 import type { LogFoodStackParamList } from '../../navigation';
 import ItemRow from '@/food/components/ItemRow/ItemRow';
+import { RecipeServings } from './components/RecipeServings/RecipeServings';
 
 type Nav = NativeStackNavigationProp<LogFoodStackParamList>;
 
 /**
  * The state behind adding a past or saved meal to today: which meal it goes into, the portion
  * scale (0.5 = half portions), and the two ways to add it (all of it, or one food to tweak first).
+ * A recipe (a saved meal that makes several servings) is added as one entry, by the serving.
  */
 export function useMealAdder(
   items: SavedMealItem[],
   initialMeal: Parameters<typeof itemsToEntries>[1],
   navigation: Nav,
+  recipe?: Pick<SavedMeal, 'name' | 'servings'>,
 ) {
   const { addFoodEntries } = useFood();
   const { showCalories, showMacros } = useFoodDisplay();
   const [target, setTarget] = useState(initialMeal);
   const [scale, setScale] = useState(1);
+  const [eaten, setEaten] = useState(1);
+  const batch = recipe !== undefined && isRecipe(recipe) ? recipe : null;
 
-  const totals = scaledTotals(items, scale);
+  // A recipe's numbers are per serving; anything else is the whole meal at the chosen scale.
+  const totals = batch
+    ? recipeEntry({ ...batch, items }, 1, target)
+    : scaledTotals(items, scale);
+  const per = batch ? ' per serving' : '';
   const summary =
     `${items.length} ${items.length === 1 ? 'food' : 'foods'}` +
-    (showCalories ? ` · ${Math.round(totals.calories)} cal` : '') +
-    (showMacros ? ` · ${Math.round(totals.protein)}g protein` : '');
+    (showCalories ? ` · ${Math.round(totals.calories)} cal${per}` : '') +
+    (showMacros ? ` · ${Math.round(totals.protein)}g protein${per}` : '');
 
   const add = () => {
-    addFoodEntries(itemsToEntries(items, target, scale));
+    addFoodEntries(
+      batch
+        ? [recipeEntry({ ...batch, items }, Math.min(eaten, batch.servings), target)]
+        : itemsToEntries(items, target, scale),
+    );
     navigation.goBack();
   };
 
@@ -54,7 +70,19 @@ export function useMealAdder(
     });
   };
 
-  return { target, setTarget, scale, setScale, summary, add, addOne };
+  return {
+    target,
+    setTarget,
+    scale,
+    setScale,
+    eaten,
+    setEaten,
+    /** How many servings the recipe makes; null for a meal that is logged food by food. */
+    makes: batch ? batch.servings : null,
+    summary,
+    add,
+    addOne,
+  };
 }
 
 /** The foods in a meal, the portion stepper, the meal to add to, and the Add button. */
@@ -71,39 +99,68 @@ export function MealAdder({
   /** What the portion is relative to: "logged" or "saved". */
   scaleNoun: string;
 }) {
-  const { target, setTarget, scale, setScale, add, addOne } = adder;
+  const {
+    target,
+    setTarget,
+    scale,
+    setScale,
+    eaten,
+    setEaten,
+    makes,
+    add,
+    addOne,
+  } = adder;
   const targetLabel =
     Meals.OPTIONS.find((m) => m.key === target)?.label ?? target;
   return (
     <>
-      <GroupLabel>{`${itemsLabel} · tap a food to add just that`}</GroupLabel>
-      <Group>
-        {items.map((item, i) => (
-          <ItemRow
-            key={`${item.name}-${i}`}
-            item={{ ...item, servings: scaleServings(item.servings, scale) }}
-            onPress={() => addOne(i)}
-          />
-        ))}
-      </Group>
+      {makes === null ? (
+        <>
+          <GroupLabel>{`${itemsLabel} · tap a food to add just that`}</GroupLabel>
+          <Group>
+            {items.map((item, i) => (
+              <ItemRow
+                key={`${item.name}-${i}`}
+                item={{
+                  ...item,
+                  servings: scaleServings(item.servings, scale),
+                }}
+                onPress={() => addOne(i)}
+              />
+            ))}
+          </Group>
 
-      <GroupLabel>Portion</GroupLabel>
-      <View style={[s.card, s.scaleRow]}>
-        <View style={{ flex: 1 }}>
-          <Text style={s.scaleTitle}>
-            {scale === 1 ? `As ${scaleNoun}` : `${scale}× as ${scaleNoun}`}
-          </Text>
-          <Text style={s.scaleSub}>Scales every food in this meal</Text>
-        </View>
-        <Stepper
-          value={`${scale}×`}
-          onDecrement={() => setScale((v) => stepScale(v, -1))}
-          onIncrement={() => setScale((v) => stepScale(v, 1))}
-          decrementLabel='Smaller portion'
-          incrementLabel='Larger portion'
-          valueMinWidth={44}
-        />
-      </View>
+          <GroupLabel>Portion</GroupLabel>
+          <View style={[s.card, s.scaleRow]}>
+            <View style={{ flex: 1 }}>
+              <Text style={s.scaleTitle}>
+                {scale === 1 ? `As ${scaleNoun}` : `${scale}× as ${scaleNoun}`}
+              </Text>
+              <Text style={s.scaleSub}>Scales every food in this meal</Text>
+            </View>
+            <Stepper
+              value={`${scale}×`}
+              onDecrement={() => setScale((v) => stepScale(v, -1))}
+              onIncrement={() => setScale((v) => stepScale(v, 1))}
+              decrementLabel='Smaller portion'
+              incrementLabel='Larger portion'
+              valueMinWidth={44}
+            />
+          </View>
+        </>
+      ) : (
+        <>
+          <GroupLabel>{`${itemsLabel} · the whole batch, ${makes} servings`}</GroupLabel>
+          <Group>
+            {items.map((item, i) => (
+              <ItemRow key={`${item.name}-${i}`} item={item} />
+            ))}
+          </Group>
+
+          <GroupLabel>Portion</GroupLabel>
+          <RecipeServings value={eaten} makes={makes} onChange={setEaten} />
+        </>
+      )}
 
       <GroupLabel>Add to</GroupLabel>
       <View style={s.card}>
@@ -115,7 +172,9 @@ export function MealAdder({
       </View>
 
       <Pressable style={s.bigBtn} onPress={add}>
-        <Text style={s.bigBtnText}>Add all to {targetLabel.toLowerCase()}</Text>
+        <Text style={s.bigBtnText}>
+          {makes === null ? 'Add all to' : 'Add to'} {targetLabel.toLowerCase()}
+        </Text>
       </Pressable>
     </>
   );

@@ -2,10 +2,7 @@ import type { LocalDb, SqlValue } from '@shared/backend/localDb';
 import { LocalSchema } from '@shared/backend/localSchema';
 import { LocalMetaKey, setLocalMeta } from '@shared/backend/localMeta';
 import type { DataRepository } from './dataRepository';
-import {
-  TernExportLists,
-  type TernExport,
-} from './models/ternExport';
+import { TernExportLists, type TernExport } from './models/ternExport';
 
 type Row = Record<string, unknown>;
 
@@ -67,10 +64,11 @@ const IMPORTS: Record<(typeof TernExportLists.ALL)[number], TableImport> = {
   restDays: { table: 'rest_days', columns: ['day'] },
   savedMeals: {
     table: 'saved_meals',
-    columns: ['id', 'name', 'items', 'created_at', 'updated_at'],
+    columns: ['id', 'name', 'items', 'servings', 'created_at', 'updated_at'],
+    numbers: ['servings'],
     times: ['created_at', 'updated_at'],
     json: ['items'],
-    defaults: { created_at: now, updated_at: now },
+    defaults: { servings: () => 1, created_at: now, updated_at: now },
   },
   medicationDoses: {
     table: 'medication_doses',
@@ -126,10 +124,15 @@ function toColumn(spec: TableImport, column: string, value: unknown): SqlValue {
     return spec.defaults?.[column]?.() ?? null;
   }
   if (spec.json?.includes(column)) return JSON.stringify(value);
-  if (spec.flags?.includes(column)) return value === true || value === 1 ? 1 : 0;
+  if (spec.flags?.includes(column))
+    return value === true || value === 1 ? 1 : 0;
   if (spec.numbers?.includes(column)) {
     const n = Number(value);
-    return typeof value !== 'boolean' && value !== '' && Number.isFinite(n) ? n : null;
+    // Not a usable number: its default if it has one (servings: 1), so a NOT NULL column
+    // doesn't make INSERT OR IGNORE drop the whole row.
+    return typeof value !== 'boolean' && value !== '' && Number.isFinite(n)
+      ? n
+      : (spec.defaults?.[column]?.() ?? null);
   }
   if (typeof value !== 'string' && typeof value !== 'number') return null;
   if (spec.times?.includes(column)) {
