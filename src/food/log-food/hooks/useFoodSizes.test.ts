@@ -38,7 +38,9 @@ describe('useListSizes', () => {
       product(i),
     );
     const { result } = renderHook(() => useListSizes(foods));
-    await act(async () => {});
+    await act(
+      () => new Promise((done) => setTimeout(done, SizePrefetch.GATHER_MS + 20)),
+    );
     // Only the top few are fetched.
     expect(loadSizes).toHaveBeenCalledTimes(SizePrefetch.TOP);
     expect(result.current[0].portions).toEqual([{ label: 'packet', grams: 35 }]);

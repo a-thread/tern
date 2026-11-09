@@ -119,6 +119,7 @@ export default function SavedMealScreen({ navigation, route }: Props) {
         <MealServingsRow
           value={saved.servings}
           onChange={(n) => setMealServings(saved.id, n)}
+          saveWhenDone
         />
 
         <MealAdder

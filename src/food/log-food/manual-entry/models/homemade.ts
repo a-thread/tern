@@ -1,7 +1,10 @@
 import type { NewFoodEntry, Tier } from '@/domain/food/models/foodEntry';
 import { amountOf, scaleMeasure, type Measure } from '@/domain/food/models/measure';
 import { parseGrams, scaleForGrams, type Macros } from '@/domain/food/models/servings';
-import type { SavedMealItem } from '@/domain/saved-meals/models/savedMeals';
+import {
+  HomemadeBatch,
+  type SavedMealItem,
+} from '@/domain/saved-meals/models/savedMeals';
 import { typedServing } from '@/domain/food/models/servingText';
 
 /** A food typed in by hand: what it's called, its serving, and the numbers as entered. */
@@ -83,7 +86,8 @@ export function batchItem(h: Homemade): SavedMealItem {
   return {
     name: h.name.trim(),
     servings: 1,
-    servingLabel: 'whole batch',
+    servingLabel: HomemadeBatch.LABEL,
+    batch: true,
     ...h.totals,
     tier: h.tier,
     ...(serving ? { measure: scaleMeasure(serving, h.makes) } : {}),

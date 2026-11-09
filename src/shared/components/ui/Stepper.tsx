@@ -27,6 +27,7 @@ export function Stepper({
   onChangeValue,
   onEndEditing,
   valueLabel,
+  keyboardType = 'decimal-pad',
 }: {
   value: string | number;
   onDecrement: () => void;
@@ -42,6 +43,8 @@ export function Stepper({
   onEndEditing?: () => void;
   /** Accessibility label of the typed value. */
   valueLabel?: string;
+  /** 'number-pad' for whole numbers, so no decimal key is offered only to be ignored. */
+  keyboardType?: 'decimal-pad' | 'number-pad';
 }) {
   return (
     <View style={[s.stepper, style]}>
@@ -57,7 +60,8 @@ export function Stepper({
           value={String(value)}
           onChangeText={onChangeValue}
           onBlur={onEndEditing}
-          keyboardType='decimal-pad'
+          onSubmitEditing={onEndEditing}
+          keyboardType={keyboardType}
           selectTextOnFocus
           maxLength={6}
           accessibilityLabel={valueLabel}

@@ -8,9 +8,12 @@ import {
   withSizes,
 } from '../sources/foodSizes';
 
-/** How long the details screen waits for a food's sizes before showing it by weight. */
+/**
+ * How long the details screen waits for a food's sizes before showing it by weight. Short:
+ * on a poor connection every food without sizes costs this long before it can be added.
+ */
 export class SizeWait {
-  static readonly MAX_MS = 2500;
+  static readonly MAX_MS = 1200;
 }
 
 /**
@@ -41,12 +44,17 @@ export function useFoodSizes(result: SearchResult): {
     };
   }, [result.id]); // eslint-disable-line react-hooks/exhaustive-deps
   const food = useMemo(() => withSizes(result), [result, known]); // eslint-disable-line react-hooks/exhaustive-deps
-  return { food, loading: !known && !waited };
+  // A food you've logged before opens on what you used last time, so it never waits: sizes
+  // that arrive are only added to its choices.
+  return { food, loading: !known && !waited && !result.last };
 }
 
-/** How many foods near the top of a search list get their sizes fetched. */
+/** How many foods near the top of a search list get their sizes fetched, and how answers are gathered. */
 export class SizePrefetch {
   static readonly TOP = 8;
+
+  /** Answers arriving this close together fill the list in one go, without waiting on a slow one. */
+  static readonly GATHER_MS = 150;
 }
 
 /**
@@ -64,12 +72,19 @@ export function useListSizes<T extends SearchResult>(foods: T[]): T[] {
   useEffect(() => {
     if (!wanted) return undefined;
     let live = true;
-    // One re-render once they've all answered, not one per food.
-    Promise.allSettled(foods.filter(isWanted).map(loadSizes)).then(
-      () => live && setVersion((n) => n + 1),
-    );
+    // Answers close together make one re-render, and a slow one doesn't hold back the rest.
+    let timer: ReturnType<typeof setTimeout> | null = null;
+    const gather = () => {
+      if (!live || timer) return;
+      timer = setTimeout(() => {
+        timer = null;
+        if (live) setVersion((n) => n + 1);
+      }, SizePrefetch.GATHER_MS);
+    };
+    foods.filter(isWanted).forEach((f) => loadSizes(f).then(gather));
     return () => {
       live = false;
+      if (timer) clearTimeout(timer);
     };
   }, [wanted]); // eslint-disable-line react-hooks/exhaustive-deps
   return useMemo(

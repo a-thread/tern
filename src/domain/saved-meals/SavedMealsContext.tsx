@@ -19,6 +19,8 @@ import {
   cleanName,
   cleanServings,
   findMealByName,
+  isRecipe,
+  recipeClash,
   snapshotItems,
   sortMeals,
   validateMealName,
@@ -131,6 +133,10 @@ export function SavedMealsProvider({
       const clean = cleanName(name);
       const items = snapshotItems(entries);
       const existing = findMealByName(latest.current, clean);
+      // A recipe isn't replaced by one day's foods: that would quietly turn it back into a
+      // meal logged whole, losing how many servings it makes.
+      if (existing && isRecipe(existing))
+        return { ok: false, error: recipeClash(existing.name) };
       const meal: SavedMeal = existing
         ? { ...existing, name: clean, items, servings: 1 }
         : {

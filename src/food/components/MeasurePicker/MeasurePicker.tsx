@@ -1,13 +1,17 @@
 import React, { useState } from 'react';
 import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 
-import { colors, font, radius, typography } from '@shared/theme';
+import { colors, font, radius, space, typography } from '@shared/theme';
 import { Group, Stepper } from '@shared/components/ui';
 import { Units } from '@shared/utils/units';
 import { formatCount } from '@/domain/food/models/servings';
 import { useUnits } from '@/domain/settings/hooks/useUnits';
-import { VolumeUnit } from '@/domain/food/models/volume';
-import { weightNote, WeightUnit } from '@/domain/food/models/weight';
+import { isVolumeUnit, VolumeUnit } from '@/domain/food/models/volume';
+import {
+  isWeightUnit,
+  weightNote,
+  WeightUnit,
+} from '@/domain/food/models/weight';
 import {
   amountText,
   GramSteps,
@@ -20,10 +24,15 @@ import {
   type Measure,
 } from '@/domain/food/models/measure';
 
+/** A unit an amount is typed in, besides grams. */
+type TypedUnit = WeightUnit | VolumeUnit;
 // null is grams.
-type TypedChoice = null | WeightUnit | VolumeUnit;
+type TypedChoice = null | TypedUnit;
 
-const TYPED_LABEL: Record<string, string> = {
+const asTypedUnit = (unit: string | null): TypedUnit | null =>
+  isWeightUnit(unit) || isVolumeUnit(unit) ? unit : null;
+
+const TYPED_LABEL: Record<TypedUnit, string> = {
   [VolumeUnit.Ml]: 'Amount in millilitres',
   [VolumeUnit.FlOz]: 'Amount in fluid ounces',
   [WeightUnit.Oz]: 'Amount in ounces',
@@ -32,8 +41,9 @@ const TYPED_LABEL: Record<string, string> = {
 
 const GRAMS_LABEL = 'Amount in grams';
 
-const UNIT_NAME: Record<string, string> = {
-  g: 'Grams',
+const GRAMS_NAME = 'Grams';
+
+const UNIT_NAME: Record<TypedUnit, string> = {
   [WeightUnit.Oz]: 'Ounces',
   [WeightUnit.Lb]: 'Pounds',
   [VolumeUnit.Ml]: 'Millilitres',
@@ -69,6 +79,7 @@ export function MeasurePicker({
 
   const counted = !isTypedUnit(measure.unit);
   const typedUnit = counted ? null : measure.unit;
+  const typedIn = asTypedUnit(typedUnit);
 
   // Every unit in one list: the food's sizes, then weights, then volumes it offers.
   const has = (unit: TypedChoice) =>
@@ -89,7 +100,7 @@ export function MeasurePicker({
     measureGrams(measure),
     units,
     counted ? undefined : typedUnit,
-  )?.slice(2);
+  );
   const note = measure.quantity > 0 ? [amountText(measure), weight] : [];
 
   return (
@@ -102,7 +113,9 @@ export function MeasurePicker({
         >
           {unitList.map((unit) => {
             const on = measure.unit === unit;
-            const typedName = isTypedUnit(unit) ? UNIT_NAME[unit ?? 'g'] : null;
+            const typed = asTypedUnit(unit);
+            const typedName =
+              unit === null ? GRAMS_NAME : typed ? UNIT_NAME[typed] : null;
             return (
               <Pressable
                 key={unit ?? 'g'}
@@ -151,7 +164,7 @@ export function MeasurePicker({
               placeholder={String(GramSteps.STEP * 10)}
               placeholderTextColor={colors.ink3}
               accessibilityLabel={
-                typedUnit === null ? GRAMS_LABEL : TYPED_LABEL[typedUnit]
+                typedIn ? TYPED_LABEL[typedIn] : GRAMS_LABEL
               }
               style={s.input}
             />
@@ -164,9 +177,10 @@ export function MeasurePicker({
 }
 
 const s = StyleSheet.create({
-  units: { paddingHorizontal: 13, paddingVertical: 12 },
+  // In line with the rows below (13 = space.md + 1).
+  units: { paddingHorizontal: space.md + 1, paddingVertical: space.md },
   caption: typography.caption,
-  list: { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
+  list: { flexDirection: 'row', flexWrap: 'wrap', gap: space.xs + 2 },
   option: {
     minWidth: 40,
     alignItems: 'center',
@@ -186,7 +200,7 @@ const s = StyleSheet.create({
     gap: 8,
   },
   rowTitle: typography.rowTitle,
-  typed: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+  typed: { flexDirection: 'row', alignItems: 'center', gap: space.xs + 2 },
   input: {
     minWidth: 60,
     fontFamily: font.body,

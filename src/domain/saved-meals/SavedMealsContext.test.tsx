@@ -95,6 +95,23 @@ describe('saving meals', () => {
     expect((await backend.savedMeals.list())[0].items).toHaveLength(2);
   });
 
+  it('never replaces a recipe with one day of foods', async () => {
+    const { result } = await setup();
+    await act(async () => {
+      result.current.saved.saveRecipe(
+        'Chili',
+        { ...entry('Chili'), servingLabel: 'whole batch' },
+        8,
+      );
+    });
+    let outcome: ReturnType<typeof result.current.saved.saveMeal> | undefined;
+    await act(async () => {
+      outcome = result.current.saved.saveMeal('chili', [entry('Soup')]);
+    });
+    expect(outcome).toMatchObject({ ok: false });
+    expect(result.current.saved.meals[0].servings).toBe(8);
+  });
+
   it('refuses a blank name or an empty meal', async () => {
     const { result } = await setup();
     let a, b;
@@ -379,7 +396,7 @@ describe('editing a saved meal', () => {
 });
 
 describe('servings', () => {
-  it('a saved meal makes one serving, and saving over it resets that', async () => {
+  it('a saved meal makes one serving, and once a recipe it is not saved over', async () => {
     const { result } = await setup();
     await act(async () => {
       result.current.saved.saveMeal('Chili', [entry('Beef'), entry('Beans')]);
@@ -390,11 +407,14 @@ describe('servings', () => {
     act(() => result.current.saved.setMealServings(id, 8));
     expect(result.current.saved.meals[0].servings).toBe(8);
 
+    let outcome: ReturnType<typeof result.current.saved.saveMeal> | undefined;
     await act(async () => {
-      result.current.saved.saveMeal('chili', [entry('Beef')]);
+      outcome = result.current.saved.saveMeal('chili', [entry('Beef')]);
     });
+    expect(outcome).toMatchObject({ ok: false });
     expect(result.current.saved.meals).toHaveLength(1);
-    expect(result.current.saved.meals[0].servings).toBe(1);
+    expect(result.current.saved.meals[0].servings).toBe(8);
+    expect(result.current.saved.meals[0].items).toHaveLength(2);
   });
 
   it('changes the servings in a draft, which then counts as changed and is saved with it', async () => {

@@ -9,7 +9,13 @@ import { Servings } from '../../food/models/servings';
 import { amountOf, scaleMeasure } from '../../food/models/measure';
 
 /** One food in a saved meal: a log entry without its id or which meal it was in. */
-export type SavedMealItem = Omit<FoodEntry, 'id' | 'meal'>;
+export type SavedMealItem = Omit<FoodEntry, 'id' | 'meal'> & {
+  /**
+   * A homemade batch typed in on New food: the one item of a recipe, standing for the whole
+   * pot. Its share is logged weighed, like the serving first logged from it.
+   */
+  batch?: boolean;
+};
 
 export type SavedMeal = {
   id: string;
@@ -32,6 +38,12 @@ export class SavedMealLimits {
   static readonly MAX_SERVINGS = 100;
 }
 
+/** A batch typed in on New food and saved as a recipe: one item standing for the whole pot. */
+export class HomemadeBatch {
+  /** What the item's serving is called. */
+  static readonly LABEL = 'whole batch';
+}
+
 /** A whole number of servings within limits; 1 for anything that is not a number. */
 export function cleanServings(n: unknown): number {
   const v = typeof n === 'number' ? Math.round(n) : NaN;
@@ -50,14 +62,17 @@ export function typedYield(text: string): number | null {
     : null;
 }
 
-/** Servings eaten typed in ("1.5", "1,5"), to the nearest quarter and within limits; null while it is not a number. */
-export function typedEaten(text: string): number | null {
+/**
+ * Servings eaten typed in ("1.5", "1,5"), to the nearest quarter and no more than `max` (what
+ * the recipe makes); null while it is not a number.
+ */
+export function typedEaten(
+  text: string,
+  max: number = SavedMealLimits.MAX_SERVINGS,
+): number | null {
   const n = parseFloat(text.replace(',', '.'));
   if (!Number.isFinite(n) || n <= 0) return null;
-  return Math.min(
-    Math.max(Math.round(n * 4) / 4, Servings.MIN),
-    SavedMealLimits.MAX_SERVINGS,
-  );
+  return Math.min(Math.max(Math.round(n * 4) / 4, Servings.MIN), max);
 }
 
 /** A recipe is a saved meal that makes more than one serving. */
@@ -106,7 +121,8 @@ export function itemsToEntries(
   meal: FoodEntry['meal'],
   scale = 1,
 ): NewFoodEntry[] {
-  return items.map((i) => ({
+  // `batch` belongs to the saved item only, never to a log entry.
+  return items.map(({ batch: _batch, ...i }) => ({
     ...i,
     meal,
     // Measured items scale their amount (half the eggs); others scale their servings.
@@ -154,8 +170,9 @@ export function recipeEntry(
   };
   // A homemade batch saved with a serving weight is one weighed item ("8 bowls"): its share
   // stays weighed ("1 bowl"), so it can be changed by the ounce or gram like the first one.
+  // Any other recipe is logged by the serving, whatever its foods were measured in.
   const only = meal.items.length === 1 ? meal.items[0] : null;
-  if (only?.measure) {
+  if (only?.batch && only.measure) {
     const share = eaten / meal.servings;
     const t = (v: number) => Math.round(v * share * 10) / 10;
     return {
@@ -178,6 +195,10 @@ export function recipeEntry(
     fat: per(total.fat),
   };
 }
+
+/** Why a meal can't be saved over the recipe called `name`. */
+export const recipeClash = (name: string) =>
+  `“${name}” is a recipe. Pick another name to save these foods as a meal.`;
 
 export const findMealByName = (meals: SavedMeal[], name: string) =>
   meals.find((m) => sameName(m.name, name));

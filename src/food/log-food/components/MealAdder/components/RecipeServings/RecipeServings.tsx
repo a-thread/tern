@@ -8,10 +8,7 @@ import {
   Servings,
   stepServings,
 } from '@/domain/food/models/servings';
-import {
-  SavedMealLimits,
-  typedEaten,
-} from '@/domain/saved-meals/models/savedMeals';
+import { typedEaten } from '@/domain/saved-meals/models/savedMeals';
 
 /** "How many servings?" for a recipe: quarter steps, or tap the number and type it. */
 export function RecipeServings({
@@ -27,9 +24,8 @@ export function RecipeServings({
   const [typed, setTyped] = useState<string | null>(null);
   const step = (delta: number) => {
     setTyped(null);
-    onChange(
-      Math.min(stepServings(value, delta), SavedMealLimits.MAX_SERVINGS),
-    );
+    // Never more than the whole recipe: 80 servings of a pot that makes 8 is a slip.
+    onChange(Math.min(stepServings(value, delta), makes));
   };
   return (
     <View style={s.card}>
@@ -45,8 +41,10 @@ export function RecipeServings({
         incrementLabel='More servings'
         onChangeValue={(v) => {
           const text = v.replace(/[^0-9.,]/g, '');
-          setTyped(text);
-          const n = typedEaten(text);
+          const n = typedEaten(text, makes);
+          // More than the recipe makes shows as the whole recipe, so the field says what is logged.
+          const over = (typedEaten(text) ?? 0) > makes;
+          setTyped(over ? formatCount(makes) : text);
           if (n !== null) onChange(n);
         }}
         onEndEditing={() => setTyped(null)}

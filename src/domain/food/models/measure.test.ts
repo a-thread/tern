@@ -59,8 +59,12 @@ describe('measure', () => {
   it('steps eggs by a half, cups by a quarter, or grams by ten', () => {
     expect(stepMeasure(egg, 1).quantity).toBe(2.5);
     expect(stepMeasure({ ...egg, quantity: 0.5 }, -1).quantity).toBe(0.5);
-    // An older quarter amount lands back on the half-step grid.
-    expect(stepMeasure({ ...egg, quantity: 0.25 }, 1).quantity).toBe(1);
+    // An older quarter amount goes up to the next half, and never up when stepping down.
+    expect(stepMeasure({ ...egg, quantity: 0.25 }, 1).quantity).toBe(0.5);
+    expect(stepMeasure({ ...egg, quantity: 0.25 }, -1).quantity).toBe(0.25);
+    expect(stepMeasure({ ...egg, quantity: 0.33 }, -1).quantity).toBe(0.33);
+    expect(stepMeasure({ ...egg, quantity: 0.75 }, -1).quantity).toBe(0.5);
+    expect(stepMeasure({ ...egg, quantity: 0.75 }, 1).quantity).toBe(1);
     expect(stepMeasure({ ...egg, unit: 'cup', quantity: 1 }, 1).quantity).toBe(
       1.25,
     );

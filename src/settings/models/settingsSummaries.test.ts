@@ -57,6 +57,13 @@ describe('settings index summaries', () => {
       foodSummary(with_({ trackCalories: false, trackMacros: false })),
     ).toBe('Calories off');
     expect(foodSummary(with_({ trackFood: false }))).toBe('Off');
+    const eat = {
+      ...initialSettings.reminders,
+      eat: { ...initialSettings.reminders.eat, on: true },
+    };
+    expect(foodSummary(with_({ trackFood: false, reminders: eat }))).toBe(
+      'Reminders to eat',
+    );
   });
 
   it('sums up only what is tracked when calories and macros differ', () => {

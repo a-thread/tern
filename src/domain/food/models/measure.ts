@@ -184,13 +184,20 @@ export function stepMeasure(m: Measure, direction: 1 | -1): Measure {
       ),
     };
   }
+  // To the next whole step in that direction ("0.75 egg" goes down to 0.5, up to 1). Below
+  // one step there is nothing smaller to go to, so an amount under it (a quarter egg logged
+  // before eggs went by halves) stays put rather than jumping up.
   const step = portionStep(m.unit);
+  const at = m.quantity / step;
+  const next =
+    (direction > 0 ? Math.floor(at + 1e-9) + 1 : Math.ceil(at - 1e-9) - 1) *
+    step;
   return {
     ...m,
-    quantity: Math.max(
-      step,
-      Math.round((m.quantity + direction * step) / step) * step,
-    ),
+    quantity:
+      next >= step
+        ? Math.round(next * 100) / 100
+        : Math.min(m.quantity, step),
   };
 }
 

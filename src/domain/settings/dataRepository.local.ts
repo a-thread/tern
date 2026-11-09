@@ -128,9 +128,11 @@ function toColumn(spec: TableImport, column: string, value: unknown): SqlValue {
     return value === true || value === 1 ? 1 : 0;
   if (spec.numbers?.includes(column)) {
     const n = Number(value);
+    // Not a usable number: its default if it has one (servings: 1), so a NOT NULL column
+    // doesn't make INSERT OR IGNORE drop the whole row.
     return typeof value !== 'boolean' && value !== '' && Number.isFinite(n)
       ? n
-      : null;
+      : (spec.defaults?.[column]?.() ?? null);
   }
   if (typeof value !== 'string' && typeof value !== 'number') return null;
   if (spec.times?.includes(column)) {

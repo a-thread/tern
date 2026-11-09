@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
   View,
@@ -37,7 +37,11 @@ import {
   startingMeasure,
   type Measure,
 } from '@/domain/food/models/measure';
-import { logFoodApi, portionsText } from '@/domain/food/sources/foodApiLog';
+import {
+  isFoodApiLogOn,
+  logFoodApi,
+  portionsText,
+} from '@/domain/food/sources/foodApiLog';
 import { useFoodSizes } from '../hooks/useFoodSizes';
 import type { LogFoodStackParamList } from '../navigation';
 
@@ -63,6 +67,7 @@ export default function FoodDetailScreen({ navigation, route }: Props) {
   );
   // Development only: the portions this food arrived with and the units the picker ended up offering.
   useEffect(() => {
+    if (!isFoodApiLogOn()) return;
     logFoodApi(`Opened "${result.name}" (${result.source ?? 'logged'})`, [
       `from source: ${portionsText(result.portions)}`,
       `picker offers: ${measure ? portionsText(measure.portions) : `servings of ${result.servingLabel}`}`,
@@ -73,19 +78,20 @@ export default function FoodDetailScreen({ navigation, route }: Props) {
   // Sizes that arrive after opening: until the amount is touched the food starts over on its
   // first size ("1 packet"); after that (they came late) they're only added to the choices.
   // Done while rendering, not in an effect, so no frame is ever drawn with the old units.
-  const touched = useRef(false);
+  // State, not a ref: it's read while rendering, where a ref isn't tracked.
+  const [touched, setTouched] = useState(false);
   const [settledFor, setSettledFor] = useState(result);
   if (settledFor !== result) {
     setSettledFor(result);
     if (measure && baseGrams !== null && result.portions?.length)
       setMeasure(
-        touched.current
+        touched
           ? addPortions(measure, result.portions)
           : startingMeasure(result, baseGrams, units),
       );
   }
   const changeMeasure = (next: Measure) => {
-    touched.current = true;
+    setTouched(true);
     setMeasure(next);
   };
   const gramsValue = measure ? measureGrams(measure) : null;

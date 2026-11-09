@@ -251,6 +251,7 @@ describe('recipes', () => {
           name: 'Pot chili',
           servings: 1,
           servingLabel: 'whole batch',
+          batch: true,
           calories: 2400,
           protein: 160,
           carbs: 200,
@@ -273,6 +274,23 @@ describe('recipes', () => {
       calories: 450,
       protein: 30,
     });
+
+    // One database food weighed in grams is still logged by the serving.
+    const oats = {
+      ...pot,
+      items: [{ ...pot.items[0], servingLabel: '400 g', batch: undefined }],
+    };
+    expect(recipeEntry(oats, 1, Meal.Dinner)).toMatchObject({
+      servings: 1,
+      servingLabel: '1 serving',
+      calories: 300,
+    });
+    expect(recipeEntry(oats, 1, Meal.Dinner)).not.toHaveProperty('measure');
+  });
+
+  it('never lets more servings be typed than the recipe makes', () => {
+    expect(typedEaten('80', 8)).toBe(8);
+    expect(typedEaten('1,5', 8)).toBe(1.5);
   });
 
   it('gives the entry the tier of the foods making most of the calories', () => {

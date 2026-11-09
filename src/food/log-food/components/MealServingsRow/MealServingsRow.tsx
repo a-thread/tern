@@ -12,14 +12,25 @@ import {
 export function MealServingsRow({
   value,
   onChange,
+  saveWhenDone = false,
 }: {
   value: number;
   onChange: (servings: number) => void;
+  /**
+   * Hand over a typed number only once typing is done (the field is left), not on every
+   * keystroke: for a meal that saves each change, so "12" isn't saved as 1 and then 12.
+   */
+  saveWhenDone?: boolean;
 }) {
   const [typed, setTyped] = useState<string | null>(null);
   const change = (next: number) => {
     setTyped(null);
     onChange(cleanServings(next));
+  };
+  const done = () => {
+    const n = typed === null ? null : typedYield(typed);
+    setTyped(null);
+    if (saveWhenDone && n !== null && n !== value) onChange(n);
   };
   return (
     <View style={s.card}>
@@ -38,10 +49,12 @@ export function MealServingsRow({
         onChangeValue={(v) => {
           const text = v.replace(/[^0-9]/g, '');
           setTyped(text);
+          if (saveWhenDone) return;
           const n = typedYield(text);
           if (n !== null) onChange(n);
         }}
-        onEndEditing={() => setTyped(null)}
+        onEndEditing={done}
+        keyboardType='number-pad'
         valueLabel='Servings this meal makes'
         valueMinWidth={36}
       />

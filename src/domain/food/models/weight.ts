@@ -34,7 +34,7 @@ export const isWeightUnit = (unit: string | null): unit is WeightUnit =>
   unit === WeightUnit.Oz || unit === WeightUnit.Lb;
 
 /**
- * What an amount weighs, in the person's own units: "= 1.2 oz" on Imperial, "= 35 g" on
+ * What an amount weighs, in the person's own units: "1.2 oz" on Imperial, "35 g" on
  * Metric. `typed` is the unit an amount is typed in (null for grams), or undefined when it is
  * counted ("2 packets"). Null when the typed unit is already a weight in their units.
  */
@@ -47,8 +47,8 @@ export function weightNote(
   if (typed !== undefined && (imperial ? isWeightUnit(typed) : typed === null))
     return null;
   return imperial
-    ? `= ${Math.round((grams / GRAMS[WeightUnit.Oz]) * 10) / 10} oz`
-    : `= ${Math.round(grams * 10) / 10} g`;
+    ? `${Math.round((grams / GRAMS[WeightUnit.Oz]) * 10) / 10} oz`
+    : `${Math.round(grams * 10) / 10} g`;
 }
 
 /** The portions with ounces and pounds added, unless the food already has them. */

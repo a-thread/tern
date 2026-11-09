@@ -106,9 +106,26 @@ export class Density {
   static readonly MAX = 2.5;
 }
 
-/** Foods measured by the spoon as well as the cup: oils, spreads, sauces, sweeteners, spices. */
-export const SPOONED =
-  /\b(oil|butter|honey|syrup|jam|jelly|mayonnaise|mayo|dressing|sauce|ketchup|mustard|sugar|salsa|hummus|spread|salt|spice|cinnamon|vinegar|cream|powder)\b/i;
+/** Which foods are measured by the spoon as well as the cup. */
+export class SpoonedFoods {
+  /**
+   * Oils, spreads, sauces, sweeteners, spices and creams. Plain "cream" so USDA's noun-first
+   * names match too ("Cream, sour", "Cheese, cream", "Cream, fluid, heavy whipping").
+   */
+  static readonly WORDS =
+    /\b(oil|butter|honey|syrup|jam|jelly|mayonnaise|mayo|dressing|sauce|ketchup|mustard|sugar|salsa|hummus|spread|salt|spice|cinnamon|vinegar|creams?|powder)\b/i;
+
+  /**
+   * Foods those words turn up in that are eaten by the cup or the piece: ice cream, Cream of
+   * Wheat, cream soda, sugar cookies, cereal bars.
+   */
+  static readonly EATEN_WHOLE =
+    /\b(ice creams?|cream of|sodas?|cookies?|cakes?|cupcakes?|bars?|pies?|cereals?|shakes?|smoothies?|candy|candies|donuts?|doughnuts?|muffins?)\b/i;
+}
+
+/** Whether `name` is a food measured by the spoon: olive oil, peanut butter, sugar. */
+export const isSpooned = (name: string) =>
+  SpoonedFoods.WORDS.test(name) && !SpoonedFoods.EATEN_WHOLE.test(name);
 
 /** The millilitres a cup or spoon label holds ("cup, chopped" is one cup), or null. */
 function householdMl(label: string): number | null {
@@ -138,7 +155,7 @@ export function knownDensity(portions: Portion[]): number | null {
 }
 
 /**
- * The portions with a cup added, and a tbsp and tsp for spooned foods (`SPOONED`), when the
+ * The portions with a cup added, and a tbsp and tsp for spooned foods (`isSpooned`), when the
  * food's own sizes say what a cup of it weighs. A food with no cup or spoon of its own gets
  * none: a cup of an unknown food can't be worked out from its weight. Spooned foods list
  * their spoons first and a cup last, so oil starts on a tablespoon.
@@ -147,7 +164,7 @@ export function withHouseholdVolumes(
   portions: Portion[],
   name: string,
 ): Portion[] {
-  const spooned = SPOONED.test(name);
+  const spooned = isSpooned(name);
   const all = withAddedVolumes(portions, name);
   return spooned ? spoonsFirst(all) : all;
 }
@@ -176,7 +193,7 @@ function withAddedVolumes(portions: Portion[], name: string): Portion[] {
     portions.some((p) =>
       HOUSEHOLD_LABEL.some(([re, u]) => u === unit && re.test(p.label.trim())),
     );
-  const wanted = SPOONED.test(name)
+  const wanted = isSpooned(name)
     ? Object.values(HouseholdVolume)
     : [HouseholdVolume.Cup];
   const added = wanted

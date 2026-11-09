@@ -15,6 +15,18 @@ describe('typedServing', () => {
       quantity: 0.5,
     });
     expect(typedServing('½ cup', 120).quantity).toBe(0.5);
+    expect(typedServing('1 1/2 cups', 360)).toEqual({
+      portion: { label: 'cup', grams: 240 },
+      quantity: 1.5,
+    });
+    expect(typedServing('1½ cups', 360).quantity).toBe(1.5);
+  });
+
+  it('shares a weight out over a part-count of anything', () => {
+    expect(typedServing('1.5 bowls', 300)).toEqual({
+      portion: { label: 'bowl', grams: 200 },
+      quantity: 1.5,
+    });
   });
 
   it('keeps words a product label would not use', () => {

@@ -4,6 +4,7 @@ import {
   knownDensity,
   withHouseholdVolumes,
   isLiquid,
+  isSpooned,
   isVolumeAmount,
   VolumeUnit,
   withVolumes,
@@ -115,6 +116,28 @@ describe('cups and spoons', () => {
       'Cheese, cheddar',
     );
     expect(labels(cheddar)).toEqual(['slice', 'tbsp', 'cup']);
+  });
+
+  it('keeps foods eaten by the cup or piece off the spoon', () => {
+    expect(isSpooned('Olive oil')).toBe(true);
+    expect(isSpooned('Sour cream')).toBe(true);
+    // USDA puts the noun first.
+    expect(isSpooned('Cream, sour, cultured')).toBe(true);
+    expect(isSpooned('Cheese, cream')).toBe(true);
+    for (const name of [
+      'Ice cream, vanilla',
+      'Ice creams, vanilla',
+      'Cream soda',
+      'Cream of Wheat',
+      'Cookies, sugar',
+      'Granola bar, peanut butter',
+    ])
+      expect(isSpooned(name)).toBe(false);
+    const iceCream = withHouseholdVolumes(
+      [{ label: 'cup', grams: 132 }],
+      'Ice cream, vanilla',
+    );
+    expect(labels(iceCream)).toEqual(['cup']);
   });
 
   it('leaves a food with no cup or spoon alone', () => {

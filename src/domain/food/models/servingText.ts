@@ -17,6 +17,7 @@ const HOUSEHOLD_MEASURE: [RegExp, string][] = [
 const COUNTED_WORDS = /^(\d+(?:[.,]\d+)?)\s*([a-z][a-z .-]*)$/i;
 // Fractions people type at the start of a serving: "1/2 cup", "½ cup".
 const FRACTION = /^(\d+)\s*\/\s*(\d+)/;
+const MIXED = /^(\d+)\s+(\d+)\s*\/\s*(\d+)/;
 const VULGAR: Record<string, string> = { '½': '0.5', '¼': '0.25', '¾': '0.75' };
 
 const round2 = (n: number) => Math.round(n * 100) / 100;
@@ -46,7 +47,9 @@ export function servingPortion(
   const measure = HOUSEHOLD_MEASURE.find(([re]) => re.test(noun));
   if (measure && count > 0)
     return { label: measure[1], grams: round1(grams / count) };
-  if (Number.isInteger(count) && count > 1) {
+  // Any count but one is shared out: "2 cookies" is a cookie of 15 g, "1.5 bowls" a bowl of
+  // two thirds the weight.
+  if (count > 0 && count !== 1) {
     return {
       label: singular(noun.toLowerCase()),
       grams: round1(grams / count),
@@ -74,9 +77,16 @@ export function typedServing(
   grams: number,
 ): { portion: Portion; quantity: number } {
   let clean = withoutNotes(text).replace(/^(a|an|one)\s+/i, '1 ');
+  // Mixed numbers first ("1 1/2 cups", "1½ cups"), then a fraction on its own.
+  clean = clean.replace(MIXED, (whole, w: string, a: string, b: string) =>
+    Number(b) > 0 ? String(round2(Number(w) + Number(a) / Number(b))) : whole,
+  );
+  clean = clean.replace(/^(\d+)\s*([½¼¾])/, (_, w: string, c: string) =>
+    String(Number(w) + Number(VULGAR[c])),
+  );
   clean = clean.replace(/^[½¼¾]/, (c) => VULGAR[c]);
   clean = clean.replace(FRACTION, (whole, a: string, b: string) =>
-    Number(b) > 0 ? String(Number(a) / Number(b)) : whole,
+    Number(b) > 0 ? String(round2(Number(a) / Number(b))) : whole,
   );
   const counted = /^\d/.test(clean) ? clean : `1 ${clean}`;
   const m = /^(\d+(?:[.,]\d+)?)\s*(.*)$/.exec(counted);

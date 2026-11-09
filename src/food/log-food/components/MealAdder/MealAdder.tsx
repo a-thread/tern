@@ -55,7 +55,7 @@ export function useMealAdder(
   const add = () => {
     addFoodEntries(
       batch
-        ? [recipeEntry({ ...batch, items }, eaten, target)]
+        ? [recipeEntry({ ...batch, items }, Math.min(eaten, batch.servings), target)]
         : itemsToEntries(items, target, scale),
     );
     navigation.goBack();
