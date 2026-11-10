@@ -90,6 +90,35 @@ once they've made an account, grant them Plus in RevenueCat as above, or add the
 insert into tern.entitlements (user_id, source) values ('<their user id>', 'manual');
 ```
 
+## Moving testers to the release
+
+What carries over from external testing (Play closed testing, TestFlight external testing):
+
+| | Play closed testing | TestFlight external |
+| --- | --- | --- |
+| The app and the log on the phone | Kept. It's the same Play-signed app, so the production release is an update | Kept, once they install the App Store version over the TestFlight build. It doesn't switch by itself |
+| Their account | Kept | Kept |
+| Tern Plus they bought | Real if they weren't on License testing (that's a real subscription that carries on), a test purchase that lapses if they were | Sandbox only. It lapses, and nothing carries over |
+| Builds | They stay on the test track until they leave the programme from its opt-in link | TestFlight builds expire after 90 days |
+
+When a test or sandbox purchase lapses, nothing is lost. The signed-in account's log is
+copied to the phone and syncing stops until they subscribe for real.
+
+At launch:
+
+1. Decide how testers keep the founding price and tell them before the price changes. They
+   either subscribe for real while it's on sale, or get Plus by hand (a RevenueCat
+   promotional grant, or a `manual` row in `tern.entitlements`). An Apple subscription offer
+   code or a Play promo code can give them a free first period.
+2. Take testers off Play Console > Settings > License testing. Otherwise their purchases in
+   the real app stay test purchases.
+3. Ask TestFlight testers to install Tern from the App Store.
+4. Check that the production build uses the same Supabase project the testers' accounts are
+   in.
+5. Play production access: a personal developer account created after November 2023 needs
+   at least 12 testers opted in to closed testing for the last 14 days before it can apply
+   for production. Check the Play Console's Dashboard for the current rule.
+
 ## iPhone
 
 Not shipped yet. Everything in the repo is ready for a first build; what's left needs an Apple
