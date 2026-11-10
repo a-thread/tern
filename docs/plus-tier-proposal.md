@@ -45,41 +45,61 @@ server cost, and fit with the guardrails.
 
 ### 1a. Ternaries
 
-A small, invite-only circle of friends. Everyone in it has Plus. (Owner's decision: a ternary
-is one more reason to subscribe, not a way in for free accounts.) The ternary has **one shared
-bird** on its own migration route, moved forward by everyone showing up together. It's
-cooperative and nothing is ranked. Each member's own journey carries on as it is.
-Encouragement is a few **fixed, kind cheers** ("Flying with you"), never free text, so there
-is no diet talk and nothing to moderate. Leaving and blocking are always one tap away.
+A small, invite-only circle of friends who fly together. Everyone in it has Plus. (Owner's
+decision: a ternary is one more reason to subscribe, not a way in for free accounts.) It's
+called a **ternary**: a pun on tern, and a small circle of friends. "Flock" was ruled out
+because of Flock Safety, the surveillance company.
 
-Food, weight, calorie and step numbers are never shared. What a member can see, and whether
-members can earn each other waypoints, is in the research below.
+The design comes from what real Arctic terns do (`docs/tern-facts-sources.md`): they migrate
+in small, loose flocks, bring each other fish, and feed up together at stopovers. Mocks:
+the "Concept C" row of the Ternary mocks canvas
+(https://claude.ai/artifact/3brHGhzt5Yyef9PWhHUGs3).
 
-It's called a **ternary**: a pun on tern, and a small circle of friends. "Flock"
-was ruled out because of Flock Safety, the surveillance company.
+**The shared bird.** A ternary has one bird on its own route, moved forward by everyone
+showing up together. It's cooperative and nothing is ranked. Each member's own journey
+carries on as it is.
 
-**What a member sees: "here today", nothing more.** Each member shows a soft feather if
-they earned any waypoint today; a rest day counts. A quiet member shows nothing: no grey
-slot, no "missed", and no history. A member who opts in to *Share that I'm resting* (off by
-default) shows a driftwood feather on a rest day.
+**Flying together (the map).** Friends who showed up today fly in a loose cluster around the
+shared bird; a rest day counts. Terns don't fly in a V like geese, so the cluster has no
+leader. It starts fresh every morning, so nobody is ahead or behind. A friend who isn't here
+today isn't drawn: there's no grey slot, no "missed" and no history. A member who opts in to
+*Share that I'm resting* (off by default) shows as resting.
 
-Two more revealing options were looked at and turned down:
-- A week's strip of showed up / rest / blank. The blanks read as failure.
-- Each member's stop on the route and their streak. A stop is just a lifetime total, so this
-  is a leaderboard in disguise.
+**Bringing a fish.** This replaces cheers. You tap a friend to bring them a fish, which waits
+in their tern's bill until they next open Tern. It sends no push notification, so it never
+reads as "come back". A fish earns no waypoints, sent or received, so it's only kindness and
+can't be farmed. Each person can bring up to 3 a day, and there are no read receipts.
 
-**Earning waypoints together.** The way members earn for each other is the shared bird:
+**Postcards.** When your own tern reaches a stop on your own journey, you can choose to send
+your ternary a postcard: an illustration of the place and a fact from the tern facts file.
+It never shows a date, a total or how long the trip took. That gives "where's everyone?" as
+moments people choose to share, instead of a standing map of everyone's place, which would
+be a leaderboard in disguise. Received postcards collect in the ternary.
+
+**The stopover table (shared food).** Each time the shared bird reaches a stop, a table
+opens while the bird rests there.
+- Each stop has its own prompt, such as *Bring something warming* at Iceland. Prompts never
+  use diet words like "light", "healthy", "clean" or "guilt-free".
+- Each member can bring one dish from their saved meals, if they like.
+- Only the foods are shared: no amounts, calories, macros or NOVA levels. Whoever adds the
+  dish sets their own amounts, and their own display settings apply.
+- Nobody is shown as not having brought anything, and there's no countdown.
+- Past tables collect into *Stopover recipes*, a recipe box with rhythm instead of an
+  endless feed.
+- There are no likes or comments. You can hide one person's meals or report a meal, because
+  meal names are text people write.
+
+**Earning waypoints together.**
 
 | Source | Waypoints | For |
 | --- | --- | --- |
 | Showing up together | to the shared bird | Each day, 75 × (members who showed up ÷ members). Everyone showing up every day takes it round in about a year, whatever the ternary's size |
 | Arrived together | 25, your own bird | Once per stop, when the shared bird reaches it, at most once a week |
 
-- Cheers earn nothing, sent or received. They're only kindness, so cheering never becomes a
-  chore and swapping cheers can't farm points. Up to 3 can be sent a day.
+- Fish, postcards and dishes earn nothing.
 - A quiet friend can't cost anyone anything.
-- There's no all-together bonus and no ternary streak. A member who doesn't show up only slows
-  the bird; it never moves back, and nobody's absence is named.
+- There's no all-together bonus and no ternary streak. A member who doesn't show up only
+  slows the bird; it never moves back, and nobody's absence is named.
 - The shared bird has its own ledger and never adds to a member's own total. The arrival
   bonus adds at most about 650 waypoints a year, about 2% of a lap's 28,480.
 - Days settle the way the ledger already does. Today's showing up follows today as it
@@ -88,34 +108,44 @@ Two more revealing options were looked at and turned down:
 - A member whose Plus ends drops out of the count quietly. Nobody else is told why, since
   whether someone pays is their own business.
 
+**Size.** Migrating Arctic terns usually travel in flocks of fewer than 15. A ternary stays
+smaller than that. The exact cap is still open.
+
+**Taking a break.** *Hide the ternary for now* takes it off Journey and stops fish and
+postcards, without leaving. Friends see nothing change. Leaving keeps every waypoint you
+earned. Blocking is silent: the blocked person just stops seeing you.
+
 **Must never happen**
 - "You broke the ternary's streak", "X hasn't logged", or any nudge about a named member.
-- A member listed as missing, behind or inactive.
-- Rankings, or comparing contributions or totals.
-- Read receipts on cheers.
-- Cheers or showing up that can be bought, banked or spent.
-- Any food, weight, calorie, step, streak or stop number passing between members.
+- A member listed as missing, behind or inactive, or an empty seat at the table.
+- Rankings, or comparing contributions, totals or places on a route.
+- Read receipts on fish or postcards.
+- Fish, showing up or dishes that can be bought, banked or spent.
+- Any food amount, weight, calorie, step, streak or stop number passing between members.
+- Diet language in a table prompt.
 - Ternary points protecting a personal streak.
 
 **What it touches**
 - A new `src/domain/ternary/`:
   - `TernaryContext.tsx`
   - the repository in its Supabase, local and memory versions
-  - `models/sharedBird.ts`: a `TernaryRules` class and a `Cheer` enum
-- `WaypointSource.Arrival` in
-  `src/domain/waypoints/models/waypoint.ts`, with their labels in `src/journey/models/`.
+  - `models/sharedBird.ts`: a `TernaryRules` class
+- `WaypointSource.Arrival` in `src/domain/waypoints/models/waypoint.ts`, with its label in
+  `src/journey/models/`.
 - A migration:
-  - tables `ternaries`, `ternary_members`, `ternary_days` and `ternary_cheers`, with RLS scoped to
-    members and `tern.has_plus()`
+  - tables `ternaries`, `ternary_members`, `ternary_days`, `ternary_fish`,
+    `ternary_postcards` and `ternary_dishes`, with RLS scoped to members and
+    `tern.has_plus()`
   - the waypoint source and points checks extended for the new source
   - the day's rows settled on the server, by `pg_cron` or a function beside `plus/`
 - `BackendContext.tsx`: wire the new repository.
 - Mount `TernaryProvider` at the journey navigator.
-- `src/journey/ternary/TernaryScreen.tsx`: a second bird marker on `JourneyMap`, the feathers and
-  the cheer buttons.
-- A *Share that I'm resting* toggle in Settings.
-- Invites by code or link, and leaving and blocking. Apple asks for these for anything
-  people put in front of each other, even display names.
+- Journey: `src/journey/ternary/`, with a flock layer on `JourneyMap`, fish, postcards and the
+  stopover table. Stop prompts and postcard facts sit beside the route's stop data.
+- Shared dishes read saved meals through `SavedMealsContext`: names and foods only.
+- Settings: *Share that I'm resting* and *Hide the ternary for now*.
+- Invites by code or link, plus leaving, blocking and reporting. Apple asks for these for
+  anything people put in front of each other.
 
 ## 2. Tiers and prices
 
@@ -157,7 +187,7 @@ data safe.*
 What Plus adds (`WHAT_PLUS_ADDS`), honest about what free already does:
 
 - Your log on every phone you sign in to, kept on Tern's server
-- Fly with friends in a ternary, a small circle whose shared bird is carried by everyone showing up
+- Fly with friends in a ternary: one shared bird, carried by everyone showing up, and recipes swapped at every stopover
   *(add this line when ternaries ship, not before)*
 - Tern kept going, with no ads and nothing sold
 
