@@ -23,6 +23,7 @@ const LABELS: Partial<Record<WaypointSource, string>> = {
   [WaypointSource.Weight]: 'Weigh-in',
   [WaypointSource.Rest]: 'Rest day',
   [WaypointSource.Streak]: 'Streak bonus',
+  [WaypointSource.Arrival]: 'Arrived together',
 };
 
 const MEALS: { source: WaypointSource; name: string }[] = [

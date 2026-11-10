@@ -103,6 +103,11 @@ import {
 import { createStoreSubscriptionRepository } from './domain/subscription/subscription.revenuecat';
 import { plusUnlocked } from './domain/subscription/plusUnlocked';
 import { createSupabasePlusSync } from './domain/subscription/entitlement.supabase';
+import {
+  createMemoryTernaryRepository,
+  type TernaryRepository,
+} from './domain/ternary/ternary.repository';
+import { createSupabaseTernaryRepository } from './domain/ternary/ternary.repository.supabase';
 
 /** Every repository the app persists through. Contexts read these; they never touch Supabase directly. */
 export type Backend = {
@@ -130,6 +135,8 @@ export type Backend = {
   settingsDefaults?: AppSettings;
   /** Export and erase. Absent in the memory preview, where nothing is stored. */
   data?: DataRepository;
+  /** Ternaries: only an account has one, so absent on the phone. */
+  ternary?: TernaryRepository;
 };
 
 /** Local mock data — used when no Supabase keys are configured, and in tests. */
@@ -150,6 +157,8 @@ export function createMemoryBackend(): Backend {
     movement: createMemoryMovementRepository(),
     dayNotes: createMemoryDayNotesRepository(),
     workouts: null,
+    // Without Supabase, ternaries are tried in memory: join with the sample's code.
+    ternary: createMemoryTernaryRepository(),
   };
 }
 
@@ -171,6 +180,7 @@ export function createBlankMemoryBackend(): Backend {
     waypoints: createMemoryWaypointsRepository(0, []),
     // Stands in for the phone's database when it can't be opened, so it starts like one.
     settingsDefaults: phoneSettings,
+    ternary: undefined,
   };
 }
 
@@ -258,6 +268,7 @@ export function createRemoteBackend(): Backend {
     workouts: createHealthWorkouts(),
     data: createSupabaseDataRepository(supabase),
     syncPlus: createSupabasePlusSync(supabase),
+    ternary: createSupabaseTernaryRepository(supabase),
   };
 }
 

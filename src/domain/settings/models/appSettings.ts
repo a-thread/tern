@@ -6,6 +6,7 @@ import { MovementGoal } from './movementGoal';
 import { Aim } from './aim';
 import { JourneyView } from './journeyView';
 import { TrailColor } from './trailColor';
+import type { ArrivalSeen } from '../../ternary/models/stopover';
 import { settingsSeed } from '../settings.mock';
 import { Frequency } from '@shared/models/frequency';
 import { type ReminderConfig, Reminders } from './reminderPlan';
@@ -91,6 +92,12 @@ export type AppSettings = {
   journeyView: JourneyView;
   /** A Supporter's colour for the line their tern has flown; see `trailFor`. */
   trailColor: TrailColor;
+  /** Taking a break from the ternary without leaving it: Journey shows nothing of it. */
+  hideTernary: boolean;
+  /** A safeguard: hides friends' stopover tables and dishes, so food is never compared. */
+  hideFriendsFood: boolean;
+  /** The last stop the shared bird reached that was seen (and paid, if `day` is set). */
+  ternaryArrival: ArrivalSeen | null;
   healthData: HealthDataSettings;
   /** The setup wizard, tips and getting-started card; see `loadOnboarding`. */
   onboarding: OnboardingState;
@@ -133,6 +140,9 @@ export const initialSettings: AppSettings = {
   celebratedMilestone: null,
   journeyView: JourneyView.Map,
   trailColor: TrailColor.Arctic,
+  hideTernary: false,
+  hideFriendsFood: false,
+  ternaryArrival: null,
   healthData: {
     readSteps: true,
     readWorkouts: true,

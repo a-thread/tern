@@ -8,7 +8,12 @@ import {
   Text,
   View,
 } from 'react-native';
-import Svg, { Circle, G, Image as SvgImage } from 'react-native-svg';
+import Svg, {
+  Circle,
+  G,
+  Image as SvgImage,
+  Text as SvgText,
+} from 'react-native-svg';
 
 import { colors, radius, space, typography } from '@shared/theme';
 import { Icon } from '@shared/components/ui';
@@ -71,6 +76,18 @@ class TernIcon {
   static readonly HEADING = 15;
 }
 
+/** Where friends fly around the shared bird, in bird widths: a loose, leaderless cluster. */
+const FLOCK_SPOTS = [
+  { x: -1.4, y: 1.1 },
+  { x: 1.3, y: 1.3 },
+  { x: -0.3, y: 2.2 },
+  { x: 1.8, y: -0.7 },
+  { x: -2.1, y: -0.5 },
+  { x: 0.8, y: 3.0 },
+  { x: -1.5, y: 3.1 },
+  { x: 2.4, y: 2.2 },
+];
+
 const SHAPES = {
   [JourneyView.Map]: JourneyMapShapes.MAP,
   [JourneyView.Globe]: JourneyMapShapes.GLOBE,
@@ -90,7 +107,14 @@ export function JourneyMap({
   lap,
   replayKey = 0,
   tipRefs,
+  flock,
 }: {
+  /**
+   * A ternary's flock: the friends who showed up today, drawn in a loose cluster around the
+   * bird (terns don't fly in a V, so there's no leader). Only who's here is passed, so a quiet
+   * friend is never drawn at all.
+   */
+  flock?: readonly { name: string; resting: boolean }[];
   /** How far through the current migration, 0 to 1. */
   progress: number;
   /** Which migration this is: 1 for the first. */
@@ -380,6 +404,32 @@ export function JourneyMap({
                       stroke={colors.routeAhead}
                       strokeWidth={1.2 / k}
                     />
+                  );
+                })}
+
+                {(flock ?? []).slice(0, FLOCK_SPOTS.length).map((friend, i) => {
+                  const spot = FLOCK_SPOTS[i];
+                  const x = bird.x + spot.x * birdW;
+                  const y = bird.y + spot.y * birdW;
+                  return (
+                    <G key={`${friend.name}-${i}`}>
+                      <Circle
+                        cx={x}
+                        cy={y}
+                        r={6.5 / k}
+                        fill={friend.resting ? colors.driftwoodTint : colors.onDark}
+                      />
+                      <SvgText
+                        x={x}
+                        y={y + 2.6 / k}
+                        fontSize={7.5 / k}
+                        fontWeight='700'
+                        textAnchor='middle'
+                        fill={friend.resting ? colors.driftwood : colors.violet}
+                      >
+                        {friend.name.slice(0, 1).toUpperCase()}
+                      </SvgText>
+                    </G>
                   );
                 })}
 

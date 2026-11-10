@@ -181,6 +181,26 @@ since RevenueCat doesn't always send an event when a purchase made before sign-u
 to the new account. Its logic is in `entitlement.ts`, tested with the app; `index.ts` is
 the Deno wrapper, left out of typecheck and lint.
 
+## Ternaries
+
+A ternary is a small invite-only circle of friends with Tern Plus, flying one shared bird
+(see the design in [plus-tier-proposal.md](plus-tier-proposal.md#1a-ternaries)). It needs an
+account, so only the remote backend has a `ternary` repository; on the phone `TernaryProvider`
+gets none and `available` is false. The provider is app-wide, because the Journey tab (its
+card) and the ternary's own stack (`journey/ternary/`) both read it.
+
+Every ternary table has row-level security on and no policies, so the app reaches them only
+through the security-definer functions in
+[`20261110000000_ternaries.sql`](../supabase/migrations/20261110000000_ternaries.sql).
+`ternary_state` alone decides what a friend sees: who showed up today (counted from
+`waypoint_events`, which no one else can read), "resting" only when shared, and nothing for
+someone flying privately or quiet. The shared bird moves 75 × the share of members who showed
+up each day. Finished days are written once to `ternary_days` by `settle_ternary_days`
+(pg_cron, daily), and unsettled days are counted live the same way. When the bird reaches a
+new stop, `TernaryProvider` pays the 25-waypoint `arrival` award on the person's own ledger,
+at most once a week (`arrivalDue`, remembered in `ternaryArrival`). That award never counts
+as showing up.
+
 Setting a project up, and what each table holds, is in
 [supabase/README.md](../supabase/README.md). `supabase/migrations/` is the schema of
 record.

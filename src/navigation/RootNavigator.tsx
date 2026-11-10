@@ -18,6 +18,7 @@ import WaypointsInfoScreen from '../journey/waypoints-info/WaypointsInfoScreen';
 import RouteInfoScreen from '../journey/route-info/RouteInfoScreen';
 import StreakScreen from '../today/streak/StreakScreen';
 import SettingsStack from '../settings/SettingsStack';
+import TernaryStack from '../journey/ternary/TernaryStack';
 import WelcomeStack from '../welcome/WelcomeStack';
 import { useSettings } from '../domain/settings/SettingsContext';
 import type { RootStackParamList } from './types';
@@ -59,6 +60,7 @@ export default function RootNavigator() {
         <RootStack.Screen name='EditFood' component={EditFoodEntryScreen} />
         <RootStack.Screen name='SaveMeal' component={SaveMealScreen} />
         <RootStack.Screen name='Settings' component={SettingsStack} />
+        <RootStack.Screen name='Ternary' component={TernaryStack} />
       </RootStack.Group>
 
       {/* Actual modals */}
