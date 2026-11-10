@@ -134,6 +134,14 @@ they sign in. Without a RevenueCat key the memory version stands in and buying i
 `preview` build sets `EXPO_PUBLIC_PLUS_UNLOCKED`, which turns Plus on with nothing bought,
 for testers who install the APK directly (see [RELEASING.md](RELEASING.md)).
 
+Plus comes in two tiers (`Tier`). **Supporter** is the custom package `supporter_annual`,
+which unlocks a `supporter` entitlement alongside `plus`. It adds thank-yous only: a place
+in Settings › Credits and a choice of plumage. Nothing is held back from Plus for it, and
+the server checks `plus` alone. The **founding price** is switched on by setting
+`"founding": true` in the current offering's metadata in RevenueCat. While it's set, the
+paywall badges Plus yearly as the founding price instead of what it saves, so turning the
+founding price off needs no release.
+
 Where the log lives follows Plus, decided in `AuthGate` with the moves in
 [`accountMoves.ts`](../src/accountMoves.ts):
 

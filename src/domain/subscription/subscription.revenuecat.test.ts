@@ -1,4 +1,4 @@
-import { Plan, SubscriptionConfig } from './models/subscription';
+import { Plan, SubscriptionConfig, Tier } from './models/subscription';
 import {
   createRevenueCatSubscriptionRepository,
   type PurchasesApi,
@@ -69,16 +69,74 @@ describe('RevenueCat subscription repository', () => {
       active: true,
       renews: false,
       expiresAt: '2027-10-20T00:00:00Z',
+      supporter: false,
     });
+  });
+
+  it('reads Supporter from its own entitlement, beside Plus', async () => {
+    const supporterInfo = info(true);
+    supporterInfo.entitlements.active[SubscriptionConfig.SUPPORTER_ENTITLEMENT] = {
+      isActive: true,
+      willRenew: true,
+      expirationDate: '2027-10-20T00:00:00Z',
+    };
+    const api = fakeApi({ getCustomerInfo: jest.fn().mockResolvedValue(supporterInfo) });
+    expect(
+      (await createRevenueCatSubscriptionRepository(api, 'k').status()).supporter,
+    ).toBe(true);
   });
 
   it("offers the current offering's subscriptions as plans, never a lifetime one", async () => {
     const plans = await createRevenueCatSubscriptionRepository(fakeApi(), 'k').plans();
+    const option = (id: string, plan: Plan, price: string, amount: number) => ({
+      id,
+      plan,
+      tier: Tier.Plus,
+      founding: false,
+      price,
+      amount,
+      currency: 'USD',
+    });
     expect(plans).toEqual([
-      { id: '$rc_monthly', plan: Plan.Monthly, price: '$3.99', amount: 3.99, currency: 'USD' },
-      { id: '$rc_annual', plan: Plan.Annual, price: '$29.99', amount: 29.99, currency: 'USD' },
-      { id: 'weekend', plan: Plan.Other, price: '$1.00', amount: 1, currency: 'USD' },
+      option('$rc_monthly', Plan.Monthly, '$3.99', 3.99),
+      option('$rc_annual', Plan.Annual, '$29.99', 29.99),
+      option('weekend', Plan.Other, '$1.00', 1),
     ]);
+  });
+
+  it('sells Supporter as a yearly plan of its own tier', async () => {
+    const api = fakeApi({
+      getOfferings: jest.fn().mockResolvedValue({
+        current: {
+          availablePackages: [
+            pkg(SubscriptionConfig.SUPPORTER_PACKAGE, 'CUSTOM', '$59.99'),
+          ],
+        },
+      }),
+    });
+    const [supporter] = await createRevenueCatSubscriptionRepository(api, 'k').plans();
+    expect(supporter).toMatchObject({ plan: Plan.Annual, tier: Tier.Supporter });
+  });
+
+  it('marks only Plus yearly as founding, and only while the offering says so', async () => {
+    const packages = [
+      pkg('$rc_monthly', 'MONTHLY', '$4.99'),
+      pkg('$rc_annual', 'ANNUAL', '$29.99'),
+      pkg(SubscriptionConfig.SUPPORTER_PACKAGE, 'CUSTOM', '$59.99'),
+    ];
+    const withMetadata = (metadata?: Record<string, unknown>) =>
+      fakeApi({
+        getOfferings: jest
+          .fn()
+          .mockResolvedValue({ current: { availablePackages: packages, metadata } }),
+      });
+    const founding = await createRevenueCatSubscriptionRepository(
+      withMetadata({ [SubscriptionConfig.FOUNDING_METADATA]: true }),
+      'k',
+    ).plans();
+    expect(founding.map((p) => p.founding)).toEqual([false, true, false]);
+    const after = await createRevenueCatSubscriptionRepository(withMetadata(), 'k').plans();
+    expect(after.some((p) => p.founding)).toBe(false);
   });
 
   it('will not buy a lifetime package, even by id', async () => {

@@ -3,6 +3,7 @@ import {
   Plan,
   type PlanOption,
   type SubscriptionStatus,
+  Tier,
 } from './models/subscription';
 
 /**
@@ -26,9 +27,25 @@ export interface SubscriptionRepository {
   onChange(listener: (status: SubscriptionStatus) => void): () => void;
 }
 
+const sample = (
+  id: string,
+  plan: Plan,
+  tier: Tier,
+  amount: number,
+): PlanOption => ({
+  id,
+  plan,
+  tier,
+  founding: false,
+  price: `$${amount.toFixed(2)}`,
+  amount,
+  currency: 'USD',
+});
+
 const SAMPLE_PLANS: PlanOption[] = [
-  { id: 'sample_annual', plan: Plan.Annual, price: '$29.99', amount: 29.99, currency: 'USD' },
-  { id: 'sample_monthly', plan: Plan.Monthly, price: '$3.99', amount: 3.99, currency: 'USD' },
+  sample('sample_annual', Plan.Annual, Tier.Plus, 39.99),
+  sample('sample_monthly', Plan.Monthly, Tier.Plus, 4.99),
+  sample('sample_supporter', Plan.Annual, Tier.Supporter, 59.99),
 ];
 
 const SIGNED_IN_PLUS: SubscriptionStatus = {
@@ -54,7 +71,12 @@ export function createMemorySubscriptionRepository(
     purchase: async (id) => {
       const option = plans.find((p) => p.id === id);
       if (!option) throw new Error(`No plan ${id}`);
-      current = { active: true, renews: true, expiresAt: null };
+      current = {
+        active: true,
+        renews: true,
+        expiresAt: null,
+        supporter: option.tier === Tier.Supporter,
+      };
       return current;
     },
     restore: async () => current,

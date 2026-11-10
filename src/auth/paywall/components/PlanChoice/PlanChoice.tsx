@@ -10,20 +10,23 @@ import {
 
 /**
  * One plan to pick on the paywall: its name and price, marked when chosen. `note` is a
- * small badge beside the name, such as what the yearly plan saves.
+ * small badge beside the name, such as what the yearly plan saves; `description` is a plain
+ * line under it, such as what Supporter adds.
  */
 export function PlanChoice({
   option,
   chosen,
   note,
+  description,
   onChoose,
 }: {
   option: PlanOption;
   chosen: boolean;
   note?: string;
+  description?: string;
   onChoose: () => void;
 }) {
-  const name = planName(option.plan);
+  const name = planName(option);
   const price = priceLabel(option);
   return (
     <Pressable
@@ -31,15 +34,22 @@ export function PlanChoice({
       onPress={onChoose}
       accessibilityRole='radio'
       accessibilityState={{ checked: chosen }}
-      accessibilityLabel={[name, price, note].filter(Boolean).join(', ')}
+      accessibilityLabel={[name, price, note, description]
+        .filter(Boolean)
+        .join(', ')}
     >
       <View style={[s.dot, chosen && s.dotChosen]} />
-      <View style={s.name}>
-        <Text style={typography.rowTitle}>{name}</Text>
-        {note ? (
-          <View style={s.badge}>
-            <Text style={s.badgeText}>{note}</Text>
-          </View>
+      <View style={s.body}>
+        <View style={s.name}>
+          <Text style={typography.rowTitle}>{name}</Text>
+          {note ? (
+            <View style={s.badge}>
+              <Text style={s.badgeText}>{note}</Text>
+            </View>
+          ) : null}
+        </View>
+        {description ? (
+          <Text style={s.description}>{description}</Text>
         ) : null}
       </View>
       <Text style={typography.meta}>{price}</Text>
@@ -69,8 +79,9 @@ const s = StyleSheet.create({
     borderColor: colors.dove,
   },
   dotChosen: { borderColor: colors.coral, borderWidth: 5 },
+  body: { flex: 1, gap: space.xs },
+  description: { ...typography.small, lineHeight: 16 },
   name: {
-    flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
     flexWrap: 'wrap',

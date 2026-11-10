@@ -5,6 +5,7 @@ import {
   type PlanOption,
   SubscriptionConfig,
   type SubscriptionStatus,
+  Tier,
 } from './models/subscription';
 import type { SubscriptionRepository } from './subscription.repository';
 
@@ -28,7 +29,11 @@ export interface PurchasesApi {
   configure(options: { apiKey: string }): void;
   getCustomerInfo(): Promise<CustomerInfo>;
   getOfferings(): Promise<{
-    current: { availablePackages: StorePackage[] } | null;
+    current: {
+      availablePackages: StorePackage[];
+      /** Set in the RevenueCat dashboard; `founding: true` while the founding price is on sale. */
+      metadata?: Record<string, unknown>;
+    } | null;
   }>;
   purchasePackage(pkg: StorePackage): Promise<{ customerInfo: CustomerInfo }>;
   restorePurchases(): Promise<CustomerInfo>;
@@ -52,20 +57,33 @@ const NOT_OFFERED = new Set(['LIFETIME']);
 export function statusFrom(info: CustomerInfo): SubscriptionStatus {
   const plus = info.entitlements.active[SubscriptionConfig.ENTITLEMENT];
   if (!plus?.isActive) return NO_SUBSCRIPTION;
+  const supporter =
+    info.entitlements.active[SubscriptionConfig.SUPPORTER_ENTITLEMENT];
   return {
     active: true,
     renews: plus.willRenew,
     expiresAt: plus.expirationDate,
+    supporter: Boolean(supporter?.isActive),
   };
 }
 
-const optionFrom = (pkg: StorePackage): PlanOption => ({
-  id: pkg.identifier,
-  plan: PLANS[pkg.packageType] ?? Plan.Other,
-  price: pkg.product.priceString,
-  amount: pkg.product.price,
-  currency: pkg.product.currencyCode,
-});
+/**
+ * Supporter is a custom package, billed yearly. The founding price applies to Plus only,
+ * and only while the offering says it's on sale.
+ */
+const optionFrom = (pkg: StorePackage, founding: boolean): PlanOption => {
+  const supporter = pkg.identifier === SubscriptionConfig.SUPPORTER_PACKAGE;
+  const plan = supporter ? Plan.Annual : (PLANS[pkg.packageType] ?? Plan.Other);
+  return {
+    id: pkg.identifier,
+    plan,
+    tier: supporter ? Tier.Supporter : Tier.Plus,
+    founding: founding && !supporter && plan === Plan.Annual,
+    price: pkg.product.priceString,
+    amount: pkg.product.price,
+    currency: pkg.product.currencyCode,
+  };
+};
 
 /** Tern Plus through RevenueCat, which handles Google Play Billing and the App Store. */
 export function createRevenueCatSubscriptionRepository(
@@ -74,14 +92,23 @@ export function createRevenueCatSubscriptionRepository(
 ): SubscriptionRepository {
   api.configure({ apiKey });
 
-  const packages = async () =>
-    ((await api.getOfferings()).current?.availablePackages ?? []).filter(
-      (p) => !NOT_OFFERED.has(p.packageType),
-    );
+  const offering = async () => {
+    const current = (await api.getOfferings()).current;
+    return {
+      packages: (current?.availablePackages ?? []).filter(
+        (p) => !NOT_OFFERED.has(p.packageType),
+      ),
+      founding: current?.metadata?.[SubscriptionConfig.FOUNDING_METADATA] === true,
+    };
+  };
+  const packages = async () => (await offering()).packages;
 
   return {
     status: async () => statusFrom(await api.getCustomerInfo()),
-    plans: async () => (await packages()).map(optionFrom),
+    async plans() {
+      const { packages: offered, founding } = await offering();
+      return offered.map((p) => optionFrom(p, founding));
+    },
     async purchase(id) {
       const pkg = (await packages()).find((p) => p.identifier === id);
       if (!pkg) throw new Error(`No plan ${id}`);
