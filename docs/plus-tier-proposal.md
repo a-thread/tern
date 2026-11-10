@@ -34,7 +34,7 @@ server cost, and fit with the guardrails.
 | --- | --- | --- | --- | --- | --- |
 | Sync across phones (today's Plus) | Medium | Done | Low | Good | **Keep**, and describe it honestly |
 | Ternaries: friends who fly together (see §1a) | High | High (about 6–10 weeks) | Low (small rows, no realtime) | Good only with the rules below | **The new headline**, built after pricing |
-| Supporter thank-yous: alternate icons, name in credits | Low–medium (to the people who want it) | Low | None | Good | **Yes**, as the Supporter tier |
+| Supporter thank-yous: name in credits, tern plumage | Low–medium (to the people who want it) | Low | None | Good | **Yes**, as the Supporter tier |
 | On-device appointment summary for a dietitian or therapist | High for some | Low–medium | None | Good, if free | **Free**: nobody should pay to show their care team their log |
 | Live, consent-based share with a clinician | High for some | High | Low | Needs care | **Later**: the clinician-tier bet, after the Apr–Jun 2027 interviews |
 | Household: Apple Family Sharing | High for couples | Almost none | Low | Good | **Not now**: it can't be switched off, it's iPhone only, and Play has no equivalent |
@@ -115,6 +115,15 @@ smaller than that. The exact cap is still open.
 postcards, without leaving. Friends see nothing change. Leaving keeps every waypoint you
 earned. Blocking is silent: the blocked person just stops seeing you.
 
+**Fly privately.** In a ternary of three, a friend who isn't drawn is easy to read as
+missing. With *Fly privately* on, your showing up still carries the shared bird, but you're
+never drawn in the flock. Friends can't tell whether you're quiet or just private, which
+makes everyone's quiet days unreadable too.
+
+**Hide friends' food.** A free safeguard beside the other food display settings. It hides
+the stopover table and shared dishes, so seeing what friends eat never becomes something to
+compare yourself against. Like every safeguard, it stays free.
+
 **Must never happen**
 - "You broke the ternary's streak", "X hasn't logged", or any nudge about a named member.
 - A member listed as missing, behind or inactive, or an empty seat at the table.
@@ -128,7 +137,8 @@ earned. Blocking is silent: the blocked person just stops seeing you.
 **What it touches**
 - A new `src/domain/ternary/`:
   - `TernaryContext.tsx`
-  - the repository in its Supabase, local and memory versions
+  - the repository in Supabase and memory versions only. There's no on-phone (SQLite)
+    version, because every member is signed in with Plus
   - `models/sharedBird.ts`: a `TernaryRules` class
 - `WaypointSource.Arrival` in `src/domain/waypoints/models/waypoint.ts`, with its label in
   `src/journey/models/`.
@@ -138,14 +148,24 @@ earned. Blocking is silent: the blocked person just stops seeing you.
     `tern.has_plus()`
   - the waypoint source and points checks extended for the new source
   - the day's rows settled on the server, by `pg_cron` or a function beside `plus/`
+  - a `security definer` function for today's presence. `waypoint_events` is readable only
+    by its owner, so the function counts every member's showing up for the shared bird and
+    returns only the members who aren't flying privately, with no totals.
 - `BackendContext.tsx`: wire the new repository.
 - Mount `TernaryProvider` at the journey navigator.
 - Journey: `src/journey/ternary/`, with a flock layer on `JourneyMap`, fish, postcards and the
   stopover table. Stop prompts and postcard facts sit beside the route's stop data.
 - Shared dishes read saved meals through `SavedMealsContext`: names and foods only.
-- Settings: *Share that I'm resting* and *Hide the ternary for now*.
+- Settings: *Share that I'm resting*, *Fly privately* and *Hide the ternary for now*, and
+  *Hide friends' food* with the food display safeguards.
 - Invites by code or link, plus leaving, blocking and reporting. Apple asks for these for
   anything people put in front of each other.
+- Privacy, before ternaries leave beta:
+  - The privacy policy (`docs/index.html`) says what ternary friends can see.
+  - The App Store and Play privacy labels add data shared with other users.
+  - "Delete my account" removes ternary memberships, fish, postcards and dishes. Past
+    `ternary_days` rows stay, since they hold no user ids.
+  - Reports go to a monitored inbox.
 
 ## 2. Tiers and prices
 
@@ -154,7 +174,7 @@ founding offer, and a lifetime purchase would be a server cost carried forever.
 
 | | Monthly | Yearly | Unlocks |
 | --- | --- | --- | --- |
-| **Tern Plus** | $3.99 | $39.99 (was $29.99) | `plus` |
+| **Tern Plus** | $4.99 (was $3.99) | $39.99 (was $29.99) | `plus` |
 | **Tern Plus Supporter** | — | $59.99 | `plus` and `supporter` |
 | Founding price (testers and the first 200 subscribers) | — | $29.99 while subscribed | `plus` |
 
@@ -162,6 +182,11 @@ After Apple's 15% (the Small Business Program; Play is also 15% on subscriptions
 subscriber brings in $25.49 at $29.99, $33.99 at $39.99 and $50.99 as a Supporter. With
 running costs of about $750 a year, break-even is about 30 subscribers at the founding price
 or about 22 at $39.99.
+
+**Why monthly goes to $4.99.** At $3.99 a month, $39.99 a year saves only 16%, down from
+37% at $29.99. That pushes people towards monthly, where they cancel more often. At $4.99
+($59.88 over a year), yearly saves 33%. Existing monthly subscribers keep $3.99, the same way
+founding yearly subscribers keep $29.99.
 
 **How the founding price works without code.** Both stores let you raise a subscription's
 price and keep existing subscribers on the old one: App Store Connect calls it "Preserve
@@ -192,8 +217,9 @@ What Plus adds (`WHAT_PLUS_ADDS`), honest about what free already does:
 - Tern kept going, with no ads and nothing sold
 
 Plans, in order: Yearly (with the savings badge), Monthly, then Supporter. Supporter's
-`PlanChoice` gets one plain line under its name: *Everything in Plus, plus alternate tern
-icons and your name in the credits, if you'd like it there.* No "most popular" badge on it,
+`PlanChoice` gets one plain line under its name: *Everything in Plus, plus a thank-you: your
+name in the credits, if you'd like it there.* Add the plumage once it's built, never
+before. No "most popular" badge on it,
 nothing pre-selected toward it, and no wording that makes Plus sound like the lesser choice.
 
 While the founding price is on sale, the yearly plan's badge says *Founding price, kept
@@ -220,7 +246,8 @@ A Supporter's row reads *Tern Plus Supporter · renews {date}*. Everything else 
 
 1. **Prices, Supporter and wording.** *First, as decided.* Mostly store and RevenueCat setup:
    a `supporter_annual` product, a `supporter` entitlement attached alongside `plus`, both in
-   the current offering, and the price raise once 200 is reached.
+   the current offering, monthly raised to $4.99 (existing subscribers kept at $3.99), and
+   the yearly raise once 200 is reached.
    Code:
    - `src/domain/subscription/models/subscription.ts`: a tier on `PlanOption` (an enum, not a
      string), `planName` and `priceLabel` for Supporter, and a `supporter` flag on
@@ -236,9 +263,13 @@ A Supporter's row reads *Tern Plus Supporter · renews {date}*. Everything else 
    - Tests beside each file.
    - The server is unchanged: Supporter also unlocks `plus`, which is all `tern.has_plus()`
      checks.
-2. **Supporter thank-yous.** A Credits screen in Settings (a list kept in the app and updated
-   each release; names are added only when someone asks), then alternate app icons through
-   an Expo config plugin. Touches `src/settings/` and `app.json`.
+2. **Supporter thank-yous.**
+   - **Credits:** ship this with step 1, since it's what Supporter promises at launch. It's a
+     screen in Settings with a list kept in the app and updated each release, and names are
+     added only when someone asks.
+   - **Tern plumage:** a few colourings for your own tern on Journey, shown in a ternary's
+     flock only if you choose. It replaces alternate app icons, which are fiddly on Android.
+     Touches `src/journey/components/JourneyMap/` and `src/settings/`.
 3. **Free appointment summary.** A readable summary the phone builds from the log and shares
    through the share sheet. It respects every hidden-number setting and uses no server.
    Touches `src/settings/data/` and the export utilities beside it.
