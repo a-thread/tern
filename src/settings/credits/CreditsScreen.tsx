@@ -5,7 +5,9 @@ import { FootNote, Group, GroupLabel, Row } from '@shared/components/ui';
 import { useToast } from '@shared/state/ToastContext';
 import { useSubscription } from '@/domain/subscription/SubscriptionContext';
 import { SettingsPage } from '../components/SettingsPage';
+import { TrailColors } from '@/domain/settings/models/trailColor';
 import { Credits, listMeLink } from './models/credits';
+import { TrailChoice } from './components/TrailChoice/TrailChoice';
 
 /**
  * Settings › Credits: the Supporters who asked to be named. A Supporter can ask to be added
@@ -35,6 +37,16 @@ export default function CreditsScreen() {
       </Group>
       {supporter ? (
         <>
+          <GroupLabel>Your tern’s trail</GroupLabel>
+          <Group>
+            {TrailColors.ALL.map((trail) => (
+              <TrailChoice key={trail} trail={trail} />
+            ))}
+          </Group>
+          <FootNote>
+            The line your tern has flown on Journey. It’s yours to keep if
+            Supporter ends, and comes back if you support again.
+          </FootNote>
           <Group>
             <Row
               title='Ask to be listed'

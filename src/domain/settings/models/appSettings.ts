@@ -5,6 +5,7 @@ import { WaterGoal } from './waterGoal';
 import { MovementGoal } from './movementGoal';
 import { Aim } from './aim';
 import { JourneyView } from './journeyView';
+import { TrailColor } from './trailColor';
 import { settingsSeed } from '../settings.mock';
 import { Frequency } from '@shared/models/frequency';
 import { type ReminderConfig, Reminders } from './reminderPlan';
@@ -88,6 +89,8 @@ export type AppSettings = {
   celebratedMilestone: number | null;
   /** Whether Journey draws the migration on a flat map or a globe. */
   journeyView: JourneyView;
+  /** A Supporter's colour for the line their tern has flown; see `trailFor`. */
+  trailColor: TrailColor;
   healthData: HealthDataSettings;
   /** The setup wizard, tips and getting-started card; see `loadOnboarding`. */
   onboarding: OnboardingState;
@@ -129,6 +132,7 @@ export const initialSettings: AppSettings = {
   lastSuggestionWeek: null,
   celebratedMilestone: null,
   journeyView: JourneyView.Map,
+  trailColor: TrailColor.Arctic,
   healthData: {
     readSteps: true,
     readWorkouts: true,
