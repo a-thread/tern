@@ -121,6 +121,11 @@ ones; an account keeps its own. An account restores through the `import_my_data`
 function, since its tables otherwise only accept today's waypoints, rest days and
 movement.
 
+"Share a summary" (Settings › Your data › For an appointment) builds plain text from the same
+export on the phone (`appointmentSummary`) and hands it to the share sheet. It follows the
+person's display settings: calories only if they're tracked and shown, weight only if it's
+tracked, and no notes. It's free, and nothing is uploaded.
+
 ## Tern Plus
 
 Everything in Tern is free; Tern Plus is the account, which syncs and backs up. Making an
