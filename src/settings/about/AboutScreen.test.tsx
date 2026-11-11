@@ -1,4 +1,5 @@
 import React from 'react';
+import { Linking } from 'react-native';
 import { fireEvent, render, screen, waitFor } from '@testing-library/react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
@@ -9,7 +10,8 @@ import { TrailColor } from '@/domain/settings/models/trailColor';
 import type { SubscriptionStatus } from '@/domain/subscription/models/subscription';
 import { createMemorySubscriptionRepository } from '@/domain/subscription/subscription.repository';
 import { SubscriptionProvider } from '@/domain/subscription/SubscriptionContext';
-import CreditsScreen from './CreditsScreen';
+import { SupportTern } from './models/supportTern';
+import AboutScreen from './AboutScreen';
 
 jest.mock('@react-navigation/native', () => ({
   ...jest.requireActual('@react-navigation/native'),
@@ -42,7 +44,7 @@ function open(status: SubscriptionStatus) {
       <ToastProvider>
         <SubscriptionProvider repo={createMemorySubscriptionRepository(status)} userId={null}>
           <SettingsProvider repo={backend.settings}>
-            <CreditsScreen />
+            <AboutScreen />
             <TrailProbe />
           </SettingsProvider>
         </SubscriptionProvider>
@@ -51,18 +53,26 @@ function open(status: SubscriptionStatus) {
   );
 }
 
-describe('CreditsScreen', () => {
-  it('lets a Supporter choose their trail and ask to be listed', async () => {
+afterEach(() => jest.restoreAllMocks());
+
+describe('AboutScreen', () => {
+  it('says what Tern is for, and links to the coffee page', async () => {
+    const open_ = jest.spyOn(Linking, 'openURL').mockResolvedValue(true);
+    open(PLUS);
+    expect(await screen.findByText('What Tern promises')).toBeTruthy();
+    fireEvent.press(screen.getByText('Buy me a coffee'));
+    expect(open_).toHaveBeenCalledWith(SupportTern.COFFEE_URL);
+  });
+
+  it('lets a Supporter choose their trail', async () => {
     open(SUPPORTER);
     fireEvent.press(await screen.findByLabelText('Twilight trail'));
     await waitFor(() => expect(trail).toBe(TrailColor.Twilight));
-    expect(screen.getByText('Ask to be listed')).toBeTruthy();
   });
 
-  it('offers no trail or listing to someone on plain Plus', async () => {
+  it('offers no trail to someone on plain Plus', async () => {
     open(PLUS);
-    expect(await screen.findByText('No names here yet')).toBeTruthy();
+    expect(await screen.findByText('Support Tern')).toBeTruthy();
     expect(screen.queryByLabelText('Twilight trail')).toBeNull();
-    expect(screen.queryByText('Ask to be listed')).toBeNull();
   });
 });

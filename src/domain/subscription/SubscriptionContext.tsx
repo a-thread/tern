@@ -15,7 +15,7 @@ type SubscriptionContextValue = {
   ready: boolean;
   /** Tern Plus is on, so an account can be made and synced. */
   active: boolean;
-  /** Plus is on as Tern Plus Supporter: the thank-yous (plumage, a place in the credits) are theirs. */
+  /** Plus is on as Tern Plus Supporter: the thank-you (a trail colour on Journey) is theirs. */
   supporter: boolean;
   /**
    * Who the store was last asked about: the signed-in account's id, or null for the phone;

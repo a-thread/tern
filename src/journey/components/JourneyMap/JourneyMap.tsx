@@ -8,12 +8,7 @@ import {
   Text,
   View,
 } from 'react-native';
-import Svg, {
-  Circle,
-  G,
-  Image as SvgImage,
-  Text as SvgText,
-} from 'react-native-svg';
+import Svg, { Circle, G, Image as SvgImage, Path } from 'react-native-svg';
 
 import { colors, radius, space, typography } from '@shared/theme';
 import { Icon } from '@shared/components/ui';
@@ -87,6 +82,9 @@ const FLOCK_SPOTS = [
   { x: -1.5, y: 3.1 },
   { x: 2.4, y: 2.2 },
 ];
+
+/** A friend's tern in the flock: wings in a shallow "v", about 12 points across. */
+const FLOCK_TERN = 'M -6 1.5 C -3.5 0.5, -1.5 -1.5, 0 -3.5 C 1.5 -1.5, 3.5 0.5, 6 1.5';
 
 const SHAPES = {
   [JourneyView.Map]: JourneyMapShapes.MAP,
@@ -412,24 +410,18 @@ export function JourneyMap({
                   const x = bird.x + spot.x * birdW;
                   const y = bird.y + spot.y * birdW;
                   return (
-                    <G key={`${friend.name}-${i}`}>
-                      <Circle
-                        cx={x}
-                        cy={y}
-                        r={6.5 / k}
-                        fill={friend.resting ? colors.driftwoodTint : colors.onDark}
-                      />
-                      <SvgText
-                        x={x}
-                        y={y + 2.6 / k}
-                        fontSize={7.5 / k}
-                        fontWeight='700'
-                        textAnchor='middle'
-                        fill={friend.resting ? colors.driftwood : colors.violet}
-                      >
-                        {friend.name.slice(0, 1).toUpperCase()}
-                      </SvgText>
-                    </G>
+                    // A small tern in flight, its wings a shallow "v". Named in the list
+                    // under the map, so the map itself needs no lettering.
+                    <Path
+                      key={`${friend.name}-${i}`}
+                      d={FLOCK_TERN}
+                      transform={`translate(${x}, ${y}) scale(${1 / k})`}
+                      fill='none'
+                      stroke={friend.resting ? colors.driftwoodTint : colors.onDark}
+                      strokeWidth={1.8}
+                      strokeLinecap='round'
+                      strokeLinejoin='round'
+                    />
                   );
                 })}
 

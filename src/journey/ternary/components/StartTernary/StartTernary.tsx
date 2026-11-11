@@ -2,7 +2,8 @@ import React, { useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 
 import { colors, space, typography } from '@shared/theme';
-import { Card, FootNote, GroupLabel } from '@shared/components/ui';
+import { Card, FootNote, Group, GroupLabel, Row } from '@shared/components/ui';
+import { useTernaryNavigation } from '@/navigation/useAppNavigation';
 import { useToast } from '@shared/state/ToastContext';
 import { useSettings } from '@/domain/settings/SettingsContext';
 import { useTernary } from '@/domain/ternary/TernaryContext';
@@ -30,6 +31,7 @@ export function StartTernary() {
   const { create, join } = useTernary();
   const { settings } = useSettings();
   const toast = useToast();
+  const navigation = useTernaryNavigation();
   const [yourName, setYourName] = useState(settings.firstName);
   const [name, setName] = useState('');
   const [code, setCode] = useState('');
@@ -71,6 +73,14 @@ export function StartTernary() {
         </Text>
         <Text style={s.line}>• Never a day you didn’t open Tern. Quiet days show nothing.</Text>
       </Card>
+      <Group>
+        <Row
+          title='What’s a ternary?'
+          sub='The shared bird, fish, postcards and the table'
+          chevron
+          onPress={() => navigation.navigate('AboutTernary')}
+        />
+      </Group>
 
       <GroupLabel>Your name in the ternary</GroupLabel>
       <TernaryField

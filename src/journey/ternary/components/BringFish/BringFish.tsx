@@ -19,6 +19,7 @@ export function BringFish() {
   if (!ternary) return null;
 
   const left = Math.max(TernaryRules.MAX_FISH_PER_DAY - ternary.fishSentToday, 0);
+  const friends = fishable(ternary.members);
   const bring = async (userId: string, name: string) => {
     if (busy || !left) return;
     setBusy(true);
@@ -49,7 +50,7 @@ export function BringFish() {
 
       <GroupLabel>Bring someone a fish</GroupLabel>
       <View style={s.grid}>
-        {fishable(ternary.members).map((m) => (
+        {friends.map((m) => (
           <Pressable
             key={m.userId}
             style={[s.friend, !left && s.off]}
@@ -68,9 +69,11 @@ export function BringFish() {
         ))}
       </View>
       <FootNote>
-        {left
-          ? `A fish waits in their tern’s bill until they next open Tern. You can bring ${left} more today.`
-          : 'That’s all the fish for today. You can bring more tomorrow.'}
+        {!friends.length
+          ? 'Once friends join, you can bring them a fish here. Invite them from Ternary settings with your code.'
+          : left
+            ? `A fish waits in their tern’s bill until they next open Tern. You can bring ${left} more today.`
+            : 'That’s all the fish for today. You can bring more tomorrow.'}
       </FootNote>
     </View>
   );

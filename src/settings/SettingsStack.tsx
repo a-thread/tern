@@ -16,7 +16,7 @@ import MoodSettingsScreen from './mood/MoodSettingsScreen';
 import NotesSettingsScreen from './notes/NotesSettingsScreen';
 import RemindersSettingsScreen from './reminders/RemindersSettingsScreen';
 import DataSettingsScreen from './data/DataSettingsScreen';
-import CreditsScreen from './credits/CreditsScreen';
+import AboutScreen from './about/AboutScreen';
 import type { SettingsStackParamList } from '../navigation/types';
 
 const Stack = createNativeStackNavigator<SettingsStackParamList>();
@@ -46,7 +46,7 @@ export default function SettingsStack() {
       <Stack.Screen name='Targets' component={TargetsScreen} />
       <Stack.Screen name='RestDays' component={RestDaysScreen} />
       <Stack.Screen name='Medication' component={MedicationScreen} />
-      <Stack.Screen name='Credits' component={CreditsScreen} />
+      <Stack.Screen name='About' component={AboutScreen} />
     </Stack.Navigator>
   );
 }

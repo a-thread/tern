@@ -86,6 +86,12 @@ export default function TernaryHomeScreen() {
           chevron
           onPress={() => navigation.navigate('TernarySettings')}
         />
+        <Row
+          title='What’s a ternary?'
+          sub='The shared bird, fish, postcards and the table'
+          chevron
+          onPress={() => navigation.navigate('AboutTernary')}
+        />
       </Group>
     </TernaryPage>
   );

@@ -33,7 +33,7 @@ import { logHome } from './models/logHome';
 import { usePlusLapsed } from './hooks/usePlusLapsed';
 import { useAuth } from '../domain/auth/AuthContext';
 import { useSubscription } from '../domain/subscription/SubscriptionContext';
-import { creditsSummary } from './credits/models/credits';
+import { aboutSummary } from './about/models/supportTern';
 
 type Props = NativeStackScreenProps<SettingsStackParamList, 'SettingsRoot'>;
 
@@ -172,12 +172,12 @@ export default function SettingsScreen({ navigation }: Props) {
             />
           ) : null}
           <SectionRow
-            icon='feather'
+            icon='information-outline'
             color={colors.sunDeep}
             tint={colors.sunTint}
-            title='Credits'
-            summary={creditsSummary(supporter)}
-            onPress={() => navigation.navigate('Credits')}
+            title='About Tern'
+            summary={aboutSummary(supporter)}
+            onPress={() => navigation.navigate('About')}
           />
         </Group>
 

@@ -26,7 +26,7 @@ export function TernaryCard() {
             sub='A few friends, one shared bird'
             icon={
               <IconBadge bg={colors.auroraTint}>
-                <Icon name='bird' size={17} color={colors.aurora} />
+                <Icon name='feather' size={17} color={colors.aurora} />
               </IconBadge>
             }
             chevron
@@ -55,7 +55,7 @@ export function TernaryCard() {
           }
           icon={
             <IconBadge bg={colors.auroraTint}>
-              <Icon name='bird' size={17} color={colors.aurora} />
+              <Icon name='feather' size={17} color={colors.aurora} />
             </IconBadge>
           }
           chevron

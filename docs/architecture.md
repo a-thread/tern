@@ -140,10 +140,11 @@ they sign in. Without a RevenueCat key the memory version stands in and buying i
 for testers who install the APK directly (see [RELEASING.md](RELEASING.md)).
 
 Plus comes in two tiers (`Tier`). **Supporter** is the custom package `supporter_annual`,
-which unlocks a `supporter` entitlement alongside `plus`. It adds thank-yous only: a place
-in Settings › Credits, and a colour of their choosing for the trail their tern has flown on
+which unlocks a `supporter` entitlement alongside `plus`. It adds a thank-you only: a colour
+of their choosing, picked in Settings › About Tern, for the trail their tern has flown on
 Journey (`trailColor` in settings, drawn through `trailFor`, so it falls back to Arctic when
-Supporter ends). Nothing is held back from Plus for it, and
+Supporter ends). About Tern also says what Tern is for and links to a one-off tip
+(`SupportTern.SHOW_COFFEE` turns that link off for a store build if review objects). Nothing is held back from Plus for it, and
 the server checks `plus` alone. The **founding price** is switched on by setting
 `"founding": true` in the current offering's metadata in RevenueCat. While it's set, the
 paywall badges Plus yearly as the founding price instead of what it saves, so turning the

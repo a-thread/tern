@@ -153,4 +153,4 @@ export function planName(option: Pick<PlanOption, 'plan' | 'tier'>): string {
 
 /** What Supporter adds, said plainly under its name on the paywall. */
 export const SUPPORTER_THANKS =
-  "Everything in Plus, with a thank-you: your name in the credits, if you'd like it there, and a colour of your choosing for your tern's trail.";
+  "Everything in Plus, with a thank-you: a colour of your choosing for your tern's trail on Journey.";

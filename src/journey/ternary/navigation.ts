@@ -5,4 +5,6 @@ export type TernaryStackParamList = {
   StopoverTable: undefined;
   Postcards: undefined;
   TernarySettings: undefined;
+  /** What a ternary is for, and what friends can and can't see. */
+  AboutTernary: undefined;
 };

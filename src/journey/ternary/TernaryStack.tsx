@@ -6,6 +6,7 @@ import TernaryHomeScreen from './TernaryHomeScreen';
 import StopoverTableScreen from './stopover-table/StopoverTableScreen';
 import PostcardsScreen from './postcards/PostcardsScreen';
 import TernarySettingsScreen from './settings/TernarySettingsScreen';
+import AboutTernaryScreen from './about/AboutTernaryScreen';
 
 const Stack = createNativeStackNavigator<TernaryStackParamList>();
 
@@ -17,6 +18,7 @@ export default function TernaryStack() {
       <Stack.Screen name='StopoverTable' component={StopoverTableScreen} />
       <Stack.Screen name='Postcards' component={PostcardsScreen} />
       <Stack.Screen name='TernarySettings' component={TernarySettingsScreen} />
+      <Stack.Screen name='AboutTernary' component={AboutTernaryScreen} />
     </Stack.Navigator>
   );
 }

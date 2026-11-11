@@ -34,7 +34,7 @@ server cost, and fit with the guardrails.
 | --- | --- | --- | --- | --- | --- |
 | Sync across phones (today's Plus) | Medium | Done | Low | Good | **Keep**, and describe it honestly |
 | Ternaries: friends who fly together (see §1a) | High | High (about 6–10 weeks) | Low (small rows, no realtime) | Good only with the rules below | **The new headline**, built after pricing |
-| Supporter thank-yous: name in credits, tern plumage | Low–medium (to the people who want it) | Low | None | Good | **Yes**, as the Supporter tier |
+| Supporter thank-you: a trail colour on Journey | Low–medium (to the people who want it) | Low | None | Good | **Yes**, as the Supporter tier |
 | On-device appointment summary for a dietitian or therapist | High for some | Low–medium | None | Good, if free | **Free**: nobody should pay to show their care team their log |
 | Live, consent-based share with a clinician | High for some | High | Low | Needs care | **Later**: the clinician-tier bet, after the Apr–Jun 2027 interviews |
 | Household: Apple Family Sharing | High for couples | Almost none | Low | Good | **Not now**: it can't be switched off, it's iPhone only, and Play has no equivalent |
@@ -217,9 +217,8 @@ What Plus adds (`WHAT_PLUS_ADDS`), honest about what free already does:
 - Tern kept going, with no ads and nothing sold
 
 Plans, in order: Yearly (with the savings badge), Monthly, then Supporter. Supporter's
-`PlanChoice` gets one plain line under its name: *Everything in Plus, plus a thank-you: your
-name in the credits, if you'd like it there.* Add the plumage once it's built, never
-before. No "most popular" badge on it,
+`PlanChoice` gets one plain line under its name: *Everything in Plus, with a thank-you: a
+colour of your choosing for your tern's trail on Journey.* No "most popular" badge on it,
 nothing pre-selected toward it, and no wording that makes Plus sound like the lesser choice.
 
 While the founding price is on sale, the yearly plan's badge says *Founding price, kept
@@ -263,13 +262,11 @@ A Supporter's row reads *Tern Plus Supporter · renews {date}*. Everything else 
    - Tests beside each file.
    - The server is unchanged: Supporter also unlocks `plus`, which is all `tern.has_plus()`
      checks.
-2. **Supporter thank-yous.**
-   - **Credits:** ship this with step 1, since it's what Supporter promises at launch. It's a
-     screen in Settings with a list kept in the app and updated each release, and names are
-     added only when someone asks.
-   - **Tern plumage:** a few colourings for your own tern on Journey, shown in a ternary's
-     flock only if you choose. It replaces alternate app icons, which are fiddly on Android.
-     Touches `src/journey/components/JourneyMap/` and `src/settings/`.
+2. **Supporter thank-you and About Tern.** *Built.* A colour of the Supporter's choosing for
+   the trail their tern has flown on Journey. It replaced alternate app icons, which are
+   fiddly on Android. Names in a credits list were dropped: little value for the upkeep.
+   Settings › About Tern says what Tern is for and the promises it keeps, holds the trail
+   picker, and links to a one-off tip on Buy Me a Coffee.
 3. **Free appointment summary.** A readable summary the phone builds from the log and shares
    through the share sheet. It respects every hidden-number setting and uses no server.
    Touches `src/settings/data/` and the export utilities beside it.
