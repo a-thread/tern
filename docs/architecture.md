@@ -126,6 +126,11 @@ ones; an account keeps its own. An account restores through the `import_my_data`
 function, since its tables otherwise only accept today's waypoints, rest days and
 movement.
 
+"Share a summary" (Settings › Your data › For an appointment) builds plain text from the same
+export on the phone (`appointmentSummary`) and hands it to the share sheet. It follows the
+person's display settings: calories only if they're tracked and shown, weight only if it's
+tracked, and no notes. It's free, and nothing is uploaded.
+
 ## Tern Plus
 
 Everything in Tern is free; Tern Plus is the account, which syncs and backs up. Making an
@@ -138,6 +143,19 @@ comes before the account, and `identify` ties an anonymous purchase to the accou
 they sign in. Without a RevenueCat key the memory version stands in and buying is free. The
 `preview` build sets `EXPO_PUBLIC_PLUS_UNLOCKED`, which turns Plus on with nothing bought,
 for testers who install the APK directly (see [RELEASING.md](RELEASING.md)).
+
+Plus comes in two tiers (`Tier`). **Supporter** is the custom package `supporter_annual`,
+which unlocks a `supporter` entitlement alongside `plus`. It adds a thank-you only: a colour
+of their choosing, picked in Settings › About Tern, for the trail their tern has flown on
+Journey (`trailColor` in settings, drawn through `trailFor`, so it falls back to Arctic when
+Supporter ends). Nothing is held back from Plus for it, and the server checks `plus` alone.
+About Tern also holds the **tip jar**: one-off consumable products in a RevenueCat offering
+called `tips` (one package per amount, any identifiers), bought through
+`SubscriptionContext.tip`. A tip unlocks nothing. Tips go through the store because neither
+store lets an app link out to pay. The **founding price** is switched on by setting
+`"founding": true` in the current offering's metadata in RevenueCat. While it's set, the
+paywall badges Plus yearly as the founding price instead of what it saves, so turning the
+founding price off needs no release.
 
 Where the log lives follows Plus, decided in `AuthGate` with the moves in
 [`accountMoves.ts`](../src/accountMoves.ts):
@@ -170,6 +188,27 @@ trusting the event, and is called two ways: by RevenueCat's webhook, and by the 
 since RevenueCat doesn't always send an event when a purchase made before sign-up is tied
 to the new account. Its logic is in `entitlement.ts`, tested with the app; `index.ts` is
 the Deno wrapper, left out of typecheck and lint.
+
+## Ternaries
+
+A ternary is a small invite-only circle of friends with Tern Plus, flying one shared bird
+(the design is in [ternaries.md](ternaries.md)). It needs an account, so the on-phone backend
+has no `ternary` repository: `TernaryProvider` gets none and `available` is false. The remote
+backend has the Supabase one, and the memory preview an in-memory one to try the screens. The provider is app-wide, because the Journey tab (its
+card) and the ternary's own stack (`journey/ternary/`) both read it.
+
+Every ternary table has row-level security on and no policies, so the app reaches them only
+through the security-definer functions in
+[`20261111000000_ternaries.sql`](../supabase/migrations/20261111000000_ternaries.sql), as
+changed by [`20261112000000_ternary_fixes.sql`](../supabase/migrations/20261112000000_ternary_fixes.sql).
+`ternary_state` alone decides what a friend sees: who showed up today (counted from
+`waypoint_events`, which no one else can read), "resting" only when shared, and nothing for
+someone flying privately or quiet. The shared bird moves 75 × the share of members who showed
+up each day. Finished days are written once to `ternary_days` by `settle_ternary_days`
+(pg_cron, daily), and unsettled days are counted live the same way. When the bird reaches a
+new stop, `TernaryProvider` pays the 25-waypoint `arrival` award on the person's own ledger,
+at most once a week (`arrivalDue`, remembered in `ternaryArrival`). That award never counts
+as showing up.
 
 Setting a project up, and what each table holds, is in
 [supabase/README.md](../supabase/README.md). `supabase/migrations/` is the schema of

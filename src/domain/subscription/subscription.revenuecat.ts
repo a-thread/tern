@@ -4,7 +4,9 @@ import {
   Plan,
   type PlanOption,
   SubscriptionConfig,
+  sortTips,
   type SubscriptionStatus,
+  Tier,
 } from './models/subscription';
 import type { SubscriptionRepository } from './subscription.repository';
 
@@ -28,7 +30,13 @@ export interface PurchasesApi {
   configure(options: { apiKey: string }): void;
   getCustomerInfo(): Promise<CustomerInfo>;
   getOfferings(): Promise<{
-    current: { availablePackages: StorePackage[] } | null;
+    current: {
+      availablePackages: StorePackage[];
+      /** Set in the RevenueCat dashboard; `founding: true` while the founding price is on sale. */
+      metadata?: Record<string, unknown>;
+    } | null;
+    /** Every offering by its identifier: the tip jar is its own (`tips`). */
+    all?: Record<string, { availablePackages: StorePackage[] }>;
   }>;
   purchasePackage(pkg: StorePackage): Promise<{ customerInfo: CustomerInfo }>;
   restorePurchases(): Promise<CustomerInfo>;
@@ -52,20 +60,33 @@ const NOT_OFFERED = new Set(['LIFETIME']);
 export function statusFrom(info: CustomerInfo): SubscriptionStatus {
   const plus = info.entitlements.active[SubscriptionConfig.ENTITLEMENT];
   if (!plus?.isActive) return NO_SUBSCRIPTION;
+  const supporter =
+    info.entitlements.active[SubscriptionConfig.SUPPORTER_ENTITLEMENT];
   return {
     active: true,
     renews: plus.willRenew,
     expiresAt: plus.expirationDate,
+    supporter: Boolean(supporter?.isActive),
   };
 }
 
-const optionFrom = (pkg: StorePackage): PlanOption => ({
-  id: pkg.identifier,
-  plan: PLANS[pkg.packageType] ?? Plan.Other,
-  price: pkg.product.priceString,
-  amount: pkg.product.price,
-  currency: pkg.product.currencyCode,
-});
+/**
+ * Supporter is a custom package, billed yearly. The founding price applies to Plus only,
+ * and only while the offering says it's on sale.
+ */
+const optionFrom = (pkg: StorePackage, founding: boolean): PlanOption => {
+  const supporter = pkg.identifier === SubscriptionConfig.SUPPORTER_PACKAGE;
+  const plan = supporter ? Plan.Annual : (PLANS[pkg.packageType] ?? Plan.Other);
+  return {
+    id: pkg.identifier,
+    plan,
+    tier: supporter ? Tier.Supporter : Tier.Plus,
+    founding: founding && !supporter && plan === Plan.Annual,
+    price: pkg.product.priceString,
+    amount: pkg.product.price,
+    currency: pkg.product.currencyCode,
+  };
+};
 
 /** Tern Plus through RevenueCat, which handles Google Play Billing and the App Store. */
 export function createRevenueCatSubscriptionRepository(
@@ -74,14 +95,26 @@ export function createRevenueCatSubscriptionRepository(
 ): SubscriptionRepository {
   api.configure({ apiKey });
 
-  const packages = async () =>
-    ((await api.getOfferings()).current?.availablePackages ?? []).filter(
-      (p) => !NOT_OFFERED.has(p.packageType),
-    );
+  const offering = async () => {
+    const current = (await api.getOfferings()).current;
+    return {
+      packages: (current?.availablePackages ?? []).filter(
+        (p) => !NOT_OFFERED.has(p.packageType),
+      ),
+      founding: current?.metadata?.[SubscriptionConfig.FOUNDING_METADATA] === true,
+    };
+  };
+  const packages = async () => (await offering()).packages;
+  const tipPackages = async () =>
+    (await api.getOfferings()).all?.[SubscriptionConfig.TIPS_OFFERING]
+      ?.availablePackages ?? [];
 
   return {
     status: async () => statusFrom(await api.getCustomerInfo()),
-    plans: async () => (await packages()).map(optionFrom),
+    async plans() {
+      const { packages: offered, founding } = await offering();
+      return offered.map((p) => optionFrom(p, founding));
+    },
     async purchase(id) {
       const pkg = (await packages()).find((p) => p.identifier === id);
       if (!pkg) throw new Error(`No plan ${id}`);
@@ -94,6 +127,28 @@ export function createRevenueCatSubscriptionRepository(
       }
     },
     restore: async () => statusFrom(await api.restorePurchases()),
+    async tips() {
+      return sortTips(
+        (await tipPackages()).map((p) => ({
+          id: p.identifier,
+          price: p.product.priceString,
+          amount: p.product.price,
+          currency: p.product.currencyCode,
+        })),
+      );
+    },
+    async tip(id) {
+      const pkg = (await tipPackages()).find((p) => p.identifier === id);
+      if (!pkg) throw new Error(`No tip ${id}`);
+      try {
+        // A consumable: it can be bought again, and changes no entitlement.
+        await api.purchasePackage(pkg);
+        return true;
+      } catch (error) {
+        if ((error as { userCancelled?: boolean }).userCancelled) return false;
+        throw error;
+      }
+    },
     async identify(userId) {
       if (userId) return statusFrom((await api.logIn(userId)).customerInfo);
       // Logging out an anonymous user is an error in RevenueCat; there's nothing to undo.

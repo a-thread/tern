@@ -13,6 +13,9 @@ import { ToastProvider } from '@shared/state/ToastContext';
 import { SettingsProvider } from '../domain/settings/SettingsContext';
 import { WaypointsProvider } from '../domain/waypoints/WaypointsContext';
 import { JourneyView } from '../domain/settings/models/journeyView';
+import { SubscriptionProvider } from '../domain/subscription/SubscriptionContext';
+import { TernaryProvider } from '../domain/ternary/TernaryContext';
+import { createMemorySubscriptionRepository } from '../domain/subscription/subscription.repository';
 import JourneyScreen from './JourneyScreen';
 
 const mockNavigate = jest.fn();
@@ -42,11 +45,18 @@ function open() {
   render(
     <SafeAreaProvider initialMetrics={metrics}>
       <ToastProvider>
-        <SettingsProvider repo={backend.settings}>
-          <WaypointsProvider repo={backend.waypoints}>
-            <JourneyScreen />
-          </WaypointsProvider>
-        </SettingsProvider>
+        <SubscriptionProvider
+          repo={createMemorySubscriptionRepository()}
+          userId={null}
+        >
+          <SettingsProvider repo={backend.settings}>
+            <WaypointsProvider repo={backend.waypoints}>
+              <TernaryProvider>
+                <JourneyScreen />
+              </TernaryProvider>
+            </WaypointsProvider>
+          </SettingsProvider>
+        </SubscriptionProvider>
       </ToastProvider>
     </SafeAreaProvider>,
   );

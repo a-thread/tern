@@ -32,6 +32,8 @@ import { dataSummary } from './models/dataSummary';
 import { logHome } from './models/logHome';
 import { usePlusLapsed } from './hooks/usePlusLapsed';
 import { useAuth } from '../domain/auth/AuthContext';
+import { useSubscription } from '../domain/subscription/SubscriptionContext';
+import { aboutSummary } from './about/models/aboutSummary';
 
 type Props = NativeStackScreenProps<SettingsStackParamList, 'SettingsRoot'>;
 
@@ -46,6 +48,7 @@ export default function SettingsScreen({ navigation }: Props) {
   const { settings } = useSettings();
   const auth = useAuth();
   const lapsed = usePlusLapsed();
+  const { supporter } = useSubscription();
   const home = auth
     ? logHome({ signedIn: Boolean(auth.session), lapsed })
     : null;
@@ -168,6 +171,14 @@ export default function SettingsScreen({ navigation }: Props) {
               onPress={() => navigation.navigate('DataSettings')}
             />
           ) : null}
+          <SectionRow
+            icon='information-outline'
+            color={colors.sunDeep}
+            tint={colors.sunTint}
+            title='About Tern'
+            summary={aboutSummary(supporter)}
+            onPress={() => navigation.navigate('About')}
+          />
         </Group>
 
         <AccountSection />

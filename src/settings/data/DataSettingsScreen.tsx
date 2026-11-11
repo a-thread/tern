@@ -6,6 +6,7 @@ import { useAuth } from '@/domain/auth/AuthContext';
 import { SettingsPage } from '../components/SettingsPage';
 import { DataSection } from './components/DataSection';
 import { PlusSection } from './components/PlusSection/PlusSection';
+import { AppointmentSummary } from './components/AppointmentSummary/AppointmentSummary';
 import { LogOutSection } from './components/LogOutSection/LogOutSection';
 
 /**
@@ -21,11 +22,15 @@ export default function DataSettingsScreen() {
       {available ? (
         <>
           <PlusSection />
+          <GroupLabel>For an appointment</GroupLabel>
+          <AppointmentSummary />
           <GroupLabel>Export and delete</GroupLabel>
           <DataSection />
         </>
       ) : (
-        <FootNote>Sample data isn't stored, so there's nothing to export.</FootNote>
+        <FootNote>
+          Sample data isn't stored, so there's nothing to export.
+        </FootNote>
       )}
       <LogOutSection />
     </SettingsPage>

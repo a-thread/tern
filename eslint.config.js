@@ -14,6 +14,7 @@ module.exports = [
       '.expo/*',
       'supabase/functions/**/index.ts',
       'scripts/buildJourneyMap.ts',
+      'scripts/buildFlockIcons.ts',
     ],
   },
   {

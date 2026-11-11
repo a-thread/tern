@@ -49,6 +49,18 @@ describe('plusSummary', () => {
     });
   });
 
+  it('names Supporter for someone who chose it', () => {
+    expect(
+      plusSummary({
+        ...base,
+        status: { active: true, renews: true, expiresAt: NOV_21, supporter: true },
+      }),
+    ).toMatchObject({
+      summary: 'Tern Plus Supporter · renews Nov 21',
+      action: PlusAction.Manage,
+    });
+  });
+
   it('says when a cancelled subscription ends', () => {
     expect(
       plusSummary({ ...base, status: { active: true, renews: false, expiresAt: NOV_21 } }),

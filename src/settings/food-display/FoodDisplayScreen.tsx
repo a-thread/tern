@@ -52,6 +52,20 @@ export default function FoodDisplayScreen() {
           paddingBottom: 40,
         }}
       >
+        <GroupLabel>Friends’ food</GroupLabel>
+        <Group>
+          <ToggleRow
+            title='Hide friends’ food'
+            sub='Hides the recipes friends share in a ternary'
+            on={settings.hideFriendsFood}
+            onToggle={(v) => updateSettings({ hideFriendsFood: v })}
+          />
+        </Group>
+        <FootNote>
+          For when seeing what friends eat isn’t helping. Free, like every
+          safeguard.
+        </FootNote>
+
         <GroupLabel>Processing labels</GroupLabel>
         <Group>
           <ToggleRow

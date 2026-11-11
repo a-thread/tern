@@ -6,7 +6,10 @@ import { storeName } from '@shared/utils/storeApp';
 import { useSubscription } from '@/domain/subscription/SubscriptionContext';
 import {
   Plan,
+  type PlanOption,
   savingsLabel,
+  SUPPORTER_THANKS,
+  Tier,
   yearlySavings,
 } from '@/domain/subscription/models/subscription';
 import { AuthBanner } from '../components/AuthBanner';
@@ -20,11 +23,14 @@ import { PlanChoice } from './components/PlanChoice/PlanChoice';
 
 const STORE = storeName();
 
+// Honest about what's free: the phone's own backup and export already keep a log safe, so
+// Plus is the log on every phone, and keeping Tern going.
 const WHAT_PLUS_ADDS = [
-  'Your data synced to an account, so a lost phone loses nothing',
-  'The same Tern on more than one phone',
-  'An app with no ads and nothing sold, kept going',
+  'Your log on every phone you sign in to, kept on Tern’s server',
+  'Tern kept going, with no ads and nothing sold',
 ];
+
+const FOUNDING_NOTE = 'Founding price, kept while you stay subscribed';
 
 /**
  * Tern Plus, before making an account. Everything else in Tern stays free, and leaving here
@@ -67,6 +73,12 @@ export default function PaywallScreen({ onBack }: { onBack: () => void }) {
   // What yearly saves over paying monthly, worked out from the store's own prices.
   const savings = yearlySavings(plans);
   const yearlyNote = savings ? savingsLabel(savings) : undefined;
+  // Plus yearly carries the founding price while it's on sale, else what it saves.
+  // Supporter gets no badge: nothing on the paywall leans towards it.
+  const noteFor = (option: PlanOption) => {
+    if (option.tier !== Tier.Plus || option.plan !== Plan.Annual) return undefined;
+    return option.founding ? FOUNDING_NOTE : yearlyNote;
+  };
 
   return (
     <AuthLayout
@@ -98,7 +110,10 @@ export default function PaywallScreen({ onBack }: { onBack: () => void }) {
           key={option.id}
           option={option}
           chosen={option.id === chosen}
-          note={option.plan === Plan.Annual ? yearlyNote : undefined}
+          note={noteFor(option)}
+          description={
+            option.tier === Tier.Supporter ? SUPPORTER_THANKS : undefined
+          }
           onChoose={() => setChosen(option.id)}
         />
       ))}
