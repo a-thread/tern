@@ -432,20 +432,25 @@ export function JourneyMap({
                   const y = bird.y + spot.y * birdW;
                   return (
                     // Each friend's own tern. Named in the list under the map, so the map
-                    // itself needs no lettering.
-                    <SvgImage
+                    // itself needs no lettering. Turned back by the map's own turn, so it
+                    // stays right side up on screen however the leg is lined up.
+                    <G
                       key={`${friend.name}-${i}`}
-                      href={
-                        FlockIcons.SOURCES[
-                          flockIconIndex(friend.name, FlockIcons.SOURCES.length)
-                        ]
-                      }
-                      x={x - flockSize / 2}
-                      y={y - flockSize / 2}
-                      width={flockSize}
-                      height={flockSize}
-                      opacity={friend.resting ? FlockIcons.RESTING_OPACITY : 1}
-                    />
+                      transform={`rotate(${-zoom.rotate}, ${x}, ${y})`}
+                    >
+                      <SvgImage
+                        href={
+                          FlockIcons.SOURCES[
+                            flockIconIndex(friend.name, FlockIcons.SOURCES.length)
+                          ]
+                        }
+                        x={x - flockSize / 2}
+                        y={y - flockSize / 2}
+                        width={flockSize}
+                        height={flockSize}
+                        opacity={friend.resting ? FlockIcons.RESTING_OPACITY : 1}
+                      />
+                    </G>
                   );
                 })}
 
