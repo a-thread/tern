@@ -30,6 +30,7 @@ const ids = () => schedule.mock.calls.map(([r]) => r.identifier as string);
 
 const config: ReminderConfig = {
   mealLog: { ...Reminders.DEFAULTS.mealLog, on: false },
+  eat: { ...Reminders.DEFAULTS.eat, on: false },
   weighIn: { ...Reminders.DEFAULTS.weighIn, on: false },
   water: { ...Reminders.DEFAULTS.water, on: false },
   mood: { on: true, at: 12 * 60 },

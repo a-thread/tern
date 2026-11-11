@@ -3,6 +3,7 @@ import { getJson } from './http';
 import { nounFor } from '../models/measure';
 import type { Portion, SearchResult } from './searchResult';
 import { FoodSource } from '../models/foodSource';
+import { isFoodApiLogOn, logFoodApi, portionsText } from './foodApiLog';
 
 /**
  * USDA FoodData Central (public domain): everyday foods with household
@@ -12,6 +13,7 @@ import { FoodSource } from '../models/foodSource';
  * without one this source is simply off.
  */
 const SEARCH_URL = 'https://api.nal.usda.gov/fdc/v1/foods/search';
+const DETAIL_URL = 'https://api.nal.usda.gov/fdc/v1/food';
 const DATA_TYPES = ['Foundation', 'SR Legacy', 'Survey (FNDDS)'];
 const PAGE_SIZE = 15;
 const MAX_PORTIONS = 8;
@@ -27,6 +29,8 @@ export type UsdaMeasure = {
   gramWeight?: number | string;
   amount?: number | string;
   rank?: number;
+  /** A food's details order their portions by this instead of `rank`. */
+  sequenceNumber?: number;
   measureUnit?: { name?: string };
   measureUnitName?: string;
 };
@@ -41,6 +45,8 @@ export type UsdaNutrient = {
 export type UsdaFood = {
   fdcId?: number;
   description?: string;
+  /** "Foundation", "SR Legacy" or "Survey (FNDDS)". */
+  dataType?: string;
   foodNutrients?: UsdaNutrient[];
   foodMeasures?: UsdaMeasure[];
   foodPortions?: UsdaMeasure[];
@@ -77,8 +83,34 @@ function nutrient(
 const SIZE_WORD =
   /^(small|medium|large|extra large|extra-large|jumbo|x-large)$/i;
 
-const JUNK_LABEL =
-  /^(undetermined|quantity not specified|not specified|n\/?a|regular|\d+\s+quantity not specified)$/i;
+const JUNK_LABEL = /^(undetermined|not specified|n\/?a|regular)$/i;
+
+// USDA's ways of saying "a usual serving": its typical amount ("Quantity not specified"), the
+// label serving (NLEA) and the reference amount (RACC). All become one "serving".
+const SERVING_LABEL =
+  /^(serving\b.*|nlea serving|racc|quantity not specified|\d+\s+quantity not specified)$/i;
+
+// Unit names that aren't a unit to show: USDA's placeholder, and RACC (read as a serving).
+const NOT_A_UNIT = /^(undetermined|racc)$/i;
+
+// Rows that aren't an amount anyone measures out: dietary guideline figures ("per fl oz of
+// beverage" = 2.5 g of milk), cooked yields ("1 oz yields" = 20 g), cubic inches, drinks
+// poured over ice, and ounces, which every food already has as a weight.
+const NOT_A_PORTION =
+  /^guideline amount|\byields?\b|\bcubic inch|\bwith ice\b|^(oz|ounces?)\b/i;
+
+/**
+ * Drops USDA's "not further specified" notes ("breast, NS as to size" → "breast", "fl oz (NFS)"
+ * → "fl oz") and shortens spoons to the app's own words ("tablespoon" → "tbsp").
+ */
+const withoutNotes = (label: string) =>
+  label
+    .replace(/\s*\((nfs|no ice)\)/gi, '')
+    .replace(/,?\s*\bNS as to [a-z ]+$/i, '')
+    .replace(/,\s*NFS$/i, '')
+    .replace(/^tablespoons?\b/i, 'tbsp')
+    .replace(/^teaspoons?\b/i, 'tsp')
+    .trim();
 
 /** A leading quantity such as "1", "2", "0.5", "1/2" or "1 1/2", and what follows it. */
 function splitLeadingAmount(
@@ -113,29 +145,70 @@ export function measureToPortion(
 ): Portion | null {
   const grams = toFiniteNumber(m.gramWeight);
   if (grams === undefined || grams <= 0 || grams > 5000) return null;
-  const unit = m.measureUnit?.name ?? m.measureUnitName;
+  const unit = (m.measureUnit?.name ?? m.measureUnitName ?? '').trim();
   const modifier = (m.modifier ?? '').trim();
+  const realUnit = unit && !NOT_A_UNIT.test(unit) ? unit : '';
 
-  const candidates = [
-    m.disseminationText,
+  const words = [
     m.portionDescription,
     /^\d+$/.test(modifier) ? undefined : modifier, // a bare number is a code, not a name
-    unit,
-  ];
-  const text = candidates
+  ]
     .map((c) => (c ?? '').trim())
     .find((c) => c && !JUNK_LABEL.test(c));
+
+  // Search results say it all in `disseminationText`. A food's details split it: Foundation
+  // foods put the unit in `measureUnit` and how it's cut in the words ("cup" + "chopped").
+  let text = (m.disseminationText ?? '').trim();
+  if (!text || JUNK_LABEL.test(text)) {
+    if (/^racc$/i.test(unit)) text = 'serving';
+    else if (realUnit && words && !words.toLowerCase().startsWith(realUnit.toLowerCase()))
+      text = `${realUnit}, ${words}`;
+    else text = words ?? realUnit;
+  }
   if (!text) return null;
 
   // "2 slices = 56 g" is a portion of one slice weighing 28 g. Without a
   // quantity in the text, `amount` (if any) says how many the weight covers.
   const lead = splitLeadingAmount(text);
   const amount = lead ? lead.amount : (toFiniteNumber(m.amount) ?? 1);
-  const named = lead ? lead.rest : text;
+  const named = withoutNotes(lead ? lead.rest : text);
+  if (!named || NOT_A_PORTION.test(named)) return null;
+  const per = amount > 0 ? grams / amount : grams;
+  if (SERVING_LABEL.test(named)) return { label: 'serving', grams: round1(per) };
   const label =
     noun && SIZE_WORD.test(named) ? `${named.toLowerCase()} ${noun}` : named;
-  const per = amount > 0 ? grams / amount : grams;
   return { label, grams: round1(per) };
+}
+
+/**
+ * A food's household portions in USDA's order, without duplicates. Its usual serving comes
+ * last, and only when no other portion already weighs the same (a medium apple is the serving).
+ */
+export function usdaPortions(f: UsdaFood): Portion[] {
+  const noun = nounFor(f.description ?? '');
+  const seen = new Set<string>();
+  const portions: Portion[] = [];
+  let serving: Portion | null = null;
+  const order = (m: UsdaMeasure) => m.rank ?? m.sequenceNumber ?? 999;
+  for (const m of [...(f.foodMeasures ?? []), ...(f.foodPortions ?? [])].sort(
+    (a, b) => order(a) - order(b),
+  )) {
+    const p = measureToPortion(m, noun);
+    if (!p) continue;
+    if (p.label === 'serving') {
+      serving ??= p;
+      continue;
+    }
+    const key = `${p.label.toLowerCase()}|${p.grams}`;
+    if (!seen.has(key) && portions.length < MAX_PORTIONS) {
+      seen.add(key);
+      portions.push(p);
+    }
+  }
+  const s = serving;
+  if (s && !portions.some((p) => Math.abs(p.grams - s.grams) < 1))
+    portions.push(s);
+  return portions;
 }
 
 /**
@@ -153,20 +226,7 @@ export function usdaFoodToResult(f: UsdaFood): SearchResult | null {
     nutrient(list, KCAL) ?? (kj !== undefined ? kj / 4.184 : undefined);
   if (kcal === undefined || kcal < 0 || kcal > 950) return null;
 
-  const noun = nounFor(name);
-  const seen = new Set<string>();
-  const portions: Portion[] = [];
-  for (const m of [...(f.foodMeasures ?? []), ...(f.foodPortions ?? [])].sort(
-    (a, b) => (a.rank ?? 999) - (b.rank ?? 999),
-  )) {
-    const p = measureToPortion(m, noun);
-    const key = p ? `${p.label.toLowerCase()}|${p.grams}` : '';
-    if (p && !seen.has(key)) {
-      seen.add(key);
-      portions.push(p);
-    }
-    if (portions.length >= MAX_PORTIONS) break;
-  }
+  const portions = usdaPortions(f);
 
   return {
     id: `usda-${f.fdcId}`,
@@ -209,12 +269,70 @@ export async function searchUsdaWithKey(
   )) as { foods?: UsdaFood[] };
   const seen = new Set<string>();
   const out: SearchResult[] = [];
+  const log: string[] = [];
   for (const food of json.foods ?? []) {
     const r = usdaFoodToResult(food);
+    if (isFoodApiLogOn())
+      log.push(
+        `[${food.dataType ?? '?'}] ${food.description ?? '?'}${r ? '' : ' (dropped)'}\n` +
+          `      sent: ${rawMeasuresText([...(food.foodMeasures ?? []), ...(food.foodPortions ?? [])])}\n` +
+          `      kept: ${portionsText(r?.portions)}`,
+      );
     if (r && !seen.has(r.id)) {
       seen.add(r.id);
       out.push(r);
     }
   }
+  logFoodApi(`USDA search "${query.trim()}": ${out.length} foods`, log);
   return out;
 }
+
+/**
+ * The portions from a food's details. Search leaves them out for Foundation and SR Legacy
+ * foods (broccoli, cheddar), so they are fetched when such a food is opened.
+ */
+export function getUsdaPortions(
+  id: string,
+  signal?: AbortSignal,
+): Promise<Portion[]> {
+  return getUsdaPortionsWithKey(id, process.env.EXPO_PUBLIC_USDA_API_KEY, signal);
+}
+
+export async function getUsdaPortionsWithKey(
+  id: string,
+  key: string | undefined,
+  signal?: AbortSignal,
+): Promise<Portion[]> {
+  const fdcId = /^usda-(\d+)$/.exec(id)?.[1];
+  if (!key || !fdcId) return [];
+  const food = (await getJson(
+    `${DETAIL_URL}/${fdcId}?api_key=${encodeURIComponent(key)}`,
+    signal,
+  )) as UsdaFood;
+  const portions = usdaPortions(food);
+  logFoodApi(`USDA details ${fdcId} "${food.description ?? '?'}"`, [
+    `sent: ${rawMeasuresText(food.foodPortions ?? [])}`,
+    `kept: ${portionsText(portions)}`,
+  ]);
+  return portions;
+}
+
+/** The measures as USDA wrote them, for the development log. */
+const rawMeasuresText = (ms: UsdaMeasure[]) =>
+  ms.length
+    ? ms
+        .map((m) => {
+          const words =
+            m.disseminationText ??
+            [
+              m.amount,
+              m.measureUnit?.name ?? m.measureUnitName,
+              m.modifier,
+              m.portionDescription,
+            ]
+              .filter((w) => w !== undefined && w !== '')
+              .join(' ');
+          return `"${words}" = ${m.gramWeight} g`;
+        })
+        .join(', ')
+    : 'none';

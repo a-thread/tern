@@ -136,16 +136,21 @@ begin
   ), now())
   on conflict (user_id) do update set data = excluded.data, updated_at = now();
 
-  insert into tern.saved_meals (user_id, name, items) values
+  insert into tern.saved_meals (user_id, name, items, servings) values
   (me, 'Usual breakfast', '[
     {"name":"Greek yogurt","brand":"Fage","servings":1,"servingLabel":"1 cup","calories":190,"protein":18,"carbs":8,"fat":10,"tier":2},
     {"name":"Banana","servings":1,"servingLabel":"1 medium","calories":105,"protein":1,"carbs":27,"fat":0,"tier":1}
-  ]'),
+  ]', 1),
   (me, 'Salmon night', '[
     {"name":"Grilled salmon","servings":1,"servingLabel":"6 oz","calories":350,"protein":40,"carbs":0,"fat":20,"tier":1},
     {"name":"Brown rice","servings":1,"servingLabel":"1 cup","calories":215,"protein":5,"carbs":45,"fat":2,"tier":1},
     {"name":"Steamed broccoli","servings":1,"servingLabel":"1 cup","calories":55,"protein":4,"carbs":11,"fat":1,"tier":1}
-  ]');
+  ]', 1),
+  (me, 'Turkey chili', '[
+    {"name":"Ground turkey","servings":2,"servingLabel":"1 lb","calories":680,"protein":88,"carbs":0,"fat":34,"tier":1},
+    {"name":"Kidney beans","servings":3,"servingLabel":"1 can","calories":330,"protein":21,"carbs":60,"fat":1,"tier":2},
+    {"name":"Crushed tomatoes","servings":1,"servingLabel":"1 can","calories":160,"protein":8,"carbs":36,"fat":1,"tier":2}
+  ]', 8);
 
   for n in 0 .. days - 1 loop
     d := today - (days - 1 - n);

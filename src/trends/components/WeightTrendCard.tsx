@@ -6,7 +6,7 @@ import { Icon } from '@shared/components/ui';
 import { WeightTrend } from '@shared/components/WeightTrend';
 import { TrendRanges, TrendRange } from '../models/trendRange';
 import { TrendCard, TrendHeader } from './TrendCard';
-import { weightTrendFor } from '../models/weightTrend';
+import { weightTrendDaysFor, weightTrendFor } from '../models/weightTrend';
 import { useTrendsNavigation } from '@/navigation/useAppNavigation';
 import { useWeight } from '../../domain/weight/WeightContext';
 import { signedChange } from '../../domain/weight/models/weightEntry';
@@ -23,10 +23,9 @@ export function WeightTrendCard({ range }: { range: TrendRange }) {
   // Weekly weigh-ins never put two in a week, so the Week range looks back a month instead.
   const widened =
     range === TrendRange.Week && settings.weighInFrequency === Frequency.Weekly;
-  const rangeTrend = weightTrendFor(
-    weightEntries,
-    TrendRanges.DAYS[widened ? TrendRange.Month : range],
-  );
+  const rangeDays = TrendRanges.DAYS[widened ? TrendRange.Month : range];
+  const rangeTrend = weightTrendFor(weightEntries, rangeDays);
+  const trendDays = weightTrendDaysFor(weightEntries, rangeDays);
   const trendLabel = widened ? 'Trend · last month' : 'Trend';
   const latest = weightTrend[weightTrend.length - 1];
   const delta =
@@ -54,6 +53,8 @@ export function WeightTrendCard({ range }: { range: TrendRange }) {
           />
           <WeightTrend
             trend={rangeTrend.map(toDisplay)}
+            days={trendDays}
+            formatValue={(v) => `${v.toFixed(1)} ${weightLabel} trend`}
             spread={toDisplay(1.3)}
             goal={
               settings.weightGoalLb === null

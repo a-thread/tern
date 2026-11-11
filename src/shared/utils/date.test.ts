@@ -1,6 +1,7 @@
 import {
   addDays,
   dayKey,
+  formatDayRange,
   formatLongDate,
   msUntilMidnight,
   parseDayKey,
@@ -31,5 +32,12 @@ describe('date helpers', () => {
 
   it('formats a long date', () => {
     expect(formatLongDate('2026-09-19')).toBe('Saturday, Sep 19');
+  });
+
+  it('formats a span of days, naming the month once when it does not change', () => {
+    expect(formatDayRange('2026-08-02', '2026-08-08')).toBe('Aug 2 – 8');
+    expect(formatDayRange('2026-07-29', '2026-08-04')).toBe('Jul 29 – Aug 4');
+    expect(formatDayRange('2025-12-29', '2026-01-04')).toBe('Dec 29 – Jan 4');
+    expect(formatDayRange('2026-08-02', '2026-08-02')).toBe('Aug 2');
   });
 });

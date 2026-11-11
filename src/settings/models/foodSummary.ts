@@ -7,7 +7,8 @@ import { percentsFromMacros } from '../../domain/food/models/macroSplit';
  * isn't logged at all.
  */
 export function foodSummary(s: AppSettings): string {
-  if (!s.trackFood) return 'Off';
+  // Food off still has its reminders to eat on this page, so say when they're on.
+  if (!s.trackFood) return s.reminders.eat.on ? 'Reminders to eat' : 'Off';
   const split = percentsFromMacros(s.macroTargets);
   const macros = `${split.protein} / ${split.carbs} / ${split.fat}`;
   const calories = `${s.calorieTarget.toLocaleString('en-US')} cal`;

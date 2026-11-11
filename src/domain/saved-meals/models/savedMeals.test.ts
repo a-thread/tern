@@ -1,12 +1,18 @@
 import { type FoodEntry, Meal } from '../../food/models/foodEntry';
 import {
   cleanName,
+  cleanServings,
+  dominantTier,
   filterMeals,
   findMealByName,
+  isRecipe,
   itemsToEntries,
+  recipeEntry,
   savedMealTotals,
   snapshotItems,
   sortMeals,
+  typedEaten,
+  typedYield,
   validateMealName,
   type SavedMeal,
   SavedMealLimits,
@@ -31,6 +37,7 @@ const meal = (name: string): SavedMeal => ({
   id: name,
   name,
   items: [],
+  servings: 1,
   createdAt: '2026-09-20T00:00:00Z',
 });
 
@@ -183,5 +190,160 @@ describe('measured items', () => {
       servingLabel: '2 large eggs (100 g)',
       calories: 143,
     });
+  });
+});
+
+describe('recipes', () => {
+  const chili = {
+    name: 'Chili',
+    servings: 8,
+    items: snapshotItems([
+      entry('Beef', {
+        servings: 2,
+        calories: 400,
+        protein: 40,
+        carbs: 0,
+        fat: 20,
+        tier: 1,
+      }),
+      entry('Beans', {
+        servings: 4,
+        calories: 200,
+        protein: 12,
+        carbs: 36,
+        fat: 1,
+        tier: 2,
+      }),
+    ]),
+  };
+
+  it('is a saved meal that makes more than one serving', () => {
+    expect(isRecipe({ servings: 1 })).toBe(false);
+    expect(isRecipe({ servings: 2 })).toBe(true);
+  });
+
+  it('logs one entry per serving eaten, with the batch divided by its yield', () => {
+    // Batch: 1600 cal, 128 g protein, 144 g carbs, 44 g fat.
+    for (const eaten of [0.5, 1, 1.5]) {
+      expect(recipeEntry(chili, eaten, Meal.Dinner)).toEqual({
+        name: 'Chili',
+        meal: Meal.Dinner,
+        servings: eaten,
+        servingLabel: '1 serving',
+        calories: 200,
+        protein: 16,
+        carbs: 18,
+        fat: 5.5,
+        tier: 2,
+        tierOverridden: false,
+      });
+    }
+    expect(recipeEntry(chili, 1.5, Meal.Dinner)).not.toHaveProperty('measure');
+  });
+
+  it('keeps a weighed batch weighed, so a serving can be changed by the ounce', () => {
+    // A pot of 8 bowls of 340 g, 2400 cal in all.
+    const pot = {
+      name: 'Pot chili',
+      servings: 8,
+      items: [
+        {
+          name: 'Pot chili',
+          servings: 1,
+          servingLabel: 'whole batch',
+          batch: true,
+          calories: 2400,
+          protein: 160,
+          carbs: 200,
+          fat: 96,
+          tier: 1 as const,
+          measure: {
+            per100: { calories: 88.2, protein: 5.9, carbs: 7.4, fat: 3.5 },
+            portions: [{ label: 'bowl', grams: 340 }],
+            unit: 'bowl',
+            quantity: 8,
+          },
+        },
+      ],
+    };
+    const e = recipeEntry(pot, 1.5, Meal.Dinner);
+    expect(e.measure).toMatchObject({ unit: 'bowl', quantity: 1.5 });
+    expect(e).toMatchObject({
+      servings: 1,
+      servingLabel: '1.5 bowls (510 g)',
+      calories: 450,
+      protein: 30,
+    });
+
+    // One database food weighed in grams is still logged by the serving.
+    const oats = {
+      ...pot,
+      items: [{ ...pot.items[0], servingLabel: '400 g', batch: undefined }],
+    };
+    expect(recipeEntry(oats, 1, Meal.Dinner)).toMatchObject({
+      servings: 1,
+      servingLabel: '1 serving',
+      calories: 300,
+    });
+    expect(recipeEntry(oats, 1, Meal.Dinner)).not.toHaveProperty('measure');
+  });
+
+  it('never lets more servings be typed than the recipe makes', () => {
+    expect(typedEaten('80', 8)).toBe(8);
+    expect(typedEaten('1,5', 8)).toBe(1.5);
+  });
+
+  it('gives the entry the tier of the foods making most of the calories', () => {
+    // Beef (tier 1) and beans (tier 2) are 800 calories each: the higher tier wins.
+    expect(dominantTier(chili.items)).toBe(2);
+    expect(recipeEntry(chili, 1, Meal.Dinner).tier).toBe(2);
+  });
+
+  it('picks the tier with the most calories', () => {
+    const items = snapshotItems([
+      entry('A', { calories: 100, tier: 1 }),
+      entry('B', { calories: 300, tier: 3 }),
+      entry('C', { calories: 150, tier: 1 }),
+    ]);
+    expect(dominantTier(items)).toBe(3);
+    expect(
+      dominantTier(
+        snapshotItems([
+          entry('A', { calories: 300, tier: 1 }),
+          entry('B', { calories: 100, tier: 4 }),
+          entry('C', { calories: 100, tier: 1 }),
+        ]),
+      ),
+    ).toBe(1);
+  });
+
+  it('breaks a tie towards the higher tier', () => {
+    const items = snapshotItems([
+      entry('A', { calories: 200, tier: 2 }),
+      entry('B', { calories: 200, tier: 4 }),
+      entry('C', { calories: 200, tier: 1 }),
+    ]);
+    expect(dominantTier(items)).toBe(4);
+  });
+
+  it('keeps servings whole and within limits', () => {
+    expect(cleanServings(8)).toBe(8);
+    expect(cleanServings(7.6)).toBe(8);
+    expect(cleanServings(0)).toBe(SavedMealLimits.MIN_SERVINGS);
+    expect(cleanServings(500)).toBe(SavedMealLimits.MAX_SERVINGS);
+    expect(cleanServings('8')).toBe(1);
+    expect(cleanServings(undefined)).toBe(1);
+  });
+
+  it('reads typed amounts', () => {
+    expect(typedYield('12')).toBe(12);
+    expect(typedYield('')).toBeNull();
+    expect(typedYield('0')).toBeNull();
+    expect(typedYield('900')).toBe(SavedMealLimits.MAX_SERVINGS);
+    expect(typedEaten('1.5')).toBe(1.5);
+    expect(typedEaten('1,3')).toBe(1.25);
+    expect(typedEaten('0.1')).toBe(0.25);
+    expect(typedEaten('.')).toBeNull();
+    expect(typedEaten('0')).toBeNull();
   });
 });

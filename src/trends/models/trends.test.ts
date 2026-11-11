@@ -1,48 +1,82 @@
 import { TrendRanges, TrendRange } from './trendRange';
-import { bucketSteps } from './stepBars';
+import { bucketSteps, stepsValue } from './stepBars';
 import { longestConsecutiveStreak, summarizeSteps } from './stepsSummary';
-import { weightTrendFor } from './weightTrend';
+import { weightTrendDaysFor, weightTrendFor } from './weightTrend';
 import { DayRecord } from '../../domain/activity/models/dayRecord';
 import { DayState } from '@shared/models/dayState';
 
 describe('longestConsecutiveStreak', () => {
+  const day = (
+    state: DayState,
+    extra: { reachedGoal?: boolean; isToday?: boolean } = {},
+  ) => ({
+    state,
+    reachedGoal: extra.reachedGoal ?? state === DayState.Goal,
+    isToday: extra.isToday ?? false,
+  });
+  const run = (...states: DayState[]) => states.map((s) => day(s));
+
   it('returns 0 for an empty array', () => {
     expect(longestConsecutiveStreak([])).toBe(0);
   });
 
   it('counts a streak of goal days', () => {
-    const days: DayState[] = [DayState.Goal, DayState.Goal, DayState.Goal];
-    expect(longestConsecutiveStreak(days)).toBe(3);
+    expect(
+      longestConsecutiveStreak(
+        run(DayState.Goal, DayState.Goal, DayState.Goal),
+      ),
+    ).toBe(3);
   });
 
-  it('treats rest days as protecting the streak, not breaking it', () => {
-    const days: DayState[] = [
+  it('holds the streak over a rest day without adding it, as Today does', () => {
+    const days = run(
       DayState.Goal,
       DayState.Rest,
       DayState.Goal,
       DayState.Goal,
-    ];
-    expect(longestConsecutiveStreak(days)).toBe(4);
+    );
+    expect(longestConsecutiveStreak(days)).toBe(3);
   });
 
-  it('breaks the streak on a partial or missed day', () => {
-    const days: DayState[] = [
-      DayState.Goal,
-      DayState.Goal,
-      DayState.Partial,
-      DayState.Goal,
-      DayState.Goal,
-      DayState.Goal,
+  it('holds the streak over a frozen day without adding it', () => {
+    const days = run(DayState.Goal, DayState.Frozen, DayState.Goal);
+    expect(longestConsecutiveStreak(days)).toBe(2);
+  });
+
+  it('adds a rest day on which the goal was reached anyway', () => {
+    const days = [
+      day(DayState.Goal),
+      day(DayState.Rest, { reachedGoal: true }),
+      day(DayState.Goal),
     ];
     expect(longestConsecutiveStreak(days)).toBe(3);
   });
 
-  it('resets on none (missed) days', () => {
-    const days: DayState[] = [
-      DayState.Goal,
-      DayState.Goal,
-      DayState.None,
-      DayState.Goal,
+  it('breaks the streak on a partial or missed day', () => {
+    expect(
+      longestConsecutiveStreak(
+        run(
+          DayState.Goal,
+          DayState.Goal,
+          DayState.Partial,
+          DayState.Goal,
+          DayState.Goal,
+          DayState.Goal,
+        ),
+      ),
+    ).toBe(3);
+    expect(
+      longestConsecutiveStreak(
+        run(DayState.Goal, DayState.Goal, DayState.None, DayState.Goal),
+      ),
+    ).toBe(2);
+  });
+
+  it('does not let today, still in progress, break it', () => {
+    const days = [
+      day(DayState.Goal),
+      day(DayState.Goal),
+      day(DayState.Partial, { isToday: true }),
     ];
     expect(longestConsecutiveStreak(days)).toBe(2);
   });
@@ -168,6 +202,29 @@ describe('bucketSteps', () => {
     ).toBe(true);
   });
 
+  it('gives each weekly bar the seven days it covers, so a tap can name them', () => {
+    const bars = bucketSteps(history, TrendRange.SixMonths);
+    expect(bars[bars.length - 1].week).toEqual({
+      from: history[173].day,
+      to: history[179].day,
+    });
+    expect(bucketSteps(history, TrendRange.Week)[0].week).toBeUndefined();
+  });
+
+  it('reads a tapped bar as steps, a day on average for a week', () => {
+    expect(
+      stepsValue({ label: '', value: 8410, state: DayState.Goal, day: 'x' }),
+    ).toBe(`${(8410).toLocaleString()} steps`);
+    expect(
+      stepsValue({
+        label: '',
+        value: 8410,
+        state: DayState.Goal,
+        week: { from: 'a', to: 'b' },
+      }),
+    ).toBe(`${(8410).toLocaleString()} steps a day`);
+  });
+
   it('copes with less history than the range', () => {
     expect(bucketSteps(dayRecords(3), TrendRange.Week)).toHaveLength(3);
     expect(bucketSteps(dayRecords(3), TrendRange.SixMonths)).toHaveLength(1);
@@ -214,5 +271,16 @@ describe('weightTrendFor', () => {
     const month = weightTrendFor(entries, 30, now);
     const all = weightTrendFor(entries, Infinity, now);
     expect(all.slice(-month.length)).toEqual(month);
+  });
+
+  it('dates each point of the line, oldest first, one per point', () => {
+    expect(weightTrendDaysFor(entries, 7, now)).toEqual([
+      '2026-09-17',
+      '2026-09-20',
+    ]);
+    expect(weightTrendDaysFor(entries, 180, now)).toHaveLength(
+      weightTrendFor(entries, 180, now).length,
+    );
+    expect(weightTrendDaysFor([], 30, now)).toEqual([]);
   });
 });

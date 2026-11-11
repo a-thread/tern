@@ -69,6 +69,18 @@ export function formatShortDate(key: string): string {
   return `${MONTHS[d.getMonth()]} ${d.getDate()}`;
 }
 
+/** "Aug 2 – 8", or "Jul 29 – Aug 4" across a month end; one day reads as "Aug 2". */
+export function formatDayRange(from: string, to: string): string {
+  if (from === to) return formatShortDate(from);
+  const a = parseDayKey(from);
+  const b = parseDayKey(to);
+  const end =
+    a.getMonth() === b.getMonth() && a.getFullYear() === b.getFullYear()
+      ? String(b.getDate())
+      : formatShortDate(to);
+  return `${formatShortDate(from)} – ${end}`;
+}
+
 /** "March" */
 export function monthName(key: string): string {
   const d = parseDayKey(key);

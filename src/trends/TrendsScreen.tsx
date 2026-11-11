@@ -11,7 +11,7 @@ import { TrendRanges, TrendRange } from './models/trendRange';
 import { StepsTrendCard } from './components/StepsTrendCard';
 import { WeightTrendCard } from './components/WeightTrendCard';
 import { CaloriesTrendCard } from './components/CaloriesTrendCard/CaloriesTrendCard';
-import { EnergyTrendCard } from './components/EnergyTrendCard';
+import { EnergyTrendCard } from './components/EnergyTrendCard/EnergyTrendCard';
 import { MovementTrendCard } from './components/MovementTrendCard/MovementTrendCard';
 import WaterTrendCard from './components/WaterTrendCard/WaterTrendCard';
 import MoodTrendCard from './components/MoodTrendCard';

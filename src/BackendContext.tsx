@@ -27,7 +27,7 @@ import {
   type StepsRepository,
 } from './domain/activity/steps.repository';
 import { createHealthStepsRepository } from './domain/activity/steps.health';
-import { sampleSteps } from './domain/activity/sampleSteps';
+import { sampleStepDays, sampleSteps } from './domain/activity/sampleSteps';
 import {
   createMemoryRestDaysRepository,
   type RestDaysRepository,
@@ -169,7 +169,8 @@ export function createMemoryBackend(): Backend {
  * instead in a local demo build (`sampleSteps`).
  */
 export function createPhoneStepsRepository(): StepsRepository {
-  if (sampleSteps()) return createMemoryStepsRepository();
+  if (sampleSteps())
+    return createMemoryStepsRepository(undefined, sampleStepDays());
   return createHealthStepsRepository() ?? createUnavailableStepsRepository();
 }
 
@@ -233,7 +234,9 @@ export function createSubscriptionRepository(
   const store = createStoreSubscriptionRepository();
   if (store) return store;
   if (!dev) {
-    console.warn('No RevenueCat key for this platform: Tern Plus is unavailable');
+    console.warn(
+      'No RevenueCat key for this platform: Tern Plus is unavailable',
+    );
     return createUnavailableSubscriptionRepository();
   }
   return createMemorySubscriptionRepository(undefined, undefined, {

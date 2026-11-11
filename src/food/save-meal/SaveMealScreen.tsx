@@ -13,6 +13,8 @@ import { useFood } from '../../domain/food/FoodContext';
 import { useSavedMeals } from '../../domain/saved-meals/SavedMealsContext';
 import {
   findMealByName,
+  isRecipe,
+  recipeClash,
   validateMealName,
   SavedMealLimits,
 } from '../../domain/saved-meals/models/savedMeals';
@@ -55,6 +57,9 @@ export default function SaveMealScreen({ navigation, route }: Props) {
     };
 
     const existing = findMealByName(meals, name);
+    // A recipe can't be replaced from here, so say so before asking to replace it.
+    if (existing && isRecipe(existing))
+      return setError(recipeClash(existing.name));
     if (existing) {
       confirm({
         title: `Replace “${existing.name}”?`,

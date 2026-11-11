@@ -17,7 +17,10 @@ import {
 } from './models/mealDraft';
 import {
   cleanName,
+  cleanServings,
   findMealByName,
+  isRecipe,
+  recipeClash,
   snapshotItems,
   sortMeals,
   validateMealName,
@@ -42,15 +45,29 @@ type SavedMealsContextValue = {
    * (ignoring case) is replaced, keeping its id; callers should confirm first.
    */
   saveMeal: (name: string, entries: FoodEntry[]) => SaveOutcome;
+  /**
+   * Saves a homemade batch as a recipe: one item for the whole batch, making `servings`
+   * servings, so it can be logged by the serving. A meal already called `name` is not
+   * replaced; the error says so.
+   */
+  saveRecipe: (
+    name: string,
+    batch: SavedMealItem,
+    servings: number,
+  ) => SaveOutcome;
   /** Returns an error message, or null on success. */
   renameMeal: (id: string, name: string) => string | null;
   deleteMeal: (id: string) => void;
+  /** Changes how many servings a saved meal makes; saved straight away. */
+  setMealServings: (id: string, servings: number) => void;
 
   /** The meal being built or edited, or null when none is open. */
   draft: MealDraft | null;
   /** Opens a draft: a copy of an existing meal, or an empty new one. */
   startDraft: (mealId?: string) => void;
   setDraftName: (name: string) => void;
+  /** How many servings the draft makes (whole, 1–100). */
+  setDraftServings: (servings: number) => void;
   addDraftItem: (item: SavedMealItem) => void;
   stepDraftItem: (index: number, delta: number) => void;
   removeDraftItem: (index: number) => void;
@@ -116,12 +133,17 @@ export function SavedMealsProvider({
       const clean = cleanName(name);
       const items = snapshotItems(entries);
       const existing = findMealByName(latest.current, clean);
+      // A recipe isn't replaced by one day's foods: that would quietly turn it back into a
+      // meal logged whole, losing how many servings it makes.
+      if (existing && isRecipe(existing))
+        return { ok: false, error: recipeClash(existing.name) };
       const meal: SavedMeal = existing
-        ? { ...existing, name: clean, items }
+        ? { ...existing, name: clean, items, servings: 1 }
         : {
             id: newId(),
             name: clean,
             items,
+            servings: 1,
             createdAt: new Date().toISOString(),
           };
 
@@ -134,6 +156,31 @@ export function SavedMealsProvider({
       );
       persist(repo.save(meal));
       return { ok: true, replaced: Boolean(existing), meal };
+    },
+    [repo, persist, commit],
+  );
+
+  const saveRecipe = useCallback(
+    (name: string, batch: SavedMealItem, servings: number): SaveOutcome => {
+      const problem = validateMealName(name);
+      if (problem) return { ok: false, error: problem };
+      const clean = cleanName(name);
+      const clash = findMealByName(latest.current, clean);
+      if (clash)
+        return {
+          ok: false,
+          error: `You already have a meal called “${clash.name}”. Pick another name, or turn off saving as a recipe.`,
+        };
+      const meal: SavedMeal = {
+        id: newId(),
+        name: clean,
+        items: [batch],
+        servings: cleanServings(servings),
+        createdAt: new Date().toISOString(),
+      };
+      commit(sortMeals([...latest.current, meal]));
+      persist(repo.save(meal));
+      return { ok: true, replaced: false, meal };
     },
     [repo, persist, commit],
   );
@@ -154,6 +201,18 @@ export function SavedMealsProvider({
       commit(sortMeals(latest.current.map((m) => (m.id === id ? renamed : m))));
       persist(repo.save(renamed));
       return null;
+    },
+    [repo, persist, commit],
+  );
+
+  const setMealServings = useCallback(
+    (id: string, servings: number) => {
+      const meal = latest.current.find((m) => m.id === id);
+      const next = cleanServings(servings);
+      if (!meal || meal.servings === next) return;
+      const changed = { ...meal, servings: next };
+      commit(latest.current.map((m) => (m.id === id ? changed : m)));
+      persist(repo.save(changed));
     },
     [repo, persist, commit],
   );
@@ -186,6 +245,17 @@ export function SavedMealsProvider({
   const setDraftName = useCallback(
     (name: string) => {
       if (draftRef.current) changeDraft({ ...draftRef.current, name });
+    },
+    [changeDraft],
+  );
+
+  const setDraftServings = useCallback(
+    (servings: number) => {
+      if (draftRef.current)
+        changeDraft({
+          ...draftRef.current,
+          servings: cleanServings(servings),
+        });
     },
     [changeDraft],
   );
@@ -228,11 +298,12 @@ export function SavedMealsProvider({
       ? latest.current.find((m) => m.id === d.id)
       : undefined;
     const meal: SavedMeal = existing
-      ? { ...existing, name: clean, items: d.items }
+      ? { ...existing, name: clean, items: d.items, servings: d.servings }
       : {
           id: d.id ?? newId(),
           name: clean,
           items: d.items,
+          servings: d.servings,
           createdAt: new Date().toISOString(),
         };
 
@@ -253,11 +324,14 @@ export function SavedMealsProvider({
       meals,
       ready,
       saveMeal,
+      saveRecipe,
       renameMeal,
       deleteMeal,
+      setMealServings,
       draft,
       startDraft,
       setDraftName,
+      setDraftServings,
       addDraftItem,
       stepDraftItem,
       removeDraftItem,
@@ -268,11 +342,14 @@ export function SavedMealsProvider({
       meals,
       ready,
       saveMeal,
+      saveRecipe,
       renameMeal,
       deleteMeal,
+      setMealServings,
       draft,
       startDraft,
       setDraftName,
+      setDraftServings,
       addDraftItem,
       stepDraftItem,
       removeDraftItem,

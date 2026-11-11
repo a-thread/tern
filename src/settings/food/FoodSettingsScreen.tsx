@@ -7,6 +7,7 @@ import { CalorieTargetsRow } from './components/CalorieTargetsRow';
 import { FoodDisplayRow } from './components/FoodDisplayRow';
 import { MealCheckInToggleRow } from '@shared/components/MealCheckInToggleRow/MealCheckInToggleRow';
 import { MealReminderRows } from '../components/MealReminderRows';
+import { EatReminderRows } from '../components/EatReminderRows';
 import { useSettingsNavigation } from '../../navigation/useAppNavigation';
 
 /**
@@ -27,9 +28,21 @@ export default function FoodSettingsScreen() {
         />
       </Group>
       {settings.trackFood ? null : (
-        <FootNote>
-          Meals you've logged are kept, and come back if you turn this on again.
-        </FootNote>
+        <>
+          <FootNote>
+            Meals you've logged are kept, and come back if you turn this on
+            again.
+          </FootNote>
+
+          <GroupLabel>Reminders</GroupLabel>
+          <Group>
+            <EatReminderRows />
+          </Group>
+          <FootNote>
+            Just a nudge so meals don't slip by, with nothing to log. Like other
+            reminders, they're quiet on rest days.
+          </FootNote>
+        </>
       )}
 
       {settings.trackFood ? (

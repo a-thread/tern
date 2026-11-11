@@ -141,3 +141,55 @@ describe('stableMerge', () => {
     expect(merged.map((r) => r.id)).toEqual(['a']);
   });
 });
+
+describe('dishes', () => {
+  it('puts the food itself above a dish it is only part of', () => {
+    const rice = scoreResult('white rice', food('Rice, white, cooked'), FoodSource.Usda);
+    const dish = scoreResult('white rice', food('Beans and white rice'), FoodSource.Usda);
+    expect(rice).toBeGreaterThan(dish);
+  });
+
+  it('does not penalise a dish the query asks for', () => {
+    // Both are exact matches of the same length; the soup isn't marked down for being soup.
+    expect(
+      scoreResult('chicken soup', food('Chicken soup'), FoodSource.Usda),
+    ).toBe(scoreResult('chicken pho', food('Chicken pho'), FoodSource.Usda));
+  });
+});
+
+describe('dedupeFoods and sizes', () => {
+  it('keeps your copy, linked to the database copy when yours has no sizes', () => {
+    const mine = food('Oatmeal', {
+      id: 'logged-oatmeal',
+      brand: 'Key Food',
+      portions: [{ label: 'oz', grams: 28.35 }],
+    });
+    const off = food('Oatmeal', {
+      id: '0851087000687',
+      brand: 'Key Food',
+      source: FoodSource.Off,
+    });
+    const [kept, ...rest] = dedupeFoods([mine, off]);
+    expect(rest).toEqual([]);
+    expect(kept.id).toBe('logged-oatmeal');
+    expect(kept.sizesFrom).toEqual({
+      id: '0851087000687',
+      source: FoodSource.Off,
+    });
+  });
+
+  it('leaves your copy alone when it already has a size', () => {
+    const mine = food('Oatmeal', {
+      id: 'logged-oatmeal',
+      portions: [{ label: 'packet', grams: 35 }],
+    });
+    const off = food('Oatmeal', { id: '1', source: FoodSource.Off });
+    expect(dedupeFoods([mine, off])[0].sizesFrom).toBeUndefined();
+  });
+
+  it('never points a database food at another product for its sizes', () => {
+    const first = food('Oatmeal', { id: '1', source: FoodSource.Off });
+    const second = food('Oatmeal', { id: '2', source: FoodSource.Off });
+    expect(dedupeFoods([first, second])[0].sizesFrom).toBeUndefined();
+  });
+});

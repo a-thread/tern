@@ -47,12 +47,18 @@ export default function WaterTrendCard({
             : `daily average ${TrendRanges.LABEL[range]} · goal ${formatVolume(settings.waterGoalOz)}`
         }
       />
-      <StepBars
-        days={bars}
-        goal={settings.waterGoalOz}
-        showLegend={false}
-        showLabels={range !== TrendRange.Month}
-      />
+      {/* Nothing logged: the line above says so, without an empty chart under it. */}
+      {average === null ? null : (
+        <StepBars
+          days={bars}
+          goal={settings.waterGoalOz}
+          showLegend={false}
+          showLabels={range !== TrendRange.Month}
+          formatValue={(bar) =>
+            `${formatVolume(bar.value)}${bar.week ? ' a day' : ''}`
+          }
+        />
+      )}
     </TrendCard>
   );
 }

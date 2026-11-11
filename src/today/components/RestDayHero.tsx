@@ -6,9 +6,14 @@ import { useActivity } from '@/domain/activity/ActivityContext';
 import { RestScene } from './RestScene/RestScene';
 import { easeLayout } from '../utils/easeLayout';
 import type { RestDay } from '../hooks/useRestDay';
-import { restDetail, restReminderNote } from '../models/restDetail';
+import {
+  pastRestCopy,
+  restDetail,
+  restReminderNote,
+} from '../models/restDetail';
 import { useSettings } from '@/domain/settings/SettingsContext';
 import { remindersOn } from '@/domain/settings/models/reminderPlan';
+import { useRootNavigation } from '../../navigation/useAppNavigation';
 
 /**
  * The rest scene in place of the sky card, with its copy for the viewed day. Today it promises
@@ -24,6 +29,9 @@ export function RestDayHero({
   const { isToday } = useViewedDay();
   const { todaySteps, streak, stepsReadable } = useActivity();
   const { settings } = useSettings();
+  const navigation = useRootNavigation();
+  // A day outside this week has no record here; it reads as taken, as before.
+  const past = pastRestCopy(rest.record?.chosenRest ?? true);
 
   return (
     <RestScene
@@ -39,7 +47,7 @@ export function RestDayHero({
       line={
         isToday
           ? 'Your streak is safe. Nothing you need to do today.'
-          : 'A day off. Your streak carried on.'
+          : past.line
       }
       detail={restDetail(
         stepsReadable ? (rest.record?.steps ?? todaySteps) : null,
@@ -53,6 +61,15 @@ export function RestDayHero({
                 readSteps: stepsReadable,
               }),
             )
+          : past.note
+      }
+      noteLink={
+        !isToday && past.linksToSettings
+          ? {
+              label: 'Rest day settings',
+              onPress: () =>
+                navigation.navigate('Settings', { screen: 'RestDays' }),
+            }
           : undefined
       }
     />

@@ -1,4 +1,3 @@
-import { View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { colors, font, typography } from '@shared/theme';
@@ -12,6 +11,7 @@ import { TabParamList } from './types';
 import { useSettings } from '../../domain/settings/SettingsContext';
 import { ChartIcon, FoodIcon, HomeIcon } from './TabIcons';
 import { TabAnchorsProvider } from './tabAnchors';
+import { AnchoredTabButton } from './AnchoredTabButton';
 
 const TAB_BAR_CONTENT_HEIGHT = 54;
 const MIN_TAB_BAR_BOTTOM_INSET = 10;
@@ -27,7 +27,7 @@ export default function Tabs() {
   // No Food tab for someone who doesn't log food (Settings › Food › Track food).
   const { settings } = useSettings();
   return (
-    // Each icon sits in a view the tips on Today can measure and point at.
+    // Each tab's button sits in a view the tips on Today can measure and point at.
     <TabAnchorsProvider>
       {(anchors) => (
         <Tab.Navigator
@@ -53,10 +53,9 @@ export default function Tabs() {
             name='Today'
             component={TodayScreen}
             options={{
-              tabBarIcon: ({ color }) => (
-                <View ref={anchors.Today} collapsable={false}>
-                  <HomeIcon color={color} />
-                </View>
+              tabBarIcon: ({ color }) => <HomeIcon color={color} />,
+              tabBarButton: (props) => (
+                <AnchoredTabButton anchor={anchors.Today} {...props} />
               ),
             }}
           />
@@ -65,10 +64,9 @@ export default function Tabs() {
               name='Food'
               component={FoodScreen}
               options={{
-                tabBarIcon: ({ color }) => (
-                  <View ref={anchors.Food} collapsable={false}>
-                    <FoodIcon color={color} />
-                  </View>
+                tabBarIcon: ({ color }) => <FoodIcon color={color} />,
+                tabBarButton: (props) => (
+                  <AnchoredTabButton anchor={anchors.Food} {...props} />
                 ),
               }}
             />
@@ -77,10 +75,9 @@ export default function Tabs() {
             name='Trends'
             component={TrendsStack}
             options={{
-              tabBarIcon: ({ color }) => (
-                <View ref={anchors.Trends} collapsable={false}>
-                  <ChartIcon color={color} />
-                </View>
+              tabBarIcon: ({ color }) => <ChartIcon color={color} />,
+              tabBarButton: (props) => (
+                <AnchoredTabButton anchor={anchors.Trends} {...props} />
               ),
             }}
           />
@@ -88,10 +85,9 @@ export default function Tabs() {
             name='Journey'
             component={JourneyScreen}
             options={{
-              tabBarIcon: ({ color }) => (
-                <View ref={anchors.Journey} collapsable={false}>
-                  <TernMark size={21} color={color} />
-                </View>
+              tabBarIcon: ({ color }) => <TernMark size={21} color={color} />,
+              tabBarButton: (props) => (
+                <AnchoredTabButton anchor={anchors.Journey} {...props} />
               ),
             }}
           />

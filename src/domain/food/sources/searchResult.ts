@@ -31,6 +31,12 @@ export type SearchResult = {
   detail?: string;
   /** The source lists it by volume (a drink sold in ml), so fl oz and ml are offered whatever its name. */
   liquid?: boolean;
+  /**
+   * The database copy of a food you logged before it had sizes ("2 oz" of a product whose
+   * packet size came later): your copy keeps its place in the list, and its sizes are
+   * fetched from here.
+   */
+  sizesFrom?: { id: string; source: FoodSource };
   /** How common a food is (1 is the most), used to rank common foods. */
   rank?: number;
 };

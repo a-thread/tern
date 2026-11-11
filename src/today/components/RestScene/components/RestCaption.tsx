@@ -1,20 +1,28 @@
 import React from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 
-import { colors, font, space } from '@shared/theme';
+import { colors, font, space, typography } from '@shared/theme';
 import { Icon } from '@shared/components/ui';
 
-/** The words under the rest scene: its title, what the day means, the steps, and an optional note. */
+/** A link at the end of the note, to where the thing it mentions can be changed. */
+export type NoteLink = { label: string; onPress: () => void };
+
+/**
+ * The words under the rest scene: its title, what the day means, the steps, and an optional note
+ * (with a link after it, when there is somewhere to change what it says).
+ */
 export function RestCaption({
   title,
   line,
   detail,
   note,
+  noteLink,
 }: {
   title: string;
   line: string;
   detail: string;
   note?: string;
+  noteLink?: NoteLink;
 }) {
   return (
     <View style={styles.container}>
@@ -29,6 +37,19 @@ export function RestCaption({
       {note ? (
         <View style={styles.noteBox}>
           <Text style={styles.noteText}>{note}</Text>
+          {noteLink ? (
+            <>
+              <Text style={styles.noteText}> · </Text>
+              <Pressable
+                onPress={noteLink.onPress}
+                hitSlop={8}
+                accessibilityRole='button'
+                accessibilityLabel={noteLink.label}
+              >
+                <Text style={styles.linkText}>{`${noteLink.label} ›`}</Text>
+              </Pressable>
+            </>
+          ) : null}
         </View>
       ) : null}
     </View>
@@ -66,14 +87,20 @@ const styles = StyleSheet.create({
     lineHeight: 20,
   },
   noteBox: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    alignItems: 'center',
     marginTop: space.md,
     paddingTop: space.sm,
     borderTopWidth: StyleSheet.hairlineWidth,
     borderColor: colors.border,
   },
-  noteText: {
-    fontFamily: font.displayMedium,
-    fontSize: 12,
-    color: colors.ink3,
+  // A status line, not part of the day's story: the body face, not the display serif. It may
+  // shrink, so a long note wraps within the row rather than running past the card.
+  noteText: { ...typography.meta, color: colors.ink3, flexShrink: 1 },
+  linkText: {
+    ...typography.meta,
+    fontFamily: font.semibold,
+    color: colors.coral,
   },
 });

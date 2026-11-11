@@ -44,6 +44,7 @@ export function RemindersSync() {
   const lastKey = useRef<string | null>(null);
   const anyOn =
     (trackFood && reminders.mealLog.on) ||
+    (!trackFood && reminders.eat.on) ||
     (trackWeight && reminders.weighIn.on) ||
     (trackWater && reminders.water.on) ||
     (trackMood && reminders.mood.on) ||

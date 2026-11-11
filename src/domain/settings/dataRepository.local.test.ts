@@ -11,7 +11,9 @@ import { createLocalSettingsRepository } from './settings.repository.local';
 
 async function filled(): Promise<LocalDb> {
   const db = await createMigratedSqlJsDb();
-  await createLocalSettingsRepository(db).save({ stepGoal: 8000 } as unknown as AppSettings);
+  await createLocalSettingsRepository(db).save({
+    stepGoal: 8000,
+  } as unknown as AppSettings);
   await createLocalWeightRepository(db).add({
     id: 'w',
     lb: 180,
@@ -33,6 +35,7 @@ async function filled(): Promise<LocalDb> {
     id: 's',
     name: 'Usual',
     createdAt: '2026-10-01T12:00:00.000Z',
+    servings: 8,
     items: [],
   });
   return db;
@@ -46,9 +49,15 @@ describe('local data repository', () => {
       { id: 'w', lb: 180, logged_at: '2026-10-18T07:00:00.000Z' },
     ]);
     expect(copy.food).toEqual([
-      expect.objectContaining({ id: 'f', tier_overridden: false, measure: null }),
+      expect.objectContaining({
+        id: 'f',
+        tier_overridden: false,
+        measure: null,
+      }),
     ]);
-    expect(copy.savedMeals).toEqual([expect.objectContaining({ id: 's', items: [] })]);
+    expect(copy.savedMeals).toEqual([
+      expect.objectContaining({ id: 's', items: [], servings: 8 }),
+    ]);
     expect(copy.waypoints).toEqual([]);
   });
 
@@ -64,14 +73,18 @@ describe('local data repository', () => {
 });
 
 describe('restoring from an export', () => {
-  const blank = async () => createLocalDataRepository(await createMigratedSqlJsDb());
+  const blank = async () =>
+    createLocalDataRepository(await createMigratedSqlJsDb());
 
   it('puts back exactly what was exported, onto an empty phone', async () => {
     const source = createLocalDataRepository(await filled());
     const copy = await source.exportAll();
     const target = await blank();
     expect(await target.importAll!(copy)).toBe(3);
-    expect({ ...(await target.exportAll()), exportedAt: copy.exportedAt }).toEqual(copy);
+    expect({
+      ...(await target.exportAll()),
+      exportedAt: copy.exportedAt,
+    }).toEqual(copy);
   });
 
   it('keeps what is already here, and adds nothing twice', async () => {
@@ -111,10 +124,22 @@ describe('restoring from an export', () => {
           created_at: '2026-10-18T12:01:02.345+00:00',
         },
       ],
-      weight: [{ id: 'w', user_id: 'u1', lb: '180.4', logged_at: '2026-10-18T07:00:00+00:00' }],
-      waypoints: [{ user_id: 'u1', source: 'steps', day: '2026-10-18', points: 40 }],
+      weight: [
+        {
+          id: 'w',
+          user_id: 'u1',
+          lb: '180.4',
+          logged_at: '2026-10-18T07:00:00+00:00',
+        },
+      ],
+      waypoints: [
+        { user_id: 'u1', source: 'steps', day: '2026-10-18', points: 40 },
+      ],
       restDays: [],
-      savedMeals: [],
+      savedMeals: [
+        { id: 'r', user_id: 'u1', name: 'Chili', items: [], servings: '8' },
+        { id: 'o', user_id: 'u1', name: 'Old export', items: [] },
+      ],
       medicationDoses: [],
       waterEntries: [],
       moodCheckins: [{ user_id: 'u1', day: '2026-10-18', mood: 4, stress: 2 }],
@@ -124,9 +149,16 @@ describe('restoring from an export', () => {
       movementEntries: [],
       dayNotes: [{ user_id: 'u1', day: '2026-10-18', note: 'Joint pain' }],
     });
-    expect(added).toBe(5);
+    expect(added).toBe(7);
     const copy = await data.exportAll();
     expect(copy.settings).toEqual({ stepGoal: 9000 });
+    // Servings come across as numbers, and an export from before servings existed makes 1.
+    expect(copy.savedMeals).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ id: 'r', servings: 8 }),
+        expect.objectContaining({ id: 'o', servings: 1 }),
+      ]),
+    );
     expect(copy.dayNotes).toEqual([
       expect.objectContaining({ day: '2026-10-18', note: 'Joint pain' }),
     ]);

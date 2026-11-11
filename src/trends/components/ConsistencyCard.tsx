@@ -4,7 +4,7 @@ import { Text } from 'react-native';
 import { colors, typography } from '@shared/theme';
 import { Card, GroupLabel, Icon } from '@shared/components/ui';
 import { TrendRanges, TrendRange } from '../models/trendRange';
-import { ConsistencyGrid } from './ConsistencyGrid';
+import { ConsistencyGrid } from './ConsistencyGrid/ConsistencyGrid';
 import { Insight } from './Insight';
 import { longestConsecutiveStreak } from '../models/stepsSummary';
 import { useActivity } from '../../domain/activity/ActivityContext';
@@ -12,8 +12,8 @@ import { useActivity } from '../../domain/activity/ActivityContext';
 /** A grid of the range's days by how each went, with the longest streak kept up. */
 export function ConsistencyCard({ range }: { range: TrendRange }) {
   const { days } = useActivity();
-  const states = days.slice(-TrendRanges.DAYS[range]).map((d) => d.state);
-  const streak = longestConsecutiveStreak(states);
+  const inRange = days.slice(-TrendRanges.DAYS[range]);
+  const streak = longestConsecutiveStreak(inRange);
 
   return (
     <>
@@ -24,14 +24,14 @@ export function ConsistencyCard({ range }: { range: TrendRange }) {
             ? 'Last 6 months'
             : `Last ${TrendRanges.DAYS[range]} days`}
         </Text>
-        <ConsistencyGrid days={states} />
+        <ConsistencyGrid days={inRange} />
       </Card>
 
       {streak > 1 ? (
         <Insight
           icon={<Icon name='trending-up' size={15} color={colors.aurora} />}
         >
-          {`Your longest streak in this period is ${streak} days, rest days included.`}
+          {`Your longest streak in this period is ${streak} days.`}
         </Insight>
       ) : null}
     </>
