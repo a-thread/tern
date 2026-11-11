@@ -4,6 +4,7 @@ import {
   type PlanOption,
   type SubscriptionStatus,
   Tier,
+  type TipOption,
 } from './models/subscription';
 
 /**
@@ -25,7 +26,18 @@ export interface SubscriptionRepository {
   identify(userId: string | null): Promise<SubscriptionStatus>;
   /** Calls `listener` when the status changes outside the app (a renewal, a refund); returns the unsubscribe. */
   onChange(listener: (status: SubscriptionStatus) => void): () => void;
+  /** The tip jar's amounts, as priced for this person; empty when the store has none. */
+  tips(): Promise<TipOption[]>;
+  /** Leaves a tip. True once paid; false if the person backed out. Throws if the store failed. */
+  tip(id: string): Promise<boolean>;
 }
+
+const SAMPLE_TIPS: TipOption[] = [2.99, 4.99, 9.99].map((amount) => ({
+  id: `sample_tip_${amount}`,
+  price: `$${amount.toFixed(2)}`,
+  amount,
+  currency: 'USD',
+}));
 
 const sample = (
   id: string,
@@ -83,6 +95,11 @@ export function createMemorySubscriptionRepository(
     identify: async (userId) =>
       userId && accountsHavePlus ? SIGNED_IN_PLUS : current,
     onChange: () => () => {},
+    tips: async () => [...SAMPLE_TIPS],
+    tip: async (id) => {
+      if (!SAMPLE_TIPS.some((t) => t.id === id)) throw new Error(`No tip ${id}`);
+      return true;
+    },
   };
 }
 
@@ -101,5 +118,9 @@ export function createUnavailableSubscriptionRepository(): SubscriptionRepositor
     restore: async () => NO_SUBSCRIPTION,
     identify: async () => NO_SUBSCRIPTION,
     onChange: () => () => {},
+    tips: async () => [],
+    tip: async () => {
+      throw new Error('Tips are not available in this build');
+    },
   };
 }

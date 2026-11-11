@@ -139,6 +139,49 @@ describe('RevenueCat subscription repository', () => {
     expect(after.some((p) => p.founding)).toBe(false);
   });
 
+  describe('the tip jar', () => {
+    const withTips = (overrides: Partial<PurchasesApi> = {}) =>
+      fakeApi({
+        getOfferings: jest.fn().mockResolvedValue({
+          current: { availablePackages: [pkg('$rc_annual', 'ANNUAL', '$39.99')] },
+          all: {
+            [SubscriptionConfig.TIPS_OFFERING]: {
+              availablePackages: [
+                pkg('tip_large', 'CUSTOM', '$9.99'),
+                pkg('tip_small', 'CUSTOM', '$2.99'),
+              ],
+            },
+          },
+        }),
+        ...overrides,
+      });
+
+    it('reads the tips offering, smallest first, apart from the plans', async () => {
+      const repo = createRevenueCatSubscriptionRepository(withTips(), 'k');
+      expect((await repo.tips()).map((t) => t.id)).toEqual(['tip_small', 'tip_large']);
+      expect((await repo.plans()).map((p) => p.id)).toEqual(['$rc_annual']);
+    });
+
+    it('has no tips when there is no tips offering', async () => {
+      expect(await createRevenueCatSubscriptionRepository(fakeApi(), 'k').tips()).toEqual([]);
+    });
+
+    it('buys a tip, and treats backing out as a choice', async () => {
+      const api = withTips();
+      const repo = createRevenueCatSubscriptionRepository(api, 'k');
+      expect(await repo.tip('tip_small')).toBe(true);
+      expect(api.purchasePackage).toHaveBeenCalledWith(pkg('tip_small', 'CUSTOM', '$2.99'));
+      api.purchasePackage.mockRejectedValueOnce({ userCancelled: true });
+      expect(await repo.tip('tip_small')).toBe(false);
+    });
+
+    it('will not sell a plan as a tip', async () => {
+      await expect(
+        createRevenueCatSubscriptionRepository(withTips(), 'k').tip('$rc_annual'),
+      ).rejects.toThrow('No tip $rc_annual');
+    });
+  });
+
   it('will not buy a lifetime package, even by id', async () => {
     await expect(
       createRevenueCatSubscriptionRepository(fakeApi(), 'k').purchase('$rc_lifetime'),

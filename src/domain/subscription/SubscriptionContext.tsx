@@ -7,7 +7,9 @@ import {
   NO_SUBSCRIPTION,
   type PlanOption,
   sortPlans,
+  sortTips,
   type SubscriptionStatus,
+  type TipOption,
 } from './models/subscription';
 
 type SubscriptionContextValue = {
@@ -32,6 +34,10 @@ type SubscriptionContextValue = {
   purchase: (id: string) => Promise<boolean>;
   /** Looks for an earlier purchase. True if one was found. Throws if the store failed. */
   restore: () => Promise<boolean>;
+  /** The tip jar's amounts, smallest first; empty when the store has none. */
+  tips: TipOption[];
+  /** Leaves a tip. True once paid; false if the person backed out. Throws if the store failed. */
+  tip: (id: string) => Promise<boolean>;
 };
 
 const [SubscriptionContext, useSubscription] =
@@ -69,6 +75,7 @@ export function SubscriptionProvider({
     known: boolean;
   }>({ for: undefined, known: false });
   const [plans, setPlans] = useState<PlanOption[]>([]);
+  const [tips, setTips] = useState<TipOption[]>([]);
   const granted = useRef(false);
 
   // Identifying first means the status read is the account's, not the phone's.
@@ -98,13 +105,19 @@ export function SubscriptionProvider({
         console.warn('Could not load Tern Plus plans', e);
         return [];
       });
-      return { identified, offered, userId, byGrant };
+      const jar = await repo.tips().catch((e) => {
+        // No tip jar is just no tip jar.
+        console.warn('Could not load the tip jar', e);
+        return [];
+      });
+      return { identified, offered, jar, userId, byGrant };
     }, [repo, userId, serverGrant]),
-    ({ identified, offered, userId: forUser, byGrant }) => {
+    ({ identified, offered, jar, userId: forUser, byGrant }) => {
       granted.current = byGrant;
       setStatus(identified ?? NO_SUBSCRIPTION);
       setChecked({ for: forUser, known: identified !== null });
       setPlans(sortPlans(offered));
+      setTips(sortTips(jar));
     },
     'Could not load Tern Plus',
   );
@@ -135,6 +148,8 @@ export function SubscriptionProvider({
     return next.active;
   }, [repo]);
 
+  const tip = useCallback((id: string) => repo.tip(id), [repo]);
+
   const value = useMemo(
     () => ({
       ready,
@@ -146,8 +161,10 @@ export function SubscriptionProvider({
       plans,
       purchase,
       restore,
+      tips,
+      tip,
     }),
-    [ready, status, checked, plans, purchase, restore],
+    [ready, status, checked, plans, purchase, restore, tips, tip],
   );
   return (
     <SubscriptionContext.Provider value={value}>

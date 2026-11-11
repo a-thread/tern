@@ -266,7 +266,10 @@ A Supporter's row reads *Tern Plus Supporter · renews {date}*. Everything else 
    the trail their tern has flown on Journey. It replaced alternate app icons, which are
    fiddly on Android. Names in a credits list were dropped: little value for the upkeep.
    Settings › About Tern says what Tern is for and the promises it keeps, holds the trail
-   picker, and links to a one-off tip on Buy Me a Coffee.
+   picker, and has a tip jar: one-off tips paid through the store, which unlock nothing. The
+   Buy Me a Coffee link shows in test builds only; Google Play's Payments policy (section 4)
+   and the App Store don't allow linking out to pay, tips included. The link can go on the
+   website instead.
 3. **Free appointment summary.** A readable summary the phone builds from the log and shares
    through the share sheet. It respects every hidden-number setting and uses no server.
    Touches `src/settings/data/` and the export utilities beside it.

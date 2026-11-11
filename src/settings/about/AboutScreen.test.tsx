@@ -56,12 +56,26 @@ function open(status: SubscriptionStatus) {
 afterEach(() => jest.restoreAllMocks());
 
 describe('AboutScreen', () => {
-  it('says what Tern is for, and links to the coffee page', async () => {
+  it('says what Tern is for, and links to the coffee page in a test build', async () => {
+    jest.spyOn(SupportTern, 'showCoffee').mockReturnValue(true);
     const open_ = jest.spyOn(Linking, 'openURL').mockResolvedValue(true);
     open(PLUS);
     expect(await screen.findByText('What Tern promises')).toBeTruthy();
     fireEvent.press(screen.getByText('Buy me a coffee'));
     expect(open_).toHaveBeenCalledWith(SupportTern.COFFEE_URL);
+  });
+
+  it('never links outside the store in a store build', async () => {
+    jest.spyOn(SupportTern, 'showCoffee').mockReturnValue(false);
+    open(PLUS);
+    expect(await screen.findByText('What Tern promises')).toBeTruthy();
+    expect(screen.queryByText('Buy me a coffee')).toBeNull();
+  });
+
+  it('offers the tip jar, and thanks someone who tips', async () => {
+    open(PLUS);
+    fireEvent.press(await screen.findByLabelText('Tip $4.99'));
+    expect(await screen.findByText('Thank you. That means a lot.')).toBeTruthy();
   });
 
   it('lets a Supporter choose their trail', async () => {

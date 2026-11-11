@@ -4,6 +4,7 @@ import {
   Plan,
   type PlanOption,
   SubscriptionConfig,
+  sortTips,
   type SubscriptionStatus,
   Tier,
 } from './models/subscription';
@@ -34,6 +35,8 @@ export interface PurchasesApi {
       /** Set in the RevenueCat dashboard; `founding: true` while the founding price is on sale. */
       metadata?: Record<string, unknown>;
     } | null;
+    /** Every offering by its identifier: the tip jar is its own (`tips`). */
+    all?: Record<string, { availablePackages: StorePackage[] }>;
   }>;
   purchasePackage(pkg: StorePackage): Promise<{ customerInfo: CustomerInfo }>;
   restorePurchases(): Promise<CustomerInfo>;
@@ -102,6 +105,9 @@ export function createRevenueCatSubscriptionRepository(
     };
   };
   const packages = async () => (await offering()).packages;
+  const tipPackages = async () =>
+    (await api.getOfferings()).all?.[SubscriptionConfig.TIPS_OFFERING]
+      ?.availablePackages ?? [];
 
   return {
     status: async () => statusFrom(await api.getCustomerInfo()),
@@ -121,6 +127,28 @@ export function createRevenueCatSubscriptionRepository(
       }
     },
     restore: async () => statusFrom(await api.restorePurchases()),
+    async tips() {
+      return sortTips(
+        (await tipPackages()).map((p) => ({
+          id: p.identifier,
+          price: p.product.priceString,
+          amount: p.product.price,
+          currency: p.product.currencyCode,
+        })),
+      );
+    },
+    async tip(id) {
+      const pkg = (await tipPackages()).find((p) => p.identifier === id);
+      if (!pkg) throw new Error(`No tip ${id}`);
+      try {
+        // A consumable: it can be bought again, and changes no entitlement.
+        await api.purchasePackage(pkg);
+        return true;
+      } catch (error) {
+        if ((error as { userCancelled?: boolean }).userCancelled) return false;
+        throw error;
+      }
+    },
     async identify(userId) {
       if (userId) return statusFrom((await api.logIn(userId)).customerInfo);
       // Logging out an anonymous user is an error in RevenueCat; there's nothing to undo.

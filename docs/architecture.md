@@ -143,8 +143,12 @@ Plus comes in two tiers (`Tier`). **Supporter** is the custom package `supporter
 which unlocks a `supporter` entitlement alongside `plus`. It adds a thank-you only: a colour
 of their choosing, picked in Settings › About Tern, for the trail their tern has flown on
 Journey (`trailColor` in settings, drawn through `trailFor`, so it falls back to Arctic when
-Supporter ends). About Tern also says what Tern is for and links to a one-off tip
-(`SupportTern.SHOW_COFFEE` turns that link off for a store build if review objects). Nothing is held back from Plus for it, and
+Supporter ends). About Tern also says what Tern is for, and holds the **tip jar**: one-off
+consumable products in a RevenueCat offering called `tips` (one package per amount, any
+identifiers), bought through `SubscriptionContext.tip`. A tip unlocks nothing. The Buy Me a
+Coffee link shows only in development and test builds (`SupportTern.showCoffee`), since Google
+Play's Payments policy and the App Store don't let an app lead people to pay outside the
+store, tips included. Nothing is held back from Plus for it, and
 the server checks `plus` alone. The **founding price** is switched on by setting
 `"founding": true` in the current offering's metadata in RevenueCat. While it's set, the
 paywall badges Plus yearly as the founding price instead of what it saves, so turning the

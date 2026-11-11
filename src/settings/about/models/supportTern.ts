@@ -1,13 +1,19 @@
+import { plusUnlocked } from '@/domain/subscription/plusUnlocked';
+
 /** Ways to support Tern besides Tern Plus. */
 export class SupportTern {
-  /** A one-off tip, on Buy Me a Coffee. */
+  /** A one-off tip on Buy Me a Coffee, outside the stores. */
   static readonly COFFEE_URL = 'https://buymeacoffee.com/athread';
+
   /**
-   * Whether the app links to it. The App Store and Google Play both limit links to paying
-   * outside the store, tips included, so this is the one switch to turn it off for a store
-   * build if review objects.
+   * Whether the app links to Buy Me a Coffee. Google Play (Payments policy, section 4) and the
+   * App Store don't allow an app to lead people to pay outside the store, tips included, so
+   * store builds don't: they have the tip jar instead, paid through the store. Test builds,
+   * which are sideloaded or run in development, still do.
    */
-  static readonly SHOW_COFFEE = true;
+  static showCoffee(): boolean {
+    return __DEV__ || plusUnlocked();
+  }
 }
 
 /** The About Tern row on the Settings index. */

@@ -15,6 +15,7 @@ import { TrailColors } from '@/domain/settings/models/trailColor';
 import { SettingsPage } from '../components/SettingsPage';
 import { SupportTern } from './models/supportTern';
 import { TrailChoice } from './components/TrailChoice/TrailChoice';
+import { TipJar } from './components/TipJar/TipJar';
 
 /**
  * Settings › About Tern: what Tern is for and the promises it keeps, ways to support it, and
@@ -63,19 +64,21 @@ export default function AboutScreen() {
       </Card>
 
       <GroupLabel>Support Tern</GroupLabel>
-      {SupportTern.SHOW_COFFEE ? (
+      <TipJar />
+      {SupportTern.showCoffee() ? (
         <Group>
           <Row
             title='Buy me a coffee'
-            sub='A one-off thank-you, outside the app'
+            sub='A one-off thank-you, outside the app (test builds only)'
             chevron
             onPress={openCoffee}
           />
         </Group>
       ) : null}
       <FootNote>
-        Tern is made by one person in their off hours. Tern Plus keeps it running,
-        with an account that keeps your log on every phone you sign in to.
+        Tern is made by one person in their off hours. A tip is a one-off
+        thank-you and unlocks nothing. Tern Plus keeps Tern running, with an
+        account that keeps your log on every phone you sign in to.
       </FootNote>
 
       {supporter ? (

@@ -34,6 +34,23 @@ export type PlanOption = {
   currency: string;
 };
 
+/**
+ * A one-off tip for the developer, bought through the store. It unlocks nothing: Tern holds
+ * nothing back from anyone who doesn't tip.
+ */
+export type TipOption = {
+  /** The store's id for it, passed back to buy it. */
+  id: string;
+  /** Already formatted in the person's currency: "$4.99". */
+  price: string;
+  amount: number;
+  currency: string;
+};
+
+/** Smallest first, so the jar reads left to right. */
+export const sortTips = (tips: TipOption[]) =>
+  [...tips].sort((a, b) => a.amount - b.amount);
+
 export type SubscriptionStatus = {
   /** Tern Plus is on: an account syncs. */
   active: boolean;
@@ -61,6 +78,8 @@ export class SubscriptionConfig {
   static readonly SUPPORTER_PACKAGE = 'supporter_annual';
   /** The key set to `true` in the current offering's metadata while the founding price is on sale. */
   static readonly FOUNDING_METADATA = 'founding';
+  /** The RevenueCat offering that holds the tip jar's consumable products, one per amount. */
+  static readonly TIPS_OFFERING = 'tips';
 }
 
 /**
