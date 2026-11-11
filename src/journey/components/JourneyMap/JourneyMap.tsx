@@ -8,7 +8,7 @@ import {
   Text,
   View,
 } from 'react-native';
-import Svg, { Circle, G, Image as SvgImage, Path } from 'react-native-svg';
+import Svg, { Circle, G, Image as SvgImage } from 'react-native-svg';
 
 import { colors, radius, space, typography } from '@shared/theme';
 import { Icon } from '@shared/components/ui';
@@ -31,6 +31,7 @@ import {
   stopIndex,
 } from './utils/routeAt';
 import { ternPose } from './utils/ternPose';
+import { flockIconIndex } from './utils/flockIcon';
 import { toFrame, toMap } from './utils/mapZoom';
 import { legZoom } from './utils/legZoom';
 import { useMapZoom } from './hooks/useMapZoom';
@@ -83,8 +84,27 @@ const FLOCK_SPOTS = [
   { x: 2.4, y: 2.2 },
 ];
 
-/** A friend's tern in the flock: wings in a shallow "v", about 12 points across. */
-const FLOCK_TERN = 'M -6 1.5 C -3.5 0.5, -1.5 -1.5, 0 -3.5 C 1.5 -1.5, 3.5 0.5, 6 1.5';
+/**
+ * The flock's terns: white silhouettes in eight poses (from design's Arctic Tern Flying
+ * Logo set), so friends flying together don't all look alike. Each friend keeps one,
+ * picked from their name (`flockIconIndex`).
+ */
+class FlockIcons {
+  static readonly SOURCES = [
+    require('../../../../assets/flock/flock-banking-turn.png'),
+    require('../../../../assets/flock/flock-curving-flight.png'),
+    require('../../../../assets/flock/flock-downstroke.png'),
+    require('../../../../assets/flock/flock-level-glide.png'),
+    require('../../../../assets/flock/flock-rising-arc.png'),
+    require('../../../../assets/flock/flock-sharp-sweep.png'),
+    require('../../../../assets/flock/flock-streamlined-flight.png'),
+    require('../../../../assets/flock/flock-upward-sweep.png'),
+  ];
+  /** Each silhouette's width on the map, in the drawing's units (about points); they're square. */
+  static readonly SIZE = 15;
+  /** A friend who's resting is drawn fainter, the way rest days read in driftwood elsewhere. */
+  static readonly RESTING_OPACITY = 0.55;
+}
 
 const SHAPES = {
   [JourneyView.Map]: JourneyMapShapes.MAP,
@@ -223,6 +243,7 @@ export function JourneyMap({
   const bird = ternPose(shape, birdIndex, TernIcon.HEADING);
   const birdW = MapLayout.BIRD_W / k;
   const birdH = birdW * TernIcon.RATIO;
+  const flockSize = FlockIcons.SIZE / k;
 
   // What a held single tap reads when it goes off: the map as it is then, not as it was tapped.
   const current = useRef({ zoom, shape, scale });
@@ -410,17 +431,20 @@ export function JourneyMap({
                   const x = bird.x + spot.x * birdW;
                   const y = bird.y + spot.y * birdW;
                   return (
-                    // A small tern in flight, its wings a shallow "v". Named in the list
-                    // under the map, so the map itself needs no lettering.
-                    <Path
+                    // Each friend's own tern. Named in the list under the map, so the map
+                    // itself needs no lettering.
+                    <SvgImage
                       key={`${friend.name}-${i}`}
-                      d={FLOCK_TERN}
-                      transform={`translate(${x}, ${y}) scale(${1 / k})`}
-                      fill='none'
-                      stroke={friend.resting ? colors.driftwoodTint : colors.onDark}
-                      strokeWidth={1.8}
-                      strokeLinecap='round'
-                      strokeLinejoin='round'
+                      href={
+                        FlockIcons.SOURCES[
+                          flockIconIndex(friend.name, FlockIcons.SOURCES.length)
+                        ]
+                      }
+                      x={x - flockSize / 2}
+                      y={y - flockSize / 2}
+                      width={flockSize}
+                      height={flockSize}
+                      opacity={friend.resting ? FlockIcons.RESTING_OPACITY : 1}
                     />
                   );
                 })}
