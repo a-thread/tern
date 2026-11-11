@@ -112,6 +112,22 @@ export const tierTextColors: Record<1 | 2 | 3 | 4, string> = {
   4: colors.onAction,
 };
 
+/**
+ * A ternary's flock on Journey: one colour per friend, all light enough to read on the dark
+ * sky, as the bird and as its name. In step with assets/flock/ (each pose is baked in its
+ * colour, in this order; scripts/flock-icons.js makes them).
+ */
+export const flockColors = [
+  '#FBFAF7', // white
+  '#8FD9C4', // mint
+  '#F2C888', // gold
+  '#F4A99A', // salmon
+  '#C7B8F0', // lavender
+  '#9FD3F0', // sky
+  '#B9E08A', // lime
+  '#A9C2CE', // steel
+] as const;
+
 export const gradients = {
   /** Today hero, by progress toward the step goal. */
   dawn: ['#2E4257', '#5C6F92', '#A9849E', '#E0A98C'],

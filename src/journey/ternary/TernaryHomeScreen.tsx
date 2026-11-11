@@ -3,13 +3,14 @@ import React from 'react';
 import { FootNote, Group, GroupLabel, Row } from '@shared/components/ui';
 import { useSettings } from '@/domain/settings/SettingsContext';
 import { useTernary } from '@/domain/ternary/TernaryContext';
-import { flock, Presence } from '@/domain/ternary/models/ternary';
+import { flockWithLooks, Presence } from '@/domain/ternary/models/ternary';
 import { promptFor, restingAt } from '@/domain/ternary/models/stopover';
 import { useTernaryNavigation } from '../../navigation/useAppNavigation';
 import { TernaryPage } from './components/TernaryPage/TernaryPage';
 import { StartTernary } from './components/StartTernary/StartTernary';
 import { FlockMap } from './components/FlockMap/FlockMap';
 import { BringFish } from './components/BringFish/BringFish';
+import { FlockBadge } from './components/FlockBadge/FlockBadge';
 
 /**
  * Your ternary: the shared bird and who's flying with it today, fish, and the way to the
@@ -39,16 +40,19 @@ export default function TernaryHomeScreen() {
     );
   }
 
-  const here = flock(ternary.members);
+  const here = flockWithLooks(ternary.members);
   const stop = restingAt(ternary.total);
   return (
     <TernaryPage title={ternary.name} top={<FlockMap />}>
       <GroupLabel>Flying today</GroupLabel>
       <Group>
         {here.length ? (
-          here.map((m) => (
+          here.map(({ member: m, look }) => (
             <Row
               key={m.userId}
+              icon={
+                <FlockBadge look={look} faint={m.presence === Presence.Resting} />
+              }
               title={m.you ? 'You' : m.name}
               value={m.presence === Presence.Resting ? 'Resting' : 'Here'}
             />

@@ -10,6 +10,7 @@ import {
   dishFromSavedMeal,
   fishable,
   flock,
+  flockWithLooks,
   Presence,
   showUpPoints,
   TernaryRules,
@@ -44,6 +45,13 @@ describe('the flock', () => {
 
   it('draws only who is here or resting, and never a quiet friend', () => {
     expect(flock(members).map((m) => m.name)).toEqual(['You', 'Maya']);
+  });
+
+  it('gives each friend their own look by their place, kept when others are quiet', () => {
+    expect(flockWithLooks(members).map(({ member, look }) => [member.name, look])).toEqual([
+      ['You', 0],
+      ['Maya', 1],
+    ]);
   });
 
   it('offers a fish to every friend, quiet or not', () => {

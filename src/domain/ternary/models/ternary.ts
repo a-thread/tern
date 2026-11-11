@@ -112,6 +112,16 @@ export function dishFromSavedMeal(meal: SavedMeal): { name: string; foods: strin
 export const flock = (members: readonly TernaryMember[]) =>
   members.filter((m) => m.presence !== null);
 
+/**
+ * Who's in the flock today, each with their look: which bird and colour they fly as on the
+ * map. It's their place in the ternary (members come in the order they joined), so no two
+ * friends share one and nobody's changes from day to day, whoever else shows up.
+ */
+export const flockWithLooks = (members: readonly TernaryMember[]) =>
+  members
+    .map((member, look) => ({ member, look }))
+    .filter(({ member }) => member.presence !== null);
+
 /** The friends you could bring a fish to: everyone but you. */
 export const fishable = (members: readonly TernaryMember[]) =>
   members.filter((m) => !m.you);

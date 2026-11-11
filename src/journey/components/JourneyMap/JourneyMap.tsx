@@ -31,7 +31,7 @@ import {
   stopIndex,
 } from './utils/routeAt';
 import { ternPose } from './utils/ternPose';
-import { flockIconIndex } from './utils/flockIcon';
+import { FlockLooks } from '../../models/flockLooks';
 import { toFrame, toMap } from './utils/mapZoom';
 import { legZoom } from './utils/legZoom';
 import { useMapZoom } from './hooks/useMapZoom';
@@ -72,36 +72,28 @@ class TernIcon {
   static readonly HEADING = 15;
 }
 
-/** Where friends fly around the shared bird, in bird widths: a loose, leaderless cluster. */
+/**
+ * Where friends fly around the shared bird, in bird widths: a loose, leaderless cluster,
+ * spaced so each friend's name fits under their bird.
+ */
 const FLOCK_SPOTS = [
-  { x: -1.4, y: 1.1 },
-  { x: 1.3, y: 1.3 },
-  { x: -0.3, y: 2.2 },
-  { x: 1.8, y: -0.7 },
-  { x: -2.1, y: -0.5 },
-  { x: 0.8, y: 3.0 },
-  { x: -1.5, y: 3.1 },
-  { x: 2.4, y: 2.2 },
+  { x: -2.2, y: 1.8 },
+  { x: 2.1, y: 2.1 },
+  { x: -0.4, y: 3.6 },
+  { x: 2.9, y: -1.1 },
+  { x: -3.3, y: -0.8 },
+  { x: 1.3, y: 4.9 },
+  { x: -2.6, y: 5.0 },
+  { x: 3.9, y: 3.6 },
 ];
 
-/**
- * The flock's terns: white silhouettes in eight poses (from design's Arctic Tern Flying
- * Logo set), so friends flying together don't all look alike. Each friend keeps one,
- * picked from their name (`flockIconIndex`).
- */
+/** Sizes for the flock's terns (their looks are in `FlockLooks`) and the names under them. */
 class FlockIcons {
-  static readonly SOURCES = [
-    require('../../../../assets/flock/flock-banking-turn.png'),
-    require('../../../../assets/flock/flock-curving-flight.png'),
-    require('../../../../assets/flock/flock-downstroke.png'),
-    require('../../../../assets/flock/flock-level-glide.png'),
-    require('../../../../assets/flock/flock-rising-arc.png'),
-    require('../../../../assets/flock/flock-sharp-sweep.png'),
-    require('../../../../assets/flock/flock-streamlined-flight.png'),
-    require('../../../../assets/flock/flock-upward-sweep.png'),
-  ];
-  /** Each silhouette's width on the map, in the drawing's units (about points); they're square. */
-  static readonly SIZE = 15;
+  /** Each silhouette's width on screen, in points; they're square. */
+  static readonly SIZE = 16;
+  /** How far below the bird's middle its name's pill starts, and the most room it gets. */
+  static readonly NAME_BELOW = 10;
+  static readonly NAME_W = 96;
   /** A friend who's resting is drawn fainter, the way rest days read in driftwood elsewhere. */
   static readonly RESTING_OPACITY = 0.55;
 }
@@ -130,9 +122,10 @@ export function JourneyMap({
   /**
    * A ternary's flock: the friends who showed up today, drawn in a loose cluster around the
    * bird (terns don't fly in a V, so there's no leader). Only who's here is passed, so a quiet
-   * friend is never drawn at all.
+   * friend is never drawn at all. `look` is which bird and colour a friend flies as: their
+   * place in the ternary, so it stays theirs from day to day.
    */
-  flock?: readonly { name: string; resting: boolean }[];
+  flock?: readonly { name: string; resting: boolean; look: number }[];
   /** How far through the current migration, 0 to 1. */
   progress: number;
   /** Which migration this is: 1 for the first. */
@@ -243,7 +236,14 @@ export function JourneyMap({
   const bird = ternPose(shape, birdIndex, TernIcon.HEADING);
   const birdW = MapLayout.BIRD_W / k;
   const birdH = birdW * TernIcon.RATIO;
-  const flockSize = FlockIcons.SIZE / k;
+  // Where each friend flies, in the map's own units: spaced in bird widths, so the cluster
+  // keeps its size on screen however far the map is zoomed.
+  const flockAt = (flock ?? []).slice(0, FLOCK_SPOTS.length).map((friend, i) => ({
+    ...friend,
+    key: `${friend.look}-${friend.name}`,
+    x: bird.x + FLOCK_SPOTS[i].x * birdW,
+    y: bird.y + FLOCK_SPOTS[i].y * birdW,
+  }));
 
   // What a held single tap reads when it goes off: the map as it is then, not as it was tapped.
   const current = useRef({ zoom, shape, scale });
@@ -426,33 +426,23 @@ export function JourneyMap({
                   );
                 })}
 
-                {(flock ?? []).slice(0, FLOCK_SPOTS.length).map((friend, i) => {
-                  const spot = FLOCK_SPOTS[i];
-                  const x = bird.x + spot.x * birdW;
-                  const y = bird.y + spot.y * birdW;
-                  return (
-                    // Each friend's own tern. Named in the list under the map, so the map
-                    // itself needs no lettering. Turned back by the map's own turn, so it
-                    // stays right side up on screen however the leg is lined up.
-                    <G
-                      key={`${friend.name}-${i}`}
-                      transform={`rotate(${-zoom.rotate}, ${x}, ${y})`}
-                    >
-                      <SvgImage
-                        href={
-                          FlockIcons.SOURCES[
-                            flockIconIndex(friend.name, FlockIcons.SOURCES.length)
-                          ]
-                        }
-                        x={x - flockSize / 2}
-                        y={y - flockSize / 2}
-                        width={flockSize}
-                        height={flockSize}
-                        opacity={friend.resting ? FlockIcons.RESTING_OPACITY : 1}
-                      />
-                    </G>
-                  );
-                })}
+                {/* Each friend's own tern, in their colour. Turned and scaled back by the
+                    map's own zoom, so it stays right side up and the same size on screen. */}
+                {flockAt.map((friend) => (
+                  <G
+                    key={friend.key}
+                    transform={`translate(${friend.x}, ${friend.y}) rotate(${-zoom.rotate}) scale(${1 / k})`}
+                    opacity={friend.resting ? FlockIcons.RESTING_OPACITY : 1}
+                  >
+                    <SvgImage
+                      href={FlockLooks.source(friend.look)}
+                      x={-FlockIcons.SIZE / 2}
+                      y={-FlockIcons.SIZE / 2}
+                      width={FlockIcons.SIZE}
+                      height={FlockIcons.SIZE}
+                    />
+                  </G>
+                ))}
 
                 {/* Seen from above, so it can turn about its body to face any way it flies. */}
                 <G
@@ -470,6 +460,33 @@ export function JourneyMap({
             </Svg>
           </Pressable>
         </Animated.View>
+
+        {/* Friends' names, in pills like a stop's, each in its friend's colour. */}
+        {flockAt.map((friend) => {
+          const at = toFrame(zoom, { x: friend.x * scale, y: friend.y * scale });
+          if (at.x < 0 || at.x > width || at.y < 0 || at.y > frameHeight) return null;
+          return (
+            <View
+              key={friend.key}
+              pointerEvents='none'
+              style={[
+                s.name,
+                {
+                  left: at.x - FlockIcons.NAME_W / 2,
+                  top: at.y + FlockIcons.NAME_BELOW,
+                  opacity: friend.resting ? FlockIcons.RESTING_OPACITY : 1,
+                },
+              ]}
+            >
+              <Text
+                style={[s.labelText, { color: FlockLooks.color(friend.look) }]}
+                numberOfLines={1}
+              >
+                {friend.name}
+              </Text>
+            </View>
+          );
+        })}
 
         {label && tapped ? (
           <View
@@ -549,6 +566,11 @@ const s = StyleSheet.create({
   label: {
     position: 'absolute',
     width: MapLayout.LABEL_W,
+    alignItems: 'center',
+  },
+  name: {
+    position: 'absolute',
+    width: FlockIcons.NAME_W,
     alignItems: 'center',
   },
   labelText: {
