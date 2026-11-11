@@ -33,7 +33,7 @@ import { logHome } from './models/logHome';
 import { usePlusLapsed } from './hooks/usePlusLapsed';
 import { useAuth } from '../domain/auth/AuthContext';
 import { useSubscription } from '../domain/subscription/SubscriptionContext';
-import { aboutSummary } from './about/models/supportTern';
+import { aboutSummary } from './about/models/aboutSummary';
 
 type Props = NativeStackScreenProps<SettingsStackParamList, 'SettingsRoot'>;
 

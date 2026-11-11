@@ -10,7 +10,6 @@ import { TrailColor } from '@/domain/settings/models/trailColor';
 import type { SubscriptionStatus } from '@/domain/subscription/models/subscription';
 import { createMemorySubscriptionRepository } from '@/domain/subscription/subscription.repository';
 import { SubscriptionProvider } from '@/domain/subscription/SubscriptionContext';
-import { SupportTern } from './models/supportTern';
 import AboutScreen from './AboutScreen';
 
 jest.mock('@react-navigation/native', () => ({
@@ -56,20 +55,12 @@ function open(status: SubscriptionStatus) {
 afterEach(() => jest.restoreAllMocks());
 
 describe('AboutScreen', () => {
-  it('says what Tern is for, and links to the coffee page in a test build', async () => {
-    jest.spyOn(SupportTern, 'showCoffee').mockReturnValue(true);
-    const open_ = jest.spyOn(Linking, 'openURL').mockResolvedValue(true);
+  it('says what Tern is for, and never links out to pay', async () => {
+    const openURL = jest.spyOn(Linking, 'openURL');
     open(PLUS);
     expect(await screen.findByText('What Tern promises')).toBeTruthy();
-    fireEvent.press(screen.getByText('Buy me a coffee'));
-    expect(open_).toHaveBeenCalledWith(SupportTern.COFFEE_URL);
-  });
-
-  it('never links outside the store in a store build', async () => {
-    jest.spyOn(SupportTern, 'showCoffee').mockReturnValue(false);
-    open(PLUS);
-    expect(await screen.findByText('What Tern promises')).toBeTruthy();
-    expect(screen.queryByText('Buy me a coffee')).toBeNull();
+    expect(screen.queryByText(/coffee/i)).toBeNull();
+    expect(openURL).not.toHaveBeenCalled();
   });
 
   it('offers the tip jar, and thanks someone who tips', async () => {

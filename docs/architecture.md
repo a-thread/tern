@@ -145,10 +145,9 @@ of their choosing, picked in Settings › About Tern, for the trail their tern h
 Journey (`trailColor` in settings, drawn through `trailFor`, so it falls back to Arctic when
 Supporter ends). About Tern also says what Tern is for, and holds the **tip jar**: one-off
 consumable products in a RevenueCat offering called `tips` (one package per amount, any
-identifiers), bought through `SubscriptionContext.tip`. A tip unlocks nothing. The Buy Me a
-Coffee link shows only in development and test builds (`SupportTern.showCoffee`), since Google
-Play's Payments policy and the App Store don't let an app lead people to pay outside the
-store, tips included. Nothing is held back from Plus for it, and
+identifiers), bought through `SubscriptionContext.tip`. A tip unlocks nothing. The app never links out to
+pay (Buy Me a Coffee was removed): Google Play's Payments policy and the App Store don't let
+an app lead people to pay outside the store, tips included. Nothing is held back from Plus for it, and
 the server checks `plus` alone. The **founding price** is switched on by setting
 `"founding": true` in the current offering's metadata in RevenueCat. While it's set, the
 paywall badges Plus yearly as the founding price instead of what it saves, so turning the
