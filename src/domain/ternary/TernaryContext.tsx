@@ -68,8 +68,10 @@ export function TernaryProvider({
 
   const hidden = settings.hideTernary;
   const total = ternary?.total;
+  // With sample friends the total may be moved on to show the table: never paid, or remembered.
+  const sample = Boolean(ternary?.sample);
   useEffect(() => {
-    if (total === undefined || hidden) return;
+    if (total === undefined || hidden || sample) return;
     const due = arrivalDue(total, settings.ternaryArrival, today);
     if (JSON.stringify(due.seen) !== JSON.stringify(settings.ternaryArrival)) {
       updateSettings({ ternaryArrival: due.seen });
@@ -77,7 +79,7 @@ export function TernaryProvider({
     if (due.pay) addWaypoints(TernaryRules.ARRIVAL_POINTS, WaypointSource.Arrival);
     // Only a new total or a new day can bring an arrival.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [total, today, hidden]);
+  }, [total, today, hidden, sample]);
 
   const then = useCallback(
     <A extends unknown[], R>(fn: (...args: A) => Promise<R>) =>

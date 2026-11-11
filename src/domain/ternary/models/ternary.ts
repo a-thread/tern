@@ -58,6 +58,11 @@ export type Ternary = {
   dishes: Dish[];
   flyPrivately: boolean;
   shareResting: boolean;
+  /**
+   * Shown with made-up friends on a local build (`withSampleFriends`): its total may be moved
+   * on to open the table, so no arrival is paid for it.
+   */
+  sample?: boolean;
 };
 
 export enum JoinOutcome {

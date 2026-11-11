@@ -106,7 +106,9 @@ import { createSupabasePlusSync } from './domain/subscription/entitlement.supaba
 import {
   createMemoryTernaryRepository,
   type TernaryRepository,
+  withSampleFriends,
 } from './domain/ternary/ternary.repository';
+import { sampleFriends } from './domain/ternary/sampleFriends';
 import { createSupabaseTernaryRepository } from './domain/ternary/ternary.repository.supabase';
 
 /** Every repository the app persists through. Contexts read these; they never touch Supabase directly. */
@@ -268,7 +270,10 @@ export function createRemoteBackend(): Backend {
     workouts: createHealthWorkouts(),
     data: createSupabaseDataRepository(supabase),
     syncPlus: createSupabasePlusSync(supabase),
-    ternary: createSupabaseTernaryRepository(supabase),
+    // Made-up friends alongside your real ternary, on a local development build only.
+    ternary: sampleFriends()
+      ? withSampleFriends(createSupabaseTernaryRepository(supabase))
+      : createSupabaseTernaryRepository(supabase),
   };
 }
 
