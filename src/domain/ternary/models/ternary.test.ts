@@ -71,6 +71,7 @@ describe('dishes', () => {
       id: 'm',
       name: 'Red lentil soup',
       createdAt: '2026-11-01',
+      servings: 4,
       items: [
         { name: 'Red lentils', calories: 230 },
         { name: 'Carrot', calories: 25 },

@@ -128,7 +128,7 @@ export function StartTernary() {
         }
       />
       <FootNote>
-        {`Everyone in a ternary has Tern Plus. Up to ${TernaryRules.MAX_MEMBERS} friends, and anyone can leave whenever they like.`}
+        {`Everyone in a ternary has Tern Plus. Up to ${TernaryRules.MAX_MEMBERS} people, you included, and anyone can leave whenever they like.`}
       </FootNote>
     </View>
   );

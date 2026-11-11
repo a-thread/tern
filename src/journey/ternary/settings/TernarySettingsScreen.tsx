@@ -6,8 +6,8 @@ import { useToast } from '@shared/state/ToastContext';
 import { confirm } from '@shared/utils/confirm';
 import { useSettings } from '@/domain/settings/SettingsContext';
 import { useTernary } from '@/domain/ternary/TernaryContext';
-import { fishable } from '@/domain/ternary/models/ternary';
-import { useRootNavigation } from '../../../navigation/useAppNavigation';
+import { fishable, ReportKind } from '@/domain/ternary/models/ternary';
+import { useRootNavigation } from '@/navigation/useAppNavigation';
 import { TernaryPage } from '../components/TernaryPage/TernaryPage';
 
 /**
@@ -16,7 +16,7 @@ import { TernaryPage } from '../components/TernaryPage/TernaryPage';
  * shared bird never moves back.
  */
 export default function TernarySettingsScreen() {
-  const { ternary, setPrivacy, block, leave } = useTernary();
+  const { ternary, setPrivacy, block, unblock, report, leave } = useTernary();
   const { settings, updateSettings } = useSettings();
   const toast = useToast();
   const root = useRootNavigation();
@@ -34,12 +34,32 @@ export default function TernarySettingsScreen() {
       message: `Fly with me in Tern: join my ternary “${ternary.name}” with the code ${ternary.inviteCode}.`,
     }).catch(() => {});
 
+  const reportMember = async (userId: string) => {
+    try {
+      await report(ReportKind.Member, userId);
+      toast.show('Thanks. It’s been reported.');
+    } catch (e) {
+      console.warn('Could not report a member', e);
+      toast.show('Couldn’t report that just now. Please try again.');
+    }
+  };
+
   const askBlock = (userId: string, name: string) =>
     confirm({
       title: `Block ${name}?`,
-      message: `You’ll stop seeing each other in ${ternary.name}. ${name} isn’t told.`,
+      message: `You’ll stop seeing each other in ${ternary.name}. ${name} isn’t told. To report their name to Tern as well, choose Report.`,
       action: 'Block',
+      also: { text: 'Report', onPress: () => reportMember(userId) },
       onConfirm: () => block(userId).catch(() => toast.show('Couldn’t block just now.')),
+    });
+
+  const askUnblock = (userId: string, name: string) =>
+    confirm({
+      title: `Unblock ${name}?`,
+      message: `You’ll see each other in ${ternary.name} again.`,
+      action: 'Unblock',
+      destructive: false,
+      onConfirm: () => unblock(userId).catch(() => toast.show('Couldn’t unblock just now.')),
     });
 
   const askLeave = () =>
@@ -85,7 +105,7 @@ export default function TernarySettingsScreen() {
       <Group>
         <ToggleRow
           title='Hide the ternary for now'
-          sub='It leaves Journey, and your friends see nothing change'
+          sub='Journey keeps one row to bring it back. Your friends see nothing change'
           on={settings.hideTernary}
           onToggle={(v) => updateSettings({ hideTernary: v })}
         />
@@ -103,13 +123,33 @@ export default function TernarySettingsScreen() {
           <Row
             key={m.userId}
             title={m.name}
-            sub='Block'
+            sub='Block or report'
             subLink
             onPress={() => askBlock(m.userId, m.name)}
           />
         ))}
       </Group>
-      <FootNote>Blocking is silent: they just stop seeing you.</FootNote>
+      <FootNote>
+        Blocking is silent: they just stop seeing you. A report goes to Tern and is
+        read by a person.
+      </FootNote>
+
+      {ternary.blocked.length ? (
+        <>
+          <GroupLabel>Blocked</GroupLabel>
+          <Group>
+            {ternary.blocked.map((b) => (
+              <Row
+                key={b.userId}
+                title={b.name}
+                sub='Unblock'
+                subLink
+                onPress={() => askUnblock(b.userId, b.name)}
+              />
+            ))}
+          </Group>
+        </>
+      ) : null}
 
       <Group>
         <Row title={`Leave ${ternary.name}`} chevron onPress={askLeave} />

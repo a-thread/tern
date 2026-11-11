@@ -10,6 +10,7 @@ documents.
 | [journey-route-sources.md](journey-route-sources.md) | where the migration route, its distances and stop facts come from |
 | [health-connect.md](health-connect.md)         | Android steps: turning it on, what's configured, Play review        |
 | [food-search.md](food-search.md)               | Open Food Facts and USDA, caching, attribution                      |
+| [ternaries.md](ternaries.md)                   | friends who fly together: the design, earning, what must never happen |
 | [RELEASING.md](RELEASING.md)                   | EAS builds, the GitHub workflow, submitting to Play                 |
 | [store-listing.md](store-listing.md)           | the Play Store copy, kept in step with the app                      |
 | [../supabase/README.md](../supabase/README.md) | setting up a Supabase project, migrations, what each table holds    |

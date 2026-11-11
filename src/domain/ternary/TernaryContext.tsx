@@ -10,6 +10,7 @@ import type { TernaryRepository } from './ternary.repository';
 import { arrivalDue } from './models/stopover';
 import {
   type JoinOutcome,
+  type ReportKind,
   type Ternary,
   TernaryRules,
 } from './models/ternary';
@@ -20,7 +21,10 @@ type TernaryContextValue = {
   ready: boolean;
   /** The caller's ternary today, or null. */
   ternary: Ternary | null;
-  /** Hidden for now (a break, not leaving): Journey shows nothing of it, and no arrival is paid. */
+  /**
+   * Hidden for now (a break, not leaving): Journey shows only a row to bring it back. No
+   * arrival is paid meanwhile; a stop reached during the break pays once it's shown again.
+   */
   hidden: boolean;
   reload: () => Promise<unknown>;
   create: (name: string, yourName: string) => Promise<void>;
@@ -31,7 +35,8 @@ type TernaryContextValue = {
   sendPostcard: (stopId: string) => Promise<void>;
   bringDish: (stop: string, dish: { name: string; foods: string[] }) => Promise<void>;
   block: (userId: string) => Promise<void>;
-  report: (kind: 'dish' | 'member', target: string) => Promise<void>;
+  unblock: (userId: string) => Promise<void>;
+  report: (kind: ReportKind, target: string) => Promise<void>;
 };
 
 const [TernaryContext, useTernary] = createRequiredContext<TernaryContextValue>(
@@ -114,6 +119,7 @@ export function TernaryProvider({
         need().bringDish(stop, dish),
       ),
       block: then((userId: string) => need().block(userId)),
+      unblock: then((userId: string) => need().unblock(userId)),
       report: (kind, target) => need().report(kind, target),
     };
   }, [repo, ready, ternary, hidden, reload, then, today]);

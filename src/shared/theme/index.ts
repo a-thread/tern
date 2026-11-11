@@ -115,7 +115,7 @@ export const tierTextColors: Record<1 | 2 | 3 | 4, string> = {
 /**
  * A ternary's flock on Journey: one colour per friend, all light enough to read on the dark
  * sky, as the bird and as its name. In step with assets/flock/ (each pose is baked in its
- * colour, in this order; scripts/flock-icons.js makes them).
+ * colour, in this order; scripts/buildFlockIcons.ts makes them).
  */
 export const flockColors = [
   '#FBFAF7', // white

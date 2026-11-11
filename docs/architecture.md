@@ -148,12 +148,11 @@ Plus comes in two tiers (`Tier`). **Supporter** is the custom package `supporter
 which unlocks a `supporter` entitlement alongside `plus`. It adds a thank-you only: a colour
 of their choosing, picked in Settings › About Tern, for the trail their tern has flown on
 Journey (`trailColor` in settings, drawn through `trailFor`, so it falls back to Arctic when
-Supporter ends). About Tern also says what Tern is for, and holds the **tip jar**: one-off
-consumable products in a RevenueCat offering called `tips` (one package per amount, any
-identifiers), bought through `SubscriptionContext.tip`. A tip unlocks nothing. The app never links out to
-pay (Buy Me a Coffee was removed): Google Play's Payments policy and the App Store don't let
-an app lead people to pay outside the store, tips included. Nothing is held back from Plus for it, and
-the server checks `plus` alone. The **founding price** is switched on by setting
+Supporter ends). Nothing is held back from Plus for it, and the server checks `plus` alone.
+About Tern also holds the **tip jar**: one-off consumable products in a RevenueCat offering
+called `tips` (one package per amount, any identifiers), bought through
+`SubscriptionContext.tip`. A tip unlocks nothing. Tips go through the store because neither
+store lets an app link out to pay. The **founding price** is switched on by setting
 `"founding": true` in the current offering's metadata in RevenueCat. While it's set, the
 paywall badges Plus yearly as the founding price instead of what it saves, so turning the
 founding price off needs no release.
@@ -193,14 +192,15 @@ the Deno wrapper, left out of typecheck and lint.
 ## Ternaries
 
 A ternary is a small invite-only circle of friends with Tern Plus, flying one shared bird
-(see the design in [plus-tier-proposal.md](plus-tier-proposal.md#1a-ternaries)). It needs an
-account, so only the remote backend has a `ternary` repository; on the phone `TernaryProvider`
-gets none and `available` is false. The provider is app-wide, because the Journey tab (its
+(the design is in [ternaries.md](ternaries.md)). It needs an account, so the on-phone backend
+has no `ternary` repository: `TernaryProvider` gets none and `available` is false. The remote
+backend has the Supabase one, and the memory preview an in-memory one to try the screens. The provider is app-wide, because the Journey tab (its
 card) and the ternary's own stack (`journey/ternary/`) both read it.
 
 Every ternary table has row-level security on and no policies, so the app reaches them only
 through the security-definer functions in
-[`20261110000000_ternaries.sql`](../supabase/migrations/20261110000000_ternaries.sql).
+[`20261111000000_ternaries.sql`](../supabase/migrations/20261111000000_ternaries.sql), as
+changed by [`20261112000000_ternary_fixes.sql`](../supabase/migrations/20261112000000_ternary_fixes.sql).
 `ternary_state` alone decides what a friend sees: who showed up today (counted from
 `waypoint_events`, which no one else can read), "resting" only when shared, and nothing for
 someone flying privately or quiet. The shared bird moves 75 × the share of members who showed

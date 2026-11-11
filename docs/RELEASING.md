@@ -106,18 +106,15 @@ copied to the phone and syncing stops until they subscribe for real.
 
 At launch:
 
-1. Decide how testers keep the founding price and tell them before the price changes. They
-   either subscribe for real while it's on sale, or get Plus by hand (a RevenueCat
-   promotional grant, or a `manual` row in `tern.entitlements`). An Apple subscription offer
-   code or a Play promo code can give them a free first period.
+1. Tell testers how to keep the founding price before it changes: subscribe while it's on
+   sale, or get Plus by hand (a RevenueCat promotional grant or a `manual` entitlement).
 2. Take testers off Play Console > Settings > License testing. Otherwise their purchases in
    the real app stay test purchases.
 3. Ask TestFlight testers to install Tern from the App Store.
 4. Check that the production build uses the same Supabase project the testers' accounts are
    in.
-5. Play production access: a personal developer account created after November 2023 needs
-   at least 12 testers opted in to closed testing for the last 14 days before it can apply
-   for production. Check the Play Console's Dashboard for the current rule.
+5. Check the Play Console's Dashboard for what a personal account needs from closed testing
+   before it can apply for production.
 
 ## iPhone
 

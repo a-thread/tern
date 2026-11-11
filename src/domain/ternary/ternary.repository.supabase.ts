@@ -9,7 +9,7 @@ import type { TernaryRepository } from './ternary.repository';
 
 /**
  * Ternaries on the server. Every table is closed to the app; these call the functions in
- * the `20261110000000_ternaries` migration, which decide what a friend may see.
+ * the `20261111000000_ternaries` migration, which decide what a friend may see.
  */
 export function createSupabaseTernaryRepository(db: TernClient): TernaryRepository {
   return {
@@ -57,6 +57,7 @@ export function createSupabaseTernaryRepository(db: TernClient): TernaryReposito
         }),
       ),
     block: (userId) => ok(db.rpc('ternary_block', { p_user: userId })),
+    unblock: (userId) => ok(db.rpc('ternary_unblock', { p_user: userId })),
     report: (kind, target) =>
       ok(db.rpc('ternary_report', { p_kind: kind, p_target: target })),
   };

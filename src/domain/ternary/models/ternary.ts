@@ -28,9 +28,17 @@ export type Postcard = {
   fromName: string;
   /** A route stop's id (`MigrationRoute.STOPS`). */
   stopId: string;
-  day: string;
   yours: boolean;
 };
+
+/** Someone you blocked, listed only to you so it can be undone. */
+export type BlockedMember = { userId: string; name: string };
+
+/** What a report is about: a shared recipe (its id) or a member (their user id). */
+export enum ReportKind {
+  Dish = 'dish',
+  Member = 'member',
+}
 
 /** A dish at a stopover table: a name and its foods, never amounts, calories or levels. */
 export type Dish = {
@@ -56,6 +64,8 @@ export type Ternary = {
   fishSentToday: number;
   postcards: Postcard[];
   dishes: Dish[];
+  /** Who you've blocked. Never who has blocked you. */
+  blocked: BlockedMember[];
   flyPrivately: boolean;
   shareResting: boolean;
   /**
@@ -72,7 +82,7 @@ export enum JoinOutcome {
   Already = 'already',
 }
 
-/** The numbers ternaries run on. Mirrored in the `20261110000000_ternaries` migration. */
+/** The numbers ternaries run on. Mirrored in the `20261111000000_ternaries` migration. */
 export class TernaryRules {
   /** What the shared bird flies on a day everyone shows up: a lap in about a year. */
   static readonly SHOW_UP_POINTS = 75;
@@ -83,7 +93,7 @@ export class TernaryRules {
   static readonly MAX_FISH_PER_DAY = 3;
   /**
    * Arctic terns migrate in flocks of fewer than 15; a ternary stays well smaller.
-   * Still open for the beta (see the proposal); the server never allows more than 14.
+   * Still open for the beta; the server never allows more than 14.
    */
   static readonly MAX_MEMBERS = 8;
   static readonly MAX_NAME_LENGTH = 40;

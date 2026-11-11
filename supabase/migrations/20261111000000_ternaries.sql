@@ -1,5 +1,6 @@
 -- Ternaries: small, invite-only circles of friends who fly one shared bird together.
--- See docs/plus-tier-proposal.md (§1a) for the design and what must never happen.
+-- See docs/ternaries.md for the design and what must never happen.
+-- Changed since by 20261112000000_ternary_fixes.sql; read that one for the current functions.
 --
 -- Nothing here is readable or writable directly: every table has row-level security on and
 -- no policies, and the app reaches them only through the security-definer functions below.
@@ -55,7 +56,8 @@ create table tern.ternary_fish (
 );
 create index ternary_fish_to on tern.ternary_fish (to_user, day);
 
--- `stop_id` is a route stop's id; a postcard is one moment, sent once per stop per lap.
+-- `stop_id` is a route stop's id, without its lap; a postcard is one moment, sent once per
+-- stop, so a later lap doesn't send the same place again.
 create table tern.ternary_postcards (
   id         uuid primary key default gen_random_uuid(),
   ternary_id uuid not null references tern.ternaries (id) on delete cascade,

@@ -83,4 +83,40 @@ describe('withSampleFriends', () => {
     await repo.block('someone-real');
     expect(real.block).toHaveBeenCalledWith('someone-real');
   });
+
+  it('lists a blocked made-up friend so they can be unblocked', async () => {
+    const { repo } = await inTernary();
+    await repo.block('sample-maya');
+    expect((await repo.mine(TODAY))!.blocked).toEqual([
+      { userId: 'sample-maya', name: 'Maya' },
+    ]);
+    await repo.unblock('sample-maya');
+    const t = (await repo.mine(TODAY))!;
+    expect(t.blocked).toEqual([]);
+    expect(t.members.some((m) => m.name === 'Maya')).toBe(true);
+  });
+});
+
+describe('blocking in memory', () => {
+  it('hides a friend, lists them as blocked, and brings them back on unblock', async () => {
+    const repo = createMemoryTernaryRepository();
+    await repo.join('KTW4QP', 'Aiden');
+    await repo.block('maya');
+    let t = (await repo.mine(TODAY))!;
+    expect(t.members.some((m) => m.userId === 'maya')).toBe(false);
+    expect(t.dishes.some((d) => d.fromId === 'maya')).toBe(false);
+    expect(t.blocked).toEqual([{ userId: 'maya', name: 'Maya' }]);
+
+    await repo.unblock('maya');
+    t = (await repo.mine(TODAY))!;
+    expect(t.members.some((m) => m.userId === 'maya')).toBe(true);
+    expect(t.blocked).toEqual([]);
+  });
+
+  it('never blocks you', async () => {
+    const repo = createMemoryTernaryRepository();
+    await repo.join('KTW4QP', 'Aiden');
+    await repo.block('you');
+    expect((await repo.mine(TODAY))!.blocked).toEqual([]);
+  });
 });

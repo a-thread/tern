@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
-import { colors, font, radius, space } from '@shared/theme';
+import { colors, radius, space, typography } from '@shared/theme';
 import { Icon } from '@shared/components/ui';
 import { useToast } from '@shared/state/ToastContext';
 import { useSubscription } from '@/domain/subscription/SubscriptionContext';
@@ -63,5 +63,5 @@ const s = StyleSheet.create({
     gap: space.xs,
   },
   waiting: { opacity: 0.5 },
-  price: { fontFamily: font.semibold, fontSize: 15, color: colors.ink },
+  price: typography.heading,
 });

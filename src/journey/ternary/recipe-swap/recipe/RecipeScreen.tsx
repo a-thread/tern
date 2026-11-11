@@ -14,6 +14,7 @@ import {
   unkeepRecipe,
 } from '@/domain/ternary/models/recipeSwap';
 import { stopNamed } from '@/domain/ternary/models/stopover';
+import { ReportKind } from '@/domain/ternary/models/ternary';
 import type { TernaryStackParamList } from '../../navigation';
 import { TernaryPage } from '../../components/TernaryPage/TernaryPage';
 import { TernaryButton } from '../../components/TernaryButton/TernaryButton';
@@ -63,8 +64,13 @@ export default function RecipeScreen({ route }: Props) {
       message: `“${recipe.name}” will be sent to Tern to look at. ${recipe.fromName} isn’t told.`,
       action: 'Report',
       onConfirm: async () => {
-        await report('dish', id).catch(() => {});
-        toast.show('Thanks. It’s been reported.');
+        try {
+          await report(ReportKind.Dish, id);
+          toast.show('Thanks. It’s been reported.');
+        } catch (e) {
+          console.warn('Could not report a recipe', e);
+          toast.show('Couldn’t report that just now. Please try again.');
+        }
       },
     });
 

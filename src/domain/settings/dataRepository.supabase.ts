@@ -113,7 +113,7 @@ export function createSupabaseDataRepository(db: TernClient): DataRepository {
         await ok(db.from(table).delete().not('user_id', 'is', null));
       }
       // Out of any ternary too, taking your fish, postcards and dishes with you
-      // (supabase/migrations/20261110000000_ternaries.sql). The shared bird keeps its days.
+      // (supabase/migrations/20261111000000_ternaries.sql). The shared bird keeps its days.
       await ok(db.rpc('ternary_leave'));
     },
 

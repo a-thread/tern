@@ -1,8 +1,8 @@
-import { addDays } from '@shared/utils/date';
 import { Milestones } from '../waypoints/models/milestone';
 import { restingAt } from './models/stopover';
 import {
   JoinOutcome,
+  ReportKind,
   Presence,
   type Ternary,
   type TernaryMember,
@@ -26,7 +26,9 @@ export interface TernaryRepository {
   bringDish(stop: string, dish: { name: string; foods: string[] }): Promise<void>;
   /** Silent: each stops seeing the other, and neither is told. */
   block(userId: string): Promise<void>;
-  report(kind: 'dish' | 'member', target: string): Promise<void>;
+  /** Undoes a block you made. */
+  unblock(userId: string): Promise<void>;
+  report(kind: ReportKind, target: string): Promise<void>;
 }
 
 /** A ternary to try the screens with: two friends, one resting and one quiet. */
@@ -45,7 +47,7 @@ export function sampleTernary(today: string): Ternary {
     fish: [{ id: 'f1', fromName: 'Maya', day: today }],
     fishSentToday: 0,
     postcards: [
-      { id: 'p1', fromName: 'Maya', stopId: 'north-atlantic', day: addDays(today, -1), yours: false },
+      { id: 'p1', fromName: 'Maya', stopId: 'north-atlantic', yours: false },
     ],
     dishes: [
       {
@@ -58,6 +60,7 @@ export function sampleTernary(today: string): Ternary {
         yours: false,
       },
     ],
+    blocked: [],
     flyPrivately: false,
     shareResting: false,
   };
@@ -77,6 +80,8 @@ export function createMemoryTernaryRepository(
   };
   let next = 1;
   const id = (prefix: string) => `${prefix}-${next++}`;
+  // Members you've blocked, kept so unblocking brings them back.
+  const hidden = new Map<string, TernaryMember>();
 
   return {
     mine: async () => (current ? { ...current } : null),
@@ -92,6 +97,7 @@ export function createMemoryTernaryRepository(
         fishSentToday: 0,
         postcards: [],
         dishes: [],
+        blocked: [],
         flyPrivately: false,
         shareResting: false,
       };
@@ -122,13 +128,13 @@ export function createMemoryTernaryRepository(
       }
       current = { ...t, fishSentToday: t.fishSentToday + 1 };
     },
-    async sendPostcard(stopId, today) {
+    async sendPostcard(stopId) {
       const t = need();
       if (t.postcards.some((p) => p.yours && p.stopId === stopId)) return;
       current = {
         ...t,
         postcards: [
-          { id: id('postcard'), fromName: 'You', stopId, day: today, yours: true },
+          { id: id('postcard'), fromName: 'You', stopId, yours: true },
           ...t.postcards,
         ],
       };
@@ -145,10 +151,24 @@ export function createMemoryTernaryRepository(
     },
     async block(userId) {
       const t = need();
+      const member = t.members.find((m) => m.userId === userId && !m.you);
+      if (!member) return;
       current = {
         ...t,
         members: t.members.filter((m) => m.userId !== userId),
         dishes: t.dishes.filter((d) => d.fromId !== userId),
+        blocked: [...t.blocked, { userId, name: member.name }],
+      };
+      hidden.set(userId, member);
+    },
+    async unblock(userId) {
+      const t = need();
+      const member = hidden.get(userId);
+      hidden.delete(userId);
+      current = {
+        ...t,
+        members: member ? [...t.members, member] : t.members,
+        blocked: t.blocked.filter((b) => b.userId !== userId),
       };
     },
     async report() {},
@@ -204,8 +224,8 @@ export function withSampleFriends(repo: TernaryRepository): TernaryRepository {
         fishSentToday: real.fishSentToday + sentToday,
         postcards: [
           ...real.postcards,
-          { id: `${SAMPLE_ID}card-1`, fromName: 'Maya', stopId: Milestones.STOPS[1].id, day: today, yours: false },
-          { id: `${SAMPLE_ID}card-2`, fromName: 'Jo', stopId: Milestones.STOPS[0].id, day: addDays(today, -6), yours: false },
+          { id: `${SAMPLE_ID}card-1`, fromName: 'Maya', stopId: Milestones.STOPS[1].id, yours: false },
+          { id: `${SAMPLE_ID}card-2`, fromName: 'Jo', stopId: Milestones.STOPS[0].id, yours: false },
         ],
         dishes: [
           ...real.dishes,
@@ -237,6 +257,13 @@ export function withSampleFriends(repo: TernaryRepository): TernaryRepository {
             yours: false,
           },
         ].filter((d) => visible(d.fromId)),
+        blocked: [
+          ...real.blocked,
+          ...SAMPLE_MEMBERS.filter((m) => !visible(m.userId)).map((m) => ({
+            userId: m.userId,
+            name: m.name,
+          })),
+        ],
       };
     },
     async bringFish(toUserId, today) {
@@ -254,6 +281,10 @@ export function withSampleFriends(repo: TernaryRepository): TernaryRepository {
     async block(userId) {
       if (isSample(userId)) blocked.add(userId);
       else await repo.block(userId);
+    },
+    async unblock(userId) {
+      if (isSample(userId)) blocked.delete(userId);
+      else await repo.unblock(userId);
     },
     async report(kind, target) {
       if (!isSample(target)) await repo.report(kind, target);
