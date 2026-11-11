@@ -56,7 +56,7 @@ export default function FoodDisplayScreen() {
         <Group>
           <ToggleRow
             title='Hide friends’ food'
-            sub='Hides the stopover table and dishes friends bring in a ternary'
+            sub='Hides the recipes friends share in a ternary'
             on={settings.hideFriendsFood}
             onToggle={(v) => updateSettings({ hideFriendsFood: v })}
           />

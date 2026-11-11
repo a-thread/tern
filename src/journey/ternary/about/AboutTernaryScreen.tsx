@@ -54,13 +54,14 @@ export default function AboutTernaryScreen() {
         </Text>
       </Card>
 
-      <GroupLabel>The stopover table</GroupLabel>
+      <GroupLabel>Recipe swap</GroupLabel>
       <Card>
         <Text style={s.para}>
-          Terns feed up together at stopovers. Each time the shared bird reaches a
-          stop, a table opens with a prompt, like “Bring something warming”. You can
-          bring one dish from your saved meals: only the foods are shared, never
-          amounts or numbers. Past tables become your ternary’s recipe box.
+          Share a meal you love from your saved meals, and keep the ones your
+          friends share to cook yourself. Only the name and its foods are shared,
+          never amounts or numbers: whoever cooks it logs it their own way. Each
+          time the shared bird reaches a stop there’s a new idea for what to share,
+          like “Bring something warming”, and one meal each per stop.
         </Text>
       </Card>
 

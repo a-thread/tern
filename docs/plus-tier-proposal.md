@@ -76,17 +76,18 @@ It never shows a date, a total or how long the trip took. That gives "where's ev
 moments people choose to share, instead of a standing map of everyone's place, which would
 be a leaderboard in disguise. Received postcards collect in the ternary.
 
-**The stopover table (shared food).** Each time the shared bird reaches a stop, a table
-opens while the bird rests there.
-- Each stop has its own prompt, such as *Bring something warming* at Iceland. Prompts never
-  use diet words like "light", "healthy", "clean" or "guilt-free".
-- Each member can bring one dish from their saved meals, if they like.
-- Only the foods are shared: no amounts, calories, macros or NOVA levels. Whoever adds the
-  dish sets their own amounts, and their own display settings apply.
-- Nobody is shown as not having brought anything, and there's no countdown.
-- Past tables collect into *Stopover recipes*, a recipe box with rhythm instead of an
-  endless feed.
-- There are no likes or comments. You can hide one person's meals or report a meal, because
+**Recipe swap (shared food).** Share a meal you love, and keep the ones friends share to
+cook yourself. (It began as a "stopover table", which testing showed didn't explain itself.)
+- Each time the shared bird reaches a stop there's a new idea for what to share, such as
+  *Bring something warming*. Ideas never use diet words like "light", "healthy", "clean"
+  or "guilt-free".
+- Each member can share one meal from their saved meals per stop, if they like.
+- Only the name and foods are shared: no amounts, calories, macros or NOVA levels.
+- Tapping a friend's recipe opens it, with **Keep this recipe**: it goes to *Kept to cook*,
+  names and foods only. Whoever cooks it logs the foods with their own amounts.
+- Nobody is shown as not having shared anything, and there's no countdown. Earlier stops'
+  recipes stay below, a recipe box with rhythm instead of an endless feed.
+- There are no likes or comments. A friend's recipe can be reported from its page, because
   meal names are text people write.
 
 **Earning waypoints together.**
@@ -121,7 +122,7 @@ never drawn in the flock. Friends can't tell whether you're quiet or just privat
 makes everyone's quiet days unreadable too.
 
 **Hide friends' food.** A free safeguard beside the other food display settings. It hides
-the stopover table and shared dishes, so seeing what friends eat never becomes something to
+the recipes friends share, so seeing what friends eat never becomes something to
 compare yourself against. Like every safeguard, it stays free.
 
 **Must never happen**
@@ -154,7 +155,7 @@ compare yourself against. Like every safeguard, it stays free.
 - `BackendContext.tsx`: wire the new repository.
 - Mount `TernaryProvider` at the journey navigator.
 - Journey: `src/journey/ternary/`, with a flock layer on `JourneyMap`, fish, postcards and the
-  stopover table. Stop prompts and postcard facts sit beside the route's stop data.
+  recipe swap. Stop ideas and postcard facts sit beside the route's stop data.
 - Shared dishes read saved meals through `SavedMealsContext`: names and foods only.
 - Settings: *Share that I'm resting*, *Fly privately* and *Hide the ternary for now*, and
   *Hide friends' food* with the food display safeguards.

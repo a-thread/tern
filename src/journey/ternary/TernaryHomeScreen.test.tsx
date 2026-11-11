@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, screen } from '@testing-library/react-native';
+import { fireEvent, render, screen } from '@testing-library/react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import { ToastProvider } from '@shared/state/ToastContext';
@@ -17,7 +17,8 @@ import {
 } from '@/domain/ternary/ternary.repository';
 import { Milestones } from '@/domain/waypoints/models/milestone';
 import TernaryHomeScreen from './TernaryHomeScreen';
-import StopoverTableScreen from './stopover-table/StopoverTableScreen';
+import RecipeSwapScreen from './recipe-swap/RecipeSwapScreen';
+import RecipeScreen from './recipe-swap/recipe/RecipeScreen';
 
 jest.mock('@react-navigation/native', () => ({
   ...jest.requireActual('@react-navigation/native'),
@@ -74,16 +75,36 @@ describe('TernaryHomeScreen', () => {
   });
 });
 
-describe('StopoverTableScreen', () => {
-  it("sets friends' dishes on the table, foods only", async () => {
-    open(StopoverTableScreen);
+describe('RecipeSwapScreen', () => {
+  it('shows what friends shared at this stop, foods only', async () => {
+    open(RecipeSwapScreen);
     expect(await screen.findByText('Red lentil soup')).toBeTruthy();
+    expect(screen.getByText('Shared at this stop')).toBeTruthy();
     expect(screen.queryByText(/calorie|kcal/i)).toBeNull();
   });
 
-  it("hides friends' food when that safeguard is on", async () => {
-    open(StopoverTableScreen, true);
-    expect(await screen.findByText('Bring a dish')).toBeTruthy();
+  it("hides friends' recipes when that safeguard is on", async () => {
+    open(RecipeSwapScreen, true);
+    expect(await screen.findByText('Share one of your saved meals')).toBeTruthy();
     expect(screen.queryByText('Red lentil soup')).toBeNull();
+  });
+});
+
+describe('RecipeScreen', () => {
+  const Recipe = () => (
+    <RecipeScreen route={{ key: 'r', name: 'Recipe', params: { id: 'd1' } }} navigation={{} as never} />
+  );
+
+  it("lists a friend's recipe's foods, and keeps it to cook", async () => {
+    open(Recipe);
+    expect(await screen.findByText('Shared by Maya at Iceland')).toBeTruthy();
+    expect(screen.getByText('Coconut milk')).toBeTruthy();
+    fireEvent.press(screen.getByText('Keep this recipe'));
+    expect(await screen.findByText('Kept to cook · remove')).toBeTruthy();
+  });
+
+  it('can report a friend’s recipe', async () => {
+    open(Recipe);
+    expect(await screen.findByText('Report this recipe')).toBeTruthy();
   });
 });
