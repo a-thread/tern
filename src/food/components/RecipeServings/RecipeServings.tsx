@@ -15,11 +15,16 @@ export function RecipeServings({
   value,
   makes,
   onChange,
+  title = 'How many servings?',
+  sub = `This makes ${makes}`,
 }: {
   value: number;
   /** How many servings the whole recipe makes. */
   makes: number;
   onChange: (servings: number) => void;
+  /** The question, where the default reads too much like another servings row nearby. */
+  title?: string;
+  sub?: string;
 }) {
   const [typed, setTyped] = useState<string | null>(null);
   const step = (delta: number) => {
@@ -30,8 +35,8 @@ export function RecipeServings({
   return (
     <View style={s.card}>
       <View style={s.text}>
-        <Text style={s.title}>How many servings?</Text>
-        <Text style={s.sub}>This makes {makes}</Text>
+        <Text style={s.title}>{title}</Text>
+        <Text style={s.sub}>{sub}</Text>
       </View>
       <Stepper
         value={typed ?? formatCount(value)}

@@ -1,22 +1,26 @@
 import React from 'react';
-import { StyleSheet, Text, View } from 'react-native';
 
-import { colors, font } from '@shared/theme';
 import { Stepper } from '@shared/components/ui';
+import { SettingsSubRow } from './SettingsSubRow/SettingsSubRow';
 
 /** A labelled row with a − / + stepper around a value, for times and days. */
 export default function TimeStepperRow({
   label,
   value,
   onStep,
+  nested = true,
 }: {
   label: string;
   value: string;
   onStep: (direction: 1 | -1) => void;
+  /**
+   * Indented under a reminder's on/off row (the default). False for a row of its own,
+   * lined up with the rows around it.
+   */
+  nested?: boolean;
 }) {
   return (
-    <View style={s.row}>
-      <Text style={s.label}>{label}</Text>
+    <SettingsSubRow label={label} nested={nested}>
       <Stepper
         value={value}
         onDecrement={() => onStep(-1)}
@@ -25,17 +29,6 @@ export default function TimeStepperRow({
         incrementLabel={`Later ${label}`}
         valueMinWidth={78}
       />
-    </View>
+    </SettingsSubRow>
   );
 }
-
-const s = StyleSheet.create({
-  row: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 13,
-    paddingLeft: 26,
-    paddingVertical: 8,
-  },
-  label: { flex: 1, fontFamily: font.body, fontSize: 13, color: colors.ink2 },
-});

@@ -7,6 +7,7 @@ import {
   portionServingLabel,
   scaleForGrams,
   Servings,
+  servingsText,
 } from './servings';
 
 describe('gramsOf', () => {
@@ -112,5 +113,17 @@ describe('stepServings', () => {
   it('keeps existing half-step values on the quarter grid', () => {
     expect(stepServings(1.5, Servings.STEP)).toBe(1.75);
     expect(stepServings(2.5, -Servings.STEP)).toBe(2.25);
+  });
+});
+
+describe('servingsText', () => {
+  it('counts plain servings without "× 1 serving"', () => {
+    expect(servingsText(1, '1 serving')).toBe('1 serving');
+    expect(servingsText(1.5, '1 serving')).toBe('1.5 servings');
+  });
+
+  it('keeps a sized serving as a count of it', () => {
+    expect(servingsText(1, '1 cup')).toBe('1 cup');
+    expect(servingsText(2, '1 cup')).toBe('2 × 1 cup');
   });
 });

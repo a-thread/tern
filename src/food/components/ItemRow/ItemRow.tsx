@@ -5,6 +5,7 @@ import { colors, tierColors, typography } from '@shared/theme';
 import type { FoodEntry } from '@/domain/food/models/foodEntry';
 import { TierDot } from '@shared/components/TierDot';
 import { useFoodDisplay } from '@/domain/food/hooks/useFoodDisplay';
+import { servingsText } from '@/domain/food/models/servings';
 
 type Item = Pick<
   FoodEntry,
@@ -13,7 +14,7 @@ type Item = Pick<
 
 /**
  * One food in a list: food-type dot, name, portion and calories, following the
- * display settings. With `onPress` the whole row is tappable.
+ * display settings. Adding a listener to `onPress` makes the whole row tappable.
  */
 export default function ItemRow({
   item,
@@ -35,9 +36,7 @@ export default function ItemRow({
       <View style={{ flex: 1 }}>
         <Text style={s.name}>{item.name}</Text>
         <Text style={s.sub}>
-          {item.servings === 1
-            ? item.servingLabel
-            : `${item.servings} × ${item.servingLabel}`}
+          {servingsText(item.servings, item.servingLabel)}
         </Text>
       </View>
       {showCalories ? (

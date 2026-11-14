@@ -1,5 +1,8 @@
 import React from 'react';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+
+import { colors } from '@shared/theme';
 
 import RestDayScreen from '../today/rest-day/RestDayScreen';
 import LogFoodStack from '../food/log-food/LogFoodStack';
@@ -27,6 +30,9 @@ const RootStack = createNativeStackNavigator<RootStackParamList>();
 
 export default function RootNavigator() {
   const { settings } = useSettings();
+  // The app draws edge to edge, so on Android a sub page would run under the system
+  // navigation bar. Its container stops above it instead (the tab bar does the same for itself).
+  const insets = useSafeAreaInsets();
   return (
     <RootStack.Navigator
       screenOptions={{ headerShown: false, freezeOnBlur: true }}
@@ -49,7 +55,15 @@ export default function RootNavigator() {
       />
 
       {/* Sub Pages displayed as modals for fluid transitions */}
-      <RootStack.Group screenOptions={{ presentation: 'modal' }}>
+      <RootStack.Group
+        screenOptions={{
+          presentation: 'modal',
+          contentStyle: {
+            backgroundColor: colors.paper,
+            paddingBottom: insets.bottom,
+          },
+        }}
+      >
         <RootStack.Screen name='LogFood' component={LogFoodStack} />
         <RootStack.Screen name='LogWeight' component={LogWeightScreen} />
         <RootStack.Screen name='CheckIn' component={CheckInScreen} />
