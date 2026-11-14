@@ -2,7 +2,7 @@ import React from 'react';
 
 import { useReminders } from '../hooks/useReminders';
 import TimeStepperRow from './TimeStepperRow';
-import { ReminderBlock } from './ReminderBlock';
+import { ReminderBlock } from './ReminderBlock/ReminderBlock';
 import {
   formatMinutes,
   Reminders,

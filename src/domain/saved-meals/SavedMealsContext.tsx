@@ -41,10 +41,16 @@ type SavedMealsContextValue = {
   meals: SavedMeal[];
   ready: boolean;
   /**
-   * Saves `entries` as a meal called `name`. A meal that already has that name
-   * (ignoring case) is replaced, keeping its id; callers should confirm first.
+   * Saves `entries` as a meal called `name`, making `servings` servings (more than 1 makes it
+   * a recipe, logged by the serving). A meal that already has that name (ignoring case) is
+   * replaced, keeping its id; callers should confirm first. A recipe is only replaced by
+   * another recipe.
    */
-  saveMeal: (name: string, entries: FoodEntry[]) => SaveOutcome;
+  saveMeal: (
+    name: string,
+    entries: FoodEntry[],
+    servings?: number,
+  ) => SaveOutcome;
   /**
    * Saves a homemade batch as a recipe: one item for the whole batch, making `servings`
    * servings, so it can be logged by the serving. A meal already called `name` is not
@@ -58,8 +64,6 @@ type SavedMealsContextValue = {
   /** Returns an error message, or null on success. */
   renameMeal: (id: string, name: string) => string | null;
   deleteMeal: (id: string) => void;
-  /** Changes how many servings a saved meal makes; saved straight away. */
-  setMealServings: (id: string, servings: number) => void;
 
   /** The meal being built or edited, or null when none is open. */
   draft: MealDraft | null;
@@ -124,7 +128,7 @@ export function SavedMealsProvider({
   );
 
   const saveMeal = useCallback(
-    (name: string, entries: FoodEntry[]): SaveOutcome => {
+    (name: string, entries: FoodEntry[], servings = 1): SaveOutcome => {
       const problem = validateMealName(name);
       if (problem) return { ok: false, error: problem };
       if (!entries.length)
@@ -132,18 +136,19 @@ export function SavedMealsProvider({
 
       const clean = cleanName(name);
       const items = snapshotItems(entries);
+      const makes = cleanServings(servings);
       const existing = findMealByName(latest.current, clean);
-      // A recipe isn't replaced by one day's foods: that would quietly turn it back into a
-      // meal logged whole, losing how many servings it makes.
-      if (existing && isRecipe(existing))
+      // A recipe isn't replaced by a meal of one serving: that would quietly turn it back
+      // into a meal logged whole, losing how many servings it makes.
+      if (existing && isRecipe(existing) && !isRecipe({ servings: makes }))
         return { ok: false, error: recipeClash(existing.name) };
       const meal: SavedMeal = existing
-        ? { ...existing, name: clean, items, servings: 1 }
+        ? { ...existing, name: clean, items, servings: makes }
         : {
             id: newId(),
             name: clean,
             items,
-            servings: 1,
+            servings: makes,
             createdAt: new Date().toISOString(),
           };
 
@@ -201,18 +206,6 @@ export function SavedMealsProvider({
       commit(sortMeals(latest.current.map((m) => (m.id === id ? renamed : m))));
       persist(repo.save(renamed));
       return null;
-    },
-    [repo, persist, commit],
-  );
-
-  const setMealServings = useCallback(
-    (id: string, servings: number) => {
-      const meal = latest.current.find((m) => m.id === id);
-      const next = cleanServings(servings);
-      if (!meal || meal.servings === next) return;
-      const changed = { ...meal, servings: next };
-      commit(latest.current.map((m) => (m.id === id ? changed : m)));
-      persist(repo.save(changed));
     },
     [repo, persist, commit],
   );
@@ -327,7 +320,6 @@ export function SavedMealsProvider({
       saveRecipe,
       renameMeal,
       deleteMeal,
-      setMealServings,
       draft,
       startDraft,
       setDraftName,
@@ -345,7 +337,6 @@ export function SavedMealsProvider({
       saveRecipe,
       renameMeal,
       deleteMeal,
-      setMealServings,
       draft,
       startDraft,
       setDraftName,

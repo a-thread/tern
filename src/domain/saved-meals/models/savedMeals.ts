@@ -188,7 +188,7 @@ export function recipeEntry(
   return {
     ...base,
     servings: eaten,
-    servingLabel: '1 serving',
+    servingLabel: Servings.PLAIN,
     calories: Math.round(total.calories / meal.servings),
     protein: per(total.protein),
     carbs: per(total.carbs),

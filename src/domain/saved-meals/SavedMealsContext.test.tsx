@@ -404,7 +404,12 @@ describe('servings', () => {
     const id = result.current.saved.meals[0].id;
     expect(result.current.saved.meals[0].servings).toBe(1);
 
-    act(() => result.current.saved.setMealServings(id, 8));
+    // Made a recipe in the meal editor.
+    act(() => result.current.saved.startDraft(id));
+    act(() => result.current.saved.setDraftServings(8));
+    await act(async () => {
+      result.current.saved.commitDraft();
+    });
     expect(result.current.saved.meals[0].servings).toBe(8);
 
     let outcome: ReturnType<typeof result.current.saved.saveMeal> | undefined;
@@ -414,6 +419,39 @@ describe('servings', () => {
     expect(outcome).toMatchObject({ ok: false });
     expect(result.current.saved.meals).toHaveLength(1);
     expect(result.current.saved.meals[0].servings).toBe(8);
+    expect(result.current.saved.meals[0].items).toHaveLength(2);
+  });
+
+  it('saves a day’s foods as a recipe that makes several servings', async () => {
+    const { result, backend } = await setup();
+    await act(async () => {
+      result.current.saved.saveMeal(
+        'Chili',
+        [entry('Beef'), entry('Beans')],
+        6,
+      );
+    });
+    expect(result.current.saved.meals[0].servings).toBe(6);
+    expect((await backend.savedMeals.list())[0].servings).toBe(6);
+  });
+
+  it('replaces a recipe with another recipe, keeping its id', async () => {
+    const { result } = await setup();
+    await act(async () => {
+      result.current.saved.saveMeal('Chili', [entry('Beef')], 6);
+    });
+    const id = result.current.saved.meals[0].id;
+    let outcome: ReturnType<typeof result.current.saved.saveMeal> | undefined;
+    await act(async () => {
+      outcome = result.current.saved.saveMeal(
+        'chili',
+        [entry('Beef'), entry('Beans')],
+        8,
+      );
+    });
+    expect(outcome).toMatchObject({ ok: true, replaced: true });
+    expect(result.current.saved.meals).toHaveLength(1);
+    expect(result.current.saved.meals[0]).toMatchObject({ id, servings: 8 });
     expect(result.current.saved.meals[0].items).toHaveLength(2);
   });
 

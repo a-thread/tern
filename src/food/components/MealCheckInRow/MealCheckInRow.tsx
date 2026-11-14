@@ -9,8 +9,8 @@ import { describeMealCheckIn } from '@/domain/meal-check-ins/models/mealCheckIn'
 import { useRootNavigation } from '@/navigation/useAppNavigation';
 
 /**
- * Under a meal's foods, while "Ask how meals went" is on: how the meal sat, or a way to say.
- * On a day that can only be looked at, the screen shows it only for a check-in that was made.
+ * Displays a meal check-in when "Ask how meals went" is enabled.
+ * On past non-editable days, only existing check-ins will appear.
  */
 export function MealCheckInRow({ meal }: { meal: Meal }) {
   const navigation = useRootNavigation();

@@ -22,7 +22,11 @@ import { FoodTypeLabel } from '../components/FoodTypeLabel/FoodTypeLabel';
 import { MealPicker } from '../components/MealPicker/MealPicker';
 import { MeasurePicker } from '../components/MeasurePicker/MeasurePicker';
 import { useFoodDisplay } from '../../domain/food/hooks/useFoodDisplay';
-import { stepServings, Servings } from '../../domain/food/models/servings';
+import {
+  servingsText,
+  stepServings,
+  Servings,
+} from '../../domain/food/models/servings';
 import {
   amountOf,
   withTypedUnits,
@@ -135,7 +139,7 @@ export default function EditFoodEntryScreen({ navigation, route }: Props) {
             <Text style={s.calLabel}>
               {amountText
                 ? `calories in ${amountText.servingLabel}`
-                : `calories at ${servings} × ${servingLabel || entry.servingLabel}`}
+                : `calories in ${servingsText(servings, servingLabel || entry.servingLabel)}`}
             </Text>
           </View>
         ) : null}

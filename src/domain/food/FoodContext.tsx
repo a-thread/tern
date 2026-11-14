@@ -39,6 +39,11 @@ type FoodContextValue = {
   addFoodEntries: (entries: NewFoodEntry[]) => void;
   updateFoodEntry: (id: string, patch: Partial<NewFoodEntry>) => void;
   removeFoodEntry: (id: string) => void;
+  /**
+   * Swaps the entries with `ids` for `entries` as one update and one write (a cooked batch for
+   * the share eaten). Returns what was added, so the swap can be undone; empty when nothing changed.
+   */
+  replaceFoodEntries: (ids: string[], entries: NewFoodEntry[]) => FoodEntry[];
   /** Core meals marked "nothing today" on the viewed day. Logging food to one un-marks it. */
   skippedMeals: FoodEntry['meal'][];
   /** Marks (or unmarks) a core meal as "nothing today". */
@@ -139,6 +144,23 @@ export function FoodProvider({
     [food, editable, persist],
   );
 
+  const replaceFoodEntries = useCallback(
+    (ids: string[], entries: NewFoodEntry[]): FoodEntry[] => {
+      if (!editable || (!ids.length && !entries.length)) return [];
+      const gone = new Set(ids);
+      const full: FoodEntry[] = entries.map((e) => ({ ...e, id: newId() }));
+      setFoodLog((prev) => [...prev.filter((f) => !gone.has(f.id)), ...full]);
+      persist(
+        Promise.all([
+          ...ids.map((id) => food.remove(id)),
+          ...full.map((f) => food.add(day, f)),
+        ]).then(() => undefined),
+      );
+      return full;
+    },
+    [food, day, editable, persist],
+  );
+
   const removeFoodEntry = useCallback(
     (id: string) => {
       if (!editable) return;
@@ -207,6 +229,7 @@ export function FoodProvider({
       addFoodEntries,
       updateFoodEntry,
       removeFoodEntry,
+      replaceFoodEntries,
       skippedMeals: current ? skippedMeals : NO_MEALS,
       setMealSkipped,
     }),
@@ -222,6 +245,7 @@ export function FoodProvider({
       addFoodEntries,
       updateFoodEntry,
       removeFoodEntry,
+      replaceFoodEntries,
       skippedMeals,
       setMealSkipped,
     ],
