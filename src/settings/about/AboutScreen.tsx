@@ -16,9 +16,11 @@ import { SettingsPage } from '../components/SettingsPage';
 import { TrailChoice } from './components/TrailChoice/TrailChoice';
 import { TipJar } from './components/TipJar/TipJar';
 import { SupporterRow } from './components/SupporterRow/SupporterRow';
+import { Letter } from './components/Letter/Letter';
 
 /**
- * Settings › About Tern: what Tern is for and the promises it keeps, ways to support it, and
+ * Settings › About Tern: what Tern is for and the promises it keeps, a letter from the person
+ * who makes it, ways to support it, and
  * a Supporter's trail colour.
  */
 export default function AboutScreen() {
@@ -44,20 +46,22 @@ export default function AboutScreen() {
           number on the scale or staying under a calorie count.
         </Text>
         <Text style={s.line}>
-          • Rest days count as showing up. Nothing scolds you for a quiet day.
+          • Rest days count as showing up. Take as few or as many as you need.
         </Text>
         <Text style={s.line}>
-          • You can hide numbers, and turn off weight, streaks and goals. Those
-          safeguards are always free.
+          • Hide the numbers, and turn weight, streaks and goals on or off.
+          Those safeguards are always free.
         </Text>
         <Text style={s.line}>
-          • No ads, and your data is never sold. Everything works on your phone
-          with no account.
+          • No ads, no account needed, and your data is yours: never sold.
         </Text>
         <Text style={s.line}>
           • Tern is a tracking tool, not medical advice.
         </Text>
       </Card>
+
+      <GroupLabel>A letter from Aiden</GroupLabel>
+      <Letter />
 
       <GroupLabel>Support Tern</GroupLabel>
       <Card>
@@ -65,11 +69,10 @@ export default function AboutScreen() {
           <IconBadge bg={colors.sunTint}>
             <Icon name='feather' size={16} color={colors.sunDeep} />
           </IconBadge>
-          <Text style={typography.heading}>Made by one person</Text>
+          <Text style={typography.heading}>Bring Tern a fish</Text>
         </View>
         <Text style={s.para}>
-          Tern has no ads and sells nothing about you. If it’s helped, you can
-          bring it a fish. A tip unlocks nothing.
+          If Tern has helped, you can leave a tip. A tip unlocks nothing.
         </Text>
         <TipJar />
       </Card>

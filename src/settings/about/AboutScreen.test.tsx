@@ -18,6 +18,7 @@ import { TrailColor } from '@/domain/settings/models/trailColor';
 import type { SubscriptionStatus } from '@/domain/subscription/models/subscription';
 import { createMemorySubscriptionRepository } from '@/domain/subscription/subscription.repository';
 import { SubscriptionProvider } from '@/domain/subscription/SubscriptionContext';
+import { AboutLinks } from './models/aboutLinks';
 import AboutScreen from './AboutScreen';
 
 jest.mock('@react-navigation/native', () => ({
@@ -74,12 +75,36 @@ describe('AboutScreen', () => {
     expect(openURL).not.toHaveBeenCalled();
   });
 
+  it('keeps its promise about the scale', async () => {
+    open(PLUS);
+    expect(
+      await screen.findByText(/never for a number on the scale/),
+    ).toBeTruthy();
+  });
+
+  it('has a letter from Aiden, with the source code and a way to write', async () => {
+    const openURL = jest.spyOn(Linking, 'openURL').mockResolvedValue(true);
+    open(PLUS);
+    expect(await screen.findByText('A letter from Aiden')).toBeTruthy();
+    expect(screen.getByText(/I made Tern for myself/)).toBeTruthy();
+    expect(screen.getByText('– Aiden')).toBeTruthy();
+
+    fireEvent.press(screen.getByRole('link', { name: 'Email Aiden' }));
+    expect(openURL).toHaveBeenLastCalledWith(AboutLinks.EMAIL);
+    fireEvent.press(
+      screen.getByRole('link', { name: 'Source code on GitHub' }),
+    );
+    expect(openURL).toHaveBeenLastCalledWith(
+      'https://github.com/a-thread/tern',
+    );
+  });
+
   it('offers the tip jar as fish, and thanks someone who tips', async () => {
     const announce = jest
       .spyOn(AccessibilityInfo, 'announceForAccessibility')
       .mockImplementation(() => {});
     open(PLUS);
-    expect(await screen.findByText('Made by one person')).toBeTruthy();
+    expect(await screen.findByText('Bring Tern a fish')).toBeTruthy();
     expect(screen.getByLabelText('Tip $2.99: a sand eel')).toBeTruthy();
     expect(screen.getByLabelText('Tip $9.99: a herring')).toBeTruthy();
     fireEvent.press(screen.getByLabelText('Tip $4.99: a capelin'));
