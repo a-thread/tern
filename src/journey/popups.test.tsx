@@ -89,16 +89,21 @@ describe('milestone card', () => {
     expect(ui.getByText(/a rare patch of land/)).toBeTruthy();
     expect(ui.getByText(/^The Canary Islands · /)).toBeTruthy();
     // Not in a ternary: nothing to send a postcard to.
-    expect(ui.queryByText(/a postcard from/)).toBeNull();
+    expect(ui.queryByText('Send a postcard')).toBeNull();
   });
 
   it('offers to send the ternary a postcard from the stop, once', async () => {
     const repo = createMemoryTernaryRepository(sampleTernary('2026-11-15'));
     const ui = open(<MilestoneScreen {...milestoneProps} />, repo);
     fireEvent.press(
-      await ui.findByText('Send Sunday Walkers a postcard from The Azores'),
+      await ui.findByLabelText(
+        'Send Sunday Walkers a postcard from The Azores',
+      ),
     );
-    expect(await ui.findByText('Postcard sent to Sunday Walkers')).toBeTruthy();
+    expect(
+      await ui.findByLabelText('Postcard sent to Sunday Walkers'),
+    ).toBeTruthy();
+    expect(ui.getByText('Postcard sent')).toBeTruthy();
     const sent = (await repo.mine('2026-11-15'))!.postcards.find(
       (p) => p.yours,
     );
@@ -122,16 +127,21 @@ describe('destination card', () => {
     // It opens from Journey, so there's no link back to it.
     expect(ui.queryByText('See your journey ›')).toBeNull();
     // Not in a ternary: nothing to send a postcard to.
-    expect(ui.queryByText(/a postcard from/)).toBeNull();
+    expect(ui.queryByText('Send a postcard')).toBeNull();
   });
 
   it('offers a postcard from a stop passed on this migration', async () => {
     const repo = createMemoryTernaryRepository(sampleTernary('2026-11-15'));
     const ui = open(<DestinationScreen {...destinationProps} />, repo);
     fireEvent.press(
-      await ui.findByText('Send Sunday Walkers a postcard from The Azores'),
+      await ui.findByLabelText(
+        'Send Sunday Walkers a postcard from The Azores',
+      ),
     );
-    expect(await ui.findByText('Postcard sent to Sunday Walkers')).toBeTruthy();
+    expect(
+      await ui.findByLabelText('Postcard sent to Sunday Walkers'),
+    ).toBeTruthy();
+    expect(ui.getByText('Postcard sent')).toBeTruthy();
     const sent = (await repo.mine('2026-11-15'))!.postcards.find(
       (p) => p.yours,
     );

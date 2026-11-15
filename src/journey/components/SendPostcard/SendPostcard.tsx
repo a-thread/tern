@@ -37,14 +37,22 @@ export function SendPostcard({
     }
   };
 
+  // Short on the button, which already sits on the stop's own card; the whole sentence for a
+  // screen reader, which hears it out of that context.
   const label =
     state === 'sent'
-      ? `Postcard sent to ${ternary.name}`
+      ? 'Postcard sent'
       : state === 'failed'
         ? 'Couldn’t send it. Try again'
         : state === 'sending'
           ? 'Sending…'
-          : `Send ${ternary.name} a postcard from ${name}`;
+          : 'Send a postcard';
+  const spoken =
+    state === 'sent'
+      ? `Postcard sent to ${ternary.name}`
+      : state === 'idle'
+        ? `Send ${ternary.name} a postcard from ${name}`
+        : label;
 
   return (
     <Pressable
@@ -52,7 +60,7 @@ export function SendPostcard({
       onPress={send}
       disabled={state === 'sending' || state === 'sent'}
       accessibilityRole='button'
-      accessibilityLabel={label}
+      accessibilityLabel={spoken}
       accessibilityState={{ disabled: state === 'sending' || state === 'sent' }}
     >
       <Icon
