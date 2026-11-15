@@ -5,9 +5,11 @@ module.exports = [
   ...expoConfig,
   // Edge Function entry points run on Deno (npm: imports, the Deno global); their logic
   // lives beside them in plain modules that are linted and tested like the app. The Journey
-  // map generator imports map packages that are only installed while it runs.
+  // map generator imports map packages that are only installed while it runs. `.claude/` holds
+  // other checkouts of the repo (worktrees), which aren't this one's code.
   {
     ignores: [
+      '.claude/**',
       'dist/*',
       'android/*',
       'ios/*',
