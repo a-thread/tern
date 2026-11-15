@@ -23,7 +23,7 @@ import {
   Milestones,
   milestonesFor,
 } from '../../domain/waypoints/models/milestone';
-import { photoFor } from './models/destinationPhotos';
+import { photoFor } from '../models/destinationPhotos';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Destination'>;
 

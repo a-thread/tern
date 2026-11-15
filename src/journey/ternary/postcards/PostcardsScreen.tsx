@@ -40,7 +40,10 @@ export default function PostcardsScreen() {
       {mine && !sent ? (
         <>
           <GroupLabel>From your journey</GroupLabel>
-          <TernaryButton label={`Send a postcard from ${mine.name}`} onPress={send} />
+          <TernaryButton
+            label={`Send a postcard from ${mine.name}`}
+            onPress={send}
+          />
           <FootNote>
             {`Your own tern reached ${mine.name}. Only the place is sent.`}
           </FootNote>
@@ -52,8 +55,8 @@ export default function PostcardsScreen() {
         ternary.postcards.map((p) => <PostcardCard key={p.id} card={p} />)
       ) : (
         <FootNote>
-          No postcards yet. When a friend’s tern reaches a stop, they can send one
-          here.
+          No postcards yet. When a friend’s tern reaches a stop, they can send
+          one here.
         </FootNote>
       )}
     </TernaryPage>

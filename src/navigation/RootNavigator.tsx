@@ -17,6 +17,7 @@ import MovementStack from '../movement/MovementStack';
 import WaypointsScreen from '../journey/waypoints/WaypointsScreen';
 import MilestoneScreen from '../journey/milestone/MilestoneScreen';
 import DestinationScreen from '../journey/destination/DestinationScreen';
+import PostcardScreen from '../journey/ternary/postcards/postcard/PostcardScreen';
 import WaypointsInfoScreen from '../journey/waypoints-info/WaypointsInfoScreen';
 import RouteInfoScreen from '../journey/route-info/RouteInfoScreen';
 import StreakScreen from '../today/streak/StreakScreen';
@@ -88,6 +89,7 @@ export default function RootNavigator() {
         <RootStack.Screen name='Waypoints' component={WaypointsScreen} />
         <RootStack.Screen name='Milestone' component={MilestoneScreen} />
         <RootStack.Screen name='Destination' component={DestinationScreen} />
+        <RootStack.Screen name='Postcard' component={PostcardScreen} />
         <RootStack.Screen
           name='WaypointsInfo'
           component={WaypointsInfoScreen}
