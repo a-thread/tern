@@ -1,13 +1,21 @@
 import React from 'react';
-import { StyleSheet, Text } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 
-import { space, typography } from '@shared/theme';
-import { Card, FootNote, Group, GroupLabel } from '@shared/components/ui';
+import { colors, space, typography } from '@shared/theme';
+import {
+  Card,
+  FootNote,
+  Group,
+  GroupLabel,
+  Icon,
+  IconBadge,
+} from '@shared/components/ui';
 import { useSubscription } from '@/domain/subscription/SubscriptionContext';
 import { TrailColors } from '@/domain/settings/models/trailColor';
 import { SettingsPage } from '../components/SettingsPage';
 import { TrailChoice } from './components/TrailChoice/TrailChoice';
 import { TipJar } from './components/TipJar/TipJar';
+import { SupporterRow } from './components/SupporterRow/SupporterRow';
 
 /**
  * Settings › About Tern: what Tern is for and the promises it keeps, ways to support it, and
@@ -52,12 +60,20 @@ export default function AboutScreen() {
       </Card>
 
       <GroupLabel>Support Tern</GroupLabel>
-      <TipJar />
-      <FootNote>
-        Tern is made by one person in their off hours. A tip is a one-off
-        thank-you and unlocks nothing. Tern Plus keeps Tern running, with an
-        account that keeps your log on every phone you sign in to.
-      </FootNote>
+      <Card>
+        <View style={s.maker}>
+          <IconBadge bg={colors.sunTint}>
+            <Icon name='feather' size={16} color={colors.sunDeep} />
+          </IconBadge>
+          <Text style={typography.heading}>Made by one person</Text>
+        </View>
+        <Text style={s.para}>
+          Tern has no ads and sells nothing about you. If it’s helped, you can
+          bring it a fish. A tip unlocks nothing.
+        </Text>
+        <TipJar />
+      </Card>
+      <SupporterRow />
 
       {supporter ? (
         <>
@@ -79,6 +95,7 @@ export default function AboutScreen() {
 }
 
 const s = StyleSheet.create({
+  maker: { flexDirection: 'row', alignItems: 'center', gap: space.sm },
   para: { ...typography.meta, lineHeight: 19, marginTop: space.sm },
   line: { ...typography.meta, lineHeight: 19, marginTop: space.xs },
 });

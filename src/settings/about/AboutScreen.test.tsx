@@ -1,5 +1,5 @@
 import React from 'react';
-import { Linking } from 'react-native';
+import { AccessibilityInfo, Linking } from 'react-native';
 import {
   fireEvent,
   render,
@@ -74,12 +74,33 @@ describe('AboutScreen', () => {
     expect(openURL).not.toHaveBeenCalled();
   });
 
-  it('offers the tip jar, and thanks someone who tips', async () => {
+  it('offers the tip jar as fish, and thanks someone who tips', async () => {
+    const announce = jest
+      .spyOn(AccessibilityInfo, 'announceForAccessibility')
+      .mockImplementation(() => {});
     open(PLUS);
-    fireEvent.press(await screen.findByLabelText('Tip $4.99'));
+    expect(await screen.findByText('Made by one person')).toBeTruthy();
+    expect(screen.getByLabelText('Tip $2.99: a sand eel')).toBeTruthy();
+    expect(screen.getByLabelText('Tip $9.99: a herring')).toBeTruthy();
+    fireEvent.press(screen.getByLabelText('Tip $4.99: a capelin'));
+    const thanks = 'Thank you for the capelin. It keeps Tern flying.';
+    expect(await screen.findByText(thanks)).toBeTruthy();
+    expect(announce).toHaveBeenCalledWith(thanks);
+  });
+
+  it('thanks someone on Plus, and a Supporter, under the jar', async () => {
+    open(PLUS);
+    expect(await screen.findByText('You have Tern Plus')).toBeTruthy();
+    expect(screen.queryByText('You’re a Supporter')).toBeNull();
+    expect(screen.queryByText('Become a Supporter')).toBeNull();
+    screen.unmount();
+
+    open(SUPPORTER);
+    expect(await screen.findByText('You’re a Supporter')).toBeTruthy();
     expect(
-      await screen.findByText('Thank you. That means a lot.'),
+      screen.getByText('Thank you. Choose your trail colour below.'),
     ).toBeTruthy();
+    expect(screen.queryByText('You have Tern Plus')).toBeNull();
   });
 
   it('lets a Supporter choose their trail', async () => {

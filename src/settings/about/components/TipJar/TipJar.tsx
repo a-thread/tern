@@ -1,26 +1,33 @@
 import React, { useState } from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { AccessibilityInfo, StyleSheet, View } from 'react-native';
 
-import { colors, radius, space, typography } from '@shared/theme';
-import { Icon } from '@shared/components/ui';
+import { space } from '@shared/theme';
 import { useToast } from '@shared/state/ToastContext';
 import { useSubscription } from '@/domain/subscription/SubscriptionContext';
+import { TipFish } from './models/tipFish';
+import { TipTile } from './components/TipTile/TipTile';
+import { TipThanks } from './components/TipThanks/TipThanks';
 
 /**
- * The tip jar: a one-off "buy the developer a coffee" through the store. It unlocks nothing,
- * and nothing is held back from anyone who doesn't tip. Hidden when the store has no tips.
+ * The tip jar: a one-off thank-you through the store, shown as fish to bring Tern. It unlocks
+ * nothing, and nothing is held back from anyone who doesn't tip. Hidden when the store has no tips.
  */
 export function TipJar() {
   const { tips, tip } = useSubscription();
   const toast = useToast();
   const [busy, setBusy] = useState<string | null>(null);
+  const [thanks, setThanks] = useState<string | null>(null);
   if (!tips.length) return null;
 
-  const leave = async (id: string) => {
+  const leave = async (id: string, fish: string) => {
     if (busy) return;
     setBusy(id);
     try {
-      if (await tip(id)) toast.show('Thank you. That means a lot.');
+      if (await tip(id)) {
+        const text = `Thank you for the ${fish}. It keeps Tern flying.`;
+        setThanks(text);
+        AccessibilityInfo.announceForAccessibility(text);
+      }
     } catch (e) {
       console.warn('Could not leave a tip', e);
       toast.show('Couldn’t reach the store. Please try again.');
@@ -30,38 +37,28 @@ export function TipJar() {
   };
 
   return (
-    <View style={s.jar}>
-      {tips.map((t) => (
-        <Pressable
-          key={t.id}
-          style={[s.amount, busy !== null && s.waiting]}
-          onPress={() => leave(t.id)}
-          disabled={busy !== null}
-          accessibilityRole='button'
-          accessibilityLabel={`Tip ${t.price}`}
-          accessibilityState={{ busy: busy === t.id }}
-        >
-          <Icon name='coffee-outline' size={18} color={colors.sunDeep} />
-          <Text style={s.price}>{t.price}</Text>
-        </Pressable>
-      ))}
-    </View>
+    <>
+      <View style={s.jar}>
+        {tips.map((t, i) => {
+          const fish = TipFish.nameAt(i);
+          return (
+            <TipTile
+              key={t.id}
+              price={t.price}
+              fish={fish}
+              fishSize={TipFish.sizeAt(i)}
+              busy={busy === t.id}
+              disabled={busy !== null}
+              onPress={() => leave(t.id, fish)}
+            />
+          );
+        })}
+      </View>
+      {thanks ? <TipThanks text={thanks} /> : null}
+    </>
   );
 }
 
 const s = StyleSheet.create({
-  jar: { flexDirection: 'row', gap: space.sm },
-  amount: {
-    flex: 1,
-    minHeight: 64,
-    backgroundColor: colors.card,
-    borderWidth: 1,
-    borderColor: colors.border,
-    borderRadius: radius.lg,
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: space.xs,
-  },
-  waiting: { opacity: 0.5 },
-  price: typography.heading,
+  jar: { flexDirection: 'row', gap: space.sm, marginTop: space.md },
 });
