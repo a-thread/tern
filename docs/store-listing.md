@@ -69,6 +69,7 @@ YOUR DATA IS YOURS
 • No account required: stay anonymous and keep everything on your phone, free.
 • Tern Plus is the one paid part: an account that syncs and backs up your data on a secure server.
 • Export everything and restore it on a new phone, or delete your data or your account any time, right from Settings.
+• Seeing a dietitian, therapist or doctor? Share a plain summary of the last 2 or 4 weeks, with only what you track and show and none of your notes. Nothing is uploaded.
 
 Nutrition information comes from Open Food Facts and USDA FoodData Central.
 
@@ -144,7 +145,7 @@ GENTLE REMINDERS
 YOUR DATA IS YOURS
 • No ads, nothing sold.
 • No account required: stay anonymous and keep everything on your iPhone, free.
-• Export everything and restore it on a new phone, or delete your data or your account any time, right from Settings.
+• Export and restore your log, share a summary with your dietitian, therapist or doctor, or delete your data or account, all from Settings.
 
 TERN PLUS
 Tern Plus is the one paid part: an optional auto-renewing subscription, monthly or yearly, that syncs and backs up your data on a secure server. Payment is charged to your Apple Account when you confirm the purchase. It renews automatically unless you turn it off at least 24 hours before the end of the current period, and you can manage or cancel it in your Apple Account settings.
