@@ -12,7 +12,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 
 import { colors, font, radius, space, typography } from '@shared/theme';
-import { Group, GroupLabel, SheetNav, Stepper } from '@shared/components/ui';
+import { Group, GroupLabel, SheetNav } from '@shared/components/ui';
 import { Meals } from '@/domain/food/models/meals';
 import type { Tier } from '@/domain/food/models/foodEntry';
 import { useFood } from '@/domain/food/FoodContext';
@@ -20,15 +20,11 @@ import { useSavedMeals } from '@/domain/saved-meals/SavedMealsContext';
 import { TierPicker } from '../../components/TierPicker/TierPicker';
 import { FoodTypeLabel } from '../../components/FoodTypeLabel/FoodTypeLabel';
 import { MeasurePicker } from '../../components/MeasurePicker/MeasurePicker';
+import { ServingsStepper } from '../../components/ServingsStepper/ServingsStepper';
 import { MealPicker } from '../../components/MealPicker/MealPicker';
 import { useFoodDisplay } from '@/domain/food/hooks/useFoodDisplay';
 import { useUnits } from '@/domain/settings/hooks/useUnits';
-import {
-  gramsOf,
-  scaleForGrams,
-  stepServings,
-  Servings,
-} from '@/domain/food/models/servings';
+import { gramsOf, scaleForGrams } from '@/domain/food/models/servings';
 import {
   addPortions,
   amountOf,
@@ -114,7 +110,6 @@ export default function FoodDetailScreen({ navigation, route }: Props) {
         fat: result.fat * servings,
       };
 
-  const step = (delta: number) => setServings((s) => stepServings(s, delta));
   const add = () => {
     if (blocked) return;
     // With a measure: one serving of exactly the amount eaten. Otherwise as entered.
@@ -195,7 +190,10 @@ export default function FoodDetailScreen({ navigation, route }: Props) {
                   value={sizesLoading ? null : shown.carbs}
                   label='carbs'
                 />
-                <MacroMini value={sizesLoading ? null : shown.fat} label='fat' />
+                <MacroMini
+                  value={sizesLoading ? null : shown.fat}
+                  label='fat'
+                />
               </View>
             ) : null}
           </View>
@@ -230,11 +228,7 @@ export default function FoodDetailScreen({ navigation, route }: Props) {
             </View>
             <View style={s.row}>
               <Text style={[s.rowTitle, { flex: 1 }]}>Servings</Text>
-              <Stepper
-                value={servings}
-                onDecrement={() => step(-Servings.STEP)}
-                onIncrement={() => step(Servings.STEP)}
-              />
+              <ServingsStepper value={servings} onChange={setServings} />
             </View>
           </Group>
         )}
@@ -277,9 +271,9 @@ export default function FoodDetailScreen({ navigation, route }: Props) {
               ? 'Finding serving sizes…'
               : needsAmount
                 ? 'Enter an amount to add'
-              : needsTier
-                ? 'Choose a food type to add'
-                : `Add ${measure ? `${amountText(measure)} ` : ''}to ${pick ? 'meal' : meal}`}
+                : needsTier
+                  ? 'Choose a food type to add'
+                  : `Add ${measure ? `${amountText(measure)} ` : ''}to ${pick ? 'meal' : meal}`}
           </Text>
         </Pressable>
       </ScrollView>

@@ -8,7 +8,26 @@ import {
   scaleForGrams,
   Servings,
   servingsText,
+  typedServings,
 } from './servings';
+
+describe('typedServings', () => {
+  it('takes a typed count as typed, to a hundredth, with a comma or a point', () => {
+    expect(typedServings('1.25')).toBe(1.25);
+    expect(typedServings('1,5')).toBe(1.5);
+    expect(typedServings('1.3')).toBe(1.3);
+    expect(typedServings('1.333')).toBe(1.33);
+    expect(typedServings('3')).toBe(3);
+  });
+
+  it('keeps it between a quarter and the most, and null until it is a number', () => {
+    expect(typedServings('0.1')).toBe(Servings.MIN);
+    expect(typedServings('500')).toBe(Servings.MAX);
+    expect(typedServings('')).toBeNull();
+    expect(typedServings('0')).toBeNull();
+    expect(typedServings('.')).toBeNull();
+  });
+});
 
 describe('gramsOf', () => {
   it('reads gram-based serving labels', () => {

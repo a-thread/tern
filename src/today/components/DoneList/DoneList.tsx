@@ -126,9 +126,9 @@ export function DoneList({
             key={`done-med-${m.id}`}
             title={`Took ${m.name}`}
             icon={<DoneBadge />}
-            // Mirrors "Mark taken" in Left to do: the row is the action (today only).
-            right={isToday ? <Text style={s.markText}>Undo</Text> : undefined}
-            onPress={isToday ? () => setTaken(m.id, false) : undefined}
+            // Mirrors "Mark taken" in Left to do: the row is the action (today and yesterday).
+            right={editable ? <Text style={s.markText}>Undo</Text> : undefined}
+            onPress={editable ? () => setTaken(m.id, false) : undefined}
           />
         ))}
         {waterDone && summary.waterOz !== null ? (

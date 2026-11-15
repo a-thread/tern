@@ -30,8 +30,8 @@ export type RestDay = {
 
 export function useRestDay(): RestDay {
   const { day, isToday } = useViewedDay();
-  const { week, ready } = useActivity();
-  const record = week.find((d) => d.day === day);
+  const { days, ready } = useActivity();
+  const record = days.find((d) => d.day === day);
   const isRest = record?.state === DayState.Rest;
 
   // Noticed while rendering (React's way of adjusting state to a change in what it reads), so

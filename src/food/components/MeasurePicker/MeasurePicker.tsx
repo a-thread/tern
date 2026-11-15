@@ -4,7 +4,7 @@ import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import { colors, font, radius, space, typography } from '@shared/theme';
 import { Group, Stepper } from '@shared/components/ui';
 import { Units } from '@shared/utils/units';
-import { formatCount } from '@/domain/food/models/servings';
+import { formatCount, typedServings } from '@/domain/food/models/servings';
 import { useUnits } from '@/domain/settings/hooks/useUnits';
 import { isVolumeUnit, VolumeUnit } from '@/domain/food/models/volume';
 import {
@@ -17,6 +17,7 @@ import {
   GramSteps,
   isTypedUnit,
   measureGrams,
+  pluralize,
   sentence,
   stepMeasure,
   switchUnit,
@@ -63,9 +64,9 @@ const VOLUME_ORDER: Record<Units, TypedChoice[]> = {
 /**
  * Chooses how much of a food: first the unit, from one unlabelled list (the food's own sizes,
  * then weights, and volumes for a drink), then how much of it. Counted sizes ("packet") use a
- * stepper; weights and volumes are typed. The amount is named with its unit and what it
- * weighs. Switching unit keeps the weight; a quantity of zero means a typed amount isn't
- * usable yet.
+ * stepper in quarters whose number can also be typed; weights and volumes are typed. The
+ * amount is named with its unit and what it weighs. Switching unit keeps the weight; a
+ * quantity of zero means a typed weight or volume isn't usable yet.
  */
 export function MeasurePicker({
   measure,
@@ -76,6 +77,8 @@ export function MeasurePicker({
 }) {
   const { units } = useUnits();
   const [typed, setTyped] = useState(String(formatCount(measure.quantity)));
+  // What is being typed into the stepper for a counted size; null shows the amount itself.
+  const [typedCountText, setTypedCountText] = useState<string | null>(null);
 
   const counted = !isTypedUnit(measure.unit);
   const typedUnit = counted ? null : measure.unit;
@@ -85,12 +88,15 @@ export function MeasurePicker({
   const has = (unit: TypedChoice) =>
     unit === null || measure.portions.some((p) => p.label === unit);
   const unitList: (string | null)[] = [
-    ...measure.portions.filter((p) => !isTypedUnit(p.label)).map((p) => p.label),
+    ...measure.portions
+      .filter((p) => !isTypedUnit(p.label))
+      .map((p) => p.label),
     ...[...WEIGHT_ORDER[units], ...VOLUME_ORDER[units]].filter(has),
   ];
 
   const chooseUnit = (unit: string | null) => {
     const next = switchUnit(measure, unit);
+    setTypedCountText(null);
     if (isTypedUnit(next.unit)) setTyped(formatCount(next.quantity));
     onChange(next);
   };
@@ -143,11 +149,27 @@ export function MeasurePicker({
         </View>
         {counted ? (
           <Stepper
-            value={formatCount(measure.quantity)}
-            onDecrement={() => onChange(stepMeasure(measure, -1))}
-            onIncrement={() => onChange(stepMeasure(measure, 1))}
+            value={typedCountText ?? formatCount(measure.quantity)}
+            onDecrement={() => {
+              setTypedCountText(null);
+              onChange(stepMeasure(measure, -1));
+            }}
+            onIncrement={() => {
+              setTypedCountText(null);
+              onChange(stepMeasure(measure, 1));
+            }}
             decrementLabel='Less'
             incrementLabel='More'
+            onChangeValue={(v) => {
+              const text = v.replace(/[^0-9.,]/g, '');
+              setTypedCountText(text);
+              // Until it is a number, the last count stays (and shows again on leaving the field).
+              const n = typedServings(text);
+              if (n !== null) onChange({ ...measure, quantity: n });
+            }}
+            onEndEditing={() => setTypedCountText(null)}
+            valueLabel={`How many, in ${pluralize(measure.unit ?? '', 2)}`}
+            valueMinWidth={44}
           />
         ) : (
           <View style={s.typed}>
@@ -163,9 +185,7 @@ export function MeasurePicker({
               maxLength={6}
               placeholder={String(GramSteps.STEP * 10)}
               placeholderTextColor={colors.ink3}
-              accessibilityLabel={
-                typedIn ? TYPED_LABEL[typedIn] : GRAMS_LABEL
-              }
+              accessibilityLabel={typedIn ? TYPED_LABEL[typedIn] : GRAMS_LABEL}
               style={s.input}
             />
             <Text style={s.rowTitle}>{typedUnit ?? 'g'}</Text>

@@ -10,7 +10,6 @@ import {
   type Macros,
 } from './servings';
 import {
-  isHouseholdVolume,
   withHouseholdVolumes,
   isVolumeUnit,
   VolumeSteps,
@@ -146,19 +145,9 @@ const roundTo = (n: number, digits: number) => {
   return Math.round(n * f) / f;
 };
 
-/** How a counted portion steps: cups and spoons by a quarter, things you count (a packet, an egg) by a half. */
-export const portionStep = (label: string) =>
-  isHouseholdVolume(label) ? Servings.STEP : PortionSteps.COUNTED;
-
-/** How counted portions step. */
-export class PortionSteps {
-  /** Packets, eggs and slices move by halves; a quarter of an egg is rarely what anyone ate. */
-  static readonly COUNTED = 0.5;
-}
-
 /**
- * One step up or down: a quarter cup or spoon, half of anything counted, ten grams, an ounce,
- * a quarter pound, ten ml or a fluid ounce.
+ * One step up or down: a quarter of anything counted (a cup, a packet, an egg), ten grams,
+ * an ounce, a quarter pound, ten ml or a fluid ounce.
  */
 export function stepMeasure(m: Measure, direction: 1 | -1): Measure {
   if (isWeightUnit(m.unit)) {
@@ -184,10 +173,10 @@ export function stepMeasure(m: Measure, direction: 1 | -1): Measure {
       ),
     };
   }
-  // To the next whole step in that direction ("0.75 egg" goes down to 0.5, up to 1). Below
-  // one step there is nothing smaller to go to, so an amount under it (a quarter egg logged
-  // before eggs went by halves) stays put rather than jumping up.
-  const step = portionStep(m.unit);
+  // To the next whole quarter in that direction (a typed "1.3" goes down to 1.25, up to 1.5).
+  // Below a quarter there is nothing smaller to go to, so an amount under it (a third, from a
+  // scaled meal) stays put rather than jumping up.
+  const step = Servings.STEP;
   const at = m.quantity / step;
   const next =
     (direction > 0 ? Math.floor(at + 1e-9) + 1 : Math.ceil(at - 1e-9) - 1) *
@@ -195,9 +184,7 @@ export function stepMeasure(m: Measure, direction: 1 | -1): Measure {
   return {
     ...m,
     quantity:
-      next >= step
-        ? Math.round(next * 100) / 100
-        : Math.min(m.quantity, step),
+      next >= step ? Math.round(next * 100) / 100 : Math.min(m.quantity, step),
   };
 }
 

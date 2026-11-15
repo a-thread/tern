@@ -11,7 +11,6 @@ import {
   savedMealTotals,
   snapshotItems,
   sortMeals,
-  typedEaten,
   typedYield,
   validateMealName,
   type SavedMeal,
@@ -288,11 +287,6 @@ describe('recipes', () => {
     expect(recipeEntry(oats, 1, Meal.Dinner)).not.toHaveProperty('measure');
   });
 
-  it('never lets more servings be typed than the recipe makes', () => {
-    expect(typedEaten('80', 8)).toBe(8);
-    expect(typedEaten('1,5', 8)).toBe(1.5);
-  });
-
   it('gives the entry the tier of the foods making most of the calories', () => {
     // Beef (tier 1) and beans (tier 2) are 800 calories each: the higher tier wins.
     expect(dominantTier(chili.items)).toBe(2);
@@ -340,10 +334,5 @@ describe('recipes', () => {
     expect(typedYield('')).toBeNull();
     expect(typedYield('0')).toBeNull();
     expect(typedYield('900')).toBe(SavedMealLimits.MAX_SERVINGS);
-    expect(typedEaten('1.5')).toBe(1.5);
-    expect(typedEaten('1,3')).toBe(1.25);
-    expect(typedEaten('0.1')).toBe(0.25);
-    expect(typedEaten('.')).toBeNull();
-    expect(typedEaten('0')).toBeNull();
   });
 });

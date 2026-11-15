@@ -56,15 +56,16 @@ describe('measure', () => {
     expect(amountOf({ ...egg, quantity: 3 }).calories).toBe(215);
   });
 
-  it('steps eggs by a half, cups by a quarter, or grams by ten', () => {
-    expect(stepMeasure(egg, 1).quantity).toBe(2.5);
-    expect(stepMeasure({ ...egg, quantity: 0.5 }, -1).quantity).toBe(0.5);
-    // An older quarter amount goes up to the next half, and never up when stepping down.
+  it('steps eggs and cups by a quarter, or grams by ten', () => {
+    expect(stepMeasure(egg, 1).quantity).toBe(2.25);
+    expect(stepMeasure({ ...egg, quantity: 0.5 }, -1).quantity).toBe(0.25);
+    // Never below a quarter, and an amount under one stays put rather than jumping up.
     expect(stepMeasure({ ...egg, quantity: 0.25 }, 1).quantity).toBe(0.5);
     expect(stepMeasure({ ...egg, quantity: 0.25 }, -1).quantity).toBe(0.25);
-    expect(stepMeasure({ ...egg, quantity: 0.33 }, -1).quantity).toBe(0.33);
-    expect(stepMeasure({ ...egg, quantity: 0.75 }, -1).quantity).toBe(0.5);
-    expect(stepMeasure({ ...egg, quantity: 0.75 }, 1).quantity).toBe(1);
+    expect(stepMeasure({ ...egg, quantity: 0.2 }, -1).quantity).toBe(0.2);
+    // An amount between quarters goes to the next quarter either way.
+    expect(stepMeasure({ ...egg, quantity: 1.3 }, -1).quantity).toBe(1.25);
+    expect(stepMeasure({ ...egg, quantity: 1.3 }, 1).quantity).toBe(1.5);
     expect(stepMeasure({ ...egg, unit: 'cup', quantity: 1 }, 1).quantity).toBe(
       1.25,
     );
