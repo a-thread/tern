@@ -83,9 +83,10 @@ export default function AboutTernaryScreen() {
         </Text>
       </Card>
       <FootNote>
-        Everyone in a ternary has Tern Plus. You can take a break, block someone
-        silently or leave from Ternary settings, and you keep every waypoint you
-        earned.
+        Everyone in a ternary has Tern Plus. You can be in one ternary at a
+        time: to join another, leave this one first. You can take a break, block
+        someone silently or leave from Ternary settings, and you keep every
+        waypoint you earned.
       </FootNote>
     </TernaryPage>
   );
