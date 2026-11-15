@@ -37,6 +37,13 @@ export function sendableStops(
 }
 
 /**
+ * A stop on the migration you're on now, so a postcard can still be sent from it. Stops from
+ * a migration already finished can't be: their postcard was that lap's to send.
+ */
+export const onCurrentLap = (total: number, stop: Pick<Milestone, 'lap'>) =>
+  latestMilestone(total)?.lap === stop.lap;
+
+/**
  * Which look (bird and colour) a postcard's sender flies as, for its stamp: their place in
  * the ternary, as in the flock. The first look for someone no longer in it.
  */

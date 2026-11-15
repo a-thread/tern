@@ -7,9 +7,9 @@ import { useTernary } from '@/domain/ternary/TernaryContext';
 import { hasSent } from '@/domain/ternary/models/postcards';
 
 /**
- * On the card that celebrates reaching a stop: a quiet offer to send your ternary a postcard
- * from it, the moment it's most natural. Only in a ternary that isn't hidden, and not once
- * it's been sent; it's never asked twice, and nothing happens if it's left alone.
+ * On a stop's card (the one that celebrates reaching it, or a past stop opened from Journey):
+ * a quiet offer to send your ternary a postcard from it. Only in a ternary that isn't hidden,
+ * and not once it's been sent; it's never asked twice, and nothing happens if it's left alone.
  */
 export function SendPostcard({
   stopId,

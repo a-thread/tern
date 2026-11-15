@@ -14,7 +14,7 @@ import { daysWithWaypoints } from '../../domain/waypoints/models/waypoint';
 import { legFor, routeFraction } from '../models/waypointSummary';
 import WaypointBurst from '@shared/components/WaypointBurst';
 import { RouteStrip } from './components/RouteStrip/RouteStrip';
-import { SendPostcard } from './components/SendPostcard/SendPostcard';
+import { SendPostcard } from '../components/SendPostcard/SendPostcard';
 import { FadeIn } from '@shared/components/FadeIn/FadeIn';
 import {
   CARD_WIDTH,

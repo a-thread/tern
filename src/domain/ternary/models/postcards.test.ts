@@ -1,5 +1,11 @@
 import { Milestones } from '../../waypoints/models/milestone';
-import { hasSent, senderLook, sendableStops, withLap } from './postcards';
+import {
+  hasSent,
+  onCurrentLap,
+  senderLook,
+  sendableStops,
+  withLap,
+} from './postcards';
 import type { Postcard, TernaryMember } from './ternary';
 
 const [first, second, third] = Milestones.STOPS;
@@ -41,6 +47,15 @@ describe('sendableStops', () => {
     const total = Milestones.MIGRATION_LENGTH + first.waypoints;
     const stops = sendableStops(total, [], [sent(`1-${first.id}`)]);
     expect(stops.map((m) => m.id)).toEqual([`2-${first.id}`]);
+  });
+});
+
+describe('onCurrentLap', () => {
+  it('is true only for the migration you’re on', () => {
+    const total = Milestones.MIGRATION_LENGTH + first.waypoints;
+    expect(onCurrentLap(total, { lap: 2 })).toBe(true);
+    expect(onCurrentLap(total, { lap: 1 })).toBe(false);
+    expect(onCurrentLap(first.waypoints - 1, { lap: 1 })).toBe(false);
   });
 });
 

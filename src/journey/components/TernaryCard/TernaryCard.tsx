@@ -61,14 +61,14 @@ export function TernaryCard() {
       <Group>
         <Row
           title={ternary.name}
-          sub={
-            [
-              flying.length ? `Flying today: ${flying.join(', ')}` : 'Your shared bird',
-              fish ? `${fish} fish for you` : null,
-            ]
-              .filter(Boolean)
-              .join(' · ')
-          }
+          sub={[
+            flying.length
+              ? `Flying today: ${flying.join(', ')}`
+              : 'Your shared bird',
+            fish ? `${fish} fish for you` : null,
+          ]
+            .filter(Boolean)
+            .join(' · ')}
           icon={
             <IconBadge bg={colors.auroraTint}>
               <Icon name='feather' size={17} color={colors.aurora} />

@@ -23,7 +23,9 @@ import {
   Milestones,
   milestonesFor,
 } from '../../domain/waypoints/models/milestone';
+import { onCurrentLap } from '../../domain/ternary/models/postcards';
 import { photoFor } from '../models/destinationPhotos';
+import { SendPostcard } from '../components/SendPostcard/SendPostcard';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Destination'>;
 
@@ -103,6 +105,10 @@ export default function DestinationScreen({ navigation, route }: Props) {
           </Text>
         ))}
       </View>
+
+      {onCurrentLap(waypoints, stop) ? (
+        <SendPostcard stopId={stop.id} name={stop.name} />
+      ) : null}
     </PopupCard>
   );
 }
