@@ -17,6 +17,9 @@ import { FadeIn } from '@shared/components/FadeIn/FadeIn';
 import { useReduceMotion } from '@shared/hooks/useReduceMotion';
 import { useSettings } from '@/domain/settings/SettingsContext';
 import { JourneyView } from '@/domain/settings/models/journeyView';
+import { trailFor } from '@/domain/settings/models/trailColor';
+import { useSubscription } from '@/domain/subscription/SubscriptionContext';
+import { TRAIL_PALETTE } from '@shared/models/trailPalette';
 import { Milestones } from '@/domain/waypoints/models/milestone';
 import { JourneyMapShapes } from './models/journeyMapShapes';
 import {
@@ -103,6 +106,8 @@ export function JourneyMap({
   const { settings, updateSettings } = useSettings();
   const view = settings.journeyView;
   const shape = SHAPES[view];
+  const { supporter } = useSubscription();
+  const trail = TRAIL_PALETTE[trailFor(settings.trailColor, supporter)];
   const still = useReduceMotion();
   const target = routeIndex(progress);
   const last = routePointCount(shape) - 1;
@@ -338,7 +343,7 @@ export function JourneyMap({
                 <AnimatedPath
                   d={path}
                   fill='none'
-                  stroke={colors.route}
+                  stroke={trail}
                   strokeWidth={2.2 / k}
                   strokeLinecap='round'
                   strokeLinejoin='round'
@@ -363,7 +368,7 @@ export function JourneyMap({
                       cx={p.x}
                       cy={p.y}
                       r={2.6 / k}
-                      fill={colors.route}
+                      fill={trail}
                     />
                   ) : (
                     <Circle

@@ -38,7 +38,10 @@ describe('plusSummary', () => {
 
   it('says when a subscription renews, where to cancel, and that nothing is lost', () => {
     expect(
-      plusSummary({ ...base, status: { active: true, renews: true, expiresAt: NOV_21 } }),
+      plusSummary({
+        ...base,
+        status: { active: true, renews: true, expiresAt: NOV_21 },
+      }),
     ).toEqual({
       title: 'Synced to your account',
       summary: 'Tern Plus · renews Nov 21',
@@ -49,9 +52,29 @@ describe('plusSummary', () => {
     });
   });
 
+  it('names Supporter for someone who chose it', () => {
+    expect(
+      plusSummary({
+        ...base,
+        status: {
+          active: true,
+          renews: true,
+          expiresAt: NOV_21,
+          supporter: true,
+        },
+      }),
+    ).toMatchObject({
+      summary: 'Tern Plus Supporter · renews Nov 21',
+      action: PlusAction.Manage,
+    });
+  });
+
   it('says when a cancelled subscription ends', () => {
     expect(
-      plusSummary({ ...base, status: { active: true, renews: false, expiresAt: NOV_21 } }),
+      plusSummary({
+        ...base,
+        status: { active: true, renews: false, expiresAt: NOV_21 },
+      }),
     ).toMatchObject({
       summary: "Tern Plus until Nov 21 · won't renew",
       action: PlusAction.Manage,
@@ -60,7 +83,10 @@ describe('plusSummary', () => {
 
   it('says Plus granted by hand is included, with nothing to manage', () => {
     expect(
-      plusSummary({ ...base, status: { active: true, renews: false, expiresAt: null } }),
+      plusSummary({
+        ...base,
+        status: { active: true, renews: false, expiresAt: null },
+      }),
     ).toEqual({
       title: 'Synced to your account',
       summary: 'Tern Plus · included with your account',

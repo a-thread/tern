@@ -67,7 +67,7 @@ GENTLE REMINDERS
 YOUR DATA IS YOURS
 • No ads, nothing sold.
 • No account required: stay anonymous and keep everything on your phone, free.
-• Tern Plus is the one paid part: an account that syncs and backs up your data on a secure server.
+• Tern Plus is the one paid part: an account that keeps your log on every phone you sign in to, on a secure server. Supporter is the same, with a thank-you.
 • Export everything and restore it on a new phone, or delete your data or your account any time, right from Settings.
 
 Nutrition information comes from Open Food Facts and USDA FoodData Central.
@@ -144,10 +144,18 @@ GENTLE REMINDERS
 YOUR DATA IS YOURS
 • No ads, nothing sold.
 • No account required: stay anonymous and keep everything on your iPhone, free.
-• Export everything and restore it on a new phone, or delete your data or your account any time, right from Settings.
+• Tern Plus is the one paid part: an account that keeps your log on every
+iPhone you sign in to, on a secure server. Supporter is the same, with a
+thank-you.
+• Export everything and restore it on a new phone, or delete your data or your
+account any time, right from Settings.
 
 TERN PLUS
-Tern Plus is the one paid part: an optional auto-renewing subscription, monthly or yearly, that syncs and backs up your data on a secure server. Payment is charged to your Apple Account when you confirm the purchase. It renews automatically unless you turn it off at least 24 hours before the end of the current period, and you can manage or cancel it in your Apple Account settings.
+Tern Plus is an optional auto-renewing subscription, monthly or yearly; Tern
+Plus Supporter is yearly. Payment
+is charged to your Apple Account when you confirm the purchase. It renews
+automatically unless you turn it off at least 24 hours before the end of the
+current period, and you can manage or cancel it in your Apple Account settings.
 
 Terms of Use: https://www.apple.com/legal/internet-services/itunes/dev/stdeula/
 Privacy Policy: https://a-thread.github.io/tern/

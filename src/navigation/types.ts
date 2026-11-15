@@ -19,6 +19,7 @@ export type SettingsStackParamList = {
   Targets: undefined;
   RestDays: undefined;
   Medication: undefined;
+  About: undefined;
 };
 
 /** The setup wizard's screens; the names match `WizardStep`. */

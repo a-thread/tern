@@ -49,10 +49,16 @@ describe('AuthFlow and Tern Plus', () => {
     app();
     expect(await screen.findByText('Tern Plus')).toBeTruthy();
     expect(
-      screen.getByLabelText(/^Yearly, \$29\.99 a year, Save .*17\.89.* a year$/),
+      screen.getByLabelText(
+        /^Yearly, \$39\.99 a year, Save .*19\.89.* a year$/,
+      ),
     ).toBeTruthy();
     // Only yearly says what it saves.
-    expect(screen.getByLabelText('Monthly, $3.99 a month')).toBeTruthy();
+    expect(screen.getByLabelText('Monthly, $4.99 a month')).toBeTruthy();
+    // Supporter says what it adds, with no badge leaning towards it.
+    expect(
+      screen.getByLabelText(/^Supporter, \$59\.99 a year, Everything in Plus/),
+    ).toBeTruthy();
     expect(screen.queryByText("Let's get started")).toBeNull();
   });
 
@@ -93,7 +99,11 @@ describe('AuthFlow and Tern Plus', () => {
           insets: { top: 0, left: 0, right: 0, bottom: 0 },
         }}
       >
-        <SubscriptionProvider repo={repo} userId={userId} serverGrant={async () => true}>
+        <SubscriptionProvider
+          repo={repo}
+          userId={userId}
+          serverGrant={async () => true}
+        >
           {flow ? <AuthFlow /> : null}
         </SubscriptionProvider>
       </SafeAreaProvider>
@@ -101,7 +111,9 @@ describe('AuthFlow and Tern Plus', () => {
     const ui = render(tree('tester', false));
     await act(async () => {});
     repo.identify = (userId) =>
-      userId ? Promise.resolve(NO_SUBSCRIPTION) : new Promise((r) => (answer = r));
+      userId
+        ? Promise.resolve(NO_SUBSCRIPTION)
+        : new Promise((r) => (answer = r));
     ui.rerender(tree(null, true));
     await act(async () => {});
     expect(screen.queryByText("Let's get started")).toBeNull();

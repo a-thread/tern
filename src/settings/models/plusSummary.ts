@@ -88,11 +88,12 @@ export function plusSummary(state: PlusSectionState): PlusSectionText {
     };
   }
   const date = formatShortDate(dayKey(new Date(status.expiresAt)));
+  const name = status.supporter ? 'Tern Plus Supporter' : 'Tern Plus';
   return {
     title: SYNCED,
     summary: status.renews
-      ? `Tern Plus · renews ${date}`
-      : `Tern Plus until ${date} · won't renew`,
+      ? `${name} · renews ${date}`
+      : `${name} until ${date} · won't renew`,
     link: false,
     footnote: `Change plan or cancel in ${store}. If Plus ends, your data is kept on this phone.`,
     action: PlusAction.Manage,
