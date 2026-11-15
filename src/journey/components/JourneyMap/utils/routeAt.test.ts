@@ -1,4 +1,10 @@
-import { Milestones } from '@/domain/waypoints/models/milestone';
+import {
+  Milestones,
+  routeMilestones,
+} from '@/domain/waypoints/models/milestone';
+import { RouteId } from '@/domain/waypoints/models/routes';
+import { JourneyView } from '@/domain/settings/models/journeyView';
+import { routeView, routeViews } from './routeShapes';
 import { JourneyMapShapes } from '../models/journeyMapShapes';
 import {
   nearestStop,
@@ -72,5 +78,50 @@ describe('nearestStop', () => {
       const p = pointAt(shape, stopIndex(i));
       expect(nearestStop(shape, p.x, p.y)).toBe(i);
     });
+  });
+});
+
+describe('the Dutch route', () => {
+  const stops = routeMilestones(RouteId.Netherlands);
+  const shape = JourneyMapShapes.NETHERLANDS_MAP;
+  const length = stops[stops.length - 1].waypoints;
+
+  it('has the colony plus a full set of points for every leg, all inside the drawing', () => {
+    expect(routePointCount(shape)).toBe(
+      1 + stops.length * JourneyMapShapes.LEG_POINTS,
+    );
+    for (let i = 0; i < shape.route.length; i += 2) {
+      expect(shape.route[i]).toBeGreaterThanOrEqual(0);
+      expect(shape.route[i]).toBeLessThanOrEqual(JourneyMapShapes.WIDTH);
+      expect(shape.route[i + 1]).toBeGreaterThanOrEqual(0);
+      expect(shape.route[i + 1]).toBeLessThanOrEqual(shape.height);
+    }
+  });
+
+  it('puts each of its stops exactly on its point', () => {
+    stops.forEach((stop, i) => {
+      expect(routeIndex(stop.waypoints / length, stops)).toBeCloseTo(
+        stopIndex(i),
+      );
+    });
+  });
+
+  it('finds each of its stops from its own spot', () => {
+    stops.slice(0, -1).forEach((_, i) => {
+      const p = pointAt(shape, stopIndex(i));
+      expect(nearestStop(shape, p.x, p.y, stops)).toBe(i);
+    });
+  });
+
+  it('is drawn on a flat map only, and falls back to it from the globe', () => {
+    expect(Object.keys(routeViews(RouteId.Netherlands))).toEqual([
+      JourneyView.Map,
+    ]);
+    expect(routeView(RouteId.Netherlands, JourneyView.Globe)).toBe(
+      JourneyView.Map,
+    );
+    expect(routeView(RouteId.Greenland, JourneyView.Globe)).toBe(
+      JourneyView.Globe,
+    );
   });
 });

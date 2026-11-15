@@ -18,8 +18,14 @@ export function createSupabaseTernaryRepository(db: TernClient): TernaryReposito
       if (error) throw error;
       return (data as Ternary | null) ?? null;
     },
-    create: (name, yourName) =>
-      ok(db.rpc('ternary_create', { p_name: name, p_display_name: yourName })),
+    create: (name, yourName, route) =>
+      ok(
+        db.rpc('ternary_create', {
+          p_name: name,
+          p_display_name: yourName,
+          p_route: route,
+        }),
+      ),
     async join(code, yourName) {
       const { data, error } = await db.rpc('ternary_join', {
         p_code: code,

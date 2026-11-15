@@ -1,5 +1,10 @@
 import { cleanSpaces } from '@shared/utils/text';
 import type { SavedMeal } from '../../saved-meals/models/savedMeals';
+import { RouteId, Routes } from '../../waypoints/models/routes';
+
+/** The route a ternary's shared bird flies: Greenland's unless it chose another. */
+export const routeOf = (ternary: Pick<Ternary, 'route'>): RouteId =>
+  Routes.of(ternary.route).id;
 
 /**
  * What a friend can see about you today. Absent (null) when you haven't shown up, or fly
@@ -56,6 +61,11 @@ export type Ternary = {
   id: string;
   name: string;
   inviteCode: string;
+  /**
+   * Which tracked migration the shared bird flies, chosen when the ternary was started. An
+   * older server that doesn't say means Greenland's; read it through `Routes.of`.
+   */
+  route?: RouteId;
   /** The shared bird's waypoints: settled days, plus the days still being counted. */
   total: number;
   members: TernaryMember[];

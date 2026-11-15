@@ -4,7 +4,11 @@ import { LinearGradient } from 'expo-linear-gradient';
 
 import { colors, gradients, radius, space, typography } from '@shared/theme';
 import { useTernary } from '@/domain/ternary/TernaryContext';
-import { flockWithLooks, Presence } from '@/domain/ternary/models/ternary';
+import {
+  flockWithLooks,
+  Presence,
+  routeOf,
+} from '@/domain/ternary/models/ternary';
 import { restingAt } from '@/domain/ternary/models/stopover';
 import { migrationProgress } from '@/domain/waypoints/models/milestone';
 import { JourneyMap } from '@/journey/components/JourneyMap/JourneyMap';
@@ -16,13 +20,15 @@ import { JourneyMap } from '@/journey/components/JourneyMap/JourneyMap';
 export function FlockMap() {
   const { ternary } = useTernary();
   if (!ternary) return null;
-  const { progress, lap } = migrationProgress(ternary.total);
-  const stop = restingAt(ternary.total);
+  const route = routeOf(ternary);
+  const { progress, lap } = migrationProgress(ternary.total, route);
+  const stop = restingAt(ternary.total, route);
   return (
     <LinearGradient colors={[...gradients.journey]} style={s.sky}>
       <JourneyMap
         progress={progress}
         lap={lap}
+        route={route}
         flock={flockWithLooks(ternary.members).map(({ member, look }) => ({
           name: member.you ? 'You' : member.name,
           resting: member.presence === Presence.Resting,

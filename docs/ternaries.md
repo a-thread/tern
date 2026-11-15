@@ -15,6 +15,13 @@ How it's built is in [architecture.md](architecture.md#ternaries); the numbers a
 **The shared bird.** One bird on its own route, moved forward by everyone showing up. It's
 cooperative and nothing is ranked. Each member's own journey carries on as it is.
 
+**Its route.** Whoever starts the ternary chooses which tracked migration the shared bird flies:
+the Greenland route (the same as everyone's own journey, about 71,000 km) or the Dutch route
+(Fijn et al. 2013: across three oceans to East Antarctica, about 90,000 km, the longest bird
+migration recorded). A different route makes the shared bird feel like its own trip, and brings
+new stops, postcards' worth of facts, and recipe swap ideas. It's chosen once and can't be
+changed, so the bird never jumps to another map. The Dutch route has a flat map only.
+
 **Flying together.** Friends who showed up today fly in a loose cluster around the shared
 bird; a rest day counts. Terns don't fly in a V, so the cluster has no leader, and it starts
 fresh every morning. A friend who isn't here today isn't drawn: no grey slot, no "missed", no

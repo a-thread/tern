@@ -1,4 +1,5 @@
 import type { TernClient } from '@shared/backend/supabase';
+import { RouteId } from '../waypoints/models/routes';
 import { JoinOutcome, TernaryRules } from './models/ternary';
 import { createSupabaseTernaryRepository } from './ternary.repository.supabase';
 
@@ -10,21 +11,26 @@ function fakeDb(data: unknown = null, error: unknown = null) {
 describe('Supabase ternary repository', () => {
   it('asks the server for the ternary as it stands on the caller’s day', async () => {
     const { db, rpc } = fakeDb({ id: 't', name: 'Sunday Walkers' });
-    const ternary = await createSupabaseTernaryRepository(db).mine('2026-11-10');
-    expect(rpc).toHaveBeenCalledWith('ternary_state', { p_today: '2026-11-10' });
+    const ternary =
+      await createSupabaseTernaryRepository(db).mine('2026-11-10');
+    expect(rpc).toHaveBeenCalledWith('ternary_state', {
+      p_today: '2026-11-10',
+    });
     expect(ternary?.name).toBe('Sunday Walkers');
   });
 
   it('is in no ternary when the server says so', async () => {
     const { db } = fakeDb(null);
-    expect(await createSupabaseTernaryRepository(db).mine('2026-11-10')).toBeNull();
+    expect(
+      await createSupabaseTernaryRepository(db).mine('2026-11-10'),
+    ).toBeNull();
   });
 
   it('joins with the size cap, and reads the outcome', async () => {
     const { db, rpc } = fakeDb('full');
-    expect(await createSupabaseTernaryRepository(db).join('KTW4QP', 'Ari')).toBe(
-      JoinOutcome.Full,
-    );
+    expect(
+      await createSupabaseTernaryRepository(db).join('KTW4QP', 'Ari'),
+    ).toBe(JoinOutcome.Full);
     expect(rpc).toHaveBeenCalledWith('ternary_join', {
       p_code: 'KTW4QP',
       p_display_name: 'Ari',
@@ -60,5 +66,19 @@ describe('Supabase ternary repository', () => {
     await expect(createSupabaseTernaryRepository(db).leave()).rejects.toThrow(
       'Ternaries need Tern Plus',
     );
+  });
+
+  it('starts a ternary on the chosen route', async () => {
+    const { db, rpc } = fakeDb();
+    await createSupabaseTernaryRepository(db).create(
+      'Silly Goose',
+      'Aiden',
+      RouteId.Netherlands,
+    );
+    expect(rpc).toHaveBeenCalledWith('ternary_create', {
+      p_name: 'Silly Goose',
+      p_display_name: 'Aiden',
+      p_route: 'netherlands',
+    });
   });
 });

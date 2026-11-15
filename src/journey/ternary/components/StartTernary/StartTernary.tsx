@@ -13,12 +13,15 @@ import {
   JoinOutcome,
   TernaryRules,
 } from '@/domain/ternary/models/ternary';
+import { RouteId } from '@/domain/waypoints/models/routes';
 import { TernaryField } from '../TernaryField/TernaryField';
+import { RouteChoice } from './components/RouteChoice/RouteChoice';
 import { TernaryButton } from '../TernaryButton/TernaryButton';
 
 const JOIN_MESSAGES: Record<JoinOutcome, string | null> = {
   [JoinOutcome.Joined]: null,
-  [JoinOutcome.NotFound]: 'No ternary has that code. Check it with whoever sent it.',
+  [JoinOutcome.NotFound]:
+    'No ternary has that code. Check it with whoever sent it.',
   [JoinOutcome.Full]: 'That ternary is full.',
   [JoinOutcome.Already]: 'You’re already in a ternary.',
 };
@@ -34,6 +37,7 @@ export function StartTernary() {
   const navigation = useTernaryNavigation();
   const [yourName, setYourName] = useState(settings.firstName);
   const [name, setName] = useState('');
+  const [route, setRoute] = useState(RouteId.Greenland);
   const [code, setCode] = useState('');
   const [busy, setBusy] = useState(false);
   const [joinError, setJoinError] = useState<string | null>(null);
@@ -51,7 +55,7 @@ export function StartTernary() {
     }
   };
 
-  const start = () => run(() => create(cleanTernaryName(name), you));
+  const start = () => run(() => create(cleanTernaryName(name), you, route));
   const joinIt = () =>
     run(async () => {
       setJoinError(JOIN_MESSAGES[await join(cleanInviteCode(code), you)]);
@@ -66,12 +70,19 @@ export function StartTernary() {
 
       <Card>
         <Text style={typography.heading}>What your friends see</Text>
-        <Text style={s.line}>• That you showed up today. A rest day counts.</Text>
-        <Text style={s.line}>• That you’re resting, only if you turn that on.</Text>
         <Text style={s.line}>
-          • Never what you ate, weighed or walked, your streak, or your own journey.
+          • That you showed up today. A rest day counts.
         </Text>
-        <Text style={s.line}>• Never a day you didn’t open Tern. Quiet days show nothing.</Text>
+        <Text style={s.line}>
+          • That you’re resting, only if you turn that on.
+        </Text>
+        <Text style={s.line}>
+          • Never what you ate, weighed or walked, your streak, or your own
+          journey.
+        </Text>
+        <Text style={s.line}>
+          • Never a day you didn’t open Tern. Quiet days show nothing.
+        </Text>
       </Card>
       <Group>
         <Row
@@ -97,6 +108,8 @@ export function StartTernary() {
         onChangeText={setName}
         maxLength={TernaryRules.MAX_NAME_LENGTH}
       />
+      <Text style={s.choose}>Which migration your shared bird flies</Text>
+      <RouteChoice value={route} onChange={setRoute} />
       <TernaryButton
         label='Start the ternary'
         onPress={start}
@@ -124,7 +137,9 @@ export function StartTernary() {
         outline
         onPress={joinIt}
         disabled={
-          busy || !you || cleanInviteCode(code).length !== TernaryRules.INVITE_LENGTH
+          busy ||
+          !you ||
+          cleanInviteCode(code).length !== TernaryRules.INVITE_LENGTH
         }
       />
       <FootNote>
@@ -138,4 +153,5 @@ const s = StyleSheet.create({
   lead: { ...typography.meta, lineHeight: 19, marginVertical: space.md },
   line: { ...typography.meta, lineHeight: 19, marginTop: space.xs },
   error: { ...typography.meta, color: colors.danger, marginBottom: space.xs },
+  choose: { ...typography.label, marginBottom: space.sm },
 });

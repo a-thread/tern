@@ -7,6 +7,7 @@ import { SettingsProvider, useSettings } from '../settings/SettingsContext';
 import { WaypointsProvider, useWaypoints } from '../waypoints/WaypointsContext';
 import { WaypointSource } from '../waypoints/models/waypoint';
 import { Milestones } from '../waypoints/models/milestone';
+import { RouteId } from '../waypoints/models/routes';
 import { JoinOutcome } from './models/ternary';
 import {
   createMemoryTernaryRepository,
@@ -27,7 +28,11 @@ function setup(repo?: TernaryRepository) {
     </ToastProvider>
   );
   return renderHook(
-    () => ({ ternary: useTernary(), settings: useSettings(), waypoints: useWaypoints() }),
+    () => ({
+      ternary: useTernary(),
+      settings: useSettings(),
+      waypoints: useWaypoints(),
+    }),
     { wrapper },
   );
 }
@@ -43,9 +48,16 @@ describe('TernaryContext', () => {
   it('starts a ternary of one', async () => {
     const { result } = setup(createMemoryTernaryRepository());
     await waitFor(() => expect(result.current.ternary.ready).toBe(true));
-    await act(() => result.current.ternary.create('Sunday Walkers', 'Ari'));
+    await act(() =>
+      result.current.ternary.create(
+        'Sunday Walkers',
+        'Ari',
+        RouteId.Netherlands,
+      ),
+    );
     expect(result.current.ternary.ternary?.name).toBe('Sunday Walkers');
     expect(result.current.ternary.ternary?.members).toHaveLength(1);
+    expect(result.current.ternary.ternary?.route).toBe(RouteId.Netherlands);
   });
 
   it('joins by code, and says when a code matches nothing', async () => {
@@ -60,15 +72,23 @@ describe('TernaryContext', () => {
       outcome = await result.current.ternary.join('KTW4QP', 'Ari');
     });
     expect(outcome).toBe(JoinOutcome.Joined);
-    expect(result.current.ternary.ternary?.members.find((m) => m.you)?.name).toBe('Ari');
+    expect(
+      result.current.ternary.ternary?.members.find((m) => m.you)?.name,
+    ).toBe('Ari');
   });
 
   it('only remembers the stop on the first look, paying nothing', async () => {
-    const { result } = setup(createMemoryTernaryRepository(sampleTernary('2026-11-10')));
-    await waitFor(() => expect(result.current.settings.settings.ternaryArrival).not.toBeNull());
+    const { result } = setup(
+      createMemoryTernaryRepository(sampleTernary('2026-11-10')),
+    );
+    await waitFor(() =>
+      expect(result.current.settings.settings.ternaryArrival).not.toBeNull(),
+    );
     expect(result.current.settings.settings.ternaryArrival?.day).toBeNull();
     expect(
-      result.current.waypoints.events.some((e) => e.source === WaypointSource.Arrival),
+      result.current.waypoints.events.some(
+        (e) => e.source === WaypointSource.Arrival,
+      ),
     ).toBe(false);
   });
 
@@ -90,7 +110,9 @@ describe('TernaryContext', () => {
     await act(() => result.current.ternary.reload());
     await waitFor(() =>
       expect(
-        result.current.waypoints.events.some((e) => e.source === WaypointSource.Arrival),
+        result.current.waypoints.events.some(
+          (e) => e.source === WaypointSource.Arrival,
+        ),
       ).toBe(true),
     );
   });

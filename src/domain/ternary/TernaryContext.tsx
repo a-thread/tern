@@ -6,11 +6,13 @@ import { useDayKey } from '@shared/hooks/useDayKey';
 import { useSettings } from '../settings/SettingsContext';
 import { useWaypoints } from '../waypoints/WaypointsContext';
 import { WaypointSource } from '../waypoints/models/waypoint';
+import { RouteId } from '../waypoints/models/routes';
 import type { TernaryRepository } from './ternary.repository';
 import { arrivalDue } from './models/stopover';
 import {
   type JoinOutcome,
   type ReportKind,
+  routeOf,
   type Ternary,
   TernaryRules,
 } from './models/ternary';
@@ -27,7 +29,7 @@ type TernaryContextValue = {
    */
   hidden: boolean;
   reload: () => Promise<unknown>;
-  create: (name: string, yourName: string) => Promise<void>;
+  create: (name: string, yourName: string, route: RouteId) => Promise<void>;
   join: (code: string, yourName: string) => Promise<JoinOutcome>;
   leave: () => Promise<void>;
   setPrivacy: (privacy: { flyPrivately: boolean; shareResting: boolean }) => Promise<void>;
@@ -75,16 +77,17 @@ export function TernaryProvider({
   const total = ternary?.total;
   // With sample friends the total may be moved on to show the table: never paid, or remembered.
   const sample = Boolean(ternary?.sample);
+  const route = ternary ? routeOf(ternary) : RouteId.Greenland;
   useEffect(() => {
     if (total === undefined || hidden || sample) return;
-    const due = arrivalDue(total, settings.ternaryArrival, today);
+    const due = arrivalDue(total, settings.ternaryArrival, today, route);
     if (JSON.stringify(due.seen) !== JSON.stringify(settings.ternaryArrival)) {
       updateSettings({ ternaryArrival: due.seen });
     }
     if (due.pay) addWaypoints(TernaryRules.ARRIVAL_POINTS, WaypointSource.Arrival);
     // Only a new total or a new day can bring an arrival.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [total, today, hidden, sample]);
+  }, [total, today, hidden, sample, route]);
 
   const then = useCallback(
     <A extends unknown[], R>(fn: (...args: A) => Promise<R>) =>
@@ -107,7 +110,9 @@ export function TernaryProvider({
       ternary,
       hidden,
       reload,
-      create: then((name: string, yourName: string) => need().create(name, yourName)),
+      create: then((name: string, yourName: string, route: RouteId) =>
+        need().create(name, yourName, route),
+      ),
       join: then((code: string, yourName: string) => need().join(code, yourName)),
       leave: then(() => need().leave()),
       setPrivacy: then((p: { flyPrivately: boolean; shareResting: boolean }) =>

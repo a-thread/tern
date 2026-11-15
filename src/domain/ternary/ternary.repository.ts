@@ -1,9 +1,11 @@
-import { Milestones } from '../waypoints/models/milestone';
+import { Milestones, routeMilestones } from '../waypoints/models/milestone';
+import type { RouteId } from '../waypoints/models/routes';
 import { restingAt } from './models/stopover';
 import {
   JoinOutcome,
   ReportKind,
   Presence,
+  routeOf,
   type Ternary,
   type TernaryMember,
   TernaryRules,
@@ -17,7 +19,8 @@ import {
 export interface TernaryRepository {
   /** The caller's ternary as it stands today, or null when they're in none. */
   mine(today: string): Promise<Ternary | null>;
-  create(name: string, yourName: string): Promise<void>;
+  /** Starts a ternary flying `route`, with you in it. */
+  create(name: string, yourName: string, route: RouteId): Promise<void>;
   join(code: string, yourName: string): Promise<JoinOutcome>;
   leave(): Promise<void>;
   setPrivacy(privacy: { flyPrivately: boolean; shareResting: boolean }): Promise<void>;
@@ -85,12 +88,13 @@ export function createMemoryTernaryRepository(
 
   return {
     mine: async () => (current ? { ...current } : null),
-    async create(name, yourName) {
+    async create(name, yourName, route) {
       if (current) throw new Error('Already in a ternary');
       current = {
         id: id('ternary'),
         name,
         inviteCode: 'ABC234',
+        route,
         total: 0,
         members: [{ userId: 'you', name: yourName, you: true, presence: null }],
         fish: [],
@@ -207,8 +211,11 @@ export function withSampleFriends(repo: TernaryRepository): TernaryRepository {
       const real = await repo.mine(today);
       if (!real) return null;
       const sentToday = fishDay === today ? fishSent : 0;
-      const total = Math.max(real.total, Milestones.STOPS[1].waypoints + 300);
-      const stop = restingAt(total)?.id ?? `1-${Milestones.STOPS[1].id}`;
+      // On whichever route the ternary flies; postcards stay on everyone's own (Greenland's).
+      const route = routeOf(real);
+      const stops = routeMilestones(route);
+      const total = Math.max(real.total, stops[1].waypoints + 300);
+      const stop = restingAt(total, route)?.id ?? `1-${stops[1].id}`;
       const visible = (id: string) => !blocked.has(id);
       return {
         ...real,
@@ -251,7 +258,7 @@ export function withSampleFriends(repo: TernaryRepository): TernaryRepository {
             id: `${SAMPLE_ID}dish-3`,
             fromName: 'Ari',
             fromId: `${SAMPLE_ID}ari`,
-            stop: `1-${Milestones.STOPS[0].id}`,
+            stop: `1-${stops[0].id}`,
             name: 'Sunday pancakes',
             foods: ['Flour', 'Eggs', 'Milk', 'Butter', 'Blueberries', 'Maple syrup'],
             yours: false,

@@ -15,14 +15,21 @@ export default function AboutTernaryScreen() {
     <TernaryPage title='What’s a ternary?'>
       <Text style={s.lead}>
         A ternary is a few friends who fly one shared bird together. It’s about
-        keeping each other company, never about keeping up: nobody is ranked, and
-        nobody is ever shown as behind.
+        keeping each other company, never about keeping up: nobody is ranked,
+        and nobody is ever shown as behind.
       </Text>
 
       <GroupLabel>The shared bird</GroupLabel>
       <Card>
         <Text style={s.para}>
-          {`Each day, the shared bird flies further the more of you show up. A rest day counts. On a day everyone shows up it flies ${TernaryRules.SHOW_UP_POINTS} waypoints, so a ternary flies the whole migration in about a year, whatever its size. A quiet day only slows it down: it never moves back.`}
+          {`Each day, the shared bird flies further the more of you show up. A rest day counts. On a day everyone shows up it flies ${TernaryRules.SHOW_UP_POINTS} waypoints, whatever the ternary’s size. A quiet day only slows it down: it never moves back.`}
+        </Text>
+        <Text style={s.para}>
+          It flies one of two tracked migrations, chosen when the ternary is
+          started: the Greenland route down the Atlantic to the Weddell Sea,
+          about a year together, or the Dutch route across three oceans to East
+          Antarctica, the longest bird migration recorded and a few months
+          longer.
         </Text>
         <Text style={s.para}>
           {`When it reaches a stop, everyone gets ${TernaryRules.ARRIVAL_POINTS} waypoints on their own journey, at most once a week.`}
@@ -32,9 +39,9 @@ export default function AboutTernaryScreen() {
       <GroupLabel>Flying together</GroupLabel>
       <Card>
         <Text style={s.para}>
-          Arctic terns migrate in small, loose flocks. Whoever shows up today flies
-          in a cluster around the shared bird, and the flock starts fresh every
-          morning. A friend who isn’t here today simply isn’t drawn.
+          Arctic terns migrate in small, loose flocks. Whoever shows up today
+          flies in a cluster around the shared bird, and the flock starts fresh
+          every morning. A friend who isn’t here today simply isn’t drawn.
         </Text>
       </Card>
 
@@ -48,9 +55,9 @@ export default function AboutTernaryScreen() {
       <GroupLabel>Postcards</GroupLabel>
       <Card>
         <Text style={s.para}>
-          When your own tern reaches a stop, you can send your ternary a postcard of
-          the place, with a fact about it. It never shows a date, a total or how long
-          the trip took.
+          When your own tern reaches a stop, you can send your ternary a
+          postcard of the place, with a fact about it. It never shows a date, a
+          total or how long the trip took.
         </Text>
       </Card>
 
@@ -58,20 +65,21 @@ export default function AboutTernaryScreen() {
       <Card>
         <Text style={s.para}>
           Share a meal you love from your saved meals, and keep the ones your
-          friends share to cook yourself. Only the name and its foods are shared,
-          never amounts or numbers: whoever cooks it logs it their own way. Each
-          time the shared bird reaches a stop there’s a new idea for what to share,
-          like “Bring something warming”, and one meal each per stop.
+          friends share to cook yourself. Only the name and its foods are
+          shared, never amounts or numbers: whoever cooks it logs it their own
+          way. Each time the shared bird reaches a stop there’s a new idea for
+          what to share, like “Bring something warming”, and one meal each per
+          stop.
         </Text>
       </Card>
 
       <GroupLabel>What friends see</GroupLabel>
       <Card>
         <Text style={s.para}>
-          Only that you showed up today, “resting” if you choose to share that, and
-          what you send. Never what you ate, weighed or walked, your streak, or your
-          own journey. Fly privately and you’re never drawn at all, while still
-          carrying the bird.
+          Only that you showed up today, “resting” if you choose to share that,
+          and what you send. Never what you ate, weighed or walked, your streak,
+          or your own journey. Fly privately and you’re never drawn at all,
+          while still carrying the bird.
         </Text>
       </Card>
       <FootNote>

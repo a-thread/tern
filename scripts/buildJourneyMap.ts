@@ -1,8 +1,11 @@
 /**
- * Builds the shapes for the map on Journey: coastlines from Natural Earth (public domain,
- * via the world-atlas package) and the migration route through `Milestones.STOPS`, projected
- * twice (a flat map and a globe) into the hero's drawing size. The app only draws the result,
- * so it needs no map data or projection code of its own.
+ * Builds the shapes for the maps on Journey: coastlines from Natural Earth (public domain,
+ * via the world-atlas package) and each migration route through its stops
+ * (`routeMilestones`), projected into the hero's drawing size. The Greenland route (everyone's
+ * own journey) gets a flat map and a globe; the Dutch route, which reaches East Antarctica on
+ * the far side of the world, gets a flat map only, since no one view of a globe shows both
+ * ends of it. The app only draws the result, so it needs no map data or projection code of
+ * its own.
  *
  * Run it after moving a stop or changing a projection, and commit the output. The map
  * packages are only needed here, so they're installed for the run and not kept in
@@ -10,6 +13,7 @@
  *
  *   npm install --no-save d3-geo@3 topojson-client@3 world-atlas@2
  *   npx tsx scripts/buildJourneyMap.ts
+ *   npx prettier --write src/journey/components/JourneyMap/models/journeyMapShapes.ts
  *
  * Being outside package.json, this file is left out of typecheck and lint.
  */
@@ -26,7 +30,11 @@ import { feature } from 'topojson-client';
 import type { GeometryObject, Topology } from 'topojson-specification';
 import land110m from 'world-atlas/land-110m.json';
 
-import { Milestones } from '../src/domain/waypoints/models/milestone';
+import {
+  type RouteMilestone,
+  routeMilestones,
+} from '../src/domain/waypoints/models/milestone';
+import { RouteId } from '../src/domain/waypoints/models/routes';
 
 const WIDTH = 340;
 /** The flat map is shorter: it fits the whole route in less height than the globe. */
@@ -42,28 +50,32 @@ const OUT = join(
 const atlas = land110m as unknown as Topology<{ land: GeometryObject }>;
 const land = feature(atlas, atlas.objects.land);
 
-/** The flat map: the Atlantic from the Arctic to the Weddell Sea, centred a little west of Greenwich. */
-function flat(): GeoProjection {
-  const window = {
+/** A flat map of `window` ([west, south, east, north]), centred on `centreLon`. */
+function flat(
+  window: [number, number, number, number],
+  centreLon: number,
+): GeoProjection {
+  const [w, s, e, n] = window;
+  const outline = {
     type: 'Polygon' as const,
     coordinates: [
       [
-        [-62, -75],
-        [28, -75],
-        [28, 78],
-        [-62, 78],
-        [-62, -75],
+        [w, s],
+        [e, s],
+        [e, n],
+        [w, n],
+        [w, s],
       ],
     ],
   };
   return geoNaturalEarth1()
-    .rotate([17, 0])
+    .rotate([-centreLon, 0])
     .fitExtent(
       [
         [6, 6],
         [WIDTH - 6, MAP_HEIGHT - 6],
       ],
-      window,
+      outline,
     )
     .clipExtent([
       [0, 0],
@@ -71,7 +83,7 @@ function flat(): GeoProjection {
     ]);
 }
 
-/** The globe: the same ocean seen from above the middle of it. */
+/** The globe: the Atlantic seen from above the middle of it. */
 function globe(): GeoProjection {
   const r = GLOBE_HEIGHT / 2 - 4;
   return geoOrthographic()
@@ -87,35 +99,33 @@ function globe(): GeoProjection {
 
 const round = (n: number, places: number) => Number(n.toFixed(places));
 
-/** The migration as a loop of stops: the colony (also the last stop), then each stop in turn. */
-const LOOP = Milestones.STOPS.map((s) => [s.at.lon, s.at.lat] as const);
-
-/** The middle of the loop, which every leg bows toward. */
-const CENTRE = [0, 1].map(
-  (d) => LOOP.reduce((sum, p) => sum + p[d], 0) / LOOP.length,
-);
-
-/** How far each leg bows out of a straight line, as a share of its length. */
-const BOW = 0.22;
-
 /**
- * Leg `i` of the loop (from stop `i - 1`, or the colony, to stop `i`) as an arc: a quadratic
- * curve whose middle bows toward the centre of the loop by `BOW` of the leg's length. Bowing
- * inward keeps the arcs over the ocean instead of across Africa or the Americas. Worked in
- * degrees, which is fine here since the route never crosses the date line or a pole.
+ * Leg `i` of a route's loop (from stop `i - 1`, or the colony, to stop `i`) as an arc: a
+ * quadratic curve whose middle bows toward the centre of the loop by `bow` of the leg's
+ * length. Bowing inward keeps the Greenland route's arcs over the ocean instead of across
+ * Africa or the Americas; the Dutch route goes down and back up the same ocean, so it bows
+ * only a little. Worked in degrees, which is fine here since no route crosses the date line
+ * or a pole.
  */
-function curvedLeg(i: number): (t: number) => [number, number] {
-  const n = LOOP.length;
-  const from = LOOP[(i - 1 + n) % n];
-  const to = LOOP[i];
+function curvedLeg(
+  loop: readonly (readonly [number, number])[],
+  bow: number,
+  i: number,
+): (t: number) => [number, number] {
+  const centre = [0, 1].map(
+    (d) => loop.reduce((sum, p) => sum + p[d], 0) / loop.length,
+  );
+  const n = loop.length;
+  const from = loop[(i - 1 + n) % n];
+  const to = loop[i];
   const [dx, dy] = [to[0] - from[0], to[1] - from[1]];
   const mid = [(from[0] + to[0]) / 2, (from[1] + to[1]) / 2];
   // A perpendicular to the leg, turned to face the centre of the loop.
   let [nx, ny] = [-dy, dx];
-  if (nx * (CENTRE[0] - mid[0]) + ny * (CENTRE[1] - mid[1]) < 0) {
+  if (nx * (centre[0] - mid[0]) + ny * (centre[1] - mid[1]) < 0) {
     [nx, ny] = [-nx, -ny];
   }
-  const bend = [mid[0] + nx * BOW, mid[1] + ny * BOW];
+  const bend = [mid[0] + nx * bow, mid[1] + ny * bow];
   return (t) => {
     const [a, b, c] = [(1 - t) * (1 - t), 2 * (1 - t) * t, t * t];
     return [
@@ -125,11 +135,18 @@ function curvedLeg(i: number): (t: number) => [number, number] {
   };
 }
 
-function shape(projection: GeoProjection, height: number, withSphere: boolean) {
+function shape(
+  stops: RouteMilestone[],
+  bow: number,
+  projection: GeoProjection,
+  height: number,
+  withSphere: boolean,
+) {
+  const loop = stops.map((s) => [s.at.lon, s.at.lat] as const);
   const path = geoPath(projection).digits(1);
   // The colony is where every migration starts and ends: the last stop.
-  const colony = Milestones.STOPS[Milestones.STOPS.length - 1].at;
-  const stops = [colony, ...Milestones.STOPS.map((s) => s.at)];
+  const colony = stops[stops.length - 1].at;
+  const points = [colony, ...stops.map((s) => s.at)];
   const route: number[] = [];
   const lengths: number[] = [];
   const add = (lon: number, lat: number) => {
@@ -145,8 +162,8 @@ function shape(projection: GeoProjection, height: number, withSphere: boolean) {
     lengths.push(round(prev, 2));
   };
   add(colony.lon, colony.lat);
-  for (let i = 1; i < stops.length; i++) {
-    const leg = curvedLeg(i - 1);
+  for (let i = 1; i < points.length; i++) {
+    const leg = curvedLeg(loop, bow, i - 1);
     for (let k = 1; k <= LEG_POINTS; k++) {
       const [lon, lat] = leg(k / LEG_POINTS);
       add(lon, lat);
@@ -163,8 +180,20 @@ function shape(projection: GeoProjection, height: number, withSphere: boolean) {
   };
 }
 
-const map = shape(flat(), MAP_HEIGHT, false);
-const globeShape = shape(globe(), GLOBE_HEIGHT, true);
+const greenland = routeMilestones(RouteId.Greenland);
+const netherlands = routeMilestones(RouteId.Netherlands);
+
+/** The Atlantic from the Arctic to the Weddell Sea, centred a little west of Greenwich. */
+const map = shape(greenland, 0.22, flat([-62, -75, 28, 78], -17), MAP_HEIGHT, false);
+const globeShape = shape(greenland, 0.22, globe(), GLOBE_HEIGHT, true);
+/** From the North Sea to East Antarctica across three oceans, centred on the Indian Ocean. */
+const netherlandsMap = shape(
+  netherlands,
+  0.08,
+  flat([-40, -72, 140, 58], 50),
+  MAP_HEIGHT,
+  false,
+);
 
 writeFileSync(
   OUT,
@@ -190,9 +219,11 @@ export class JourneyMapShapes {
   static readonly LEG_POINTS = ${LEG_POINTS};
   static readonly MAP: MapShape = ${JSON.stringify(map)};
   static readonly GLOBE: MapShape = ${JSON.stringify(globeShape)};
+  /** The Dutch route, on a flat map only: no one view of a globe shows both its ends. */
+  static readonly NETHERLANDS_MAP: MapShape = ${JSON.stringify(netherlandsMap)};
 }
 `,
 );
 console.log(
-  `Wrote ${OUT}: map land ${map.land.length} chars, globe land ${globeShape.land.length} chars, ${map.route.length / 2} route points each.`,
+  `Wrote ${OUT}: Greenland ${map.route.length / 2} route points, Netherlands ${netherlandsMap.route.length / 2}.`,
 );

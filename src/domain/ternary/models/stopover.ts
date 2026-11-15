@@ -2,8 +2,9 @@ import { addDays } from '@shared/utils/date';
 import {
   latestMilestone,
   type Milestone,
-  Milestones,
+  routeMilestones,
 } from '../../waypoints/models/milestone';
+import { RouteId, Routes } from '../../waypoints/models/routes';
 import { TernaryRules } from './ternary';
 
 /**
@@ -35,20 +36,36 @@ export class StopoverPrompts {
   ];
 }
 
-/** The stop the shared bird is resting at, where its table is set; null before the first. */
-export const restingAt = (total: number): Milestone | null =>
-  latestMilestone(total);
+/** The stop the shared bird is resting at on its route; null before the first. */
+export const restingAt = (
+  total: number,
+  route: RouteId = RouteId.Greenland,
+): Milestone | null => latestMilestone(total, route);
 
-/** The prompt for a stop's table, the same for everyone in the ternary. */
-export function promptFor(stopId: string): string {
-  const base = stopId.replace(/^\d+-/, '');
-  const i = Milestones.STOPS.findIndex((s) => s.id === base);
-  return StopoverPrompts.ALL[Math.max(i, 0) % StopoverPrompts.ALL.length];
+const withoutLap = (stopId: string) => stopId.replace(/^\d+-/, '');
+
+/** A stop's place in its own route, and that route's stops; ids are unique across routes. */
+function placeOf(stopId: string) {
+  const id = withoutLap(stopId);
+  for (const route of Routes.ALL) {
+    const stops = routeMilestones(route.id);
+    const i = stops.findIndex((s) => s.id === id);
+    if (i >= 0) return { stops, i };
+  }
+  return null;
 }
 
-/** The route stop for an id with or without its lap ("2-iceland" or "iceland"). */
-export const stopNamed = (stopId: string) =>
-  Milestones.STOPS.find((s) => s.id === stopId.replace(/^\d+-/, ''));
+/** The idea for a stop's recipe swap, the same for everyone in the ternary. */
+export function promptFor(stopId: string): string {
+  const i = placeOf(stopId)?.i ?? 0;
+  return StopoverPrompts.ALL[i % StopoverPrompts.ALL.length];
+}
+
+/** The stop for an id on any route, with or without its lap ("2-iceland" or "nl-channel"). */
+export function stopNamed(stopId: string) {
+  const place = placeOf(stopId);
+  return place ? place.stops[place.i] : undefined;
+}
 
 /** The last arrival paid on this phone or account: which stop, and the day. */
 export type ArrivalSeen = { stop: string | null; day: string | null };
@@ -63,8 +80,9 @@ export function arrivalDue(
   total: number,
   seen: ArrivalSeen | null,
   today: string,
+  route: RouteId = RouteId.Greenland,
 ): { pay: boolean; seen: ArrivalSeen } {
-  const latest = latestMilestone(total)?.id ?? null;
+  const latest = latestMilestone(total, route)?.id ?? null;
   if (!seen) return { pay: false, seen: { stop: latest, day: null } };
   if (latest === null || latest === seen.stop) return { pay: false, seen };
   if (seen.day && addDays(seen.day, TernaryRules.ARRIVAL_EVERY_DAYS) > today) {

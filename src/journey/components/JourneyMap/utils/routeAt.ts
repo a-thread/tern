@@ -1,4 +1,7 @@
-import { Milestones } from '@/domain/waypoints/models/milestone';
+import {
+  Milestones,
+  type RouteMilestone,
+} from '@/domain/waypoints/models/milestone';
 import { JourneyMapShapes, type MapShape } from '../models/journeyMapShapes';
 
 /** A spot on the drawn route: where it is, how far along the line, and which way it heads. */
@@ -17,15 +20,19 @@ export const routePointCount = (shape: MapShape) => shape.route.length / 2;
  * falls, as a fractional point index. Each leg runs between two stops' waypoint totals, so a
  * long leg (Cape Town to the Weddell Sea) takes as many waypoints as it says it does.
  */
-export function routeIndex(progress: number): number {
-  const w = Math.min(Math.max(progress, 0), 1) * Milestones.MIGRATION_LENGTH;
+export function routeIndex(
+  progress: number,
+  stops: readonly RouteMilestone[] = Milestones.STOPS,
+): number {
+  const w =
+    Math.min(Math.max(progress, 0), 1) * stops[stops.length - 1].waypoints;
   const n = JourneyMapShapes.LEG_POINTS;
-  for (let i = 0; i < Milestones.STOPS.length; i++) {
-    const from = i === 0 ? 0 : Milestones.STOPS[i - 1].waypoints;
-    const to = Milestones.STOPS[i].waypoints;
+  for (let i = 0; i < stops.length; i++) {
+    const from = i === 0 ? 0 : stops[i - 1].waypoints;
+    const to = stops[i].waypoints;
     if (w <= to) return (i + (w - from) / (to - from)) * n;
   }
-  return Milestones.STOPS.length * n;
+  return stops.length * n;
 }
 
 /** The point index of stop `i` in `Milestones.STOPS`. */
@@ -47,11 +54,16 @@ export function pointAt(shape: MapShape, index: number): RoutePoint {
   };
 }
 
-/** The stop (an index into `Milestones.STOPS`) drawn nearest to `x`, `y`. */
-export function nearestStop(shape: MapShape, x: number, y: number): number {
+/** The stop (an index into the route's stops, Greenland's unless given) drawn nearest to `x`, `y`. */
+export function nearestStop(
+  shape: MapShape,
+  x: number,
+  y: number,
+  stops: readonly unknown[] = Milestones.STOPS,
+): number {
   let best = 0;
   let bestDistance = Infinity;
-  Milestones.STOPS.forEach((_, i) => {
+  stops.forEach((_, i) => {
     const p = pointAt(shape, stopIndex(i));
     const d = Math.hypot(p.x - x, p.y - y);
     if (d < bestDistance) {

@@ -197,6 +197,15 @@ has no `ternary` repository: `TernaryProvider` gets none and `available` is fals
 backend has the Supabase one, and the memory preview an in-memory one to try the screens. The provider is app-wide, because the Journey tab (its
 card) and the ternary's own stack (`journey/ternary/`) both read it.
 
+A ternary's shared bird flies one of two routes (`RouteId`, registered in `Routes`), chosen when
+it's started and kept in `tern.ternaries.route`: Greenland's, the same as everyone's own journey,
+or the Dutch one ([journey-route-sources.md](journey-route-sources.md#the-dutch-route)). Route-aware
+code takes the route and defaults to Greenland's, so your own journey never passes one:
+`routeMilestones`, `migrationProgress`, `latestMilestone`, the map helpers, and `JourneyMap`'s
+`route` prop. The map's shapes come from `scripts/buildJourneyMap.ts`, which projects each route;
+the Dutch one has a flat map only, so `JourneyMap` hides the globe toggle for it. Stop ids are
+unique across routes, so `stopNamed` finds a stop by id alone.
+
 Every ternary table has row-level security on and no policies, so the app reaches them only
 through the security-definer functions in
 [`20261111000000_ternaries.sql`](../supabase/migrations/20261111000000_ternaries.sql), as

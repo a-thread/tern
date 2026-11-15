@@ -20,7 +20,8 @@ import { JourneyView } from '@/domain/settings/models/journeyView';
 import { trailFor } from '@/domain/settings/models/trailColor';
 import { useSubscription } from '@/domain/subscription/SubscriptionContext';
 import { TRAIL_PALETTE } from '@shared/models/trailPalette';
-import { Milestones } from '@/domain/waypoints/models/milestone';
+import { routeMilestones } from '@/domain/waypoints/models/milestone';
+import { RouteId } from '@/domain/waypoints/models/routes';
 import { JourneyMapShapes } from './models/journeyMapShapes';
 import {
   nearestStop,
@@ -31,6 +32,7 @@ import {
   stopIndex,
 } from './utils/routeAt';
 import { ternPose } from './utils/ternPose';
+import { routeView, routeViews } from './utils/routeShapes';
 import { FlockLooks } from '../../models/flockLooks';
 import { toFrame, toMap } from './utils/mapZoom';
 import { legZoom } from './utils/legZoom';
@@ -98,11 +100,6 @@ class FlockIcons {
   static readonly RESTING_OPACITY = 0.55;
 }
 
-const SHAPES = {
-  [JourneyView.Map]: JourneyMapShapes.MAP,
-  [JourneyView.Globe]: JourneyMapShapes.GLOBE,
-};
-
 /**
  * The migration on a real map of the Atlantic: coastlines, the route through every stop, and
  * the tern flying it from the colony to where it is now. Stops already passed are filled, the
@@ -118,7 +115,13 @@ export function JourneyMap({
   replayKey = 0,
   tipRefs,
   flock,
+  route = RouteId.Greenland,
 }: {
+  /**
+   * Which migration is drawn: Greenland's for your own journey, or whichever a ternary chose.
+   * A route with no globe (the Dutch one) shows its flat map with no view toggle.
+   */
+  route?: RouteId;
   /**
    * A ternary's flock: the friends who showed up today, drawn in a loose cluster around the
    * bird (terns don't fly in a V, so there's no leader). Only who's here is passed, so a quiet
@@ -139,12 +142,15 @@ export function JourneyMap({
   };
 }) {
   const { settings, updateSettings } = useSettings();
-  const view = settings.journeyView;
-  const shape = SHAPES[view];
+  const views = routeViews(route);
+  const view = routeView(route, settings.journeyView);
+  const shape = views[view]!;
+  const stops = routeMilestones(route);
+  const length = stops[stops.length - 1].waypoints;
   const { supporter } = useSubscription();
   const trail = TRAIL_PALETTE[trailFor(settings.trailColor, supporter)];
   const still = useReduceMotion();
-  const target = routeIndex(progress);
+  const target = routeIndex(progress, stops);
   const last = routePointCount(shape) - 1;
   const path = useMemo(() => routePath(shape), [shape]);
 
@@ -156,9 +162,7 @@ export function JourneyMap({
     null,
   );
 
-  const next = Milestones.STOPS.findIndex(
-    (s) => s.waypoints > progress * Milestones.MIGRATION_LENGTH,
-  );
+  const next = stops.findIndex((s) => s.waypoints > progress * length);
 
   useEffect(() => {
     // With Reduce Motion on the tern sits where it belongs, with no flight.
@@ -201,7 +205,7 @@ export function JourneyMap({
   const scale = width ? width / JourneyMapShapes.WIDTH : 1;
   const frameHeight = width * (shape.height / JourneyMapShapes.WIDTH);
   // It opens close up on the leg the tern is flying, like the old route strip.
-  const home = legZoom(shape, progress, width, frameHeight);
+  const home = legZoom(shape, progress, width, frameHeight, stops);
   const {
     zoom,
     tapPoint,
@@ -238,12 +242,14 @@ export function JourneyMap({
   const birdH = birdW * TernIcon.RATIO;
   // Where each friend flies, in the map's own units: spaced in bird widths, so the cluster
   // keeps its size on screen however far the map is zoomed.
-  const flockAt = (flock ?? []).slice(0, FLOCK_SPOTS.length).map((friend, i) => ({
-    ...friend,
-    key: `${friend.look}-${friend.name}`,
-    x: bird.x + FLOCK_SPOTS[i].x * birdW,
-    y: bird.y + FLOCK_SPOTS[i].y * birdW,
-  }));
+  const flockAt = (flock ?? [])
+    .slice(0, FLOCK_SPOTS.length)
+    .map((friend, i) => ({
+      ...friend,
+      key: `${friend.look}-${friend.name}`,
+      x: bird.x + FLOCK_SPOTS[i].x * birdW,
+      y: bird.y + FLOCK_SPOTS[i].y * birdW,
+    }));
 
   // What a held single tap reads when it goes off: the map as it is then, not as it was tapped.
   const current = useRef({ zoom, shape, scale });
@@ -286,6 +292,7 @@ export function JourneyMap({
         map.shape,
         spot.x / map.scale,
         spot.y / map.scale,
+        stops,
       );
       setTapped((was) => ({ stop, tap: (was?.tap ?? 0) + 1 }));
     }, MapLayout.DOUBLE_TAP_MS);
@@ -319,8 +326,8 @@ export function JourneyMap({
       ? {
           text:
             tapped.stop === next
-              ? `Next: ${Milestones.STOPS[tapped.stop].name}`
-              : Milestones.STOPS[tapped.stop].name,
+              ? `Next: ${stops[tapped.stop].name}`
+              : stops[tapped.stop].name,
           left: labelLeft,
           top:
             above < 4 || underButtons ? shown.y + MapLayout.LABEL_BELOW : above,
@@ -361,7 +368,7 @@ export function JourneyMap({
             accessibilityRole='button'
             accessibilityLabel={
               next >= 0
-                ? `Map of the migration. Heading to ${Milestones.STOPS[next].name}`
+                ? `Map of the migration. Heading to ${stops[next].name}`
                 : 'Map of the migration'
             }
             accessibilityHint='Shows the name of the nearest stop. Use the Zoom in and Zoom out actions to zoom.'
@@ -394,7 +401,7 @@ export function JourneyMap({
                   strokeDashoffset={dash as unknown as number}
                 />
 
-                {Milestones.STOPS.map((stop, i) => {
+                {stops.map((stop, i) => {
                   const p = pointAt(shape, stopIndex(i));
                   const reached = i < next || next < 0;
                   return i === next ? (
@@ -463,8 +470,12 @@ export function JourneyMap({
 
         {/* Friends' names, in pills like a stop's, each in its friend's colour. */}
         {flockAt.map((friend) => {
-          const at = toFrame(zoom, { x: friend.x * scale, y: friend.y * scale });
-          if (at.x < 0 || at.x > width || at.y < 0 || at.y > frameHeight) return null;
+          const at = toFrame(zoom, {
+            x: friend.x * scale,
+            y: friend.y * scale,
+          });
+          if (at.x < 0 || at.x > width || at.y < 0 || at.y > frameHeight)
+            return null;
           return (
             <View
               key={friend.key}
@@ -520,36 +531,43 @@ export function JourneyMap({
               color={colors.onDark}
             />
           </Pressable>
-          <View
-            ref={tipRefs?.view}
-            collapsable={false}
-            style={[s.pill, s.toggle]}
-          >
-            {[
-              {
-                to: JourneyView.Map,
-                icon: 'map-outline' as const,
-                name: 'Flat map',
-              },
-              { to: JourneyView.Globe, icon: 'earth' as const, name: 'Globe' },
-            ].map(({ to, icon, name }) => (
-              <Pressable
-                key={to}
-                onPress={() => toggle(to)}
-                hitSlop={6}
-                style={[s.toggleButton, view === to && s.toggleOn]}
-                accessibilityRole='button'
-                accessibilityLabel={name}
-                accessibilityState={{ selected: view === to }}
-              >
-                <Icon
-                  name={icon}
-                  size={15}
-                  color={view === to ? colors.onDark : colors.routeAhead}
-                />
-              </Pressable>
-            ))}
-          </View>
+          {/* Only for a route with both views: the Dutch route has no globe. */}
+          {views[JourneyView.Globe] ? (
+            <View
+              ref={tipRefs?.view}
+              collapsable={false}
+              style={[s.pill, s.toggle]}
+            >
+              {[
+                {
+                  to: JourneyView.Map,
+                  icon: 'map-outline' as const,
+                  name: 'Flat map',
+                },
+                {
+                  to: JourneyView.Globe,
+                  icon: 'earth' as const,
+                  name: 'Globe',
+                },
+              ].map(({ to, icon, name }) => (
+                <Pressable
+                  key={to}
+                  onPress={() => toggle(to)}
+                  hitSlop={6}
+                  style={[s.toggleButton, view === to && s.toggleOn]}
+                  accessibilityRole='button'
+                  accessibilityLabel={name}
+                  accessibilityState={{ selected: view === to }}
+                >
+                  <Icon
+                    name={icon}
+                    size={15}
+                    color={view === to ? colors.onDark : colors.routeAhead}
+                  />
+                </Pressable>
+              ))}
+            </View>
+          ) : null}
         </View>
       </View>
     </View>

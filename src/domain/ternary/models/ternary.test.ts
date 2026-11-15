@@ -1,8 +1,10 @@
-import { Milestones } from '../../waypoints/models/milestone';
+import { Milestones, routeMilestones } from '../../waypoints/models/milestone';
+import { RouteId } from '../../waypoints/models/routes';
 import {
   arrivalDue,
   promptFor,
   restingAt,
+  stopNamed,
   StopoverPrompts,
 } from './stopover';
 import {
@@ -12,6 +14,7 @@ import {
   flock,
   flockWithLooks,
   Presence,
+  routeOf,
   showUpPoints,
   TernaryRules,
 } from './ternary';
@@ -48,7 +51,9 @@ describe('the flock', () => {
   });
 
   it('gives each friend their own look by their place, kept when others are quiet', () => {
-    expect(flockWithLooks(members).map(({ member, look }) => [member.name, look])).toEqual([
+    expect(
+      flockWithLooks(members).map(({ member, look }) => [member.name, look]),
+    ).toEqual([
       ['You', 0],
       ['Maya', 1],
     ]);
@@ -78,7 +83,10 @@ describe('dishes', () => {
         { name: 'Carrot', calories: 25 },
       ] as never,
     });
-    expect(dish).toEqual({ name: 'Red lentil soup', foods: ['Red lentils', 'Carrot'] });
+    expect(dish).toEqual({
+      name: 'Red lentil soup',
+      foods: ['Red lentils', 'Carrot'],
+    });
     expect(JSON.stringify(dish)).not.toMatch(/calories|\d/);
   });
 });
@@ -115,13 +123,52 @@ describe('arriving together', () => {
   it('pays once for each new stop', () => {
     const seen = { stop: `1-${first.id}`, day: null };
     const due = arrivalDue(second.waypoints, seen, '2026-11-10');
-    expect(due).toEqual({ pay: true, seen: { stop: `1-${second.id}`, day: '2026-11-10' } });
-    expect(arrivalDue(second.waypoints, due.seen, '2026-11-20').pay).toBe(false);
+    expect(due).toEqual({
+      pay: true,
+      seen: { stop: `1-${second.id}`, day: '2026-11-10' },
+    });
+    expect(arrivalDue(second.waypoints, due.seen, '2026-11-20').pay).toBe(
+      false,
+    );
   });
 
   it('pays at most once a week, however fast the bird flies', () => {
     const seen = { stop: `1-${first.id}`, day: '2026-11-08' };
     expect(arrivalDue(second.waypoints, seen, '2026-11-10').pay).toBe(false);
     expect(arrivalDue(second.waypoints, seen, '2026-11-15').pay).toBe(true);
+  });
+});
+
+describe('a ternary on the Dutch route', () => {
+  const dutch = routeMilestones(RouteId.Netherlands);
+
+  it('rests at the Dutch stops, not Greenland’s', () => {
+    expect(restingAt(dutch[0].waypoints, RouteId.Netherlands)?.id).toBe(
+      `1-${dutch[0].id}`,
+    );
+    expect(restingAt(dutch[0].waypoints, RouteId.Netherlands)?.name).toBe(
+      'The English Channel',
+    );
+  });
+
+  it('finds a stop by id on either route', () => {
+    expect(stopNamed('2-nl-amsterdam-island')?.name).toBe('Amsterdam Island');
+    expect(stopNamed(`1-${first.id}`)?.id).toBe(first.id);
+    expect(stopNamed('nowhere')).toBeUndefined();
+  });
+
+  it('pays an arrival at a Dutch stop', () => {
+    const seen = { stop: `1-${dutch[0].id}`, day: null };
+    expect(
+      arrivalDue(dutch[1].waypoints, seen, '2026-11-15', RouteId.Netherlands),
+    ).toEqual({
+      pay: true,
+      seen: { stop: `1-${dutch[1].id}`, day: '2026-11-15' },
+    });
+  });
+
+  it('reads an unknown or missing route as Greenland’s', () => {
+    expect(routeOf({})).toBe(RouteId.Greenland);
+    expect(routeOf({ route: RouteId.Netherlands })).toBe(RouteId.Netherlands);
   });
 });

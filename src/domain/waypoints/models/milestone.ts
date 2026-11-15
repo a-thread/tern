@@ -1,5 +1,48 @@
 import type { LedgerEvent } from './waypoint';
-import { type GeoPoint, MigrationRoute } from './migrationRoute';
+import {
+  type GeoPoint,
+  MigrationRoute,
+  type RouteStop,
+} from './migrationRoute';
+import { RouteId, Routes } from './routes';
+
+/** A stop on a route at the running total within one trip that reaches it. */
+export type RouteMilestone = {
+  id: string;
+  name: string;
+  note: string;
+  facts: string[];
+  waypoints: number;
+  at: GeoPoint;
+};
+
+const toMilestones = (stops: RouteStop[]): RouteMilestone[] =>
+  stops.map(({ id, name, note, facts, km, at }) => ({
+    id,
+    name,
+    note,
+    facts,
+    waypoints: Math.round(km / MigrationRoute.KM_PER_WAYPOINT),
+    at,
+  }));
+
+const BY_ROUTE = new Map<RouteId, RouteMilestone[]>();
+
+/** A route's stops, each at the running total within one trip that covers its distance. */
+export function routeMilestones(route: RouteId = RouteId.Greenland): RouteMilestone[] {
+  let stops = BY_ROUTE.get(route);
+  if (!stops) {
+    stops = toMilestones(Routes.of(route).stops);
+    BY_ROUTE.set(route, stops);
+  }
+  return stops;
+}
+
+/** Waypoints in one full migration of a route. */
+export const migrationLength = (route: RouteId = RouteId.Greenland) => {
+  const stops = routeMilestones(route);
+  return stops[stops.length - 1].waypoints;
+};
 
 export type Milestone = {
   id: string;
@@ -26,38 +69,24 @@ export class Milestones {
    * covers its distance (`MigrationRoute.KM_PER_WAYPOINT` km a waypoint). After the
    * last stop the next migration begins, so the journey never runs out.
    */
-  static readonly STOPS: {
-    id: string;
-    name: string;
-    note: string;
-    facts: string[];
-    waypoints: number;
-    at: GeoPoint;
-  }[] = MigrationRoute.STOPS.map(({ id, name, note, facts, km, at }) => ({
-    id,
-    name,
-    note,
-    facts,
-    waypoints: Math.round(km / MigrationRoute.KM_PER_WAYPOINT),
-    at,
-  }));
+  static readonly STOPS: RouteMilestone[] = routeMilestones(RouteId.Greenland);
 
   /** Waypoints in one full migration. */
-  static readonly MIGRATION_LENGTH =
-    Milestones.STOPS[Milestones.STOPS.length - 1].waypoints;
+  static readonly MIGRATION_LENGTH = migrationLength(RouteId.Greenland);
 }
 
 /** Which migration a total is on (1-based), and how far through it, 0 to 1. */
-export function migrationProgress(total: number): {
+export function migrationProgress(
+  total: number,
+  route: RouteId = RouteId.Greenland,
+): {
   lap: number;
   progress: number;
 } {
+  const length = migrationLength(route);
   const t = Math.max(total, 0);
-  const lap = Math.floor(t / Milestones.MIGRATION_LENGTH) + 1;
-  return {
-    lap,
-    progress: (t % Milestones.MIGRATION_LENGTH) / Milestones.MIGRATION_LENGTH,
-  };
+  const lap = Math.floor(t / length) + 1;
+  return { lap, progress: (t % length) / length };
 }
 
 /**
@@ -100,27 +129,30 @@ export function milestonesFor(
  * Between the end of one migration and the first stop of the next, that's the
  * last stop of the migration just finished.
  */
-export function latestMilestone(total: number): Milestone | null {
-  if (total < Milestones.STOPS[0].waypoints) return null;
-  const lap = Math.floor(total / Milestones.MIGRATION_LENGTH) + 1;
-  const within = total % Milestones.MIGRATION_LENGTH;
-  const stop = [...Milestones.STOPS]
-    .reverse()
-    .find((s) => s.waypoints <= within);
+export function latestMilestone(
+  total: number,
+  route: RouteId = RouteId.Greenland,
+): Milestone | null {
+  const stops = routeMilestones(route);
+  const length = migrationLength(route);
+  if (total < stops[0].waypoints) return null;
+  const lap = Math.floor(total / length) + 1;
+  const within = total % length;
+  const stop = [...stops].reverse().find((s) => s.waypoints <= within);
   if (stop) {
     return {
       ...stop,
       id: `${lap}-${stop.id}`,
-      waypoints: (lap - 1) * Milestones.MIGRATION_LENGTH + stop.waypoints,
+      waypoints: (lap - 1) * length + stop.waypoints,
       lap,
       reached: true,
     };
   }
-  const last = Milestones.STOPS[Milestones.STOPS.length - 1];
+  const last = stops[stops.length - 1];
   return {
     ...last,
     id: `${lap - 1}-${last.id}`,
-    waypoints: (lap - 1) * Milestones.MIGRATION_LENGTH,
+    waypoints: (lap - 1) * length,
     lap: lap - 1,
     reached: true,
   };

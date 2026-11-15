@@ -7,7 +7,7 @@ import { useToast } from '@shared/state/ToastContext';
 import { useSavedMeals } from '@/domain/saved-meals/SavedMealsContext';
 import { useSettings } from '@/domain/settings/SettingsContext';
 import { useTernary } from '@/domain/ternary/TernaryContext';
-import { dishFromSavedMeal } from '@/domain/ternary/models/ternary';
+import { dishFromSavedMeal, routeOf } from '@/domain/ternary/models/ternary';
 import { promptFor, restingAt } from '@/domain/ternary/models/stopover';
 import { useTernaryNavigation } from '@/navigation/useAppNavigation';
 import { TernaryPage } from '../components/TernaryPage/TernaryPage';
@@ -28,7 +28,7 @@ export default function RecipeSwapScreen() {
   const [choosing, setChoosing] = useState(false);
   if (!ternary) return <TernaryPage title='Recipe swap'>{null}</TernaryPage>;
 
-  const stop = restingAt(ternary.total);
+  const stop = restingAt(ternary.total, routeOf(ternary));
   const hideFriends = settings.hideFriendsFood;
   const shown = ternary.dishes.filter((d) => d.yours || !hideFriends);
   const now = stop ? shown.filter((d) => d.stop === stop.id) : [];

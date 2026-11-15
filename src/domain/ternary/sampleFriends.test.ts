@@ -1,5 +1,6 @@
 import eas from '../../../eas.json';
 import { Milestones } from '../waypoints/models/milestone';
+import { RouteId } from '../waypoints/models/routes';
 import { Presence } from './models/ternary';
 import { sampleFriends } from './sampleFriends';
 import {
@@ -36,7 +37,7 @@ describe('sample friends for trying ternaries locally', () => {
 describe('withSampleFriends', () => {
   async function inTernary() {
     const real = createMemoryTernaryRepository();
-    await real.create('Silly Goose', 'Aiden');
+    await real.create('Silly Goose', 'Aiden', RouteId.Greenland);
     const spy = {
       ...real,
       bringFish: jest.fn(real.bringFish),

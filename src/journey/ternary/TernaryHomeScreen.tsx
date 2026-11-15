@@ -2,7 +2,11 @@ import React from 'react';
 
 import { FootNote, Group, GroupLabel, Row } from '@shared/components/ui';
 import { useTernary } from '@/domain/ternary/TernaryContext';
-import { flockWithLooks, Presence } from '@/domain/ternary/models/ternary';
+import {
+  flockWithLooks,
+  Presence,
+  routeOf,
+} from '@/domain/ternary/models/ternary';
 import { promptFor, restingAt } from '@/domain/ternary/models/stopover';
 import { useTernaryNavigation } from '../../navigation/useAppNavigation';
 import { TernaryPage } from './components/TernaryPage/TernaryPage';
@@ -39,7 +43,7 @@ export default function TernaryHomeScreen() {
   }
 
   const here = flockWithLooks(ternary.members);
-  const stop = restingAt(ternary.total);
+  const stop = restingAt(ternary.total, routeOf(ternary));
   return (
     <TernaryPage title={ternary.name} top={<FlockMap />}>
       <GroupLabel>Flying today</GroupLabel>
