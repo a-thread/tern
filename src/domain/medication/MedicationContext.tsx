@@ -1,10 +1,11 @@
-import React, { useCallback, useMemo, useState } from 'react';
+import React, { useCallback, useMemo, useRef, useState } from 'react';
 
-import type { MedicationRepository } from './medication.repository';
+import type { Dose, MedicationRepository } from './medication.repository';
 import { createRequiredContext } from '@shared/state/createRequiredContext';
 import { useDayKey } from '@shared/hooks/useDayKey';
 import { useLoader } from '@shared/hooks/useLoader';
 import { usePersist } from '@shared/hooks/usePersist';
+import { useViewedDay } from '@shared/state/ViewedDayContext';
 import { parseDayKey } from '@shared/utils/date';
 import { useSettings } from '../settings/SettingsContext';
 import { useAward } from '../waypoints/hooks/useAward';
@@ -13,23 +14,21 @@ import { dueMeds, takenMeds } from './models/schedule';
 import { type Medication } from '../settings/models/medication';
 
 type MedicationContextValue = {
-  /** False until today's doses have loaded once. */
+  /** False until the doses have loaded once. */
   ready: boolean;
   /** Reads everything again from storage (pull to refresh). */
   reload: () => Promise<unknown>;
   medications: Medication[];
-  /** Ids of the medications taken today. */
+  /** Ids of the medications taken today (the real today, whatever day is viewed). */
   takenToday: ReadonlySet<string>;
-  /** Scheduled for today and not yet taken, earliest due first. */
+  /** Scheduled on the viewed day (today unless a past day is picked; see `useViewedDay`) and not yet taken, earliest due first. */
   due: Medication[];
-  /** Taken today, earliest due first. */
+  /** Taken on the viewed day, earliest due first. */
   taken: Medication[];
-  /** Marks a medication taken (or, with `false`, not taken) today. */
+  /** Marks a medication taken (or, with `false`, not taken) on the viewed day. Ignored if the day can't be edited. */
   setTaken: (medicationId: string, taken: boolean) => void;
   /** Stops tracking a medication and forgets its doses. */
   removeMedication: (medicationId: string) => void;
-  /** The medications taken on an earlier `day`, earliest due first: read-only, for looking back. */
-  loadTaken: (day: string) => Promise<Medication[]>;
 };
 
 const [MedicationContext, useMedication] =
@@ -39,7 +38,16 @@ const [MedicationContext, useMedication] =
   );
 export { useMedication };
 
-/** Today's doses, next to the medications in settings. Must sit inside SettingsProvider. */
+/** 1 = Sunday … 7 = Saturday, like the reminder weekdays. */
+const weekdayOf = (day: string) => parseDayKey(day).getDay() + 1;
+
+const sameDose = (a: Dose, b: Dose) =>
+  a.medicationId === b.medicationId && a.day === b.day;
+
+/**
+ * The viewed day's doses, next to the medications in settings, and the waypoint for taking
+ * everything due today. Must sit inside SettingsProvider.
+ */
 export function MedicationProvider({
   repo,
   children,
@@ -49,36 +57,59 @@ export function MedicationProvider({
 }) {
   const { settings, updateSettings } = useSettings();
   const today = useDayKey();
+  const { day, editable } = useViewedDay();
   const medications = settings.medications;
 
-  const [takenIds, setTakenIds] = useState<ReadonlySet<string>>(new Set());
+  // From the viewed day through today, so today's doses (reminders, the waypoint) are
+  // always at hand while a past day is shown. `from` is where the doses held start.
+  const [loaded, setLoaded] = useState<{ from: string; doses: Dose[] }>({
+    from: today,
+    doses: [],
+  });
+  const doses = loaded.doses;
+  const setDoses = useCallback(
+    (change: (prev: Dose[]) => Dose[]) =>
+      setLoaded((prev) => {
+        const next = change(prev.doses);
+        return next === prev.doses ? prev : { ...prev, doses: next };
+      }),
+    [],
+  );
+  // A read that finishes after the person has picked another day is dropped, so an older,
+  // narrower read can't replace the doses the viewed day needs.
+  const viewing = useRef(day);
+  viewing.current = day;
   const { ready, reload } = useLoader(
-    useCallback(() => repo.load(today, today), [repo, today]),
-    (doses) => setTakenIds(new Set(doses.map((d) => d.medicationId))),
+    useCallback(
+      async () => ({ from: day, doses: await repo.load(day, today) }),
+      [repo, day, today],
+    ),
+    (read) => {
+      if (read.from === viewing.current) setLoaded(read);
+    },
     'Could not load medication doses',
   );
+  // Until the viewed day's doses are in, it shows nothing rather than every medication as due.
+  const covered = loaded.from <= day;
   const persist = usePersist(reload);
 
   const setTaken = useCallback(
     (medicationId: string, taken: boolean) => {
-      setTakenIds((prev) => {
-        if (prev.has(medicationId) === taken) return prev;
-        const next = new Set(prev);
-        if (taken) next.add(medicationId);
-        else next.delete(medicationId);
-        return next;
+      if (!editable) return;
+      const dose = { medicationId, day };
+      setDoses((prev) => {
+        if (prev.some((d) => sameDose(d, dose)) === taken) return prev;
+        return taken ? [...prev, dose] : prev.filter((d) => !sameDose(d, dose));
       });
       persist(
-        taken
-          ? repo.take(medicationId, today)
-          : repo.untake(medicationId, today),
+        taken ? repo.take(medicationId, day) : repo.untake(medicationId, day),
         {
           log: 'Could not save medication dose',
           toast: "Couldn't save that — please try again.",
         },
       );
     },
-    [repo, today, persist],
+    [repo, day, editable, persist, setDoses],
   );
 
   const removeMedication = useCallback(
@@ -86,53 +117,49 @@ export function MedicationProvider({
       updateSettings({
         medications: medications.filter((m) => m.id !== medicationId),
       });
-      setTakenIds((prev) => {
-        if (!prev.has(medicationId)) return prev;
-        const next = new Set(prev);
-        next.delete(medicationId);
-        return next;
-      });
+      setDoses((prev) => prev.filter((d) => d.medicationId !== medicationId));
       repo
         .forget(medicationId)
         .catch((e) => console.warn('Could not forget doses', e));
     },
-    [repo, medications, updateSettings],
+    [repo, medications, updateSettings, setDoses],
   );
 
   // Only medications that still exist count as taken.
-  const takenToday = useMemo(
-    () =>
+  const takenOn = useCallback(
+    (on: string): ReadonlySet<string> =>
       new Set(
-        [...takenIds].filter((id) => medications.some((m) => m.id === id)),
+        doses
+          .filter(
+            (d) =>
+              d.day === on && medications.some((m) => m.id === d.medicationId),
+          )
+          .map((d) => d.medicationId),
       ),
-    [takenIds, medications],
+    [doses, medications],
   );
-  // 1 = Sunday … 7 = Saturday, like the reminder weekdays.
-  const weekday = parseDayKey(today).getDay() + 1;
+  const takenToday = useMemo(() => takenOn(today), [takenOn, today]);
+  const takenOnDay = useMemo(() => takenOn(day), [takenOn, day]);
+
   const due = useMemo(
-    () => dueMeds(medications, takenToday, weekday),
-    [medications, takenToday, weekday],
+    () => (covered ? dueMeds(medications, takenOnDay, weekdayOf(day)) : []),
+    [covered, medications, takenOnDay, day],
   );
   const taken = useMemo(
-    () => takenMeds(medications, takenToday),
-    [medications, takenToday],
+    () => (covered ? takenMeds(medications, takenOnDay) : []),
+    [covered, medications, takenOnDay],
   );
 
   // Everything scheduled today taken earns a waypoint; un-marking one takes it back. Nothing
-  // is due (or paid) on a day with no medication scheduled.
+  // is due (or paid) on a day with no medication scheduled. Catching up on yesterday earns nothing.
+  const dueToday = useMemo(
+    () => dueMeds(medications, takenToday, weekdayOf(today)),
+    [medications, takenToday, today],
+  );
   useAward(
     WaypointSource.Medication,
-    taken.length > 0 && due.length === 0,
+    takenToday.size > 0 && dueToday.length === 0,
     ready && medications.length > 0,
-  );
-
-  const loadTaken = useCallback(
-    async (day: string) =>
-      takenMeds(
-        medications,
-        new Set((await repo.load(day, day)).map((d) => d.medicationId)),
-      ),
-    [repo, medications],
   );
 
   const value = useMemo<MedicationContextValue>(
@@ -145,7 +172,6 @@ export function MedicationProvider({
       taken,
       setTaken,
       removeMedication,
-      loadTaken,
     }),
     [
       ready,
@@ -156,7 +182,6 @@ export function MedicationProvider({
       taken,
       setTaken,
       removeMedication,
-      loadTaken,
     ],
   );
 

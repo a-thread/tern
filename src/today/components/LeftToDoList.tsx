@@ -12,7 +12,7 @@ import { useDayItems } from '../hooks/useDayItems';
 import { useRootNavigation } from '../../navigation/useAppNavigation';
 
 /**
- * What is still open on the viewed day: meals, a weigh-in, water, a check-in and (today only)
+ * What is still open on the viewed day: meals, a weigh-in, water, a check-in and
  * medication. Yesterday can still be filled in; earlier days have nothing open. Empty hides it.
  */
 export function LeftToDoList() {

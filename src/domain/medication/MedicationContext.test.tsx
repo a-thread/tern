@@ -3,7 +3,11 @@ import { renderHook, act, waitFor } from '@testing-library/react-native';
 
 import { createMemoryBackend, type Backend } from '../../BackendContext';
 import { ToastProvider } from '@shared/state/ToastContext';
-import { dayKey, parseDayKey } from '@shared/utils/date';
+import {
+  ViewedDayProvider,
+  useViewedDay,
+} from '@shared/state/ViewedDayContext';
+import { addDays, dayKey, parseDayKey } from '@shared/utils/date';
 import { SettingsProvider, useSettings } from '../settings/SettingsContext';
 import { WaypointsProvider, useWaypoints } from '../waypoints/WaypointsContext';
 import { MedicationProvider, useMedication } from './MedicationContext';
@@ -19,15 +23,18 @@ async function setup(backend: Backend = createMemoryBackend()) {
     <ToastProvider>
       <SettingsProvider repo={backend.settings}>
         <WaypointsProvider repo={backend.waypoints}>
-          <MedicationProvider repo={backend.medication}>
-            {children}
-          </MedicationProvider>
+          <ViewedDayProvider>
+            <MedicationProvider repo={backend.medication}>
+              {children}
+            </MedicationProvider>
+          </ViewedDayProvider>
         </WaypointsProvider>
       </SettingsProvider>
     </ToastProvider>
   );
   const hook = renderHook(
     () => ({
+      viewed: useViewedDay(),
       meds: useMedication(),
       settings: useSettings(),
       points: useWaypoints(),
@@ -192,5 +199,53 @@ describe('MedicationProvider', () => {
     await waitFor(() => expect(result.current.meds.taken).toEqual([]));
     expect(result.current.meds.due.map((m) => m.id)).toEqual(['med-d']);
     warn.mockRestore();
+  });
+
+  describe('on yesterday', () => {
+    const yesterday = addDays(today, -1);
+
+    it('lists what was due, logs the dose to yesterday and earns nothing', async () => {
+      const { result, backend } = await setup();
+      await track(result, vitaminD);
+      await act(async () => result.current.viewed.setDay(yesterday));
+      await waitFor(() =>
+        expect(result.current.meds.due.map((m) => m.id)).toEqual(['med-d']),
+      );
+      const before = result.current.points.waypoints;
+
+      await act(async () => result.current.meds.setTaken('med-d', true));
+      expect(result.current.meds.taken.map((m) => m.id)).toEqual(['med-d']);
+      expect(result.current.meds.due).toEqual([]);
+      expect([...result.current.meds.takenToday]).toEqual([]);
+      expect(await backend.medication.load(yesterday, today)).toEqual([
+        { medicationId: 'med-d', day: yesterday },
+      ]);
+      expect(result.current.points.waypoints).toBe(before);
+
+      await act(async () => result.current.meds.setTaken('med-d', false));
+      expect(await backend.medication.load(yesterday, today)).toEqual([]);
+    });
+
+    it("keeps today's doses while yesterday is shown", async () => {
+      const backend = createMemoryBackend();
+      await backend.medication.take('med-d', today);
+      const { result } = await setup(backend);
+      await track(result, vitaminD);
+      await act(async () => result.current.viewed.setDay(yesterday));
+      await waitFor(() =>
+        expect(result.current.meds.due.map((m) => m.id)).toEqual(['med-d']),
+      );
+      expect([...result.current.meds.takenToday]).toEqual(['med-d']);
+    });
+  });
+
+  it('refuses changes before yesterday', async () => {
+    const { result, backend } = await setup();
+    await track(result, vitaminD);
+    const older = addDays(today, -3);
+    await act(async () => result.current.viewed.setDay(older));
+    await act(async () => result.current.meds.setTaken('med-d', true));
+    expect(result.current.meds.taken).toEqual([]);
+    expect(await backend.medication.load(older, today)).toEqual([]);
   });
 });
