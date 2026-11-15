@@ -6,6 +6,10 @@ export function isScheduledOn(med: Medication, weekday: number): boolean {
   return med.frequency === Frequency.Daily || med.weekday === weekday;
 }
 
+/** Whether a medication was being tracked on `day` (YYYY-MM-DD): added that day or before. */
+export const trackedOn = (med: Medication, day: string) =>
+  !med.since || med.since <= day;
+
 /** Medications scheduled for a weekday that are not yet taken today, earliest due first. */
 export function dueMeds(
   meds: readonly Medication[],

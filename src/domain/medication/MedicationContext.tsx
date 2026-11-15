@@ -10,7 +10,7 @@ import { parseDayKey } from '@shared/utils/date';
 import { useSettings } from '../settings/SettingsContext';
 import { useAward } from '../waypoints/hooks/useAward';
 import { WaypointSource } from '../waypoints/models/waypoint';
-import { dueMeds, takenMeds } from './models/schedule';
+import { dueMeds, takenMeds, trackedOn } from './models/schedule';
 import { type Medication } from '../settings/models/medication';
 
 type MedicationContextValue = {
@@ -142,7 +142,15 @@ export function MedicationProvider({
   const takenOnDay = useMemo(() => takenOn(day), [takenOn, day]);
 
   const due = useMemo(
-    () => (covered ? dueMeds(medications, takenOnDay, weekdayOf(day)) : []),
+    () =>
+      covered
+        ? dueMeds(
+            // One added after the viewed day wasn't due then.
+            medications.filter((m) => trackedOn(m, day)),
+            takenOnDay,
+            weekdayOf(day),
+          )
+        : [],
     [covered, medications, takenOnDay, day],
   );
   const taken = useMemo(

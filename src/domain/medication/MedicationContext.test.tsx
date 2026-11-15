@@ -203,10 +203,12 @@ describe('MedicationProvider', () => {
 
   describe('on yesterday', () => {
     const yesterday = addDays(today, -1);
+    // Tracked since before yesterday, so it was due then.
+    const longTaken = { ...vitaminD, since: addDays(today, -30) };
 
     it('lists what was due, logs the dose to yesterday and earns nothing', async () => {
       const { result, backend } = await setup();
-      await track(result, vitaminD);
+      await track(result, longTaken);
       await act(async () => result.current.viewed.setDay(yesterday));
       await waitFor(() =>
         expect(result.current.meds.due.map((m) => m.id)).toEqual(['med-d']),
@@ -230,12 +232,22 @@ describe('MedicationProvider', () => {
       const backend = createMemoryBackend();
       await backend.medication.take('med-d', today);
       const { result } = await setup(backend);
-      await track(result, vitaminD);
+      await track(result, longTaken);
       await act(async () => result.current.viewed.setDay(yesterday));
       await waitFor(() =>
         expect(result.current.meds.due.map((m) => m.id)).toEqual(['med-d']),
       );
       expect([...result.current.meds.takenToday]).toEqual(['med-d']);
+    });
+
+    it('leaves out a medication added today, but lists one from before start days were kept', async () => {
+      const { result } = await setup();
+      const older = { ...iron, since: undefined };
+      await track(result, vitaminD, older); // vitaminD is added today
+      await act(async () => result.current.viewed.setDay(yesterday));
+      await waitFor(() =>
+        expect(result.current.meds.due.map((m) => m.id)).toEqual(['med-iron']),
+      );
     });
   });
 

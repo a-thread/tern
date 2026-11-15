@@ -1,5 +1,6 @@
 import { cleanSpaces, sameName } from '@shared/utils/text';
 import { Frequency } from '@shared/models/frequency';
+import { dayKey } from '@shared/utils/date';
 
 /** A medication the user chose to track. Stored in settings; doses are stored separately. */
 export type Medication = {
@@ -13,7 +14,11 @@ export type Medication = {
   weekday: number;
   /** A reminder at `at` (on `weekday` when weekly). */
   remind: boolean;
+  /** The day it was added (YYYY-MM-DD), so earlier days don't list it as due. Absent on older ones. */
+  since?: string;
 };
+
+const DAY_KEY = /^\d{4}-\d{2}-\d{2}$/;
 
 /** How many medications can be tracked, and what a new one starts with. */
 export class MedicationLimits {
@@ -43,7 +48,12 @@ export function validateMedName(
   return null;
 }
 
-export function newMedication(name: string, id: string): Medication {
+/** A medication added `today` (the default is the real today). */
+export function newMedication(
+  name: string,
+  id: string,
+  today: string = dayKey(),
+): Medication {
   return {
     id,
     name: cleanMedName(name),
@@ -51,6 +61,7 @@ export function newMedication(name: string, id: string): Medication {
     frequency: Frequency.Daily,
     weekday: 1,
     remind: false,
+    since: today,
   };
 }
 
@@ -84,6 +95,9 @@ export function mergeMedications(saved: unknown): Medication[] {
             ? m.weekday
             : 1,
         remind: m.remind === true,
+        ...(typeof m.since === 'string' && DAY_KEY.test(m.since)
+          ? { since: m.since }
+          : {}),
       });
     }
   }

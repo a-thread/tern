@@ -55,14 +55,15 @@ describe('cleanMedName / newMedication', () => {
     expect(cleanMedName('  Vitamin   D  ')).toBe('Vitamin D');
   });
 
-  it('starts at the default time with no reminder', () => {
-    expect(newMedication(' Iron ', 'id1')).toEqual({
+  it('starts at the default time with no reminder, tracked from the day it is added', () => {
+    expect(newMedication(' Iron ', 'id1', '2026-11-15')).toEqual({
       id: 'id1',
       name: 'Iron',
       at: 480,
       frequency: 'daily',
       weekday: 1,
       remind: false,
+      since: '2026-11-15',
     });
   });
 });
@@ -102,6 +103,15 @@ describe('mergeMedications', () => {
         remind: false,
       },
     ]);
+  });
+
+  it('keeps a start day only when it is a day', () => {
+    const [kept, dropped] = mergeMedications([
+      { id: 'a', name: 'Iron', since: '2026-11-15' },
+      { id: 'b', name: 'Zinc', since: 'yesterday' },
+    ]);
+    expect(kept.since).toBe('2026-11-15');
+    expect(dropped).not.toHaveProperty('since');
   });
 
   it('treats anything that is not a list as empty', () => {
