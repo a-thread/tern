@@ -12,33 +12,25 @@ import {
 export function MealServingsRow({
   value,
   onChange,
-  saveWhenDone = false,
+  title = 'Makes',
+  sub = 'More than 1 makes it a recipe, logged by the serving',
 }: {
   value: number;
   onChange: (servings: number) => void;
-  /**
-   * Hand over a typed number only once typing is done (the field is left), not on every
-   * keystroke: for a meal that saves each change, so "12" isn't saved as 1 and then 12.
-   */
-  saveWhenDone?: boolean;
+  /** The row's wording, where the default reads too much like another servings row nearby. */
+  title?: string;
+  sub?: string;
 }) {
   const [typed, setTyped] = useState<string | null>(null);
   const change = (next: number) => {
     setTyped(null);
     onChange(cleanServings(next));
   };
-  const done = () => {
-    const n = typed === null ? null : typedYield(typed);
-    setTyped(null);
-    if (saveWhenDone && n !== null && n !== value) onChange(n);
-  };
   return (
     <View style={s.card}>
       <View style={s.text}>
-        <Text style={s.title}>Makes</Text>
-        <Text style={s.sub}>
-          More than 1 makes it a recipe, logged by the serving
-        </Text>
+        <Text style={s.title}>{title}</Text>
+        <Text style={s.sub}>{sub}</Text>
       </View>
       <Stepper
         value={typed ?? String(value)}
@@ -49,11 +41,10 @@ export function MealServingsRow({
         onChangeValue={(v) => {
           const text = v.replace(/[^0-9]/g, '');
           setTyped(text);
-          if (saveWhenDone) return;
           const n = typedYield(text);
           if (n !== null) onChange(n);
         }}
-        onEndEditing={done}
+        onEndEditing={() => setTyped(null)}
         keyboardType='number-pad'
         valueLabel='Servings this meal makes'
         valueMinWidth={36}

@@ -1,11 +1,14 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { colors, font, space } from '@shared/theme';
+import { Icon } from '@shared/components/ui';
 import { DayRing } from './components/DayRing';
 import { useViewedDay } from '@shared/state/ViewedDayContext';
 import { easeLayout } from '../../utils/easeLayout';
-import { weekdayLetter } from '@shared/utils/date';
+import { formatDayRange, weekdayLetter } from '@shared/utils/date';
+import { weekOf } from '@/domain/activity/models/dayRecord';
+import { weekRange } from './utils/weekRange';
 import { useSettings } from '@/domain/settings/SettingsContext';
 import { useActivity } from '@/domain/activity/ActivityContext';
 import { factForDay } from './utils/ternFacts';
@@ -15,9 +18,9 @@ import { showsRestLink } from '../../models/restLink';
 import { confirm } from '@shared/utils/confirm';
 
 /**
- * This week's seven rings, a fact for the day, and the rest-day link. Tapping a
- * day that has happened views it (see `useViewedDay`): Home and Food show that day,
- * and a link here leads back to today.
+ * A week's seven rings (this week unless an earlier one is paged to), a fact for the day,
+ * and the rest-day link. Tapping a day that has happened views it (see `useViewedDay`):
+ * Home and Food show that day, and a link here leads back to today.
  */
 export function WeekStrip({
   replayKey,
@@ -40,14 +43,21 @@ export function WeekStrip({
   const { settings } = useSettings();
   const {
     days,
-    week,
+    week: thisWeek,
     stepsReadable,
     restLeft,
     todayIsRest,
     takeRestDay,
     undoRestDay,
   } = useActivity();
-  const reached = week.find((d) => d.isToday)?.reachedGoal ?? false;
+  const reached = thisWeek.find((d) => d.isToday)?.reachedGoal ?? false;
+  // The week the viewed day is in; the arrows page a week at a time, back as far as the history.
+  const week = useMemo(
+    () => weekOf(days, todayKey, selectedDay),
+    [days, todayKey, selectedDay],
+  );
+  const { prev, next } = weekRange(selectedDay, todayKey, days[0]?.day);
+  const pastWeek = next !== null;
   const restLink = showsRestLink({
     todayReached: reached,
     todayIsRest,
@@ -81,6 +91,11 @@ export function WeekStrip({
   return (
     <>
       <View ref={stripRef} collapsable={false} style={s.weekRow}>
+        <WeekArrow
+          name='chevron-left'
+          label='Previous week'
+          onPress={prev ? () => onSelect(prev) : undefined}
+        />
         {week.map((d, i) => (
           <Pressable
             key={d.day}
@@ -114,8 +129,17 @@ export function WeekStrip({
             />
           </Pressable>
         ))}
+        <WeekArrow
+          name='chevron-right'
+          label='Next week'
+          onPress={next ? () => onSelect(next) : undefined}
+        />
       </View>
-      <Text style={s.caption}>{factForDay(todayKey)}</Text>
+      <Text style={s.caption}>
+        {pastWeek
+          ? formatDayRange(week[0].day, week[6].day)
+          : factForDay(todayKey)}
+      </Text>
       {/* A rest day taken can always be undone; once the goal is reached a new one can't be taken. */}
       {!isToday ? (
         <View style={s.pastLinks}>
@@ -173,7 +197,33 @@ export function WeekStrip({
   );
 }
 
+/** A week back or forward. Left without `onPress` at the end of the range: dimmed, so the rings don't shift. */
+function WeekArrow({
+  name,
+  label,
+  onPress,
+}: {
+  name: 'chevron-left' | 'chevron-right';
+  label: string;
+  onPress?: () => void;
+}) {
+  return (
+    <Pressable
+      onPress={onPress}
+      disabled={!onPress}
+      hitSlop={{ top: 12, bottom: 12, left: 8, right: 8 }}
+      accessibilityRole='button'
+      accessibilityLabel={label}
+      accessibilityState={{ disabled: !onPress }}
+      style={s.arrow}
+    >
+      <Icon name={name} size={18} color={onPress ? colors.ink2 : colors.dove} />
+    </Pressable>
+  );
+}
+
 const s = StyleSheet.create({
+  arrow: { alignSelf: 'center' },
   weekRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',

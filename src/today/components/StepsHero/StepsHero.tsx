@@ -32,12 +32,12 @@ export function StepsHero({
 }) {
   const navigation = useRootNavigation();
   const { settings } = useSettings();
-  const { todaySteps, streak, freezes, status, stepsReadable, week } =
+  const { todaySteps, streak, freezes, status, stepsReadable, days } =
     useActivity();
   const greeting = greetingFor();
   const movement = useMovement();
   const { day, today, isToday, editable } = useViewedDay();
-  const record = week.find((d) => d.day === day);
+  const record = days.find((d) => d.day === day);
   const steps = isToday ? todaySteps : (record?.steps ?? 0);
   // A past day keeps the goal it had then.
   const stepGoal = isToday

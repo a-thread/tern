@@ -214,11 +214,15 @@ export function withFreezes(days: DayRecord[]): StreakSummary {
 }
 
 /**
- * Monday to Sunday of the week containing today, for the week strip. Days
- * after today are placeholders.
+ * Monday to Sunday of the week containing `anchor` (today unless an earlier week is shown),
+ * for the week strip. Days after today, or before the history, are placeholders.
  */
-export function weekOf(days: DayRecord[], today: string): DayRecord[] {
-  const start = weekStartKey(today);
+export function weekOf(
+  days: DayRecord[],
+  today: string,
+  anchor: string = today,
+): DayRecord[] {
+  const start = weekStartKey(anchor);
   const byDay = new Map(days.map((d) => [d.day, d]));
   return Array.from({ length: 7 }, (_, i) => {
     const k = addDays(start, i);

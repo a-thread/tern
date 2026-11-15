@@ -61,11 +61,40 @@ export class Servings {
   static readonly STEP = 0.25;
 
   static readonly MIN = 0.25;
+
+  /** The most that can be typed for one food: a hundred of anything is a slip. */
+  static readonly MAX = 100;
+
+  /** The serving size of something with no size of its own, like a share of a cooked batch. */
+  static readonly PLAIN = '1 serving';
+}
+
+/**
+ * How much was had, in words: "1.5 servings" when a serving is just a serving, "2 × 1 cup"
+ * when it has a size, and the size alone for one of it.
+ */
+export function servingsText(servings: number, label: string): string {
+  if (label.trim().toLowerCase() === Servings.PLAIN)
+    return `${formatCount(servings)} ${servings === 1 ? 'serving' : 'servings'}`;
+  return servings === 1 ? label : `${formatCount(servings)} × ${label}`;
 }
 
 /** `value` moved by `delta` (usually ±SERVING_STEP), snapped to a quarter, floor MIN_SERVINGS. */
 export const stepServings = (value: number, delta: number) =>
   Math.max(Servings.MIN, Math.round((value + delta) * 4) / 4);
+
+/**
+ * A count typed in ("1.5", "1,5", "1.3"), as typed to a hundredth (what is stored), between
+ * MIN and MAX; null while it is not a number above zero. Only the steppers move in quarters.
+ */
+export function typedServings(text: string): number | null {
+  const n = parseFloat(text.replace(',', '.'));
+  if (!Number.isFinite(n) || n <= 0) return null;
+  return Math.min(
+    Math.max(Math.round(n * 100) / 100, Servings.MIN),
+    Servings.MAX,
+  );
+}
 
 /** "1", "1.5", "0.5": a count without a trailing ".0". */
 export const formatCount = (n: number) => String(Math.round(n * 100) / 100);

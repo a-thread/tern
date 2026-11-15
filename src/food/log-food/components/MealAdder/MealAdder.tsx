@@ -20,7 +20,7 @@ import { loggedAsResult } from '../../models/recentFoods';
 import { scaledTotals, stepScale } from '@/domain/saved-meals/models/mealDraft';
 import type { LogFoodStackParamList } from '../../navigation';
 import ItemRow from '@/food/components/ItemRow/ItemRow';
-import { RecipeServings } from './components/RecipeServings/RecipeServings';
+import { RecipeServings } from '@/food/components/RecipeServings/RecipeServings';
 
 type Nav = NativeStackNavigationProp<LogFoodStackParamList>;
 

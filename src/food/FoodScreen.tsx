@@ -33,6 +33,7 @@ import { useToast } from '@shared/state/ToastContext';
 import { useSettings } from '../domain/settings/SettingsContext';
 import { mealTotals, Meals } from '../domain/food/models/meals';
 import { type FoodEntry } from '../domain/food/models/foodEntry';
+import { servingsText } from '../domain/food/models/servings';
 import { useFood } from '../domain/food/FoodContext';
 import { useFoodDisplay } from '../domain/food/hooks/useFoodDisplay';
 import WaterCard from '@shared/components/WaterCard/WaterCard';
@@ -301,9 +302,7 @@ function FoodRow({
       <View style={{ flex: 1 }}>
         <Text style={s.foodName}>{item.name}</Text>
         <Text style={s.foodSub}>
-          {item.servings === 1
-            ? item.servingLabel
-            : `${item.servings} × ${item.servingLabel}`}
+          {servingsText(item.servings, item.servingLabel)}
           {item.tierOverridden ? ' · custom' : ''}
         </Text>
       </View>

@@ -62,19 +62,6 @@ export function typedYield(text: string): number | null {
     : null;
 }
 
-/**
- * Servings eaten typed in ("1.5", "1,5"), to the nearest quarter and no more than `max` (what
- * the recipe makes); null while it is not a number.
- */
-export function typedEaten(
-  text: string,
-  max: number = SavedMealLimits.MAX_SERVINGS,
-): number | null {
-  const n = parseFloat(text.replace(',', '.'));
-  if (!Number.isFinite(n) || n <= 0) return null;
-  return Math.min(Math.max(Math.round(n * 4) / 4, Servings.MIN), max);
-}
-
 /** A recipe is a saved meal that makes more than one serving. */
 export const isRecipe = (meal: Pick<SavedMeal, 'servings'>) =>
   meal.servings > 1;
@@ -188,7 +175,7 @@ export function recipeEntry(
   return {
     ...base,
     servings: eaten,
-    servingLabel: '1 serving',
+    servingLabel: Servings.PLAIN,
     calories: Math.round(total.calories / meal.servings),
     protein: per(total.protein),
     carbs: per(total.carbs),

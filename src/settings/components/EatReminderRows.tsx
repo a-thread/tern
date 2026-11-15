@@ -2,7 +2,7 @@ import React from 'react';
 
 import { ReminderKey } from '../../domain/settings/models/reminderPlan';
 import { useReminders } from '../hooks/useReminders';
-import { ReminderBlock, ReminderTimeRow } from './ReminderBlock';
+import { ReminderBlock, ReminderTimeRow } from './ReminderBlock/ReminderBlock';
 
 /**
  * Reminders to eat, for someone who doesn't track food: on or off, and the midday and

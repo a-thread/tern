@@ -4,11 +4,15 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 
 import { colors, font, radius, space, typography } from '@shared/theme';
-import { Group, GroupLabel, SheetNav } from '@shared/components/ui';
+import { Group, GroupLabel, SheetNav, ToggleRow } from '@shared/components/ui';
 import { TextField } from '../components/TextField/TextField';
+import { MealServingsRow } from '../components/MealServingsRow/MealServingsRow';
+import { RecipeServings } from '../components/RecipeServings/RecipeServings';
+import { useReplaceWithShare } from './hooks/useReplaceWithShare';
 import type { RootStackParamList } from '../../navigation/types';
 import { useToast } from '@shared/state/ToastContext';
 import { Meals } from '../../domain/food/models/meals';
+import { formatCount } from '../../domain/food/models/servings';
 import { useFood } from '../../domain/food/FoodContext';
 import { useSavedMeals } from '../../domain/saved-meals/SavedMealsContext';
 import {
@@ -24,7 +28,11 @@ import { confirm } from '@shared/utils/confirm';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'SaveMeal'>;
 
-/** Names the foods in one of today's meals and saves them as a reusable meal. */
+/**
+ * Names the foods in one of today's meals and saves them as a reusable meal. Saved as making
+ * several servings, it is a recipe: the whole pot's ingredients, logged later by the serving,
+ * and today's log can swap the pot for the share that was eaten.
+ */
 export default function SaveMealScreen({ navigation, route }: Props) {
   const { meal } = route.params;
   const insets = useSafeAreaInsets();
@@ -32,8 +40,13 @@ export default function SaveMealScreen({ navigation, route }: Props) {
   const { foodLog } = useFood();
   const { meals, saveMeal } = useSavedMeals();
   const { showCalories } = useFoodDisplay();
+  const replaceWithShare = useReplaceWithShare();
   const [name, setName] = useState('');
   const [error, setError] = useState<string | null>(null);
+  const [servings, setServings] = useState(SavedMealLimits.MIN_SERVINGS);
+  const [logShare, setLogShare] = useState(true);
+  const [eaten, setEaten] = useState(1);
+  const recipe = isRecipe({ servings });
 
   const items = foodLog.filter((f) => f.meal === meal);
   const mealLabel = Meals.OPTIONS.find((m) => m.key === meal)?.label ?? meal;
@@ -46,24 +59,35 @@ export default function SaveMealScreen({ navigation, route }: Props) {
     if (problem) return setError(problem);
 
     const save = () => {
-      const result = saveMeal(name, items);
+      const result = saveMeal(name, items, servings);
       if (!result.ok) return setError(result.error);
-      toast.show(
-        result.replaced
-          ? `Updated “${result.meal.name}”`
-          : `Saved “${result.meal.name}”`,
-      );
+      const saved = result.replaced
+        ? `Updated “${result.meal.name}”`
+        : `Saved “${result.meal.name}”`;
+      const undo =
+        recipe && logShare
+          ? replaceWithShare(items, result.meal, eaten)
+          : null;
+      const share = Math.min(eaten, servings);
+      if (undo)
+        toast.show(
+          `${saved} · ${mealLabel} now shows ${formatCount(share)} ${share === 1 ? 'serving' : 'servings'}`,
+          { label: 'Undo', onPress: undo },
+        );
+      else toast.show(recipe ? `${saved} · ${servings} servings` : saved);
       navigation.goBack();
     };
 
     const existing = findMealByName(meals, name);
-    // A recipe can't be replaced from here, so say so before asking to replace it.
-    if (existing && isRecipe(existing))
+    // A recipe is only replaced by another recipe, so say so before asking to replace it.
+    if (existing && isRecipe(existing) && !recipe)
       return setError(recipeClash(existing.name));
     if (existing) {
       confirm({
         title: `Replace “${existing.name}”?`,
-        message: 'The saved meal will be updated with the foods shown here.',
+        message: recipe
+          ? `The saved meal will be updated with the foods shown here, making ${servings} servings.`
+          : 'The saved meal will be updated with the foods shown here.',
         action: 'Replace',
         destructive: false,
         onConfirm: save,
@@ -126,6 +150,46 @@ export default function SaveMealScreen({ navigation, route }: Props) {
           this day's log won't change the saved meal.
         </Text>
 
+        <GroupLabel>Batch size</GroupLabel>
+        <MealServingsRow
+          value={servings}
+          onChange={setServings}
+          title='Whole batch makes'
+          sub={
+            recipe
+              ? 'Logged by the serving from now on'
+              : 'Leave at 1 for a single meal'
+          }
+        />
+        {recipe ? (
+          <>
+            <GroupLabel>{`Today's ${mealLabel.toLowerCase()}`}</GroupLabel>
+            <Group>
+              <ToggleRow
+                title='Log only what I ate'
+                sub={
+                  logShare
+                    ? 'Instead of the whole batch'
+                    : 'The whole batch stays logged'
+                }
+                on={logShare}
+                onToggle={setLogShare}
+              />
+            </Group>
+            {logShare ? (
+              <View style={s.share}>
+                <RecipeServings
+                  value={Math.min(eaten, servings)}
+                  makes={servings}
+                  onChange={setEaten}
+                  title='I ate'
+                  sub={`of the ${servings} servings`}
+                />
+              </View>
+            ) : null}
+          </>
+        ) : null}
+
         <Pressable
           style={[s.bigBtn, !items.length && { opacity: 0.45 }]}
           onPress={submit}
@@ -151,6 +215,7 @@ const s = StyleSheet.create({
     marginTop: space.sm,
     marginHorizontal: 4,
   },
+  share: { marginTop: space.sm },
   bigBtn: {
     backgroundColor: colors.coral,
     borderRadius: radius.lg,

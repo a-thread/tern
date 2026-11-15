@@ -31,12 +31,11 @@ import {
 } from '../../domain/settings/models/medication';
 import { useSettings } from '../../domain/settings/SettingsContext';
 import TimeStepperRow from '../components/TimeStepperRow';
+import { ReminderTimeRow } from '../components/ReminderBlock/ReminderBlock';
 import {
   formatMinutes,
-  stepMinutes,
   stepWeekday,
   weekdayPlural,
-  Reminders,
 } from '../../domain/settings/models/reminderPlan';
 import { confirm } from '@shared/utils/confirm';
 
@@ -206,17 +205,17 @@ function MedicationCard({
         </View>
         {med.frequency === Frequency.Weekly ? (
           <TimeStepperRow
+            nested={false}
             label='Day'
             value={weekdayPlural(med.weekday)}
             onStep={(d) => onChange({ weekday: stepWeekday(med.weekday, d) })}
           />
         ) : null}
-        <TimeStepperRow
+        <ReminderTimeRow
+          nested={false}
           label='Due'
-          value={formatMinutes(med.at)}
-          onStep={(d) =>
-            onChange({ at: stepMinutes(med.at, d * Reminders.STEP_MINUTES) })
-          }
+          minutes={med.at}
+          onChange={(at) => onChange({ at })}
         />
         <ToggleRow
           title='Remind me'

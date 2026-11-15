@@ -161,7 +161,7 @@ export default function ExerciseDetailScreen({ navigation, route }: Props) {
         </View>
       </ScrollView>
 
-      <View style={[s.footer, { paddingBottom: insets.bottom + space.md }]}>
+      <View style={s.footer}>
         <Pressable style={s.save} onPress={save} accessibilityRole='button'>
           <Text style={s.saveText}>{editing ? 'Save changes' : 'Save'}</Text>
         </Pressable>
@@ -226,6 +226,7 @@ const s = StyleSheet.create({
     bottom: 0,
     paddingHorizontal: space.lg,
     paddingTop: space.sm,
+    paddingBottom: space.md,
     backgroundColor: colors.paper,
   },
   save: {

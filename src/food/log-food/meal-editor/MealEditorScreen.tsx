@@ -19,7 +19,7 @@ import {
   Icon,
 } from '@shared/components/ui';
 import { TextField } from '../../components/TextField/TextField';
-import { MealServingsRow } from '../components/MealServingsRow/MealServingsRow';
+import { MealServingsRow } from '../../components/MealServingsRow/MealServingsRow';
 import { useToast } from '@shared/state/ToastContext';
 import { TierDot } from '@shared/components/TierDot';
 import { useFoodDisplay } from '@/domain/food/hooks/useFoodDisplay';

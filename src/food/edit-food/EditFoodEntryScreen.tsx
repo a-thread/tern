@@ -11,7 +11,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 
 import { colors, font, radius, space, typography } from '@shared/theme';
-import { Group, GroupLabel, SheetNav, Stepper } from '@shared/components/ui';
+import { Group, GroupLabel, SheetNav } from '@shared/components/ui';
 import type { RootStackParamList } from '../../navigation/types';
 import { Meals } from '../../domain/food/models/meals';
 import { Meal, type Tier } from '../../domain/food/models/foodEntry';
@@ -21,8 +21,9 @@ import { TierPicker } from '../components/TierPicker/TierPicker';
 import { FoodTypeLabel } from '../components/FoodTypeLabel/FoodTypeLabel';
 import { MealPicker } from '../components/MealPicker/MealPicker';
 import { MeasurePicker } from '../components/MeasurePicker/MeasurePicker';
+import { ServingsStepper } from '../components/ServingsStepper/ServingsStepper';
 import { useFoodDisplay } from '../../domain/food/hooks/useFoodDisplay';
-import { stepServings, Servings } from '../../domain/food/models/servings';
+import { servingsText } from '../../domain/food/models/servings';
 import {
   amountOf,
   withTypedUnits,
@@ -69,8 +70,6 @@ export default function EditFoodEntryScreen({ navigation, route }: Props) {
       </View>
     );
   }
-
-  const step = (delta: number) => setServings((v) => stepServings(v, delta));
 
   const amountText = measure ? amountOf(measure) : null;
   const needsAmount = amountText !== null && amountText.measure.quantity <= 0;
@@ -135,7 +134,7 @@ export default function EditFoodEntryScreen({ navigation, route }: Props) {
             <Text style={s.calLabel}>
               {amountText
                 ? `calories in ${amountText.servingLabel}`
-                : `calories at ${servings} × ${servingLabel || entry.servingLabel}`}
+                : `calories in ${servingsText(servings, servingLabel || entry.servingLabel)}`}
             </Text>
           </View>
         ) : null}
@@ -157,11 +156,7 @@ export default function EditFoodEntryScreen({ navigation, route }: Props) {
             </View>
             <View style={s.row}>
               <Text style={[s.rowTitle, { flex: 1 }]}>Servings</Text>
-              <Stepper
-                value={servings}
-                onDecrement={() => step(-Servings.STEP)}
-                onIncrement={() => step(Servings.STEP)}
-              />
+              <ServingsStepper value={servings} onChange={setServings} />
             </View>
           </Group>
         )}

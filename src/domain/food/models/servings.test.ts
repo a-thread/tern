@@ -7,7 +7,27 @@ import {
   portionServingLabel,
   scaleForGrams,
   Servings,
+  servingsText,
+  typedServings,
 } from './servings';
+
+describe('typedServings', () => {
+  it('takes a typed count as typed, to a hundredth, with a comma or a point', () => {
+    expect(typedServings('1.25')).toBe(1.25);
+    expect(typedServings('1,5')).toBe(1.5);
+    expect(typedServings('1.3')).toBe(1.3);
+    expect(typedServings('1.333')).toBe(1.33);
+    expect(typedServings('3')).toBe(3);
+  });
+
+  it('keeps it between a quarter and the most, and null until it is a number', () => {
+    expect(typedServings('0.1')).toBe(Servings.MIN);
+    expect(typedServings('500')).toBe(Servings.MAX);
+    expect(typedServings('')).toBeNull();
+    expect(typedServings('0')).toBeNull();
+    expect(typedServings('.')).toBeNull();
+  });
+});
 
 describe('gramsOf', () => {
   it('reads gram-based serving labels', () => {
@@ -112,5 +132,17 @@ describe('stepServings', () => {
   it('keeps existing half-step values on the quarter grid', () => {
     expect(stepServings(1.5, Servings.STEP)).toBe(1.75);
     expect(stepServings(2.5, -Servings.STEP)).toBe(2.25);
+  });
+});
+
+describe('servingsText', () => {
+  it('counts plain servings without "× 1 serving"', () => {
+    expect(servingsText(1, '1 serving')).toBe('1 serving');
+    expect(servingsText(1.5, '1 serving')).toBe('1.5 servings');
+  });
+
+  it('keeps a sized serving as a count of it', () => {
+    expect(servingsText(1, '1 cup')).toBe('1 cup');
+    expect(servingsText(2, '1 cup')).toBe('2 × 1 cup');
   });
 });

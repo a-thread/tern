@@ -1,10 +1,7 @@
-import { useEffect, useState } from 'react';
-
 import { useFood } from '../../domain/food/FoodContext';
 import { useWeight } from '../../domain/weight/WeightContext';
 import { useSettings } from '../../domain/settings/SettingsContext';
 import { useMedication } from '../../domain/medication/MedicationContext';
-import { type Medication } from '../../domain/settings/models/medication';
 import { useWater } from '../../domain/water/WaterContext';
 import { useMood } from '../../domain/mood/MoodContext';
 import { leftToDo } from '../models/leftToDo';
@@ -28,11 +25,11 @@ const lateOn = (day: string) => {
 /**
  * What is still open and what has been done on the viewed day (today unless a past day
  * is picked), drawn from every tracked domain. Yesterday can still be filled in, so it
- * has open items too (never medication, which is today only); earlier days have none.
+ * has open items too; earlier days have none.
  */
 export function useDayItems() {
   const { day, isToday, editable } = useViewedDay();
-  // Food, water and the check-in already follow the viewed day.
+  // Food, water, medication and the check-in already follow the viewed day.
   const { weightEntries, isWeighInSkipped } = useWeight();
   const { settings } = useSettings();
   // With food off, past logs are kept but nothing about meals shows.
@@ -42,25 +39,10 @@ export function useDayItems() {
   const water = useWater();
   const mood = useMood();
   const meds = useMedication();
-  const { todaySteps, week } = useActivity();
+  const { todaySteps, days } = useActivity();
   const movement = useMovement();
 
-  // Medication taken on a past day is read once, for looking back.
-  const [pastTaken, setPastTaken] = useState<Medication[]>([]);
-  const { loadTaken } = meds;
-  useEffect(() => {
-    if (isToday) return;
-    let cancelled = false;
-    setPastTaken([]);
-    loadTaken(day)
-      .then((taken) => !cancelled && setPastTaken(taken))
-      .catch((e) => console.warn('Could not load medication for the day', e));
-    return () => {
-      cancelled = true;
-    };
-  }, [isToday, day, loadTaken]);
-
-  const record = week.find((d) => d.day === day);
+  const record = days.find((d) => d.day === day);
   const steps = isToday ? todaySteps : (record?.steps ?? 0);
   const stepGoal = isToday
     ? settings.stepGoal
@@ -74,7 +56,7 @@ export function useDayItems() {
     : (record?.movedToGoal ?? false);
   const reached = stepsReached || movedToGoal;
   const movementOnDay = entriesOn(movement.entries, day);
-  const takenMedications = isToday ? meds.taken : pastTaken;
+  const takenMedications = meds.taken;
 
   // The latest weigh-in as of the day (entries are newest first).
   const lastWeight = isToday
@@ -97,7 +79,7 @@ export function useDayItems() {
         weighInSkipped,
         meals: settings.trackFood,
         skippedMeals,
-        medications: isToday ? meds.due : [],
+        medications: meds.due,
         water: water.enabled
           ? { totalOz: water.totalOz, goalOz: water.goalOz }
           : null,
