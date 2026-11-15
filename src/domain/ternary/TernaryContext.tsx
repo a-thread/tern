@@ -32,10 +32,16 @@ type TernaryContextValue = {
   create: (name: string, yourName: string, route: RouteId) => Promise<void>;
   join: (code: string, yourName: string) => Promise<JoinOutcome>;
   leave: () => Promise<void>;
-  setPrivacy: (privacy: { flyPrivately: boolean; shareResting: boolean }) => Promise<void>;
+  setPrivacy: (privacy: {
+    flyPrivately: boolean;
+    shareResting: boolean;
+  }) => Promise<void>;
   bringFish: (toUserId: string) => Promise<void>;
   sendPostcard: (stopId: string) => Promise<void>;
-  bringDish: (stop: string, dish: { name: string; foods: string[] }) => Promise<void>;
+  bringDish: (
+    stop: string,
+    dish: { name: string; foods: string[] },
+  ) => Promise<void>;
   block: (userId: string) => Promise<void>;
   unblock: (userId: string) => Promise<void>;
   report: (kind: ReportKind, target: string) => Promise<void>;
@@ -84,7 +90,8 @@ export function TernaryProvider({
     if (JSON.stringify(due.seen) !== JSON.stringify(settings.ternaryArrival)) {
       updateSettings({ ternaryArrival: due.seen });
     }
-    if (due.pay) addWaypoints(TernaryRules.ARRIVAL_POINTS, WaypointSource.Arrival);
+    if (due.pay)
+      addWaypoints(TernaryRules.ARRIVAL_POINTS, WaypointSource.Arrival);
     // Only a new total or a new day can bring an arrival.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [total, today, hidden, sample, route]);
@@ -113,13 +120,17 @@ export function TernaryProvider({
       create: then((name: string, yourName: string, route: RouteId) =>
         need().create(name, yourName, route),
       ),
-      join: then((code: string, yourName: string) => need().join(code, yourName)),
+      join: then((code: string, yourName: string) =>
+        need().join(code, yourName),
+      ),
       leave: then(() => need().leave()),
       setPrivacy: then((p: { flyPrivately: boolean; shareResting: boolean }) =>
         need().setPrivacy(p),
       ),
       bringFish: then((to: string) => need().bringFish(to, today)),
-      sendPostcard: then((stopId: string) => need().sendPostcard(stopId, today)),
+      sendPostcard: then((stopId: string) =>
+        need().sendPostcard(stopId, today),
+      ),
       bringDish: then((stop: string, dish: { name: string; foods: string[] }) =>
         need().bringDish(stop, dish),
       ),

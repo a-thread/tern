@@ -28,8 +28,8 @@ export default function TernaryHomeScreen() {
     return (
       <TernaryPage title='Ternary'>
         <FootNote>
-          Ternaries come with Tern Plus and an account, since friends fly together
-          through Tern’s server.
+          Ternaries come with Tern Plus and an account, since friends fly
+          together through Tern’s server.
         </FootNote>
       </TernaryPage>
     );
@@ -53,7 +53,10 @@ export default function TernaryHomeScreen() {
             <Row
               key={m.userId}
               icon={
-                <FlockBadge look={look} faint={m.presence === Presence.Resting} />
+                <FlockBadge
+                  look={look}
+                  faint={m.presence === Presence.Resting}
+                />
               }
               title={m.you ? 'You' : m.name}
               value={m.presence === Presence.Resting ? 'Resting' : 'Here'}

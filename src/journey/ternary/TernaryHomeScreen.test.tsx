@@ -32,14 +32,20 @@ const metrics = {
 };
 
 // At Iceland, the first stop, so its table is set.
-const ternary = { ...sampleTernary('2026-11-10'), total: Milestones.STOPS[0].waypoints };
+const ternary = {
+  ...sampleTernary('2026-11-10'),
+  total: Milestones.STOPS[0].waypoints,
+};
 
 function open(Screen: React.ComponentType, hideFriendsFood = false) {
   const backend = createMemoryBackend();
   render(
     <SafeAreaProvider initialMetrics={metrics}>
       <ToastProvider>
-        <SubscriptionProvider repo={createMemorySubscriptionRepository()} userId={null}>
+        <SubscriptionProvider
+          repo={createMemorySubscriptionRepository()}
+          userId={null}
+        >
           <SettingsProvider
             repo={backend.settings}
             defaults={{ ...initialSettings, hideFriendsFood }}
@@ -85,14 +91,19 @@ describe('RecipeSwapScreen', () => {
 
   it("hides friends' recipes when that safeguard is on", async () => {
     open(RecipeSwapScreen, true);
-    expect(await screen.findByText('Share one of your saved meals')).toBeTruthy();
+    expect(
+      await screen.findByText('Share one of your saved meals'),
+    ).toBeTruthy();
     expect(screen.queryByText('Red lentil soup')).toBeNull();
   });
 });
 
 describe('RecipeScreen', () => {
   const Recipe = () => (
-    <RecipeScreen route={{ key: 'r', name: 'Recipe', params: { id: 'd1' } }} navigation={{} as never} />
+    <RecipeScreen
+      route={{ key: 'r', name: 'Recipe', params: { id: 'd1' } }}
+      navigation={{} as never}
+    />
   );
 
   it("lists a friend's recipe's foods, and keeps it to cook", async () => {

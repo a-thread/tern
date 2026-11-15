@@ -13,6 +13,12 @@ import DestinationScreen from './destination/DestinationScreen';
 import StreakScreen from '../today/streak/StreakScreen';
 import WaypointsInfoScreen from './waypoints-info/WaypointsInfoScreen';
 import RouteInfoScreen from './route-info/RouteInfoScreen';
+import { TernaryProvider } from '../domain/ternary/TernaryContext';
+import {
+  createMemoryTernaryRepository,
+  sampleTernary,
+  type TernaryRepository,
+} from '../domain/ternary/ternary.repository';
 
 // The waypoints card asks whether a goal day can be reached today and what was skipped; the
 // streak card, the streak and freezes held.
@@ -38,14 +44,15 @@ const metrics = {
   insets: { top: 0, left: 0, right: 0, bottom: 0 },
 };
 
-function open(screen: React.ReactElement) {
+/** `ternary`: the ternary repository, when the person is in one; none by default. */
+function open(screen: React.ReactElement, ternary?: TernaryRepository) {
   const backend = createMemoryBackend();
   return render(
     <SafeAreaProvider initialMetrics={metrics}>
       <ToastProvider>
         <SettingsProvider repo={backend.settings}>
           <WaypointsProvider repo={backend.waypoints}>
-            {screen}
+            <TernaryProvider repo={ternary}>{screen}</TernaryProvider>
           </WaypointsProvider>
         </SettingsProvider>
       </ToastProvider>
@@ -81,6 +88,21 @@ describe('milestone card', () => {
     expect(ui.getByText('Milestone reached')).toBeTruthy();
     expect(ui.getByText(/a rare patch of land/)).toBeTruthy();
     expect(ui.getByText(/^The Canary Islands · /)).toBeTruthy();
+    // Not in a ternary: nothing to send a postcard to.
+    expect(ui.queryByText(/a postcard from/)).toBeNull();
+  });
+
+  it('offers to send the ternary a postcard from the stop, once', async () => {
+    const repo = createMemoryTernaryRepository(sampleTernary('2026-11-15'));
+    const ui = open(<MilestoneScreen {...milestoneProps} />, repo);
+    fireEvent.press(
+      await ui.findByText('Send Sunday Walkers a postcard from The Azores'),
+    );
+    expect(await ui.findByText('Postcard sent to Sunday Walkers')).toBeTruthy();
+    const sent = (await repo.mine('2026-11-15'))!.postcards.find(
+      (p) => p.yours,
+    );
+    expect(sent?.stopId).toBe('1-azores');
   });
 });
 

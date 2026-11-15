@@ -19,10 +19,18 @@ export class RecipeSwapLimits {
 }
 
 /** Keeps a dish, newest first; keeping one already kept changes nothing. */
-export function keepRecipe(kept: readonly KeptRecipe[], dish: Dish): KeptRecipe[] {
+export function keepRecipe(
+  kept: readonly KeptRecipe[],
+  dish: Dish,
+): KeptRecipe[] {
   if (kept.some((k) => k.id === dish.id)) return [...kept];
   return [
-    { id: dish.id, name: dish.name, foods: [...dish.foods], fromName: dish.fromName },
+    {
+      id: dish.id,
+      name: dish.name,
+      foods: [...dish.foods],
+      fromName: dish.fromName,
+    },
     ...kept,
   ].slice(0, RecipeSwapLimits.MAX_KEPT);
 }

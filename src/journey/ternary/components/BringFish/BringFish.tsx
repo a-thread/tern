@@ -18,7 +18,10 @@ export function BringFish() {
   const [busy, setBusy] = useState(false);
   if (!ternary) return null;
 
-  const left = Math.max(TernaryRules.MAX_FISH_PER_DAY - ternary.fishSentToday, 0);
+  const left = Math.max(
+    TernaryRules.MAX_FISH_PER_DAY - ternary.fishSentToday,
+    0,
+  );
   const friends = fishable(ternary.members);
   const bring = async (userId: string, name: string) => {
     if (busy || !left) return;
@@ -42,8 +45,12 @@ export function BringFish() {
             <Icon name='fish' size={18} color={colors.sunDeep} />
           </View>
           <View style={{ flex: 1 }}>
-            <Text style={typography.heading}>{`${f.fromName} brought you a fish`}</Text>
-            <Text style={typography.meta}>Terns bring each other fish to say they care.</Text>
+            <Text
+              style={typography.heading}
+            >{`${f.fromName} brought you a fish`}</Text>
+            <Text style={typography.meta}>
+              Terns bring each other fish to say they care.
+            </Text>
           </View>
         </View>
       ))}
@@ -60,7 +67,9 @@ export function BringFish() {
             accessibilityLabel={`Bring ${m.name} a fish`}
           >
             <View style={s.initial}>
-              <Text style={s.initialText}>{m.name.slice(0, 1).toUpperCase()}</Text>
+              <Text style={s.initialText}>
+                {m.name.slice(0, 1).toUpperCase()}
+              </Text>
             </View>
             <Text style={typography.rowTitle} numberOfLines={1}>
               {m.name}

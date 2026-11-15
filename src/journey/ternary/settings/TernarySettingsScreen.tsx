@@ -1,7 +1,13 @@
 import React from 'react';
 import { Share } from 'react-native';
 
-import { FootNote, Group, GroupLabel, Row, ToggleRow } from '@shared/components/ui';
+import {
+  FootNote,
+  Group,
+  GroupLabel,
+  Row,
+  ToggleRow,
+} from '@shared/components/ui';
 import { useToast } from '@shared/state/ToastContext';
 import { confirm } from '@shared/utils/confirm';
 import { useSettings } from '@/domain/settings/SettingsContext';
@@ -20,9 +26,13 @@ export default function TernarySettingsScreen() {
   const { settings, updateSettings } = useSettings();
   const toast = useToast();
   const root = useRootNavigation();
-  if (!ternary) return <TernaryPage title='Ternary settings'>{null}</TernaryPage>;
+  if (!ternary)
+    return <TernaryPage title='Ternary settings'>{null}</TernaryPage>;
 
-  const privacy = { flyPrivately: ternary.flyPrivately, shareResting: ternary.shareResting };
+  const privacy = {
+    flyPrivately: ternary.flyPrivately,
+    shareResting: ternary.shareResting,
+  };
   const change = (next: Partial<typeof privacy>) =>
     setPrivacy({ ...privacy, ...next }).catch((e) => {
       console.warn('Could not save ternary privacy', e);
@@ -50,7 +60,8 @@ export default function TernarySettingsScreen() {
       message: `You’ll stop seeing each other in ${ternary.name}. ${name} isn’t told. To report their name to Tern as well, choose Report.`,
       action: 'Block',
       also: { text: 'Report', onPress: () => reportMember(userId) },
-      onConfirm: () => block(userId).catch(() => toast.show('Couldn’t block just now.')),
+      onConfirm: () =>
+        block(userId).catch(() => toast.show('Couldn’t block just now.')),
     });
 
   const askUnblock = (userId: string, name: string) =>
@@ -59,7 +70,8 @@ export default function TernarySettingsScreen() {
       message: `You’ll see each other in ${ternary.name} again.`,
       action: 'Unblock',
       destructive: false,
-      onConfirm: () => unblock(userId).catch(() => toast.show('Couldn’t unblock just now.')),
+      onConfirm: () =>
+        unblock(userId).catch(() => toast.show('Couldn’t unblock just now.')),
     });
 
   const askLeave = () =>
@@ -97,8 +109,8 @@ export default function TernarySettingsScreen() {
         />
       </Group>
       <FootNote>
-        Nobody ever sees what you ate, weighed or walked, your streak, or your own
-        journey.
+        Nobody ever sees what you ate, weighed or walked, your streak, or your
+        own journey.
       </FootNote>
 
       <GroupLabel>Taking a break</GroupLabel>
@@ -130,8 +142,8 @@ export default function TernarySettingsScreen() {
         ))}
       </Group>
       <FootNote>
-        Blocking is silent: they just stop seeing you. A report goes to Tern and is
-        read by a person.
+        Blocking is silent: they just stop seeing you. A report goes to Tern and
+        is read by a person.
       </FootNote>
 
       {ternary.blocked.length ? (

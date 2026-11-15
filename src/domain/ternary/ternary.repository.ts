@@ -1,6 +1,7 @@
 import { Milestones, routeMilestones } from '../waypoints/models/milestone';
 import type { RouteId } from '../waypoints/models/routes';
 import { restingAt } from './models/stopover';
+import { hasSent } from './models/postcards';
 import {
   JoinOutcome,
   ReportKind,
@@ -23,10 +24,16 @@ export interface TernaryRepository {
   create(name: string, yourName: string, route: RouteId): Promise<void>;
   join(code: string, yourName: string): Promise<JoinOutcome>;
   leave(): Promise<void>;
-  setPrivacy(privacy: { flyPrivately: boolean; shareResting: boolean }): Promise<void>;
+  setPrivacy(privacy: {
+    flyPrivately: boolean;
+    shareResting: boolean;
+  }): Promise<void>;
   bringFish(toUserId: string, today: string): Promise<void>;
   sendPostcard(stopId: string, today: string): Promise<void>;
-  bringDish(stop: string, dish: { name: string; foods: string[] }): Promise<void>;
+  bringDish(
+    stop: string,
+    dish: { name: string; foods: string[] },
+  ): Promise<void>;
   /** Silent: each stops seeing the other, and neither is told. */
   block(userId: string): Promise<void>;
   /** Undoes a block you made. */
@@ -50,7 +57,13 @@ export function sampleTernary(today: string): Ternary {
     fish: [{ id: 'f1', fromName: 'Maya', day: today }],
     fishSentToday: 0,
     postcards: [
-      { id: 'p1', fromName: 'Maya', stopId: 'north-atlantic', yours: false },
+      {
+        id: 'p1',
+        fromName: 'Maya',
+        fromId: 'maya',
+        stopId: '1-north-atlantic',
+        yours: false,
+      },
     ],
     dishes: [
       {
@@ -59,7 +72,14 @@ export function sampleTernary(today: string): Ternary {
         fromId: 'maya',
         stop: '1-iceland',
         name: 'Red lentil soup',
-        foods: ['Red lentils', 'Carrot', 'Onion', 'Cumin', 'Coconut milk', 'Lime'],
+        foods: [
+          'Red lentils',
+          'Carrot',
+          'Onion',
+          'Cumin',
+          'Coconut milk',
+          'Lime',
+        ],
         yours: false,
       },
     ],
@@ -112,7 +132,9 @@ export function createMemoryTernaryRepository(
       if (code !== sample.inviteCode) return JoinOutcome.NotFound;
       current = {
         ...sampleTernary(new Date().toISOString().slice(0, 10)),
-        members: sample.members.map((m) => (m.you ? { ...m, name: yourName } : m)),
+        members: sample.members.map((m) =>
+          m.you ? { ...m, name: yourName } : m,
+        ),
       };
       return JoinOutcome.Joined;
     },
@@ -134,11 +156,17 @@ export function createMemoryTernaryRepository(
     },
     async sendPostcard(stopId) {
       const t = need();
-      if (t.postcards.some((p) => p.yours && p.stopId === stopId)) return;
+      if (hasSent(t.postcards, stopId)) return;
       current = {
         ...t,
         postcards: [
-          { id: id('postcard'), fromName: 'You', stopId, yours: true },
+          {
+            id: id('postcard'),
+            fromName: 'You',
+            fromId: 'you',
+            stopId,
+            yours: true,
+          },
           ...t.postcards,
         ],
       };
@@ -149,7 +177,14 @@ export function createMemoryTernaryRepository(
         ...t,
         dishes: [
           ...t.dishes.filter((d) => !(d.yours && d.stop === stop)),
-          { id: id('dish'), fromName: 'You', fromId: 'you', stop, yours: true, ...dish },
+          {
+            id: id('dish'),
+            fromName: 'You',
+            fromId: 'you',
+            stop,
+            yours: true,
+            ...dish,
+          },
         ],
       };
     },
@@ -184,11 +219,31 @@ const SAMPLE_ID = 'sample-';
 
 /** One of each way a friend can look today: here, resting (shared), and quiet. */
 const SAMPLE_MEMBERS: TernaryMember[] = [
-  { userId: `${SAMPLE_ID}maya`, name: 'Maya', you: false, presence: Presence.Here },
-  { userId: `${SAMPLE_ID}jo`, name: 'Jo', you: false, presence: Presence.Resting },
-  { userId: `${SAMPLE_ID}ari`, name: 'Ari', you: false, presence: Presence.Here },
+  {
+    userId: `${SAMPLE_ID}maya`,
+    name: 'Maya',
+    you: false,
+    presence: Presence.Here,
+  },
+  {
+    userId: `${SAMPLE_ID}jo`,
+    name: 'Jo',
+    you: false,
+    presence: Presence.Resting,
+  },
+  {
+    userId: `${SAMPLE_ID}ari`,
+    name: 'Ari',
+    you: false,
+    presence: Presence.Here,
+  },
   { userId: `${SAMPLE_ID}sam`, name: 'Sam', you: false, presence: null },
-  { userId: `${SAMPLE_ID}lou`, name: 'Lou', you: false, presence: Presence.Here },
+  {
+    userId: `${SAMPLE_ID}lou`,
+    name: 'Lou',
+    you: false,
+    presence: Presence.Here,
+  },
 ];
 
 const isSample = (id: string) => id.startsWith(SAMPLE_ID);
@@ -221,7 +276,10 @@ export function withSampleFriends(repo: TernaryRepository): TernaryRepository {
         ...real,
         sample: true,
         total,
-        members: [...real.members, ...SAMPLE_MEMBERS.filter((m) => visible(m.userId))],
+        members: [
+          ...real.members,
+          ...SAMPLE_MEMBERS.filter((m) => visible(m.userId)),
+        ],
         fish: [
           ...(visible(`${SAMPLE_ID}maya`)
             ? [{ id: `${SAMPLE_ID}fish-1`, fromName: 'Maya', day: today }]
@@ -231,8 +289,20 @@ export function withSampleFriends(repo: TernaryRepository): TernaryRepository {
         fishSentToday: real.fishSentToday + sentToday,
         postcards: [
           ...real.postcards,
-          { id: `${SAMPLE_ID}card-1`, fromName: 'Maya', stopId: Milestones.STOPS[1].id, yours: false },
-          { id: `${SAMPLE_ID}card-2`, fromName: 'Jo', stopId: Milestones.STOPS[0].id, yours: false },
+          {
+            id: `${SAMPLE_ID}card-1`,
+            fromName: 'Maya',
+            fromId: `${SAMPLE_ID}maya`,
+            stopId: `1-${Milestones.STOPS[1].id}`,
+            yours: false,
+          },
+          {
+            id: `${SAMPLE_ID}card-2`,
+            fromName: 'Jo',
+            fromId: `${SAMPLE_ID}jo`,
+            stopId: `1-${Milestones.STOPS[0].id}`,
+            yours: false,
+          },
         ],
         dishes: [
           ...real.dishes,
@@ -242,7 +312,14 @@ export function withSampleFriends(repo: TernaryRepository): TernaryRepository {
             fromId: `${SAMPLE_ID}maya`,
             stop,
             name: 'Red lentil soup',
-            foods: ['Red lentils', 'Carrot', 'Onion', 'Cumin', 'Coconut milk', 'Lime'],
+            foods: [
+              'Red lentils',
+              'Carrot',
+              'Onion',
+              'Cumin',
+              'Coconut milk',
+              'Lime',
+            ],
             yours: false,
           },
           {
@@ -260,7 +337,14 @@ export function withSampleFriends(repo: TernaryRepository): TernaryRepository {
             fromId: `${SAMPLE_ID}ari`,
             stop: `1-${stops[0].id}`,
             name: 'Sunday pancakes',
-            foods: ['Flour', 'Eggs', 'Milk', 'Butter', 'Blueberries', 'Maple syrup'],
+            foods: [
+              'Flour',
+              'Eggs',
+              'Milk',
+              'Butter',
+              'Blueberries',
+              'Maple syrup',
+            ],
             yours: false,
           },
         ].filter((d) => visible(d.fromId)),

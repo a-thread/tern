@@ -8,7 +8,9 @@ import {
   useFonts,
   Fraunces_500Medium,
   Fraunces_600SemiBold,
+  Fraunces_600SemiBold_Italic,
 } from '@expo-google-fonts/fraunces';
+import { Caveat_600SemiBold } from '@expo-google-fonts/caveat';
 import {
   Manrope_400Regular,
   Manrope_500Medium,
@@ -28,6 +30,9 @@ export default function App() {
   const [loaded] = useFonts({
     Fraunces_500Medium,
     Fraunces_600SemiBold,
+    // Postcards: the "Greetings from" lettering and the handwritten message.
+    Fraunces_600SemiBold_Italic,
+    Caveat_600SemiBold,
     Manrope_400Regular,
     Manrope_500Medium,
     Manrope_600SemiBold,
@@ -35,9 +40,7 @@ export default function App() {
   });
 
   if (!loaded) {
-    return (
-      <LoadingScreen />
-    );
+    return <LoadingScreen />;
   }
 
   return (

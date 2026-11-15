@@ -31,7 +31,9 @@ export type Fish = { id: string; fromName: string; day: string };
 export type Postcard = {
   id: string;
   fromName: string;
-  /** A route stop's id (`MigrationRoute.STOPS`). */
+  /** Who sent it, for its stamp; absent from an older server. */
+  fromId?: string;
+  /** A stop on the sender's own journey, with its lap ("2-iceland"); see `withLap`. */
   stopId: string;
   yours: boolean;
 };
@@ -123,10 +125,16 @@ export const cleanTernaryName = (text: string) =>
 
 /** An invite code as typed: capitals, no spaces or dashes. */
 export const cleanInviteCode = (text: string) =>
-  text.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, TernaryRules.INVITE_LENGTH);
+  text
+    .toUpperCase()
+    .replace(/[^A-Z0-9]/g, '')
+    .slice(0, TernaryRules.INVITE_LENGTH);
 
 /** A saved meal as it goes to a stopover table: its name and the foods' names, nothing else. */
-export function dishFromSavedMeal(meal: SavedMeal): { name: string; foods: string[] } {
+export function dishFromSavedMeal(meal: SavedMeal): {
+  name: string;
+  foods: string[];
+} {
   return {
     name: meal.name,
     foods: [...new Set(meal.items.map((i) => i.name.trim()).filter(Boolean))],

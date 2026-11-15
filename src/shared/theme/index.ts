@@ -128,6 +128,18 @@ export const flockColors = [
   '#A9C2CE', // steel
 ] as const;
 
+/** A postcard: its card stock, ruled lines, and the ink of the message and postmark. */
+export const postcardColors = {
+  card: '#FBF7EE',
+  rule: '#CDBFA8',
+  ink: '#2F3A6B',
+  postmark: 'rgba(62,90,108,0.75)',
+  /** "Post card", in small capitals at the top of the message side. */
+  heading: '#8A6312',
+  /** Behind an open postcard: the screen dimmed, a little deeper than a popup card's. */
+  backdrop: 'rgba(20,15,10,0.62)',
+} as const;
+
 export const gradients = {
   /** Today hero, by progress toward the step goal. */
   dawn: ['#2E4257', '#5C6F92', '#A9849E', '#E0A98C'],
@@ -143,6 +155,10 @@ export const gradients = {
 export const font = {
   display: 'Fraunces_600SemiBold',
   displayMedium: 'Fraunces_500Medium',
+  /** Postcards' "Greetings from" lettering. */
+  displayItalic: 'Fraunces_600SemiBold_Italic',
+  /** Handwriting, for a postcard's message only. */
+  hand: 'Caveat_600SemiBold',
   body: 'Manrope_400Regular',
   medium: 'Manrope_500Medium',
   semibold: 'Manrope_600SemiBold',

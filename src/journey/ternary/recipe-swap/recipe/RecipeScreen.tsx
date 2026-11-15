@@ -88,9 +88,9 @@ export default function RecipeScreen({ route }: Props) {
         ))}
       </Group>
       <FootNote>
-        No amounts or numbers come with a shared recipe. When you cook it, log the
-        foods from the Food tab with your own amounts, and your display settings
-        apply as always.
+        No amounts or numbers come with a shared recipe. When you cook it, log
+        the foods from the Food tab with your own amounts, and your display
+        settings apply as always.
       </FootNote>
 
       {yours ? null : (
@@ -112,5 +112,9 @@ export default function RecipeScreen({ route }: Props) {
 
 const s = StyleSheet.create({
   from: { ...typography.label, marginTop: space.md },
-  name: { ...typography.screenTitle, marginTop: space.xs, marginBottom: space.sm },
+  name: {
+    ...typography.screenTitle,
+    marginTop: space.xs,
+    marginBottom: space.sm,
+  },
 });

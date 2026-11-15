@@ -67,14 +67,26 @@ describe('postcards', () => {
     expect(mockNavigate).toHaveBeenCalledWith('Postcard', { id: card.id });
   });
 
-  it('shows who sent it, the place and its facts, and no date', async () => {
+  it('opens on the picture side: the place and who sent it, and no date', async () => {
     open(postcard(card.id));
     expect(await screen.findByText('From Maya')).toBeTruthy();
-    expect(
-      screen.getByText('Greetings from The North Atlantic stopover'),
-    ).toBeTruthy();
-    expect(screen.getByText('About this stop')).toBeTruthy();
+    expect(screen.getByText('Greetings from')).toBeTruthy();
+    expect(screen.getByText('The North Atlantic stopover')).toBeTruthy();
+    expect(screen.getByText('Tap the card to turn it over')).toBeTruthy();
     expect(screen.queryByText(/reached|\d{4}-\d{2}-\d{2}/i)).toBeNull();
+  });
+
+  it('turns over to the message, signed by the sender and addressed to the ternary', async () => {
+    open(postcard(card.id));
+    fireEvent.press(
+      await screen.findByLabelText(/^Postcard from Maya: greetings/),
+    );
+    expect(await screen.findByText('– Maya')).toBeTruthy();
+    expect(screen.getByText(`To: ${ternary.name}`)).toBeTruthy();
+    expect(screen.getByText('Tap to see the picture side')).toBeTruthy();
+    expect(
+      screen.getByLabelText(/^Postcard from Maya, message side/),
+    ).toBeTruthy();
   });
 
   it('closes itself when the postcard is gone', async () => {

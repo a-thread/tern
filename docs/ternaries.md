@@ -34,7 +34,12 @@ can't tell whether you're quiet or private, which makes everyone's quiet days un
 notification, so it never reads as "come back". No read receipts, and it earns nothing.
 
 **Postcards.** When your own tern reaches a stop, you can send the ternary a card of the
-place with a fact about it, once per stop. Never a date, a total or how long it took: "where's
+place, from the milestone card as it happens or later from Postcards: any stop reached on the
+migration you're on, once per stop per migration (stops are kept with their lap, `2-iceland`;
+older ones without a lap read as the first). It opens as a card to turn over: the photo with
+"Greetings from" on the front, and on the back the stop's note and a fact in handwriting,
+signed by the sender, with their own tern as the stamp, a postmark of the place and "To:" the
+ternary. Never a date, a total or how long it took, not even on the postmark: "where's
 everyone?" is a moment someone chose to share, not a standing map of everyone's place.
 
 **Recipe swap.** Each stop the shared bird reaches brings a new idea for what to share

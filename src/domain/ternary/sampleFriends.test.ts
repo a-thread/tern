@@ -66,7 +66,9 @@ describe('withSampleFriends', () => {
   });
 
   it('shows nothing when you are in no ternary', async () => {
-    expect(await withSampleFriends(createMemoryTernaryRepository()).mine(TODAY)).toBeNull();
+    expect(
+      await withSampleFriends(createMemoryTernaryRepository()).mine(TODAY),
+    ).toBeNull();
   });
 
   it('keeps fish and blocks for a made-up friend on the phone', async () => {
@@ -76,7 +78,9 @@ describe('withSampleFriends', () => {
     expect((await repo.mine(TODAY))!.fishSentToday).toBe(1);
     await repo.block('sample-maya');
     expect(real.block).not.toHaveBeenCalled();
-    expect((await repo.mine(TODAY))!.members.some((m) => m.name === 'Maya')).toBe(false);
+    expect(
+      (await repo.mine(TODAY))!.members.some((m) => m.name === 'Maya'),
+    ).toBe(false);
   });
 
   it('still sends what you do to a real friend', async () => {

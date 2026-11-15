@@ -50,7 +50,8 @@ export default function RecipeSwapScreen() {
   };
 
   const open = (id: string) => navigation.navigate('Recipe', { id });
-  const by = (d: { yours: boolean; fromName: string }) => (d.yours ? 'You' : d.fromName);
+  const by = (d: { yours: boolean; fromName: string }) =>
+    d.yours ? 'You' : d.fromName;
 
   return (
     <TernaryPage title='Recipe swap'>
@@ -61,11 +62,13 @@ export default function RecipeSwapScreen() {
 
       {stop ? (
         <Card>
-          <Text style={typography.label}>{`Idea for this stop · ${stop.name}`}</Text>
+          <Text
+            style={typography.label}
+          >{`Idea for this stop · ${stop.name}`}</Text>
           <Text style={s.prompt}>{promptFor(stop.id)}</Text>
           <Text style={s.small}>
-            A new idea each time your shared bird reaches a stop. One meal each, if
-            you’d like.
+            A new idea each time your shared bird reaches a stop. One meal each,
+            if you’d like.
           </Text>
         </Card>
       ) : (
@@ -91,7 +94,13 @@ export default function RecipeSwapScreen() {
             {choosing ? (
               meals.length ? (
                 meals.map((m) => (
-                  <Row key={m.id} title={m.name} sub='Share this one' chevron onPress={() => share(m.id)} />
+                  <Row
+                    key={m.id}
+                    title={m.name}
+                    sub='Share this one'
+                    chevron
+                    onPress={() => share(m.id)}
+                  />
                 ))
               ) : (
                 <Row
@@ -101,8 +110,16 @@ export default function RecipeSwapScreen() {
               )
             ) : (
               <Row
-                title={yours ? 'Share a different meal' : 'Share one of your saved meals'}
-                sub={yours ? `Instead of ${yours.name}` : 'Your friends can keep it to cook'}
+                title={
+                  yours
+                    ? 'Share a different meal'
+                    : 'Share one of your saved meals'
+                }
+                sub={
+                  yours
+                    ? `Instead of ${yours.name}`
+                    : 'Your friends can keep it to cook'
+                }
                 chevron
                 onPress={() => setChoosing(true)}
               />

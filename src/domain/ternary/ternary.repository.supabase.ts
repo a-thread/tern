@@ -1,17 +1,15 @@
 import type { TernClient } from '@shared/backend/supabase';
 import { ok } from '@shared/backend/query';
-import {
-  JoinOutcome,
-  type Ternary,
-  TernaryRules,
-} from './models/ternary';
+import { JoinOutcome, type Ternary, TernaryRules } from './models/ternary';
 import type { TernaryRepository } from './ternary.repository';
 
 /**
  * Ternaries on the server. Every table is closed to the app; these call the functions in
  * the `20261111000000_ternaries` migration, which decide what a friend may see.
  */
-export function createSupabaseTernaryRepository(db: TernClient): TernaryRepository {
+export function createSupabaseTernaryRepository(
+  db: TernClient,
+): TernaryRepository {
   return {
     async mine(today) {
       const { data, error } = await db.rpc('ternary_state', { p_today: today });
