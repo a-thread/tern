@@ -220,6 +220,7 @@ export default function JourneyScreen() {
                   ]
                     .filter(Boolean)
                     .join(' · ')}
+                  chevron
                   onPress={() =>
                     navigation.navigate('Destination', {
                       waypoints: m.waypoints,
