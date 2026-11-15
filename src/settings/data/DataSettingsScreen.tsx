@@ -7,6 +7,7 @@ import { SettingsPage } from '../components/SettingsPage';
 import { DataSection } from './components/DataSection';
 import { PlusSection } from './components/PlusSection/PlusSection';
 import { LogOutSection } from './components/LogOutSection/LogOutSection';
+import { AppointmentSummary } from './components/AppointmentSummary/AppointmentSummary';
 
 /**
  * Settings › Your data: where it is (Tern Plus, synced or on this phone) at the top, then
@@ -21,6 +22,8 @@ export default function DataSettingsScreen() {
       {available ? (
         <>
           <PlusSection />
+          <GroupLabel>For an appointment</GroupLabel>
+          <AppointmentSummary />
           <GroupLabel>Export and delete</GroupLabel>
           <DataSection />
         </>
