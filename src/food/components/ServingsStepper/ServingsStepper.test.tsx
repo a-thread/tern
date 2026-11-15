@@ -21,17 +21,17 @@ describe('ServingsStepper', () => {
     expect(latest).toBe(0.75);
   });
 
-  it('takes a typed number to the nearest quarter, keeping the last one while it is not a number', () => {
+  it('takes a typed number as typed, keeping the last one while it is not a number', () => {
     const { getByLabelText } = render(<Harness />);
     const field = getByLabelText('Servings');
     fireEvent.changeText(field, '2,75');
     expect(latest).toBe(2.75);
     fireEvent.changeText(field, '1.3');
-    expect(latest).toBe(1.25);
+    expect(latest).toBe(1.3);
     fireEvent.changeText(field, '');
-    expect(latest).toBe(1.25);
+    expect(latest).toBe(1.3);
     fireEvent(field, 'blur');
-    expect(field.props.value).toBe('1.25');
+    expect(field.props.value).toBe('1.3');
   });
 
   it('never goes past the most, and says so in the field', () => {

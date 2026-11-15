@@ -65,21 +65,20 @@ describe('MeasurePicker', () => {
     expect(getByText('1.25 packets · 1.5 oz')).toBeTruthy();
   });
 
-  it('takes a typed count, to the nearest quarter', () => {
+  it('takes a typed count as typed, and steps on to the next quarter', () => {
     const { getByLabelText } = render(<Harness start={oatmeal} />);
     const field = getByLabelText('How many, in packets');
     fireEvent.changeText(field, '2.75');
     expect(latest).toMatchObject({ unit: 'packet', quantity: 2.75 });
     fireEvent.changeText(field, '1.3');
-    expect(latest).toMatchObject({ unit: 'packet', quantity: 1.25 });
+    expect(latest).toMatchObject({ unit: 'packet', quantity: 1.3 });
     // Not a number yet: the last count stays.
     fireEvent.changeText(field, '');
-    expect(latest.quantity).toBe(1.25);
+    expect(latest.quantity).toBe(1.3);
     fireEvent(field, 'blur');
-    expect(getByLabelText('How many, in packets').props.value).toBe('1.25');
-    fireEvent.changeText(field, '3');
+    expect(getByLabelText('How many, in packets').props.value).toBe('1.3');
     fireEvent.press(getByLabelText('More'));
-    expect(latest.quantity).toBe(3.25);
+    expect(latest.quantity).toBe(1.5);
   });
 
   it('types in ounces once ounces are chosen, keeping the weight', () => {

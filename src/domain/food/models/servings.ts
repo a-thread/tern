@@ -84,13 +84,16 @@ export const stepServings = (value: number, delta: number) =>
   Math.max(Servings.MIN, Math.round((value + delta) * 4) / 4);
 
 /**
- * A count typed in ("1.5", "1,5", "3"), to the nearest quarter, between MIN and MAX; null while
- * it is not a number above zero.
+ * A count typed in ("1.5", "1,5", "1.3"), as typed to a hundredth (what is stored), between
+ * MIN and MAX; null while it is not a number above zero. Only the steppers move in quarters.
  */
 export function typedServings(text: string): number | null {
   const n = parseFloat(text.replace(',', '.'));
   if (!Number.isFinite(n) || n <= 0) return null;
-  return Math.min(Math.max(Math.round(n * 4) / 4, Servings.MIN), Servings.MAX);
+  return Math.min(
+    Math.max(Math.round(n * 100) / 100, Servings.MIN),
+    Servings.MAX,
+  );
 }
 
 /** "1", "1.5", "0.5": a count without a trailing ".0". */
