@@ -7,10 +7,8 @@ import { createMemoryBackend } from '@/BackendContext';
 import { SettingsProvider } from '@/domain/settings/SettingsContext';
 import { WaypointsProvider } from '@/domain/waypoints/WaypointsContext';
 import { TernaryProvider } from '@/domain/ternary/TernaryContext';
-import {
-  createMemoryTernaryRepository,
-  sampleTernary,
-} from '@/domain/ternary/ternary.repository';
+import { createMemoryTernaryRepository } from '@/domain/ternary/ternary.repository';
+import { sampleTernary } from '@/domain/ternary/ternary.mock';
 import PostcardScreen from './PostcardScreen';
 import PostcardsScreen from '../PostcardsScreen';
 

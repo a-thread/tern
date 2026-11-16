@@ -14,10 +14,8 @@ import { SavedMealsProvider } from '@/domain/saved-meals/SavedMealsContext';
 import { SubscriptionProvider } from '@/domain/subscription/SubscriptionContext';
 import { createMemorySubscriptionRepository } from '@/domain/subscription/subscription.repository';
 import { TernaryProvider } from '@/domain/ternary/TernaryContext';
-import {
-  createMemoryTernaryRepository,
-  sampleTernary,
-} from '@/domain/ternary/ternary.repository';
+import { createMemoryTernaryRepository } from '@/domain/ternary/ternary.repository';
+import { sampleTernary } from '@/domain/ternary/ternary.mock';
 import { Milestones } from '@/domain/waypoints/models/milestone';
 import TernaryHomeScreen from './TernaryHomeScreen';
 import RecipeSwapScreen from './recipe-swap/RecipeSwapScreen';

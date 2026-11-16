@@ -27,9 +27,9 @@ import TrailScreen from './trail/TrailScreen';
 import { TernaryProvider } from '../domain/ternary/TernaryContext';
 import {
   createMemoryTernaryRepository,
-  sampleTernary,
   type TernaryRepository,
 } from '../domain/ternary/ternary.repository';
+import { sampleTernary } from '../domain/ternary/ternary.mock';
 
 // The waypoints card asks whether a goal day can be reached today and what was skipped; the
 // streak card, the streak and freezes held.

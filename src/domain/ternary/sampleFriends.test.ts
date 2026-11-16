@@ -6,8 +6,8 @@ import { sampleFriends } from './sampleFriends';
 import {
   createMemoryTernaryRepository,
   type TernaryRepository,
-  withSampleFriends,
 } from './ternary.repository';
+import { withSampleFriends } from './ternary.repository.sampleFriends';
 
 type Profile = { env?: Record<string, string> };
 const profiles = eas.build as Record<string, Profile>;

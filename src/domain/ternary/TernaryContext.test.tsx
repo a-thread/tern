@@ -11,9 +11,9 @@ import { RouteId } from '../waypoints/models/routes';
 import { JoinOutcome } from './models/ternary';
 import {
   createMemoryTernaryRepository,
-  sampleTernary,
   type TernaryRepository,
 } from './ternary.repository';
+import { sampleTernary } from './ternary.mock';
 import { TernaryProvider, useTernary } from './TernaryContext';
 
 function setup(repo?: TernaryRepository) {

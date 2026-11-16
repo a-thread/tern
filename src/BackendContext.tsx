@@ -107,8 +107,8 @@ import { createSupabasePlusSync } from './domain/subscription/entitlement.supaba
 import {
   createMemoryTernaryRepository,
   type TernaryRepository,
-  withSampleFriends,
 } from './domain/ternary/ternary.repository';
+import { withSampleFriends } from './domain/ternary/ternary.repository.sampleFriends';
 import { sampleFriends } from './domain/ternary/sampleFriends';
 import { createSupabaseTernaryRepository } from './domain/ternary/ternary.repository.supabase';
 
