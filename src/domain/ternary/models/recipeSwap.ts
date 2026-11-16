@@ -13,11 +13,6 @@ export type KeptRecipe = {
   fromName: string;
 };
 
-export class RecipeSwapLimits {
-  /** Kept recipes are a short list, not an archive. */
-  static readonly MAX_KEPT = 50;
-}
-
 /** Keeps a dish, newest first; keeping one already kept changes nothing. */
 export function keepRecipe(
   kept: readonly KeptRecipe[],
@@ -32,7 +27,7 @@ export function keepRecipe(
       fromName: dish.fromName,
     },
     ...kept,
-  ].slice(0, RecipeSwapLimits.MAX_KEPT);
+  ];
 }
 
 export const unkeepRecipe = (kept: readonly KeptRecipe[], id: string) =>

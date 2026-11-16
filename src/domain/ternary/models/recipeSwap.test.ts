@@ -1,9 +1,4 @@
-import {
-  isKept,
-  keepRecipe,
-  RecipeSwapLimits,
-  unkeepRecipe,
-} from './recipeSwap';
+import { isKept, keepRecipe, unkeepRecipe } from './recipeSwap';
 import type { Dish } from './ternary';
 
 const dish = (id: string): Dish => ({
@@ -39,10 +34,10 @@ describe('kept recipes', () => {
     expect(isKept(unkeepRecipe(kept, 'a'), 'a')).toBe(false);
   });
 
-  it('stays a short list', () => {
+  it('keeps every one, however many', () => {
     let kept = keepRecipe([], dish('0'));
-    for (let i = 1; i <= RecipeSwapLimits.MAX_KEPT + 5; i++)
-      kept = keepRecipe(kept, dish(`${i}`));
-    expect(kept).toHaveLength(RecipeSwapLimits.MAX_KEPT);
+    for (let i = 1; i < 100; i++) kept = keepRecipe(kept, dish(`${i}`));
+    expect(kept).toHaveLength(100);
+    expect(kept[99].id).toBe('0');
   });
 });
