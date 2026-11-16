@@ -94,7 +94,7 @@ export default function TernaryHomeScreen() {
           onPress={() => navigation.navigate('TernarySettings')}
         />
         <Row
-          title='What’s a ternary?'
+          title='How does it work?'
           sub='What you can do together, and what friends see'
           chevron
           onPress={() => navigation.navigate('AboutTernary')}

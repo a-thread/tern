@@ -131,7 +131,7 @@ export function StartTernary() {
       </Card>
       <Group style={s.about}>
         <Row
-          title='How ternaries work'
+          title='How does it work?'
           sub='What you can do together, and what friends see'
           chevron
           onPress={() => navigation.navigate('AboutTernary')}
