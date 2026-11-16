@@ -16,11 +16,12 @@ export function Letter() {
   return (
     <Card>
       <Text style={s.first}>
-        I made Tern for myself. I’d been using an app that promised to help me
-        lose weight and be healthy, and I ended up falling back into old
-        disordered eating habits. So in my off hours I started building
-        something different: an app that felt good, that I wanted to come back
-        to, and that didn’t try to sell me anything or sell anything of mine.
+        I made Tern for myself. I’d been using an app that was framed as a tool
+        to help me lose weight and be healthy but in the end, and I ended up
+        falling back into old disordered eating habits. So, in my off hours, I
+        started building something different: an app that felt good, that I
+        wanted to come back to, and that didn’t try to sell me anything or sell
+        anything of mine.
       </Text>
       {whole ? (
         // Fades in, or appears at once with Reduce Motion on.

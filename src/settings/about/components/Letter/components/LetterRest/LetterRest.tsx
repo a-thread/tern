@@ -20,7 +20,7 @@ export function LetterRest() {
     <>
       <Text style={s.para}>
         With feedback from my partner, I added safeguards for other traps around
-        food and movement, and more ways to keep notes.
+        tracking, food and movement, and more ways to keep notes.
       </Text>
       <Text style={s.para}>
         My hope is that Tern itself stays free, with Tern Plus covering the
@@ -28,11 +28,13 @@ export function LetterRest() {
         and past them.
       </Text>
       <Text style={s.para}>
-        If you’re a programmer, or just curious, the source code is on GitHub.
-        And if Tern speaks to you, I’d love to hear from you.
+        If you’re a fellow programmer (or just curious) feel free to check out
+        the source code on Github. And if Tern speaks to you, I’d love to hear
+        from you!
       </Text>
       <Text style={s.para}>
-        I hope it brings you some of the joy it’s brought me.
+        I hope you get some joy out of a project that has brought me quite a bit
+        of it.
       </Text>
       <Text style={s.signOff}>– Aiden</Text>
 
