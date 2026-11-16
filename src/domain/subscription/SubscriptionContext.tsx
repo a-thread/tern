@@ -1,4 +1,10 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 
 import { createRequiredContext } from '@shared/state/createRequiredContext';
 import { useLoader } from '@shared/hooks/useLoader';
@@ -7,14 +13,20 @@ import {
   NO_SUBSCRIPTION,
   type PlanOption,
   sortPlans,
+  sortTips,
   type SubscriptionStatus,
+  Tier,
+  type TipOption,
+  type TipResult,
 } from './models/subscription';
 
 type SubscriptionContextValue = {
-  /** False until the status and plans have loaded once. */
+  /** False until the status and plans have loaded once. The tip jar loads apart and never holds this up. */
   ready: boolean;
   /** Tern Plus is on, so an account can be made and synced. */
   active: boolean;
+  /** Plus is on as Tern Plus Supporter: the thank-you (a trail colour on Journey) is theirs. */
+  supporter: boolean;
   /**
    * Who the store was last asked about: the signed-in account's id, or null for the phone;
    * undefined before the first answer. It lags a sign-in until the store has looked the
@@ -30,6 +42,10 @@ type SubscriptionContextValue = {
   purchase: (id: string) => Promise<boolean>;
   /** Looks for an earlier purchase. True if one was found. Throws if the store failed. */
   restore: () => Promise<boolean>;
+  /** The tip jar's amounts, smallest first; empty when the store has none. */
+  tips: TipOption[];
+  /** Leaves a tip: paid, backed out of, or waiting on the payment. Throws if the store failed. */
+  tip: (id: string) => Promise<TipResult>;
 };
 
 const [SubscriptionContext, useSubscription] =
@@ -40,7 +56,11 @@ const [SubscriptionContext, useSubscription] =
 export { useSubscription };
 
 /** Plus granted by the server rather than bought: a manual grant, for testers and grandfathered accounts. */
-const GRANTED: SubscriptionStatus = { active: true, renews: false, expiresAt: null };
+const GRANTED: SubscriptionStatus = {
+  active: true,
+  renews: false,
+  expiresAt: null,
+};
 
 /**
  * Tern Plus. App-wide, above the sign-in screens, since buying comes before making an
@@ -67,6 +87,7 @@ export function SubscriptionProvider({
     known: boolean;
   }>({ for: undefined, known: false });
   const [plans, setPlans] = useState<PlanOption[]>([]);
+  const [tips, setTips] = useState<TipOption[]>([]);
   const granted = useRef(false);
 
   // Identifying first means the status read is the account's, not the phone's.
@@ -107,6 +128,21 @@ export function SubscriptionProvider({
     'Could not load Tern Plus',
   );
 
+  // Its own load, so a slow tip jar never holds up whether Plus is on.
+  useLoader(
+    useCallback(
+      () =>
+        repo.tips().catch((e) => {
+          // No tip jar is just no tip jar.
+          console.warn('Could not load the tip jar', e);
+          return [];
+        }),
+      [repo],
+    ),
+    (jar) => setTips(sortTips(jar)),
+    'Could not load the tip jar',
+  );
+
   useEffect(
     () =>
       repo.onChange((next) => {
@@ -119,12 +155,20 @@ export function SubscriptionProvider({
 
   const purchase = useCallback(
     async (id: string) => {
-      const next = await repo.purchase(id);
+      let next = await repo.purchase(id);
       if (!next) return false;
+      const bought = plans.find((p) => p.id === id);
+      if (next.active && !next.supporter && bought?.tier === Tier.Supporter) {
+        // The store can lag a moment behind a new Supporter purchase: ask once more.
+        next = await repo.status().catch((e) => {
+          console.warn('Could not re-read Tern Plus after buying', e);
+          return next as SubscriptionStatus;
+        });
+      }
       setStatus(next);
       return next.active;
     },
-    [repo],
+    [repo, plans],
   );
 
   const restore = useCallback(async () => {
@@ -133,18 +177,23 @@ export function SubscriptionProvider({
     return next.active;
   }, [repo]);
 
+  const tip = useCallback((id: string) => repo.tip(id), [repo]);
+
   const value = useMemo(
     () => ({
       ready,
       active: status.active,
+      supporter: status.active && Boolean(status.supporter),
       checkedFor: checked.for,
       known: checked.known,
       status,
       plans,
       purchase,
       restore,
+      tips,
+      tip,
     }),
-    [ready, status, checked, plans, purchase, restore],
+    [ready, status, checked, plans, purchase, restore, tips, tip],
   );
   return (
     <SubscriptionContext.Provider value={value}>

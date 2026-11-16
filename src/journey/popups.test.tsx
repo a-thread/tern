@@ -5,7 +5,17 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import { createMemoryBackend } from '../BackendContext';
 import { ToastProvider } from '@shared/state/ToastContext';
-import { SettingsProvider } from '../domain/settings/SettingsContext';
+import {
+  SettingsProvider,
+  useSettings,
+} from '../domain/settings/SettingsContext';
+import { TrailColor } from '../domain/settings/models/trailColor';
+import {
+  NO_SUBSCRIPTION,
+  type SubscriptionStatus,
+} from '../domain/subscription/models/subscription';
+import { createMemorySubscriptionRepository } from '../domain/subscription/subscription.repository';
+import { SubscriptionProvider } from '../domain/subscription/SubscriptionContext';
 import { WaypointsProvider } from '../domain/waypoints/WaypointsContext';
 import WaypointsScreen from './waypoints/WaypointsScreen';
 import MilestoneScreen from './milestone/MilestoneScreen';
@@ -13,6 +23,7 @@ import DestinationScreen from './destination/DestinationScreen';
 import StreakScreen from '../today/streak/StreakScreen';
 import WaypointsInfoScreen from './waypoints-info/WaypointsInfoScreen';
 import RouteInfoScreen from './route-info/RouteInfoScreen';
+import TrailScreen from './trail/TrailScreen';
 
 // The waypoints card asks whether a goal day can be reached today and what was skipped; the
 // streak card, the streak and freezes held.
@@ -38,20 +49,42 @@ const metrics = {
   insets: { top: 0, left: 0, right: 0, bottom: 0 },
 };
 
-function open(screen: React.ReactElement) {
+let trail: TrailColor | undefined;
+function TrailProbe() {
+  trail = useSettings().settings.trailColor;
+  return null;
+}
+
+function open(
+  screen: React.ReactElement,
+  status: SubscriptionStatus = NO_SUBSCRIPTION,
+) {
   const backend = createMemoryBackend();
   return render(
     <SafeAreaProvider initialMetrics={metrics}>
       <ToastProvider>
-        <SettingsProvider repo={backend.settings}>
-          <WaypointsProvider repo={backend.waypoints}>
-            {screen}
-          </WaypointsProvider>
-        </SettingsProvider>
+        <SubscriptionProvider
+          repo={createMemorySubscriptionRepository(status)}
+          userId={null}
+        >
+          <SettingsProvider repo={backend.settings}>
+            <WaypointsProvider repo={backend.waypoints}>
+              {screen}
+              <TrailProbe />
+            </WaypointsProvider>
+          </SettingsProvider>
+        </SubscriptionProvider>
       </ToastProvider>
     </SafeAreaProvider>,
   );
 }
+
+const SUPPORTER: SubscriptionStatus = {
+  active: true,
+  renews: true,
+  expiresAt: '2027-11-01T12:00:00.000Z',
+  supporter: true,
+};
 
 // Only route.params is read; the screens navigate through useNavigation.
 const screenProps = (params: object) =>
@@ -143,5 +176,32 @@ describe('route info card', () => {
       ui.getByLabelText(/^Alerstam et al\. 2019, Ecology and Evolution: /),
     ).toBeTruthy();
     openURL.mockRestore();
+  });
+
+  it('no longer holds the trail colors: they have their own card', async () => {
+    const ui = open(<RouteInfoScreen />, SUPPORTER);
+    expect(await ui.findByText("A real tern's route")).toBeTruthy();
+    expect(ui.queryByLabelText('Twilight trail')).toBeNull();
+  });
+});
+
+describe('trail card', () => {
+  it('lets a Supporter choose the color of their trail, every name in full', async () => {
+    const ui = open(<TrailScreen />, SUPPORTER);
+    expect(await ui.findByText('Midnight sun')).toBeTruthy();
+    fireEvent.press(ui.getByLabelText('Twilight trail'));
+    await waitFor(() => expect(trail).toBe(TrailColor.Twilight));
+    expect(
+      ui.getByLabelText('Twilight trail').props.accessibilityState,
+    ).toMatchObject({ checked: true });
+  });
+
+  it('offers no choice to anyone else', async () => {
+    const ui = open(<TrailScreen />, { ...SUPPORTER, supporter: false });
+    expect(await ui.findByText('Your tern’s trail')).toBeTruthy();
+    expect(ui.queryByLabelText('Twilight trail')).toBeNull();
+    expect(
+      ui.getByText('Supporters choose the color of their tern’s trail.'),
+    ).toBeTruthy();
   });
 });

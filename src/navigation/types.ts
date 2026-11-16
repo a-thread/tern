@@ -19,6 +19,7 @@ export type SettingsStackParamList = {
   Targets: undefined;
   RestDays: undefined;
   Medication: undefined;
+  About: undefined;
 };
 
 /** The setup wizard's screens; the names match `WizardStep`. */
@@ -62,6 +63,8 @@ export type RootStackParamList = {
   WaypointsInfo: undefined;
   /** Where the migration route comes from, from the info button by the stops on Journey. */
   RouteInfo: undefined;
+  /** A Supporter's trail color, from the link under the map on Journey. */
+  Trail: undefined;
   /** Passing a stop: `waypoints` is the stop's running total. */
   Milestone: { waypoints: number };
   /** A stop already passed, from its row on Journey: `waypoints` is the stop's running total. */
