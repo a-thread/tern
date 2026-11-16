@@ -70,7 +70,8 @@
         }
       ],
       "expo-sqlite",
-      "expo-asset"
+      "expo-asset",
+      "./plugins/withNativeDebugSymbols"
     ],
     "extra": {
       "eas": {
