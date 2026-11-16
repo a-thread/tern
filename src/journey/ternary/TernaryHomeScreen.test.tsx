@@ -5,7 +5,10 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { ToastProvider } from '@shared/state/ToastContext';
 import { createMemoryBackend } from '@/BackendContext';
 import { SettingsProvider } from '@/domain/settings/SettingsContext';
-import { initialSettings } from '@/domain/settings/models/appSettings';
+import {
+  type AppSettings,
+  initialSettings,
+} from '@/domain/settings/models/appSettings';
 import { WaypointsProvider } from '@/domain/waypoints/WaypointsContext';
 import { SavedMealsProvider } from '@/domain/saved-meals/SavedMealsContext';
 import { SubscriptionProvider } from '@/domain/subscription/SubscriptionContext';
@@ -37,7 +40,10 @@ const ternary = {
   total: Milestones.STOPS[0].waypoints,
 };
 
-function open(Screen: React.ComponentType, hideFriendsFood = false) {
+function open(
+  Screen: React.ComponentType,
+  overrides: Partial<AppSettings> = {},
+) {
   const backend = createMemoryBackend();
   render(
     <SafeAreaProvider initialMetrics={metrics}>
@@ -48,7 +54,7 @@ function open(Screen: React.ComponentType, hideFriendsFood = false) {
         >
           <SettingsProvider
             repo={backend.settings}
-            defaults={{ ...initialSettings, hideFriendsFood }}
+            defaults={{ ...initialSettings, ...overrides }}
           >
             <WaypointsProvider repo={backend.waypoints}>
               <SavedMealsProvider repo={backend.savedMeals}>
@@ -90,11 +96,19 @@ describe('RecipeSwapScreen', () => {
   });
 
   it("hides friends' recipes when that safeguard is on", async () => {
-    open(RecipeSwapScreen, true);
+    open(RecipeSwapScreen, {
+      hideFriendsFood: true,
+      keptRecipes: [
+        { id: 'k1', name: 'Miso noodles', foods: ['noodles'], fromName: 'Sam' },
+      ],
+    });
     expect(
       await screen.findByText('Share one of your saved meals'),
     ).toBeTruthy();
     expect(screen.queryByText('Red lentil soup')).toBeNull();
+    // Kept recipes are friends' too, so they're hidden with the rest.
+    expect(screen.queryByText('Miso noodles')).toBeNull();
+    expect(screen.queryByText('Kept to cook')).toBeNull();
   });
 });
 

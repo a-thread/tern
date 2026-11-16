@@ -30,8 +30,12 @@ export type LedgerEvent = {
 };
 
 /** Distinct days that earned at least one waypoint. */
-export function daysWithWaypoints(events: LedgerEvent[]): number {
-  return new Set(events.map((e) => e.day)).size;
+export function daysWithWaypoints(events: readonly LedgerEvent[]): number {
+  // A ternary's arrival isn't earned by anything done that day, so a day with only that
+  // isn't a day you showed up.
+  return new Set(
+    events.filter((e) => e.source !== WaypointSource.Arrival).map((e) => e.day),
+  ).size;
 }
 
 /** What earns waypoints. */

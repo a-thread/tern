@@ -34,7 +34,8 @@ export default function RecipeSwapScreen() {
   const now = stop ? shown.filter((d) => d.stop === stop.id) : [];
   const earlier = shown.filter((d) => !stop || d.stop !== stop.id);
   const yours = now.find((d) => d.yours);
-  const kept = settings.keptRecipes;
+  // Kept recipes are friends' too, so the safeguard hides them with the rest.
+  const kept = hideFriends ? [] : settings.keptRecipes;
 
   const share = async (mealId: string) => {
     const meal = meals.find((m) => m.id === mealId);

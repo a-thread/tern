@@ -69,8 +69,8 @@ export function TernaryProvider({
   children: React.ReactNode;
 }) {
   const today = useDayKey();
-  const { settings, updateSettings } = useSettings();
-  const { addWaypoints } = useWaypoints();
+  const { settings, ready: settingsReady, updateSettings } = useSettings();
+  const { addWaypoints, ready: waypointsReady } = useWaypoints();
   const [ternary, setTernary] = useState<Ternary | null>(null);
 
   const { ready, reload } = useLoader(
@@ -84,17 +84,27 @@ export function TernaryProvider({
   // With sample friends the total may be moved on to show the table: never paid, or remembered.
   const sample = Boolean(ternary?.sample);
   const route = ternary ? routeOf(ternary) : RouteId.Greenland;
+  const ternaryId = ternary?.id;
+  // This provider sits above LoadGate, so the ternary can arrive before settings and the
+  // ledger do: until both have loaded, the remembered arrival and the break aren't known.
+  const loaded = settingsReady && waypointsReady;
   useEffect(() => {
-    if (total === undefined || hidden || sample) return;
-    const due = arrivalDue(total, settings.ternaryArrival, today, route);
+    if (!loaded || total === undefined || hidden || sample) return;
+    const due = arrivalDue(
+      total,
+      settings.ternaryArrival,
+      today,
+      route,
+      ternaryId,
+    );
     if (JSON.stringify(due.seen) !== JSON.stringify(settings.ternaryArrival)) {
       updateSettings({ ternaryArrival: due.seen });
     }
     if (due.pay)
       addWaypoints(TernaryRules.ARRIVAL_POINTS, WaypointSource.Arrival);
-    // Only a new total or a new day can bring an arrival.
+    // Only a new total, a new day or another ternary can bring an arrival.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [total, today, hidden, sample, route]);
+  }, [loaded, total, today, hidden, sample, route, ternaryId]);
 
   const then = useCallback(
     <A extends unknown[], R>(fn: (...args: A) => Promise<R>) =>
@@ -123,7 +133,11 @@ export function TernaryProvider({
       join: then((code: string, yourName: string) =>
         need().join(code, yourName),
       ),
-      leave: then(() => need().leave()),
+      // A break belongs to the ternary it was taken from: the next one starts shown.
+      leave: then(async () => {
+        await need().leave();
+        if (hidden) updateSettings({ hideTernary: false });
+      }),
       setPrivacy: then((p: { flyPrivately: boolean; shareResting: boolean }) =>
         need().setPrivacy(p),
       ),
@@ -138,7 +152,7 @@ export function TernaryProvider({
       unblock: then((userId: string) => need().unblock(userId)),
       report: (kind, target) => need().report(kind, target),
     };
-  }, [repo, ready, ternary, hidden, reload, then, today]);
+  }, [repo, ready, ternary, hidden, reload, then, today, updateSettings]);
 
   return (
     <TernaryContext.Provider value={value}>{children}</TernaryContext.Provider>

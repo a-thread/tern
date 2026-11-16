@@ -67,26 +67,40 @@ export function stopNamed(stopId: string) {
   return place ? place.stops[place.i] : undefined;
 }
 
-/** The last arrival paid on this phone or account: which stop, and the day. */
-export type ArrivalSeen = { stop: string | null; day: string | null };
+/**
+ * The last arrival seen on this phone or account: which ternary, which stop, and the day it
+ * was paid (null if it hasn't been yet).
+ */
+export type ArrivalSeen = {
+  ternary?: string;
+  stop: string | null;
+  day: string | null;
+};
 
 /**
  * Whether the shared bird's latest stop pays the 25-waypoint arrival bonus today, and what to
- * remember afterwards. The first look only remembers, so joining a ternary that's already
- * flown far doesn't pay out for stops reached without you. After that each new stop pays
- * once, at most once a week.
+ * remember afterwards. The first look at a ternary only remembers, so joining one that's
+ * already flown far doesn't pay out for stops reached without you, nor does leaving and
+ * joining another. After that each new stop pays once, at most once a week, and the week
+ * carries over from one ternary to the next.
  */
 export function arrivalDue(
   total: number,
   seen: ArrivalSeen | null,
   today: string,
   route: RouteId = RouteId.Greenland,
+  ternary?: string,
 ): { pay: boolean; seen: ArrivalSeen } {
   const latest = latestMilestone(total, route)?.id ?? null;
-  if (!seen) return { pay: false, seen: { stop: latest, day: null } };
+  if (!seen || seen.ternary !== ternary) {
+    return {
+      pay: false,
+      seen: { ternary, stop: latest, day: seen?.day ?? null },
+    };
+  }
   if (latest === null || latest === seen.stop) return { pay: false, seen };
   if (seen.day && addDays(seen.day, TernaryRules.ARRIVAL_EVERY_DAYS) > today) {
     return { pay: false, seen };
   }
-  return { pay: true, seen: { stop: latest, day: today } };
+  return { pay: true, seen: { ternary, stop: latest, day: today } };
 }

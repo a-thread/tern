@@ -6,6 +6,13 @@ import { Icon } from '@shared/components/ui';
 import { useTernary } from '@/domain/ternary/TernaryContext';
 import { hasSent } from '@/domain/ternary/models/postcards';
 
+enum SendState {
+  Idle,
+  Sending,
+  Sent,
+  Failed,
+}
+
 /**
  * On a stop's card (the one that celebrates reaching it, or a past stop opened from Journey):
  * a quiet offer to send your ternary a postcard from it. Only in a ternary that isn't hidden,
@@ -19,52 +26,50 @@ export function SendPostcard({
   name: string;
 }) {
   const { ternary, hidden, sendPostcard } = useTernary();
-  const [state, setState] = useState<'idle' | 'sending' | 'sent' | 'failed'>(
-    'idle',
-  );
+  const [state, setState] = useState(SendState.Idle);
   if (!ternary || hidden) return null;
-  if (state === 'idle' && hasSent(ternary.postcards, stopId)) return null;
+  if (state === SendState.Idle && hasSent(ternary.postcards, stopId))
+    return null;
 
+  const busy = state === SendState.Sending || state === SendState.Sent;
   const send = async () => {
-    if (state === 'sending' || state === 'sent') return;
-    setState('sending');
+    if (busy) return;
+    setState(SendState.Sending);
     try {
       await sendPostcard(stopId);
-      setState('sent');
+      setState(SendState.Sent);
     } catch (e) {
       console.warn('Could not send a postcard', e);
-      setState('failed');
+      setState(SendState.Failed);
     }
   };
 
   // Short on the button, which already sits on the stop's own card; the whole sentence for a
   // screen reader, which hears it out of that context.
-  const label =
-    state === 'sent'
-      ? 'Postcard sent'
-      : state === 'failed'
-        ? 'Couldn’t send it. Try again'
-        : state === 'sending'
-          ? 'Sending…'
-          : 'Send a postcard';
+  const label = {
+    [SendState.Idle]: 'Send a postcard',
+    [SendState.Sending]: 'Sending…',
+    [SendState.Sent]: 'Postcard sent',
+    [SendState.Failed]: 'Couldn’t send it. Try again',
+  }[state];
   const spoken =
-    state === 'sent'
+    state === SendState.Sent
       ? `Postcard sent to ${ternary.name}`
-      : state === 'idle'
+      : state === SendState.Idle
         ? `Send ${ternary.name} a postcard from ${name}`
         : label;
 
   return (
     <Pressable
-      style={[s.button, state === 'sent' && s.sent]}
+      style={[s.button, state === SendState.Sent && s.sent]}
       onPress={send}
-      disabled={state === 'sending' || state === 'sent'}
+      disabled={busy}
       accessibilityRole='button'
       accessibilityLabel={spoken}
-      accessibilityState={{ disabled: state === 'sending' || state === 'sent' }}
+      accessibilityState={{ disabled: busy }}
     >
       <Icon
-        name={state === 'sent' ? 'check' : 'email-outline'}
+        name={state === SendState.Sent ? 'check' : 'email-outline'}
         size={16}
         color={colors.sunLight}
       />

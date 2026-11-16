@@ -137,6 +137,22 @@ describe('arriving together', () => {
     expect(arrivalDue(second.waypoints, seen, '2026-11-10').pay).toBe(false);
     expect(arrivalDue(second.waypoints, seen, '2026-11-15').pay).toBe(true);
   });
+
+  it('only remembers on the first look at another ternary, keeping the week', () => {
+    const seen = { ternary: 'old', stop: `1-${first.id}`, day: '2026-11-08' };
+    expect(
+      arrivalDue(
+        second.waypoints,
+        seen,
+        '2026-11-20',
+        RouteId.Greenland,
+        'new',
+      ),
+    ).toEqual({
+      pay: false,
+      seen: { ternary: 'new', stop: `1-${second.id}`, day: '2026-11-08' },
+    });
+  });
 });
 
 describe('a ternary on the Dutch route', () => {
