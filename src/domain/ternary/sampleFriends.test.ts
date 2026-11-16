@@ -37,7 +37,7 @@ describe('sample friends for trying ternaries locally', () => {
 describe('withSampleFriends', () => {
   async function inTernary() {
     const real = createMemoryTernaryRepository();
-    await real.create('Silly Goose', 'Aiden', RouteId.Greenland);
+    await real.create('Silly Goose', 'Aiden', RouteId.Greenland, 0);
     const spy = {
       ...real,
       bringFish: jest.fn(real.bringFish),
@@ -56,6 +56,16 @@ describe('withSampleFriends', () => {
     );
     expect(t.fish.length).toBeGreaterThan(0);
     expect(t.postcards.length).toBeGreaterThan(0);
+  });
+
+  it('gives every made-up friend a bird nobody else flies', async () => {
+    const real = createMemoryTernaryRepository();
+    // Maya would choose look 1, so she moves to the next free one.
+    await real.create('Silly Goose', 'Aiden', RouteId.Greenland, 1);
+    const t = (await withSampleFriends(real).mine(TODAY))!;
+    const looks = t.members.map((m) => m.look);
+    expect(new Set(looks).size).toBe(looks.length);
+    expect(t.members.find((m) => m.name === 'Maya')?.look).toBe(0);
   });
 
   it('moves the bird on to a stop so its table has dishes', async () => {
@@ -105,7 +115,7 @@ describe('withSampleFriends', () => {
 describe('blocking in memory', () => {
   it('hides a friend, lists them as blocked, and brings them back on unblock', async () => {
     const repo = createMemoryTernaryRepository();
-    await repo.join('KTW4QP', 'Aiden');
+    await repo.join('KTW4QP', 'Aiden', 0);
     await repo.block('maya');
     let t = (await repo.mine(TODAY))!;
     expect(t.members.some((m) => m.userId === 'maya')).toBe(false);
@@ -120,7 +130,7 @@ describe('blocking in memory', () => {
 
   it('never blocks you', async () => {
     const repo = createMemoryTernaryRepository();
-    await repo.join('KTW4QP', 'Aiden');
+    await repo.join('KTW4QP', 'Aiden', 0);
     await repo.block('you');
     expect((await repo.mine(TODAY))!.blocked).toEqual([]);
   });

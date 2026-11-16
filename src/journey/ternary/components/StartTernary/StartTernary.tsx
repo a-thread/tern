@@ -16,6 +16,7 @@ import {
 import { RouteId } from '@/domain/waypoints/models/routes';
 import { TernaryField } from '../TernaryField/TernaryField';
 import { RouteChoice } from './components/RouteChoice/RouteChoice';
+import { LookChoice } from '../LookChoice/LookChoice';
 import { TernaryButton } from '../TernaryButton/TernaryButton';
 
 const JOIN_MESSAGES: Record<JoinOutcome, string | null> = {
@@ -38,6 +39,10 @@ export function StartTernary() {
   const [yourName, setYourName] = useState(settings.firstName);
   const [name, setName] = useState('');
   const [route, setRoute] = useState(RouteId.Greenland);
+  // A bird picked at random to start with, so friends who don't choose rarely clash.
+  const [look, setLook] = useState(() =>
+    Math.floor(Math.random() * TernaryRules.LOOKS),
+  );
   const [code, setCode] = useState('');
   const [busy, setBusy] = useState(false);
   const [joinError, setJoinError] = useState<string | null>(null);
@@ -55,10 +60,11 @@ export function StartTernary() {
     }
   };
 
-  const start = () => run(() => create(cleanTernaryName(name), you, route));
+  const start = () =>
+    run(() => create(cleanTernaryName(name), you, route, look));
   const joinIt = () =>
     run(async () => {
-      setJoinError(JOIN_MESSAGES[await join(cleanInviteCode(code), you)]);
+      setJoinError(JOIN_MESSAGES[await join(cleanInviteCode(code), you, look)]);
     });
 
   return (
@@ -103,6 +109,13 @@ export function StartTernary() {
         onChangeText={setYourName}
         maxLength={TernaryRules.MAX_NAME_LENGTH}
       />
+
+      <GroupLabel>Your bird</GroupLabel>
+      <Text style={s.note}>
+        How you fly on the map. If a friend already flies it when you join,
+        you’ll get the next free one, and you can change it in Ternary settings.
+      </Text>
+      <LookChoice value={look} onChange={setLook} />
 
       <GroupLabel>Start one</GroupLabel>
       <TernaryField
@@ -157,4 +170,5 @@ const s = StyleSheet.create({
   line: { ...typography.meta, lineHeight: 19, marginTop: space.xs },
   error: { ...typography.meta, color: colors.danger, marginBottom: space.xs },
   choose: { ...typography.label, marginBottom: space.sm },
+  note: { ...typography.caption, lineHeight: 16, marginBottom: space.sm },
 });

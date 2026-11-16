@@ -13,6 +13,8 @@ import {
   fishable,
   flock,
   flockWithLooks,
+  freeLook,
+  takenLooks,
   Presence,
   routeOf,
   showUpPoints,
@@ -41,22 +43,38 @@ describe('the shared bird', () => {
 
 describe('the flock', () => {
   const members = [
-    { userId: 'a', name: 'You', you: true, presence: Presence.Here },
-    { userId: 'b', name: 'Maya', you: false, presence: Presence.Resting },
-    { userId: 'c', name: 'Sam', you: false, presence: null },
+    { userId: 'a', name: 'You', you: true, presence: Presence.Here, look: 5 },
+    {
+      userId: 'b',
+      name: 'Maya',
+      you: false,
+      presence: Presence.Resting,
+      look: 2,
+    },
+    { userId: 'c', name: 'Sam', you: false, presence: null, look: 0 },
   ];
 
   it('draws only who is here or resting, and never a quiet friend', () => {
     expect(flock(members).map((m) => m.name)).toEqual(['You', 'Maya']);
   });
 
-  it('gives each friend their own look by their place, kept when others are quiet', () => {
+  it('draws each friend as the bird they chose', () => {
     expect(
       flockWithLooks(members).map(({ member, look }) => [member.name, look]),
     ).toEqual([
-      ['You', 0],
-      ['Maya', 1],
+      ['You', 5],
+      ['Maya', 2],
     ]);
+  });
+
+  it('counts only friends’ birds as taken, quiet ones included', () => {
+    expect([...takenLooks(members)].sort()).toEqual([0, 2]);
+  });
+
+  it('gives the bird you chose, or the first free one if a friend flies it', () => {
+    expect(freeLook(members, 6)).toBe(6);
+    expect(freeLook(members, 5)).toBe(5);
+    expect(freeLook(members, 2)).toBe(1);
   });
 
   it('offers a fish to every friend, quiet or not', () => {

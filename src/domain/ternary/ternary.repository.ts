@@ -1,8 +1,10 @@
 import type { RouteId } from '../waypoints/models/routes';
 import { hasSent } from './models/postcards';
 import {
+  freeLook,
   JoinOutcome,
   ReportKind,
+  takenLooks,
   type Ternary,
   type TernaryMember,
   TernaryRules,
@@ -17,9 +19,17 @@ import { sampleTernary } from './ternary.mock';
 export interface TernaryRepository {
   /** The caller's ternary as it stands today, or null when they're in none. */
   mine(today: string): Promise<Ternary | null>;
-  /** Starts a ternary flying `route`, with you in it. */
-  create(name: string, yourName: string, route: RouteId): Promise<void>;
-  join(code: string, yourName: string): Promise<JoinOutcome>;
+  /** Starts a ternary flying `route`, with you in it flying as `look`. */
+  create(
+    name: string,
+    yourName: string,
+    route: RouteId,
+    look: number,
+  ): Promise<void>;
+  /** Joins as `look`, or the first free one if a friend already flies it. */
+  join(code: string, yourName: string, look: number): Promise<JoinOutcome>;
+  /** Changes the bird you fly as; false if someone else in the ternary flies it. */
+  setLook(look: number): Promise<boolean>;
   leave(): Promise<void>;
   setPrivacy(privacy: {
     flyPrivately: boolean;
@@ -57,7 +67,7 @@ export function createMemoryTernaryRepository(
 
   return {
     mine: async () => (current ? { ...current } : null),
-    async create(name, yourName, route) {
+    async create(name, yourName, route, look) {
       if (current) throw new Error('Already in a ternary');
       current = {
         id: id('ternary'),
@@ -65,7 +75,9 @@ export function createMemoryTernaryRepository(
         inviteCode: 'ABC234',
         route,
         total: 0,
-        members: [{ userId: 'you', name: yourName, you: true, presence: null }],
+        members: [
+          { userId: 'you', name: yourName, you: true, presence: null, look },
+        ],
         fish: [],
         fishSentToday: 0,
         postcards: [],
@@ -75,17 +87,27 @@ export function createMemoryTernaryRepository(
         shareResting: false,
       };
     },
-    async join(code, yourName) {
+    async join(code, yourName, look) {
       if (current) return JoinOutcome.Already;
       const sample = sampleTernary('2026-01-01');
       if (code !== sample.inviteCode) return JoinOutcome.NotFound;
+      const mine = freeLook(sample.members, look);
       current = {
         ...sampleTernary(new Date().toISOString().slice(0, 10)),
         members: sample.members.map((m) =>
-          m.you ? { ...m, name: yourName } : m,
+          m.you ? { ...m, name: yourName, look: mine } : m,
         ),
       };
       return JoinOutcome.Joined;
+    },
+    async setLook(look) {
+      const t = need();
+      if (takenLooks(t.members).has(look)) return false;
+      current = {
+        ...t,
+        members: t.members.map((m) => (m.you ? { ...m, look } : m)),
+      };
+      return true;
     },
     async leave() {
       current = null;

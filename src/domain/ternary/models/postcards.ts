@@ -44,15 +44,15 @@ export const onCurrentLap = (total: number, stop: Pick<Milestone, 'lap'>) =>
   latestMilestone(total)?.lap === stop.lap;
 
 /**
- * Which look (bird and colour) a postcard's sender flies as, for its stamp: their place in
- * the ternary, as in the flock. The first look for someone no longer in it.
+ * Which look (bird and colour) a postcard's sender flies as, for its stamp: the one they
+ * chose, as in the flock. The first look for someone no longer in it.
  */
 export function senderLook(
   members: readonly TernaryMember[],
   card: Pick<Postcard, 'fromId' | 'yours'>,
 ): number {
-  const i = members.findIndex((m) =>
+  const sender = members.find((m) =>
     card.yours ? m.you : m.userId === card.fromId,
   );
-  return Math.max(i, 0);
+  return sender?.look ?? 0;
 }

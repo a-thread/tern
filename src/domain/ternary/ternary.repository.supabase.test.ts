@@ -26,16 +26,22 @@ describe('Supabase ternary repository', () => {
     ).toBeNull();
   });
 
-  it('joins with the size cap, and reads the outcome', async () => {
+  it('joins with the bird you chose, and reads the outcome', async () => {
     const { db, rpc } = fakeDb('full');
     expect(
-      await createSupabaseTernaryRepository(db).join('KTW4QP', 'Ari'),
+      await createSupabaseTernaryRepository(db).join('KTW4QP', 'Ari', 3),
     ).toBe(JoinOutcome.Full);
     expect(rpc).toHaveBeenCalledWith('ternary_join', {
       p_code: 'KTW4QP',
       p_display_name: 'Ari',
-      p_max: TernaryRules.MAX_MEMBERS,
+      p_look: 3,
     });
+  });
+
+  it('changes your bird, and says when a friend already flies it', async () => {
+    const { db, rpc } = fakeDb(false);
+    expect(await createSupabaseTernaryRepository(db).setLook(5)).toBe(false);
+    expect(rpc).toHaveBeenCalledWith('ternary_set_look', { p_look: 5 });
   });
 
   it('brings a fish with the daily cap', async () => {
@@ -68,17 +74,19 @@ describe('Supabase ternary repository', () => {
     );
   });
 
-  it('starts a ternary on the chosen route', async () => {
+  it('starts a ternary on the chosen route, as the chosen bird', async () => {
     const { db, rpc } = fakeDb();
     await createSupabaseTernaryRepository(db).create(
       'Silly Goose',
       'Aiden',
       RouteId.Netherlands,
+      4,
     );
     expect(rpc).toHaveBeenCalledWith('ternary_create', {
       p_name: 'Silly Goose',
       p_display_name: 'Aiden',
       p_route: 'netherlands',
+      p_look: 4,
     });
   });
 });

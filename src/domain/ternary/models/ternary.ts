@@ -22,6 +22,11 @@ export type TernaryMember = {
   name: string;
   you: boolean;
   presence: Presence | null;
+  /**
+   * Which bird and colour they fly as (0 to `TernaryRules.LOOKS - 1`), chosen when they start
+   * or join; never two the same in one ternary. See `FlockLooks`.
+   */
+  look: number;
 };
 
 /** A fish brought to you: kindness only, worth no waypoints. */
@@ -104,10 +109,12 @@ export class TernaryRules {
   static readonly ARRIVAL_EVERY_DAYS = 7;
   static readonly MAX_FISH_PER_DAY = 3;
   /**
-   * Arctic terns migrate in flocks of fewer than 15; a ternary stays well smaller.
-   * Still open for the beta; the server never allows more than 14.
+   * Arctic terns migrate in flocks of fewer than 15; a ternary stays well smaller, one bird
+   * for each look. The server holds to it too (`20261118000000_ternary_looks`).
    */
   static readonly MAX_MEMBERS = 8;
+  /** The birds to choose from, each its own pose and colour: one for everyone in a ternary. */
+  static readonly LOOKS = 8;
   static readonly MAX_NAME_LENGTH = 40;
   static readonly INVITE_LENGTH = 6;
 }
@@ -146,14 +153,33 @@ export const flock = (members: readonly TernaryMember[]) =>
   members.filter((m) => m.presence !== null);
 
 /**
- * Who's in the flock today, each with their look: which bird and colour they fly as on the
- * map. It's their place in the ternary (members come in the order they joined), so no two
- * friends share one and nobody's changes from day to day, whoever else shows up.
+ * Who's in the flock today, each with their look: the bird and colour they chose, so the map,
+ * the list and their postcards' stamps all agree on who's who.
  */
 export const flockWithLooks = (members: readonly TernaryMember[]) =>
   members
-    .map((member, look) => ({ member, look }))
-    .filter(({ member }) => member.presence !== null);
+    .filter((member) => member.presence !== null)
+    .map((member) => ({ member, look: member.look }));
+
+/** Looks someone other than you flies, so they can't be chosen. */
+export const takenLooks = (members: readonly TernaryMember[]) =>
+  new Set(members.filter((m) => !m.you).map((m) => m.look));
+
+/**
+ * `wanted` if nobody else flies it, otherwise the first free look: what a new member gets
+ * when the one they chose is taken (they can't see which are before they join).
+ */
+export function freeLook(
+  members: readonly TernaryMember[],
+  wanted = 0,
+): number {
+  const taken = takenLooks(members);
+  if (!taken.has(wanted)) return wanted;
+  for (let look = 0; look < TernaryRules.LOOKS; look++) {
+    if (!taken.has(look)) return look;
+  }
+  return wanted;
+}
 
 /** The friends you could bring a fish to: everyone but you. */
 export const fishable = (members: readonly TernaryMember[]) =>

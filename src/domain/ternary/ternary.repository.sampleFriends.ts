@@ -1,6 +1,11 @@
 import { routeMilestones } from '../waypoints/models/milestone';
 import { restingAt } from './models/stopover';
-import { routeOf, TernaryRules } from './models/ternary';
+import {
+  freeLook,
+  routeOf,
+  type TernaryMember,
+  TernaryRules,
+} from './models/ternary';
 import type { TernaryRepository } from './ternary.repository';
 import { SampleFriends } from './ternary.mock';
 
@@ -28,14 +33,21 @@ export function withSampleFriends(repo: TernaryRepository): TernaryRepository {
       const stops = routeMilestones(route);
       const total = Math.max(real.total, stops[1].waypoints + 300);
       const stop = restingAt(total, route)?.id ?? `1-${stops[1].id}`;
+      // Each made-up friend flies the bird they'd choose, or the next one nobody real (you
+      // included) or made up already flies.
+      const friends: TernaryMember[] = [];
+      for (const m of SampleFriends.MEMBERS.filter((f) => visible(f.userId))) {
+        const flying = [...real.members, ...friends].map((f) => ({
+          ...f,
+          you: false,
+        }));
+        friends.push({ ...m, look: freeLook(flying, m.look) });
+      }
       return {
         ...real,
         sample: true,
         total,
-        members: [
-          ...real.members,
-          ...SampleFriends.MEMBERS.filter((m) => visible(m.userId)),
-        ],
+        members: [...real.members, ...friends],
         fish: [
           ...(visible(SampleFriends.id('maya'))
             ? SampleFriends.fish(today)

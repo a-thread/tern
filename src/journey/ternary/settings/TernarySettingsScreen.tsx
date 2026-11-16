@@ -12,17 +12,23 @@ import { useToast } from '@shared/state/ToastContext';
 import { confirm } from '@shared/utils/confirm';
 import { useSettings } from '@/domain/settings/SettingsContext';
 import { useTernary } from '@/domain/ternary/TernaryContext';
-import { fishable, ReportKind } from '@/domain/ternary/models/ternary';
+import {
+  fishable,
+  ReportKind,
+  takenLooks,
+} from '@/domain/ternary/models/ternary';
 import { useRootNavigation } from '@/navigation/useAppNavigation';
 import { TernaryPage } from '../components/TernaryPage/TernaryPage';
+import { LookChoice } from '../components/LookChoice/LookChoice';
 
 /**
- * The ternary's settings: what you share, taking a break without leaving, inviting friends,
+ * The ternary's settings: the bird you fly as, what you share, taking a break without leaving, inviting friends,
  * blocking someone (silently) and leaving. Leaving keeps every waypoint you earned, and the
  * shared bird never moves back.
  */
 export default function TernarySettingsScreen() {
-  const { ternary, setPrivacy, block, unblock, report, leave } = useTernary();
+  const { ternary, setPrivacy, setLook, block, unblock, report, leave } =
+    useTernary();
   const { settings, updateSettings } = useSettings();
   const toast = useToast();
   const root = useRootNavigation();
@@ -38,6 +44,20 @@ export default function TernarySettingsScreen() {
       console.warn('Could not save ternary privacy', e);
       toast.show('Couldn’t save that just now. Please try again.');
     });
+
+  const yourLook = ternary.members.find((m) => m.you)?.look ?? 0;
+  const chooseLook = (look: number) => {
+    if (look === yourLook) return;
+    setLook(look)
+      .then((changed) => {
+        // Taken by someone you can't see here, or chosen at the same moment.
+        if (!changed) toast.show('A friend already flies that bird.');
+      })
+      .catch((e) => {
+        console.warn('Could not change your bird', e);
+        toast.show('Couldn’t change your bird just now. Please try again.');
+      });
+  };
 
   const invite = () =>
     Share.share({
@@ -93,6 +113,13 @@ export default function TernarySettingsScreen() {
 
   return (
     <TernaryPage title='Ternary settings'>
+      <GroupLabel>Your bird</GroupLabel>
+      <LookChoice
+        value={yourLook}
+        onChange={chooseLook}
+        taken={takenLooks(ternary.members)}
+      />
+
       <GroupLabel>What you share</GroupLabel>
       <Group>
         <ToggleRow

@@ -53,10 +53,12 @@ describe('TernaryContext', () => {
         'Sunday Walkers',
         'Ari',
         RouteId.Netherlands,
+        6,
       ),
     );
     expect(result.current.ternary.ternary?.name).toBe('Sunday Walkers');
     expect(result.current.ternary.ternary?.members).toHaveLength(1);
+    expect(result.current.ternary.ternary?.members[0].look).toBe(6);
     expect(result.current.ternary.ternary?.route).toBe(RouteId.Netherlands);
   });
 
@@ -65,16 +67,44 @@ describe('TernaryContext', () => {
     await waitFor(() => expect(result.current.ternary.ready).toBe(true));
     let outcome: JoinOutcome | undefined;
     await act(async () => {
-      outcome = await result.current.ternary.join('NOPE00', 'Ari');
+      outcome = await result.current.ternary.join('NOPE00', 'Ari', 3);
     });
     expect(outcome).toBe(JoinOutcome.NotFound);
     await act(async () => {
-      outcome = await result.current.ternary.join('KTW4QP', 'Ari');
+      outcome = await result.current.ternary.join('KTW4QP', 'Ari', 3);
     });
     expect(outcome).toBe(JoinOutcome.Joined);
     expect(
       result.current.ternary.ternary?.members.find((m) => m.you)?.name,
     ).toBe('Ari');
+    // Nobody in the sample flies look 3, so Ari gets it.
+    expect(
+      result.current.ternary.ternary?.members.find((m) => m.you)?.look,
+    ).toBe(3);
+  });
+
+  it('gives the next free bird when a friend flies the one you chose, and lets you change it', async () => {
+    const { result } = setup(createMemoryTernaryRepository());
+    await waitFor(() => expect(result.current.ternary.ready).toBe(true));
+    // Maya flies look 1 in the sample, and 0 is free.
+    await act(async () => {
+      await result.current.ternary.join('KTW4QP', 'Ari', 1);
+    });
+    const you = () =>
+      result.current.ternary.ternary?.members.find((m) => m.you)?.look;
+    expect(you()).toBe(0);
+
+    let changed: boolean | undefined;
+    await act(async () => {
+      changed = await result.current.ternary.setLook(1);
+    });
+    expect(changed).toBe(false);
+    expect(you()).toBe(0);
+    await act(async () => {
+      changed = await result.current.ternary.setLook(7);
+    });
+    expect(changed).toBe(true);
+    expect(you()).toBe(7);
   });
 
   it('only remembers the stop on the first look, paying nothing', async () => {

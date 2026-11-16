@@ -29,8 +29,16 @@ type TernaryContextValue = {
    */
   hidden: boolean;
   reload: () => Promise<unknown>;
-  create: (name: string, yourName: string, route: RouteId) => Promise<void>;
-  join: (code: string, yourName: string) => Promise<JoinOutcome>;
+  create: (
+    name: string,
+    yourName: string,
+    route: RouteId,
+    look: number,
+  ) => Promise<void>;
+  /** Joins as `look`, or the first free bird if a friend already flies it. */
+  join: (code: string, yourName: string, look: number) => Promise<JoinOutcome>;
+  /** Changes the bird you fly as; false if a friend already flies it. */
+  setLook: (look: number) => Promise<boolean>;
   leave: () => Promise<void>;
   setPrivacy: (privacy: {
     flyPrivately: boolean;
@@ -127,12 +135,14 @@ export function TernaryProvider({
       ternary,
       hidden,
       reload,
-      create: then((name: string, yourName: string, route: RouteId) =>
-        need().create(name, yourName, route),
+      create: then(
+        (name: string, yourName: string, route: RouteId, look: number) =>
+          need().create(name, yourName, route, look),
       ),
-      join: then((code: string, yourName: string) =>
-        need().join(code, yourName),
+      join: then((code: string, yourName: string, look: number) =>
+        need().join(code, yourName, look),
       ),
+      setLook: then((look: number) => need().setLook(look)),
       // A break belongs to the ternary it was taken from: the next one starts shown.
       leave: then(async () => {
         await need().leave();

@@ -5,7 +5,8 @@ import type { TernaryRepository } from './ternary.repository';
 
 /**
  * Ternaries on the server. Every table is closed to the app; these call the functions in
- * the `20261111000000_ternaries` migration, which decide what a friend may see.
+ * the `20261111000000_ternaries` migration and those after it, which decide what a friend
+ * may see.
  */
 export function createSupabaseTernaryRepository(
   db: TernClient,
@@ -16,23 +17,32 @@ export function createSupabaseTernaryRepository(
       if (error) throw error;
       return (data as Ternary | null) ?? null;
     },
-    create: (name, yourName, route) =>
+    create: (name, yourName, route, look) =>
       ok(
         db.rpc('ternary_create', {
           p_name: name,
           p_display_name: yourName,
           p_route: route,
+          p_look: look,
         }),
       ),
-    async join(code, yourName) {
+    // The server holds a ternary to 8, one for each look, so no size is sent.
+    async join(code, yourName, look) {
       const { data, error } = await db.rpc('ternary_join', {
         p_code: code,
         p_display_name: yourName,
-        p_max: TernaryRules.MAX_MEMBERS,
+        p_look: look,
       });
       if (error) throw error;
       const outcome = Object.values(JoinOutcome).find((o) => o === data);
       return outcome ?? JoinOutcome.NotFound;
+    },
+    async setLook(look) {
+      const { data, error } = await db.rpc('ternary_set_look', {
+        p_look: look,
+      });
+      if (error) throw error;
+      return data === true;
     },
     leave: () => ok(db.rpc('ternary_leave')),
     setPrivacy: ({ flyPrivately, shareResting }) =>

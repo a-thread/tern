@@ -24,10 +24,28 @@ export function sampleTernary(today: string): Ternary {
     inviteCode: 'KTW4QP',
     total: 2100,
     members: [
-      { userId: 'you', name: 'You', you: true, presence: Presence.Here },
-      { userId: 'maya', name: 'Maya', you: false, presence: Presence.Here },
-      { userId: 'jo', name: 'Jo', you: false, presence: Presence.Resting },
-      { userId: 'sam', name: 'Sam', you: false, presence: null },
+      {
+        userId: 'you',
+        name: 'You',
+        you: true,
+        presence: Presence.Here,
+        look: 0,
+      },
+      {
+        userId: 'maya',
+        name: 'Maya',
+        you: false,
+        presence: Presence.Here,
+        look: 1,
+      },
+      {
+        userId: 'jo',
+        name: 'Jo',
+        you: false,
+        presence: Presence.Resting,
+        look: 4,
+      },
+      { userId: 'sam', name: 'Sam', you: false, presence: null, look: 2 },
     ],
     fish: [{ id: 'f1', fromName: 'Maya', day: today }],
     fishSentToday: 0,
@@ -64,12 +82,13 @@ export class SampleFriends {
   /** Every made-up id starts with this, so they're told apart from real accounts. */
   static readonly ID_PREFIX = 'sample-';
 
+  /** Each with the bird they'd choose; `withSampleFriends` moves one a real friend flies. */
   static readonly MEMBERS: readonly TernaryMember[] = [
-    SampleFriends.member('maya', 'Maya', Presence.Here),
-    SampleFriends.member('jo', 'Jo', Presence.Resting),
-    SampleFriends.member('ari', 'Ari', Presence.Here),
-    SampleFriends.member('sam', 'Sam', null),
-    SampleFriends.member('lou', 'Lou', Presence.Here),
+    SampleFriends.member('maya', 'Maya', Presence.Here, 1),
+    SampleFriends.member('jo', 'Jo', Presence.Resting, 4),
+    SampleFriends.member('ari', 'Ari', Presence.Here, 2),
+    SampleFriends.member('sam', 'Sam', null, 6),
+    SampleFriends.member('lou', 'Lou', Presence.Here, 3),
   ];
 
   static isOne(id: string): boolean {
@@ -148,12 +167,14 @@ export class SampleFriends {
     name: string,
     display: string,
     presence: Presence | null,
+    look: number,
   ): TernaryMember {
     return {
       userId: SampleFriends.id(name),
       name: display,
       you: false,
       presence,
+      look,
     };
   }
 }

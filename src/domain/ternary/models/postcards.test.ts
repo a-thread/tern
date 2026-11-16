@@ -61,14 +61,14 @@ describe('onCurrentLap', () => {
 
 describe('senderLook', () => {
   const members = [
-    { userId: 'sam', you: false },
-    { userId: 'me', you: true },
-    { userId: 'maya', you: false },
+    { userId: 'sam', you: false, look: 3 },
+    { userId: 'me', you: true, look: 6 },
+    { userId: 'maya', you: false, look: 2 },
   ] as TernaryMember[];
 
-  it('is the sender’s place in the ternary', () => {
+  it('is the bird the sender chose', () => {
     expect(senderLook(members, { fromId: 'maya', yours: false })).toBe(2);
-    expect(senderLook(members, { yours: true })).toBe(1);
+    expect(senderLook(members, { yours: true })).toBe(6);
   });
 
   it('falls back to the first look for someone who left', () => {

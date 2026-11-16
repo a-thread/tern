@@ -27,6 +27,13 @@ bird; a rest day counts. Terns don't fly in a V, so the cluster has no leader, a
 fresh every morning. A friend who isn't here today isn't drawn: no grey slot, no "missed", no
 history. *Share that I'm resting* (off by default) shows a rest day as resting.
 
+**Your bird.** Everyone chooses which of eight birds they fly as, each its own pose and
+colour, when they start or join (it starts on one picked at random). No two people in a
+ternary fly the same one: you can't see which are taken before joining, so a taken choice
+becomes the first free bird, and Ternary settings lets you change it to any free one. Eight
+birds is also why a ternary holds eight people. The same bird is on the map, in the Flying
+today list and on your postcards' stamps.
+
 **Fly privately.** Your showing up still carries the bird, but you're never drawn. Friends
 can't tell whether you're quiet or private, which makes everyone's quiet days unreadable too.
 
