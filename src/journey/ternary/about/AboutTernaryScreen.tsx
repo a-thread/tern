@@ -77,8 +77,10 @@ export default function AboutTernaryScreen() {
       <Card>
         <Text style={s.para}>
           Only that you showed up today, “resting” if you choose to share that,
-          and what you send. Never what you ate, weighed or walked, your streak,
-          or your own journey. Fly privately and you’re never drawn at all,
+          and what you send: fish, postcards and recipes you share. Never what
+          you ate, weighed or walked, your streak, or how far your own tern has
+          flown. A postcard comes from a stop you’ve reached, but never says
+          when or how long it took. Fly privately and you’re never drawn at all,
           while still carrying the bird.
         </Text>
       </Card>

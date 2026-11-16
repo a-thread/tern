@@ -77,8 +77,11 @@ export function StartTernary() {
           • That you’re resting, only if you turn that on.
         </Text>
         <Text style={s.line}>
-          • Never what you ate, weighed or walked, your streak, or your own
-          journey.
+          • What you send: fish, postcards and recipes you share.
+        </Text>
+        <Text style={s.line}>
+          • Never what you ate, weighed or walked, your streak, or how far your
+          own tern has flown.
         </Text>
         <Text style={s.line}>
           • Never a day you didn’t open Tern. Quiet days show nothing.
@@ -87,7 +90,7 @@ export function StartTernary() {
       <Group>
         <Row
           title='What’s a ternary?'
-          sub='The shared bird, fish, postcards and the table'
+          sub='The shared bird, fish, postcards and the recipe swap'
           chevron
           onPress={() => navigation.navigate('AboutTernary')}
         />

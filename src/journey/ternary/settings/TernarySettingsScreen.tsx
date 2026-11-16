@@ -109,8 +109,8 @@ export default function TernarySettingsScreen() {
         />
       </Group>
       <FootNote>
-        Nobody ever sees what you ate, weighed or walked, your streak, or your
-        own journey.
+        Nobody ever sees what you ate, weighed or walked, your streak, or how
+        far your own tern has flown.
       </FootNote>
 
       <GroupLabel>Taking a break</GroupLabel>
