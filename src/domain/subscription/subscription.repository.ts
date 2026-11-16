@@ -5,6 +5,7 @@ import {
   type SubscriptionStatus,
   Tier,
   type TipOption,
+  TipResult,
 } from './models/subscription';
 
 /**
@@ -28,8 +29,8 @@ export interface SubscriptionRepository {
   onChange(listener: (status: SubscriptionStatus) => void): () => void;
   /** The tip jar's amounts, as priced for this person; empty when the store has none. */
   tips(): Promise<TipOption[]>;
-  /** Leaves a tip. True once paid; false if the person backed out. Throws if the store failed. */
-  tip(id: string): Promise<boolean>;
+  /** Leaves a tip: paid, backed out of, or waiting on the payment. Throws if the store failed. */
+  tip(id: string): Promise<TipResult>;
 }
 
 const SAMPLE_TIPS: TipOption[] = [2.99, 4.99, 9.99].map((amount) => ({
@@ -99,7 +100,7 @@ export function createMemorySubscriptionRepository(
     tip: async (id) => {
       if (!SAMPLE_TIPS.some((t) => t.id === id))
         throw new Error(`No tip ${id}`);
-      return true;
+      return TipResult.Paid;
     },
   };
 }

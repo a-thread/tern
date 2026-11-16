@@ -5,6 +5,7 @@ import { space } from '@shared/theme';
 import { useToast } from '@shared/state/ToastContext';
 import { useSubscription } from '@/domain/subscription/SubscriptionContext';
 import { TipFish } from './models/tipFish';
+import { tipThanks } from './models/tipThanks';
 import { TipTile } from './components/TipTile/TipTile';
 import { TipThanks } from './components/TipThanks/TipThanks';
 
@@ -23,8 +24,8 @@ export function TipJar() {
     if (busy) return;
     setBusy(id);
     try {
-      if (await tip(id)) {
-        const text = `Thank you for the ${fish}. It keeps Tern flying.`;
+      const text = tipThanks(await tip(id), fish);
+      if (text) {
         setThanks(text);
         AccessibilityInfo.announceForAccessibility(text);
       }

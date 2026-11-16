@@ -17,6 +17,7 @@ export function SupporterRow() {
   const lapsed = usePlusLapsed();
   const offer = supportOffer({
     accounts: auth !== null,
+    signedIn: Boolean(auth?.session),
     active,
     supporter,
     lapsed,

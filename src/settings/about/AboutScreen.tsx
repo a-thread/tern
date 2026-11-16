@@ -88,8 +88,8 @@ export default function AboutScreen() {
           </Group>
           <FootNote>
             A thank-you for supporting Tern: the line your tern has flown on
-            Journey. It’s yours to keep if Supporter ends, and comes back if you
-            support again.
+            Journey. It goes back to Arctic if Supporter ends, and your colour
+            comes back if you support again.
           </FootNote>
         </>
       ) : null}

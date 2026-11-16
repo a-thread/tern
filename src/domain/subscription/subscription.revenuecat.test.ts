@@ -1,4 +1,9 @@
-import { Plan, SubscriptionConfig, Tier } from './models/subscription';
+import {
+  Plan,
+  SubscriptionConfig,
+  Tier,
+  TipResult,
+} from './models/subscription';
 import {
   createRevenueCatSubscriptionRepository,
   type PurchasesApi,
@@ -146,11 +151,9 @@ describe('RevenueCat subscription repository', () => {
     ];
     const withMetadata = (metadata?: Record<string, unknown>) =>
       fakeApi({
-        getOfferings: jest
-          .fn()
-          .mockResolvedValue({
-            current: { availablePackages: packages, metadata },
-          }),
+        getOfferings: jest.fn().mockResolvedValue({
+          current: { availablePackages: packages, metadata },
+        }),
       });
     const founding = await createRevenueCatSubscriptionRepository(
       withMetadata({ [SubscriptionConfig.FOUNDING_METADATA]: true }),
@@ -201,12 +204,24 @@ describe('RevenueCat subscription repository', () => {
     it('buys a tip, and treats backing out as a choice', async () => {
       const api = withTips();
       const repo = createRevenueCatSubscriptionRepository(api, 'k');
-      expect(await repo.tip('tip_small')).toBe(true);
+      expect(await repo.tip('tip_small')).toBe(TipResult.Paid);
       expect(api.purchasePackage).toHaveBeenCalledWith(
         pkg('tip_small', 'CUSTOM', '$2.99'),
       );
       api.purchasePackage.mockRejectedValueOnce({ userCancelled: true });
-      expect(await repo.tip('tip_small')).toBe(false);
+      expect(await repo.tip('tip_small')).toBe(TipResult.Cancelled);
+    });
+
+    it('treats a payment the store is holding as pending, not a failure', async () => {
+      const api = withTips();
+      const repo = createRevenueCatSubscriptionRepository(api, 'k');
+      api.purchasePackage.mockRejectedValueOnce({
+        code: '20',
+        userCancelled: false,
+      });
+      expect(await repo.tip('tip_small')).toBe(TipResult.Pending);
+      api.purchasePackage.mockRejectedValueOnce({ code: '2' });
+      await expect(repo.tip('tip_small')).rejects.toEqual({ code: '2' });
     });
 
     it('will not sell a plan as a tip', async () => {

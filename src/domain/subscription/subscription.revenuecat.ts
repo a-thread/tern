@@ -7,8 +7,14 @@ import {
   sortTips,
   type SubscriptionStatus,
   Tier,
+  TipResult,
 } from './models/subscription';
 import type { SubscriptionRepository } from './subscription.repository';
+
+/** What `react-native-purchases` rejects with; `code` is one of its `PURCHASES_ERROR_CODE`s. */
+type PurchasesError = { userCancelled?: boolean; code?: string };
+/** `PURCHASES_ERROR_CODE.PAYMENT_PENDING_ERROR`, written out so the adapter tests without the native module. */
+const PAYMENT_PENDING_ERROR = '20';
 
 type Entitlement = {
   isActive: boolean;
@@ -144,9 +150,12 @@ export function createRevenueCatSubscriptionRepository(
       try {
         // A consumable: it can be bought again, and changes no entitlement.
         await api.purchasePackage(pkg);
-        return true;
+        return TipResult.Paid;
       } catch (error) {
-        if ((error as { userCancelled?: boolean }).userCancelled) return false;
+        const { userCancelled, code } = error as PurchasesError;
+        if (userCancelled) return TipResult.Cancelled;
+        // Google Play can hold a payment (a slow card, cash at a shop): it's not a failure.
+        if (code === PAYMENT_PENDING_ERROR) return TipResult.Pending;
         throw error;
       }
     },
