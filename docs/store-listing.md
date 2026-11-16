@@ -149,11 +149,7 @@ YOUR DATA IS YOURS
 • Export and restore your log, share a summary with your dietitian, therapist or doctor, or delete your data or account, all from Settings.
 
 TERN PLUS
-Tern Plus is an optional auto-renewing subscription, monthly or yearly; Tern
-Plus Supporter is yearly. Payment
-is charged to your Apple Account when you confirm the purchase. It renews
-automatically unless you turn it off at least 24 hours before the end of the
-current period, and you can manage or cancel it in your Apple Account settings.
+Tern Plus is an optional auto-renewing subscription, monthly or yearly; Tern Plus Supporter is yearly. Payment is charged to your Apple Account when you confirm the purchase. It renews automatically unless you turn it off at least 24 hours before the end of the current period, and you can manage or cancel it in your Apple Account settings.
 
 Terms of Use: https://www.apple.com/legal/internet-services/itunes/dev/stdeula/
 Privacy Policy: https://a-thread.github.io/tern/
