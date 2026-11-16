@@ -74,9 +74,9 @@ export function StartTernary() {
         carries it further, and nobody is ever ahead or behind.
       </Text>
 
+      <GroupLabel>What friends see</GroupLabel>
       <Card>
-        <Text style={typography.heading}>What your friends see</Text>
-        <Text style={s.line}>
+        <Text style={s.first}>
           • That you showed up today. A rest day counts.
         </Text>
         <Text style={s.line}>
@@ -102,29 +102,28 @@ export function StartTernary() {
         />
       </Group>
 
-      <GroupLabel>Your name in the ternary</GroupLabel>
+      <GroupLabel>You</GroupLabel>
       <TernaryField
         label='Your name'
         value={yourName}
         onChangeText={setYourName}
         maxLength={TernaryRules.MAX_NAME_LENGTH}
       />
-
-      <GroupLabel>Your bird</GroupLabel>
+      <Text style={s.label}>Your bird</Text>
       <Text style={s.note}>
-        How you fly on the map. If a friend already flies it when you join,
-        you’ll get the next free one, and you can change it in Ternary settings.
+        How you fly on the map. If a friend already flies it, you’ll get the
+        next free one; you can change it later.
       </Text>
       <LookChoice value={look} onChange={setLook} />
 
-      <GroupLabel>Start one</GroupLabel>
+      <GroupLabel>Start a ternary</GroupLabel>
       <TernaryField
         label='Ternary name'
         value={name}
         onChangeText={setName}
         maxLength={TernaryRules.MAX_NAME_LENGTH}
       />
-      <Text style={s.choose}>Which migration your shared bird flies</Text>
+      <Text style={s.label}>Migration</Text>
       <RouteChoice value={route} onChange={setRoute} />
       <TernaryButton
         label='Start the ternary'
@@ -132,7 +131,7 @@ export function StartTernary() {
         disabled={busy || !you || !cleanTernaryName(name)}
       />
 
-      <GroupLabel>Or join with a code</GroupLabel>
+      <GroupLabel>Or join one</GroupLabel>
       <TernaryField
         label='Invite code'
         value={code}
@@ -167,8 +166,10 @@ export function StartTernary() {
 
 const s = StyleSheet.create({
   lead: { ...typography.meta, lineHeight: 19, marginVertical: space.md },
+  first: { ...typography.meta, lineHeight: 19 },
   line: { ...typography.meta, lineHeight: 19, marginTop: space.xs },
   error: { ...typography.meta, color: colors.danger, marginBottom: space.xs },
-  choose: { ...typography.label, marginBottom: space.sm },
+  // Like a field's label (`TernaryField`), for the choices that aren't a text field.
+  label: { ...typography.label, marginBottom: space.xs },
   note: { ...typography.caption, lineHeight: 16, marginBottom: space.sm },
 });
