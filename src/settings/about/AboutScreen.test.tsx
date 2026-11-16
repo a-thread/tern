@@ -82,11 +82,31 @@ describe('AboutScreen', () => {
     ).toBeTruthy();
   });
 
+  it('folds the letter to its first paragraph until it is opened', async () => {
+    open(PLUS);
+    expect(await screen.findByText(/I made Tern for myself/)).toBeTruthy();
+    expect(
+      screen.queryByText(/I hope it brings you some of the joy/),
+    ).toBeNull();
+    expect(screen.queryByText('Email Aiden')).toBeNull();
+
+    fireEvent.press(
+      screen.getByRole('button', { name: 'Read the whole letter' }),
+    );
+    expect(
+      screen.getByText(/I hope it brings you some of the joy/),
+    ).toBeTruthy();
+    expect(screen.getByText('Email Aiden')).toBeTruthy();
+    expect(screen.queryByText('Read the whole letter')).toBeNull();
+  });
+
   it('has a letter from Aiden, with the source code and a way to write', async () => {
     const openURL = jest.spyOn(Linking, 'openURL').mockResolvedValue(true);
     open(PLUS);
     expect(await screen.findByText('A letter from Aiden')).toBeTruthy();
-    expect(screen.getByText(/I made Tern for myself/)).toBeTruthy();
+    fireEvent.press(
+      screen.getByRole('button', { name: 'Read the whole letter' }),
+    );
     expect(screen.getByText('– Aiden')).toBeTruthy();
 
     fireEvent.press(screen.getByRole('link', { name: 'Email Aiden' }));

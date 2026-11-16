@@ -1,6 +1,7 @@
-/** The About Tern row on the Settings index. */
-export function aboutSummary(supporter: boolean): string {
-  return supporter
-    ? 'What Tern is for · thank you for supporting it'
-    : 'What Tern is for, and supporting it';
+/**
+ * The About Tern row on the Settings index. The same for everyone: the tip jar only hides when
+ * the store can't be reached.
+ */
+export function aboutSummary(): string {
+  return 'Why Tern exists, and a tip jar';
 }
