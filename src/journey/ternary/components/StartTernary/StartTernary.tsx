@@ -24,7 +24,7 @@ import { RouteId } from '@/domain/waypoints/models/routes';
 import { FlockLooks } from '@/journey/models/flockLooks';
 import { TernaryField } from '../TernaryField/TernaryField';
 import { RouteChoice } from './components/RouteChoice/RouteChoice';
-import { Bullet } from './components/Bullet/Bullet';
+import { Bullet } from '../Bullet/Bullet';
 import { LookChoice } from '../LookChoice/LookChoice';
 import { TernaryButton } from '../TernaryButton/TernaryButton';
 
@@ -48,8 +48,8 @@ const JOIN_MESSAGES: Record<JoinOutcome, string | null> = {
 };
 
 /**
- * Starting a ternary or joining one by its code, with what friends will see said plainly
- * first. Your name and bird come next, for either; then only the form for the way you pick,
+ * Starting a ternary or joining one by its code, with what a ternary is, and why you'd want
+ * one, said first. Your name and bird come next, for either; then only the form for the way you pick,
  * joining first, since most people arrive with a friend's code. Your name in the ternary
  * starts as your first name, and can be anything.
  */
@@ -119,28 +119,20 @@ export function StartTernary() {
 
   return (
     <View>
-      <Text style={s.lead}>
-        A few friends who fly one shared bird together. Each of you showing up
-        carries it further, and nobody is ever ahead or behind.
-      </Text>
-
-      <GroupLabel>What friends see</GroupLabel>
+      <GroupLabel>What’s a ternary?</GroupLabel>
       <Card>
-        <Bullet first>That you showed up today. A rest day counts.</Bullet>
-        <Bullet>That you’re resting, only if you turn that on.</Bullet>
-        <Bullet>What you send: fish, postcards and recipes you share.</Bullet>
-        <Bullet>
-          Never what you ate, weighed or walked, your streak, or how far your
-          own tern has flown.
-        </Bullet>
-        <Bullet>
-          Never a day you didn’t open Tern. Quiet days show nothing.
-        </Bullet>
+        <Text style={s.pitch}>
+          Accountability buddies, without sharing the details. Friends see that
+          you showed up, never what you ate, weighed or walked.
+        </Text>
+        <Bullet>Carry one shared bird further together</Bullet>
+        <Bullet>Cheer each other on with fish and postcards</Bullet>
+        <Bullet>Swap recipes, never amounts</Bullet>
       </Card>
       <Group style={s.about}>
         <Row
-          title='What’s a ternary?'
-          sub='The shared bird, fish, postcards and the recipe swap'
+          title='How ternaries work'
+          sub='What you can do together, and what friends see'
           chevron
           onPress={() => navigation.navigate('AboutTernary')}
         />
@@ -211,7 +203,7 @@ export function StartTernary() {
 }
 
 const s = StyleSheet.create({
-  lead: { ...typography.meta, lineHeight: 19, marginVertical: space.md },
+  pitch: { ...typography.meta, lineHeight: 19 },
   about: { marginTop: space.sm },
   error: { ...typography.meta, color: colors.danger, marginBottom: space.sm },
   // Like a field's label (`TernaryField`), for the choices that aren't a text field.

@@ -95,7 +95,7 @@ export default function TernaryHomeScreen() {
         />
         <Row
           title='What’s a ternary?'
-          sub='The shared bird, fish, postcards and the recipe swap'
+          sub='What you can do together, and what friends see'
           chevron
           onPress={() => navigation.navigate('AboutTernary')}
         />

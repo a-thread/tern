@@ -5,90 +5,46 @@ import { space, typography } from '@shared/theme';
 import { Card, FootNote, GroupLabel } from '@shared/components/ui';
 import { TernaryRules } from '@/domain/ternary/models/ternary';
 import { TernaryPage } from '../components/TernaryPage/TernaryPage';
+import { Bullet } from '../components/Bullet/Bullet';
 
 /**
- * What a ternary is for, in plain words: each part, the real tern behaviour it comes from,
- * and what friends can and can't see.
+ * What a ternary is and why you'd want one, in a screenful: friends who keep each other
+ * going without seeing what each other tracks, what you can do together, and what they see.
  */
 export default function AboutTernaryScreen() {
   return (
     <TernaryPage title='What’s a ternary?'>
       <Text style={s.lead}>
-        A ternary is a few friends who fly one shared bird together. It’s about
-        keeping each other company, never about keeping up: nobody is ranked,
-        and nobody is ever shown as behind.
+        Accountability buddies, without sharing the details. A ternary is a few
+        friends who fly one shared bird together: it goes further the more of
+        you show up each day, and nobody is ranked or shown as behind.
       </Text>
 
-      <GroupLabel>The shared bird</GroupLabel>
+      <GroupLabel>Together you can</GroupLabel>
       <Card>
-        <Text style={s.para}>
-          {`Each day, the shared bird flies further the more of you show up. A rest day counts. On a day everyone shows up it flies ${TernaryRules.SHOW_UP_POINTS} waypoints, whatever the ternary’s size. A quiet day only slows it down: it never moves back.`}
-        </Text>
-        <Text style={s.para}>
-          It flies one of two tracked migrations, chosen when the ternary is
-          started: the Greenland route down the Atlantic to the Weddell Sea,
-          about a year together, or the Dutch route across three oceans to East
-          Antarctica, the longest bird migration recorded and a few months
-          longer.
-        </Text>
-        <Text style={s.para}>
-          {`When it reaches a stop, everyone gets ${TernaryRules.ARRIVAL_POINTS} waypoints on their own journey, at most once a week.`}
-        </Text>
-      </Card>
-
-      <GroupLabel>Flying together</GroupLabel>
-      <Card>
-        <Text style={s.para}>
-          Arctic terns migrate in small, loose flocks. Whoever shows up today
-          flies in a cluster around the shared bird, and the flock starts fresh
-          every morning. A friend who isn’t here today simply isn’t drawn.
-        </Text>
-      </Card>
-
-      <GroupLabel>Fish</GroupLabel>
-      <Card>
-        <Text style={s.para}>
-          {`Terns court and feed each other by bringing fish. You can bring up to ${TernaryRules.MAX_FISH_PER_DAY} a day, to anyone in your ternary. A fish waits for your friend without a notification, and it’s only kindness: it earns no waypoints.`}
-        </Text>
-      </Card>
-
-      <GroupLabel>Postcards</GroupLabel>
-      <Card>
-        <Text style={s.para}>
-          When your own tern reaches a stop, you can send your ternary a
-          postcard of the place, with a fact about it. It never shows a date, a
-          total or how long the trip took.
-        </Text>
-      </Card>
-
-      <GroupLabel>Recipe swap</GroupLabel>
-      <Card>
-        <Text style={s.para}>
-          Share a meal you love from your saved meals, and keep the ones your
-          friends share to cook yourself. Only the name and its foods are
-          shared, never amounts or numbers: whoever cooks it logs it their own
-          way. Each time the shared bird reaches a stop there’s a new idea for
-          what to share, like “Bring something warming”, and one meal each per
-          stop.
-        </Text>
+        <Bullet first>
+          {`Carry the shared bird. A rest day counts, and when it reaches a stop you each get ${TernaryRules.ARRIVAL_POINTS} waypoints.`}
+        </Bullet>
+        <Bullet>
+          {`Cheer each other on with fish (up to ${TernaryRules.MAX_FISH_PER_DAY} a day) and postcards from the stops your own tern reaches.`}
+        </Bullet>
+        <Bullet>
+          Swap recipes from your saved meals, and keep the ones you’d like to
+          cook. Only names and foods, never amounts.
+        </Bullet>
       </Card>
 
       <GroupLabel>What friends see</GroupLabel>
       <Card>
         <Text style={s.para}>
-          Only that you showed up today, “resting” if you choose to share that,
-          and what you send: fish, postcards and recipes you share. Never what
-          you ate, weighed or walked, your streak, or how far your own tern has
-          flown. A postcard comes from a stop you’ve reached, but never says
-          when or how long it took. Fly privately and you’re never drawn at all,
-          while still carrying the bird.
+          That you showed up today, and what you send. Never what you ate,
+          weighed or walked, your streak, or how far your own tern has flown.
+          Fly privately and you’re not drawn at all.
         </Text>
       </Card>
       <FootNote>
-        Everyone in a ternary has Tern Plus. You can be in one ternary at a
-        time: to join another, leave this one first. You can take a break, block
-        someone silently or leave from Ternary settings, and you keep every
-        waypoint you earned.
+        Everyone in a ternary has Tern Plus. You can be in one at a time, and
+        take a break or leave whenever you like, keeping every waypoint.
       </FootNote>
     </TernaryPage>
   );
@@ -96,5 +52,5 @@ export default function AboutTernaryScreen() {
 
 const s = StyleSheet.create({
   lead: { ...typography.meta, lineHeight: 19, marginTop: space.md },
-  para: { ...typography.meta, lineHeight: 19, marginTop: space.xs },
+  para: { ...typography.meta, lineHeight: 19 },
 });
