@@ -1,25 +1,20 @@
 import React from 'react';
 import { AccessibilityInfo, Linking } from 'react-native';
-import {
-  fireEvent,
-  render,
-  screen,
-  waitFor,
-} from '@testing-library/react-native';
+import { fireEvent, render, screen } from '@testing-library/react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import { ToastProvider } from '@shared/state/ToastContext';
 import { createMemoryBackend } from '@/BackendContext';
-import {
-  SettingsProvider,
-  useSettings,
-} from '@/domain/settings/SettingsContext';
-import { TrailColor } from '@/domain/settings/models/trailColor';
+import { SettingsProvider } from '@/domain/settings/SettingsContext';
 import type { SubscriptionStatus } from '@/domain/subscription/models/subscription';
 import { createMemorySubscriptionRepository } from '@/domain/subscription/subscription.repository';
 import { SubscriptionProvider } from '@/domain/subscription/SubscriptionContext';
 import { AboutLinks } from './models/aboutLinks';
 import AboutScreen from './AboutScreen';
+
+// Null is local data with no accounts; a test sets it to try the account backend.
+let mockAuth: { session: null; openSignIn: jest.Mock } | null = null;
+jest.mock('@/domain/auth/AuthContext', () => ({ useAuth: () => mockAuth }));
 
 jest.mock('@react-navigation/native', () => ({
   ...jest.requireActual('@react-navigation/native'),
@@ -38,12 +33,11 @@ const SUPPORTER: SubscriptionStatus = {
   supporter: true,
 };
 const PLUS: SubscriptionStatus = { ...SUPPORTER, supporter: false };
-
-let trail: TrailColor | undefined;
-function TrailProbe() {
-  trail = useSettings().settings.trailColor;
-  return null;
-}
+const NO_PLUS: SubscriptionStatus = {
+  active: false,
+  renews: false,
+  expiresAt: null,
+};
 
 function open(status: SubscriptionStatus) {
   const backend = createMemoryBackend();
@@ -56,7 +50,6 @@ function open(status: SubscriptionStatus) {
         >
           <SettingsProvider repo={backend.settings}>
             <AboutScreen />
-            <TrailProbe />
           </SettingsProvider>
         </SubscriptionProvider>
       </ToastProvider>
@@ -64,7 +57,10 @@ function open(status: SubscriptionStatus) {
   );
 }
 
-afterEach(() => jest.restoreAllMocks());
+afterEach(() => {
+  jest.restoreAllMocks();
+  mockAuth = null;
+});
 
 describe('AboutScreen', () => {
   it('says what Tern is for, and never links out to pay', async () => {
@@ -78,7 +74,7 @@ describe('AboutScreen', () => {
   it('keeps its promise about the scale', async () => {
     open(PLUS);
     expect(
-      await screen.findByText(/never for a number on the scale/),
+      await screen.findByText(/never for the scale or a calorie count/),
     ).toBeTruthy();
   });
 
@@ -129,30 +125,26 @@ describe('AboutScreen', () => {
     expect(announce).toHaveBeenCalledWith(thanks);
   });
 
-  it('thanks someone on Plus, and a Supporter, under the jar', async () => {
-    open(PLUS);
-    expect(await screen.findByText('You have Tern Plus')).toBeTruthy();
-    expect(screen.queryByText('You’re a Supporter')).toBeNull();
+  it('offers Supporter to someone signed out, through the paywall', async () => {
+    const openSignIn = jest.fn();
+    mockAuth = { session: null, openSignIn };
+    open(NO_PLUS);
+    fireEvent.press(await screen.findByText('Become a Supporter'));
+    expect(openSignIn).toHaveBeenCalledWith({ toSignUp: true });
+  });
+
+  it('asks nothing of someone with Plus or Supporter, and leaves the trail to Journey', async () => {
+    mockAuth = { session: null, openSignIn: jest.fn() };
+    open(SUPPORTER);
+    expect(await screen.findByText('Bring Tern a fish')).toBeTruthy();
     expect(screen.queryByText('Become a Supporter')).toBeNull();
+    expect(screen.queryByText('You’re a Supporter')).toBeNull();
+    expect(screen.queryByLabelText('Twilight trail')).toBeNull();
     screen.unmount();
 
-    open(SUPPORTER);
-    expect(await screen.findByText('You’re a Supporter')).toBeTruthy();
-    expect(
-      screen.getByText('Thank you. Choose your trail colour below.'),
-    ).toBeTruthy();
-    expect(screen.queryByText('You have Tern Plus')).toBeNull();
-  });
-
-  it('lets a Supporter choose their trail', async () => {
-    open(SUPPORTER);
-    fireEvent.press(await screen.findByLabelText('Twilight trail'));
-    await waitFor(() => expect(trail).toBe(TrailColor.Twilight));
-  });
-
-  it('offers no trail to someone on plain Plus', async () => {
     open(PLUS);
-    expect(await screen.findByText('Support Tern')).toBeTruthy();
-    expect(screen.queryByLabelText('Twilight trail')).toBeNull();
+    expect(await screen.findByText('Bring Tern a fish')).toBeTruthy();
+    expect(screen.queryByText('Become a Supporter')).toBeNull();
+    expect(screen.queryByText('You have Tern Plus')).toBeNull();
   });
 });

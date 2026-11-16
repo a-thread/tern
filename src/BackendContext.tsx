@@ -102,6 +102,7 @@ import {
 } from './domain/subscription/subscription.repository';
 import { createStoreSubscriptionRepository } from './domain/subscription/subscription.revenuecat';
 import { plusUnlocked } from './domain/subscription/plusUnlocked';
+import { devSupporter } from './domain/subscription/devSupporter';
 import { createSupabasePlusSync } from './domain/subscription/entitlement.supabase';
 
 /** Every repository the app persists through. Contexts read these; they never touch Supabase directly. */
@@ -206,7 +207,8 @@ export function createLocalBackend(db: LocalDb): Backend {
  * Tern Plus. Not part of `Backend`: it outlives signing in and out, since buying comes
  * before the account. Already on in a test build that unlocks it (`plusUnlocked`). Otherwise
  * the store's through RevenueCat when there's a key for this platform. Without one, in
- * memory where buying is free in development and Expo Go (`dev`), and unavailable in a
+ * memory where buying is free in development and Expo Go (`dev`; accounts count as
+ * Supporter with `devSupporter`), and unavailable in a
  * release build, so a missing key shows as no Plus rather than as saves the server refuses.
  */
 export function createSubscriptionRepository(
@@ -229,6 +231,7 @@ export function createSubscriptionRepository(
   }
   return createMemorySubscriptionRepository(undefined, undefined, {
     accountsHavePlus: true,
+    accountsAreSupporters: devSupporter(),
   });
 }
 

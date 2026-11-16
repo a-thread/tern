@@ -89,13 +89,17 @@ export function plusSummary(state: PlusSectionState): PlusSectionText {
   }
   const date = formatShortDate(dayKey(new Date(status.expiresAt)));
   const name = status.supporter ? 'Tern Plus Supporter' : 'Tern Plus';
+  // A Supporter's thank-you is chosen where it's drawn, so this says where to find it.
+  const thanks = status.supporter
+    ? 'Thank you for supporting Tern. Choose your trail colour on Journey, from the info button by Stops. '
+    : '';
   return {
     title: SYNCED,
     summary: status.renews
       ? `${name} · renews ${date}`
       : `${name} until ${date} · won't renew`,
     link: false,
-    footnote: `Change plan or cancel in ${store}. If Plus ends, your data is kept on this phone.`,
+    footnote: `${thanks}Change plan or cancel in ${store}. If Plus ends, your data is kept on this phone.`,
     action: PlusAction.Manage,
   };
 }

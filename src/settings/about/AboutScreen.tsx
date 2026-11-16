@@ -2,30 +2,18 @@ import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 
 import { colors, space, typography } from '@shared/theme';
-import {
-  Card,
-  FootNote,
-  Group,
-  GroupLabel,
-  Icon,
-  IconBadge,
-} from '@shared/components/ui';
-import { useSubscription } from '@/domain/subscription/SubscriptionContext';
-import { TrailColors } from '@/domain/settings/models/trailColor';
+import { Card, GroupLabel, Icon, IconBadge } from '@shared/components/ui';
 import { SettingsPage } from '../components/SettingsPage';
-import { TrailChoice } from './components/TrailChoice/TrailChoice';
 import { TipJar } from './components/TipJar/TipJar';
 import { SupporterRow } from './components/SupporterRow/SupporterRow';
 import { Letter } from './components/Letter/Letter';
 
 /**
  * Settings › About Tern: what Tern is for and the promises it keeps, a letter from the person
- * who makes it, ways to support it, and
- * a Supporter's trail colour.
+ * who makes it, and ways to support it. A Supporter's plan is under Your data, and their
+ * trail colour is chosen on Journey, where it's drawn.
  */
 export default function AboutScreen() {
-  const { supporter } = useSubscription();
-
   return (
     <SettingsPage title='About Tern'>
       <Card>
@@ -34,30 +22,23 @@ export default function AboutScreen() {
         </Text>
         <Text style={s.para}>
           Tern is named for the Arctic tern, the bird with the longest migration
-          on Earth. Each day you show up, your tern flies a little further. Move
-          when you can, log what sustains you, and rest when you need to.
+          on Earth. Each day you show up, yours flies a little further.
         </Text>
       </Card>
 
       <GroupLabel>What Tern promises</GroupLabel>
       <Card>
         <Text style={s.line}>
-          • Rewards are for what you do and the goals you set, never for a
-          number on the scale or staying under a calorie count.
+          • Rewarded for what you do, never for the scale or a calorie count.
+        </Text>
+        <Text style={s.line}>• Rest days count as showing up.</Text>
+        <Text style={s.line}>
+          • Hide the numbers, or turn weight, streaks and goals off, free.
         </Text>
         <Text style={s.line}>
-          • Rest days count as showing up. Take as few or as many as you need.
+          • No ads, no account needed, your data never sold.
         </Text>
-        <Text style={s.line}>
-          • Hide the numbers, and turn weight, streaks and goals on or off.
-          Those safeguards are always free.
-        </Text>
-        <Text style={s.line}>
-          • No ads, no account needed, and your data is yours: never sold.
-        </Text>
-        <Text style={s.line}>
-          • Tern is a tracking tool, not medical advice.
-        </Text>
+        <Text style={s.line}>• A tracking tool, not medical advice.</Text>
       </Card>
 
       <GroupLabel>A letter from Aiden</GroupLabel>
@@ -77,22 +58,6 @@ export default function AboutScreen() {
         <TipJar />
       </Card>
       <SupporterRow />
-
-      {supporter ? (
-        <>
-          <GroupLabel>Your tern’s trail</GroupLabel>
-          <Group>
-            {TrailColors.ALL.map((trail) => (
-              <TrailChoice key={trail} trail={trail} />
-            ))}
-          </Group>
-          <FootNote>
-            A thank-you for supporting Tern: the line your tern has flown on
-            Journey. It goes back to Arctic if Supporter ends, and your colour
-            comes back if you support again.
-          </FootNote>
-        </>
-      ) : null}
     </SettingsPage>
   );
 }

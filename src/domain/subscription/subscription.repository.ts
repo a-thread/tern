@@ -70,14 +70,23 @@ const SIGNED_IN_PLUS: SubscriptionStatus = {
 /**
  * In memory: used without RevenueCat keys and in tests. Buying works and costs nothing.
  * With `accountsHavePlus`, any signed-in account counts as having Plus, so developing
- * against Supabase without RevenueCat doesn't treat every account as lapsed.
+ * against Supabase without RevenueCat doesn't treat every account as lapsed; with
+ * `accountsAreSupporters` too, as Supporter. A plan bought here is kept through signing
+ * in until the app restarts.
  */
 export function createMemorySubscriptionRepository(
   initial: SubscriptionStatus = NO_SUBSCRIPTION,
   plans: PlanOption[] = SAMPLE_PLANS,
-  { accountsHavePlus = false }: { accountsHavePlus?: boolean } = {},
+  {
+    accountsHavePlus = false,
+    accountsAreSupporters = false,
+  }: { accountsHavePlus?: boolean; accountsAreSupporters?: boolean } = {},
 ): SubscriptionRepository {
   let current = initial;
+  const accountPlus: SubscriptionStatus = {
+    ...SIGNED_IN_PLUS,
+    supporter: accountsAreSupporters,
+  };
   return {
     status: async () => current,
     plans: async () => [...plans],
@@ -94,7 +103,8 @@ export function createMemorySubscriptionRepository(
     },
     restore: async () => current,
     identify: async (userId) =>
-      userId && accountsHavePlus ? SIGNED_IN_PLUS : current,
+      // What was bought this session wins over the stand-in, so a Supporter purchase stays.
+      userId && accountsHavePlus && !current.active ? accountPlus : current,
     onChange: () => () => {},
     tips: async () => [...SAMPLE_TIPS],
     tip: async (id) => {

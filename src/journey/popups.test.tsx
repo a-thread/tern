@@ -5,7 +5,17 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import { createMemoryBackend } from '../BackendContext';
 import { ToastProvider } from '@shared/state/ToastContext';
-import { SettingsProvider } from '../domain/settings/SettingsContext';
+import {
+  SettingsProvider,
+  useSettings,
+} from '../domain/settings/SettingsContext';
+import { TrailColor } from '../domain/settings/models/trailColor';
+import {
+  NO_SUBSCRIPTION,
+  type SubscriptionStatus,
+} from '../domain/subscription/models/subscription';
+import { createMemorySubscriptionRepository } from '../domain/subscription/subscription.repository';
+import { SubscriptionProvider } from '../domain/subscription/SubscriptionContext';
 import { WaypointsProvider } from '../domain/waypoints/WaypointsContext';
 import WaypointsScreen from './waypoints/WaypointsScreen';
 import MilestoneScreen from './milestone/MilestoneScreen';
@@ -38,20 +48,42 @@ const metrics = {
   insets: { top: 0, left: 0, right: 0, bottom: 0 },
 };
 
-function open(screen: React.ReactElement) {
+let trail: TrailColor | undefined;
+function TrailProbe() {
+  trail = useSettings().settings.trailColor;
+  return null;
+}
+
+function open(
+  screen: React.ReactElement,
+  status: SubscriptionStatus = NO_SUBSCRIPTION,
+) {
   const backend = createMemoryBackend();
   return render(
     <SafeAreaProvider initialMetrics={metrics}>
       <ToastProvider>
-        <SettingsProvider repo={backend.settings}>
-          <WaypointsProvider repo={backend.waypoints}>
-            {screen}
-          </WaypointsProvider>
-        </SettingsProvider>
+        <SubscriptionProvider
+          repo={createMemorySubscriptionRepository(status)}
+          userId={null}
+        >
+          <SettingsProvider repo={backend.settings}>
+            <WaypointsProvider repo={backend.waypoints}>
+              {screen}
+              <TrailProbe />
+            </WaypointsProvider>
+          </SettingsProvider>
+        </SubscriptionProvider>
       </ToastProvider>
     </SafeAreaProvider>,
   );
 }
+
+const SUPPORTER: SubscriptionStatus = {
+  active: true,
+  renews: true,
+  expiresAt: '2027-11-01T12:00:00.000Z',
+  supporter: true,
+};
 
 // Only route.params is read; the screens navigate through useNavigation.
 const screenProps = (params: object) =>
@@ -143,5 +175,21 @@ describe('route info card', () => {
       ui.getByLabelText(/^Alerstam et al\. 2019, Ecology and Evolution: /),
     ).toBeTruthy();
     openURL.mockRestore();
+  });
+
+  it('lets a Supporter choose the colour of their trail', async () => {
+    const ui = open(<RouteInfoScreen />, SUPPORTER);
+    fireEvent.press(await ui.findByLabelText('Twilight trail'));
+    await waitFor(() => expect(trail).toBe(TrailColor.Twilight));
+    expect(
+      ui.getByLabelText('Twilight trail').props.accessibilityState,
+    ).toMatchObject({ checked: true });
+  });
+
+  it('offers no trail colour to anyone else', async () => {
+    const ui = open(<RouteInfoScreen />, { ...SUPPORTER, supporter: false });
+    expect(await ui.findByText("A real tern's route")).toBeTruthy();
+    expect(ui.queryByText('Your trail')).toBeNull();
+    expect(ui.queryByLabelText('Twilight trail')).toBeNull();
   });
 });

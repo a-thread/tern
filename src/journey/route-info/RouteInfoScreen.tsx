@@ -8,12 +8,14 @@ import {
   MigrationPhase,
   MigrationRoute,
 } from '../../domain/waypoints/models/migrationRoute';
+import { TrailPicker } from './components/TrailPicker/TrailPicker';
 
 const km = (n: number) => `${n.toLocaleString()} km`;
 
 /**
  * Where the route on Journey comes from, from the info button by "Stops": the tracking
- * studies it follows, how far each part of the trip is, and how far a waypoint goes.
+ * studies it follows, how far each part of the trip is, and how far a waypoint goes. A
+ * Supporter also chooses the trail's colour here.
  */
 export default function RouteInfoScreen() {
   const toast = useToast();
@@ -30,6 +32,8 @@ export default function RouteInfoScreen() {
     <PopupCard colors={gradients.journey} journeyLink={false}>
       <Text style={popup.title}>A real tern's route</Text>
       <Text style={popup.label}>{`${STOPS.length} stops · ${km(total)}`}</Text>
+
+      <TrailPicker />
 
       <View style={popup.section}>
         <Text style={popup.sectionTitle}>Where it comes from</Text>

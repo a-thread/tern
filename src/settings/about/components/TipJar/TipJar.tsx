@@ -17,7 +17,10 @@ export function TipJar() {
   const { tips, tip } = useSubscription();
   const toast = useToast();
   const [busy, setBusy] = useState<string | null>(null);
-  const [thanks, setThanks] = useState<string | null>(null);
+  // `n` counts tips, so a second one replays the thank-you's entrance even with the same words.
+  const [thanks, setThanks] = useState<{ text: string; n: number } | null>(
+    null,
+  );
   if (!tips.length) return null;
 
   const leave = async (id: string, fish: string) => {
@@ -26,7 +29,7 @@ export function TipJar() {
     try {
       const text = tipThanks(await tip(id), fish);
       if (text) {
-        setThanks(text);
+        setThanks((was) => ({ text, n: (was?.n ?? 0) + 1 }));
         AccessibilityInfo.announceForAccessibility(text);
       }
     } catch (e) {
@@ -55,7 +58,7 @@ export function TipJar() {
           );
         })}
       </View>
-      {thanks ? <TipThanks text={thanks} /> : null}
+      {thanks ? <TipThanks key={thanks.n} text={thanks.text} /> : null}
     </>
   );
 }

@@ -69,6 +69,26 @@ describe('plusSummary', () => {
     });
   });
 
+  it('tells a Supporter where to choose their trail colour, and nobody else', () => {
+    const supporter = plusSummary({
+      ...base,
+      status: {
+        active: true,
+        renews: true,
+        expiresAt: NOV_21,
+        supporter: true,
+      },
+    });
+    expect(supporter.footnote).toMatch(
+      /^Thank you for supporting Tern\. Choose your trail colour on Journey, from the info button by Stops\. Change plan/,
+    );
+    const plain = plusSummary({
+      ...base,
+      status: { active: true, renews: true, expiresAt: NOV_21 },
+    });
+    expect(plain.footnote).not.toMatch(/trail/);
+  });
+
   it('says when a cancelled subscription ends', () => {
     expect(
       plusSummary({
