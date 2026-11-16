@@ -16,6 +16,7 @@ import {
 } from '@shared/components/ui';
 import { useRootNavigation } from '../navigation/useAppNavigation';
 import { JourneyMap } from './components/JourneyMap/JourneyMap';
+import { TrailLink } from './components/TrailLink/TrailLink';
 import { useJourneyTips } from './hooks/useJourneyTips';
 import { useLightStatusBar } from './hooks/useLightStatusBar';
 import { TipOverlay } from '@shared/components/TipOverlay/TipOverlay';
@@ -143,6 +144,7 @@ export default function JourneyScreen() {
             {`waypoints · earned on ${days} ${days === 1 ? 'day' : 'days'}`}
           </Text>
         </Pressable>
+        <TrailLink />
       </LinearGradient>
 
       <View style={s.listArea}>

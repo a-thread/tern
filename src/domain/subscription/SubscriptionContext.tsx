@@ -1,4 +1,10 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 
 import { createRequiredContext } from '@shared/state/createRequiredContext';
 import { useLoader } from '@shared/hooks/useLoader';
@@ -9,11 +15,13 @@ import {
   sortPlans,
   sortTips,
   type SubscriptionStatus,
+  Tier,
   type TipOption,
+  type TipResult,
 } from './models/subscription';
 
 type SubscriptionContextValue = {
-  /** False until the status and plans have loaded once. */
+  /** False until the status and plans have loaded once. The tip jar loads apart and never holds this up. */
   ready: boolean;
   /** Tern Plus is on, so an account can be made and synced. */
   active: boolean;
@@ -36,8 +44,8 @@ type SubscriptionContextValue = {
   restore: () => Promise<boolean>;
   /** The tip jar's amounts, smallest first; empty when the store has none. */
   tips: TipOption[];
-  /** Leaves a tip. True once paid; false if the person backed out. Throws if the store failed. */
-  tip: (id: string) => Promise<boolean>;
+  /** Leaves a tip: paid, backed out of, or waiting on the payment. Throws if the store failed. */
+  tip: (id: string) => Promise<TipResult>;
 };
 
 const [SubscriptionContext, useSubscription] =
@@ -48,7 +56,11 @@ const [SubscriptionContext, useSubscription] =
 export { useSubscription };
 
 /** Plus granted by the server rather than bought: a manual grant, for testers and grandfathered accounts. */
-const GRANTED: SubscriptionStatus = { active: true, renews: false, expiresAt: null };
+const GRANTED: SubscriptionStatus = {
+  active: true,
+  renews: false,
+  expiresAt: null,
+};
 
 /**
  * Tern Plus. App-wide, above the sign-in screens, since buying comes before making an
@@ -105,21 +117,30 @@ export function SubscriptionProvider({
         console.warn('Could not load Tern Plus plans', e);
         return [];
       });
-      const jar = await repo.tips().catch((e) => {
-        // No tip jar is just no tip jar.
-        console.warn('Could not load the tip jar', e);
-        return [];
-      });
-      return { identified, offered, jar, userId, byGrant };
+      return { identified, offered, userId, byGrant };
     }, [repo, userId, serverGrant]),
-    ({ identified, offered, jar, userId: forUser, byGrant }) => {
+    ({ identified, offered, userId: forUser, byGrant }) => {
       granted.current = byGrant;
       setStatus(identified ?? NO_SUBSCRIPTION);
       setChecked({ for: forUser, known: identified !== null });
       setPlans(sortPlans(offered));
-      setTips(sortTips(jar));
     },
     'Could not load Tern Plus',
+  );
+
+  // Its own load, so a slow tip jar never holds up whether Plus is on.
+  useLoader(
+    useCallback(
+      () =>
+        repo.tips().catch((e) => {
+          // No tip jar is just no tip jar.
+          console.warn('Could not load the tip jar', e);
+          return [];
+        }),
+      [repo],
+    ),
+    (jar) => setTips(sortTips(jar)),
+    'Could not load the tip jar',
   );
 
   useEffect(
@@ -134,12 +155,20 @@ export function SubscriptionProvider({
 
   const purchase = useCallback(
     async (id: string) => {
-      const next = await repo.purchase(id);
+      let next = await repo.purchase(id);
       if (!next) return false;
+      const bought = plans.find((p) => p.id === id);
+      if (next.active && !next.supporter && bought?.tier === Tier.Supporter) {
+        // The store can lag a moment behind a new Supporter purchase: ask once more.
+        next = await repo.status().catch((e) => {
+          console.warn('Could not re-read Tern Plus after buying', e);
+          return next as SubscriptionStatus;
+        });
+      }
       setStatus(next);
       return next.active;
     },
-    [repo],
+    [repo, plans],
   );
 
   const restore = useCallback(async () => {

@@ -38,7 +38,10 @@ describe('plusSummary', () => {
 
   it('says when a subscription renews, where to cancel, and that nothing is lost', () => {
     expect(
-      plusSummary({ ...base, status: { active: true, renews: true, expiresAt: NOV_21 } }),
+      plusSummary({
+        ...base,
+        status: { active: true, renews: true, expiresAt: NOV_21 },
+      }),
     ).toEqual({
       title: 'Synced to your account',
       summary: 'Tern Plus · renews Nov 21',
@@ -53,7 +56,12 @@ describe('plusSummary', () => {
     expect(
       plusSummary({
         ...base,
-        status: { active: true, renews: true, expiresAt: NOV_21, supporter: true },
+        status: {
+          active: true,
+          renews: true,
+          expiresAt: NOV_21,
+          supporter: true,
+        },
       }),
     ).toMatchObject({
       summary: 'Tern Plus Supporter · renews Nov 21',
@@ -61,9 +69,32 @@ describe('plusSummary', () => {
     });
   });
 
+  it('tells a Supporter where to choose their trail color, and nobody else', () => {
+    const supporter = plusSummary({
+      ...base,
+      status: {
+        active: true,
+        renews: true,
+        expiresAt: NOV_21,
+        supporter: true,
+      },
+    });
+    expect(supporter.footnote).toMatch(
+      /^Thank you for supporting Tern\. Choose your trail color on Journey, under the map. Change plan/,
+    );
+    const plain = plusSummary({
+      ...base,
+      status: { active: true, renews: true, expiresAt: NOV_21 },
+    });
+    expect(plain.footnote).not.toMatch(/trail/);
+  });
+
   it('says when a cancelled subscription ends', () => {
     expect(
-      plusSummary({ ...base, status: { active: true, renews: false, expiresAt: NOV_21 } }),
+      plusSummary({
+        ...base,
+        status: { active: true, renews: false, expiresAt: NOV_21 },
+      }),
     ).toMatchObject({
       summary: "Tern Plus until Nov 21 · won't renew",
       action: PlusAction.Manage,
@@ -72,7 +103,10 @@ describe('plusSummary', () => {
 
   it('says Plus granted by hand is included, with nothing to manage', () => {
     expect(
-      plusSummary({ ...base, status: { active: true, renews: false, expiresAt: null } }),
+      plusSummary({
+        ...base,
+        status: { active: true, renews: false, expiresAt: null },
+      }),
     ).toEqual({
       title: 'Synced to your account',
       summary: 'Tern Plus · included with your account',

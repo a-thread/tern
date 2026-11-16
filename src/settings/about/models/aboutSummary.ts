@@ -1,6 +1,7 @@
-/** The About Tern row on the Settings index. */
-export function aboutSummary(supporter: boolean): string {
-  return supporter
-    ? 'What Tern is for · thank you for supporting it'
-    : 'What Tern is for, and supporting it';
+/**
+ * The About Tern row on the Settings index. It mentions the tip jar only when the store offers
+ * tips, since the jar is hidden otherwise (a build without a store, or a store with no tips).
+ */
+export function aboutSummary(hasTips: boolean): string {
+  return hasTips ? 'Why Tern exists, and a tip jar' : 'Why Tern exists';
 }

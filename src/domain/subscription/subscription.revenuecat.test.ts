@@ -1,4 +1,9 @@
-import { Plan, SubscriptionConfig, Tier } from './models/subscription';
+import {
+  Plan,
+  SubscriptionConfig,
+  Tier,
+  TipResult,
+} from './models/subscription';
 import {
   createRevenueCatSubscriptionRepository,
   type PurchasesApi,
@@ -25,7 +30,11 @@ const info = (active: boolean, willRenew = true) => {
 const pkg = (identifier: string, packageType: string, priceString: string) => ({
   identifier,
   packageType,
-  product: { priceString, price: Number(priceString.slice(1)), currencyCode: 'USD' },
+  product: {
+    priceString,
+    price: Number(priceString.slice(1)),
+    currencyCode: 'USD',
+  },
 });
 
 function fakeApi(overrides: Partial<PurchasesApi> = {}) {
@@ -65,7 +74,9 @@ describe('RevenueCat subscription repository', () => {
     const api = fakeApi({
       getCustomerInfo: jest.fn().mockResolvedValue(info(true, false)),
     });
-    expect(await createRevenueCatSubscriptionRepository(api, 'k').status()).toEqual({
+    expect(
+      await createRevenueCatSubscriptionRepository(api, 'k').status(),
+    ).toEqual({
       active: true,
       renews: false,
       expiresAt: '2027-10-20T00:00:00Z',
@@ -75,19 +86,27 @@ describe('RevenueCat subscription repository', () => {
 
   it('reads Supporter from its own entitlement, beside Plus', async () => {
     const supporterInfo = info(true);
-    supporterInfo.entitlements.active[SubscriptionConfig.SUPPORTER_ENTITLEMENT] = {
+    supporterInfo.entitlements.active[
+      SubscriptionConfig.SUPPORTER_ENTITLEMENT
+    ] = {
       isActive: true,
       willRenew: true,
       expirationDate: '2027-10-20T00:00:00Z',
     };
-    const api = fakeApi({ getCustomerInfo: jest.fn().mockResolvedValue(supporterInfo) });
+    const api = fakeApi({
+      getCustomerInfo: jest.fn().mockResolvedValue(supporterInfo),
+    });
     expect(
-      (await createRevenueCatSubscriptionRepository(api, 'k').status()).supporter,
+      (await createRevenueCatSubscriptionRepository(api, 'k').status())
+        .supporter,
     ).toBe(true);
   });
 
   it("offers the current offering's subscriptions as plans, never a lifetime one", async () => {
-    const plans = await createRevenueCatSubscriptionRepository(fakeApi(), 'k').plans();
+    const plans = await createRevenueCatSubscriptionRepository(
+      fakeApi(),
+      'k',
+    ).plans();
     const option = (id: string, plan: Plan, price: string, amount: number) => ({
       id,
       plan,
@@ -114,8 +133,14 @@ describe('RevenueCat subscription repository', () => {
         },
       }),
     });
-    const [supporter] = await createRevenueCatSubscriptionRepository(api, 'k').plans();
-    expect(supporter).toMatchObject({ plan: Plan.Annual, tier: Tier.Supporter });
+    const [supporter] = await createRevenueCatSubscriptionRepository(
+      api,
+      'k',
+    ).plans();
+    expect(supporter).toMatchObject({
+      plan: Plan.Annual,
+      tier: Tier.Supporter,
+    });
   });
 
   it('marks only Plus yearly as founding, and only while the offering says so', async () => {
@@ -126,16 +151,19 @@ describe('RevenueCat subscription repository', () => {
     ];
     const withMetadata = (metadata?: Record<string, unknown>) =>
       fakeApi({
-        getOfferings: jest
-          .fn()
-          .mockResolvedValue({ current: { availablePackages: packages, metadata } }),
+        getOfferings: jest.fn().mockResolvedValue({
+          current: { availablePackages: packages, metadata },
+        }),
       });
     const founding = await createRevenueCatSubscriptionRepository(
       withMetadata({ [SubscriptionConfig.FOUNDING_METADATA]: true }),
       'k',
     ).plans();
     expect(founding.map((p) => p.founding)).toEqual([false, true, false]);
-    const after = await createRevenueCatSubscriptionRepository(withMetadata(), 'k').plans();
+    const after = await createRevenueCatSubscriptionRepository(
+      withMetadata(),
+      'k',
+    ).plans();
     expect(after.some((p) => p.founding)).toBe(false);
   });
 
@@ -143,7 +171,9 @@ describe('RevenueCat subscription repository', () => {
     const withTips = (overrides: Partial<PurchasesApi> = {}) =>
       fakeApi({
         getOfferings: jest.fn().mockResolvedValue({
-          current: { availablePackages: [pkg('$rc_annual', 'ANNUAL', '$39.99')] },
+          current: {
+            availablePackages: [pkg('$rc_annual', 'ANNUAL', '$39.99')],
+          },
           all: {
             [SubscriptionConfig.TIPS_OFFERING]: {
               availablePackages: [
@@ -158,47 +188,77 @@ describe('RevenueCat subscription repository', () => {
 
     it('reads the tips offering, smallest first, apart from the plans', async () => {
       const repo = createRevenueCatSubscriptionRepository(withTips(), 'k');
-      expect((await repo.tips()).map((t) => t.id)).toEqual(['tip_small', 'tip_large']);
+      expect((await repo.tips()).map((t) => t.id)).toEqual([
+        'tip_small',
+        'tip_large',
+      ]);
       expect((await repo.plans()).map((p) => p.id)).toEqual(['$rc_annual']);
     });
 
     it('has no tips when there is no tips offering', async () => {
-      expect(await createRevenueCatSubscriptionRepository(fakeApi(), 'k').tips()).toEqual([]);
+      expect(
+        await createRevenueCatSubscriptionRepository(fakeApi(), 'k').tips(),
+      ).toEqual([]);
     });
 
     it('buys a tip, and treats backing out as a choice', async () => {
       const api = withTips();
       const repo = createRevenueCatSubscriptionRepository(api, 'k');
-      expect(await repo.tip('tip_small')).toBe(true);
-      expect(api.purchasePackage).toHaveBeenCalledWith(pkg('tip_small', 'CUSTOM', '$2.99'));
+      expect(await repo.tip('tip_small')).toBe(TipResult.Paid);
+      expect(api.purchasePackage).toHaveBeenCalledWith(
+        pkg('tip_small', 'CUSTOM', '$2.99'),
+      );
       api.purchasePackage.mockRejectedValueOnce({ userCancelled: true });
-      expect(await repo.tip('tip_small')).toBe(false);
+      expect(await repo.tip('tip_small')).toBe(TipResult.Cancelled);
+    });
+
+    it('treats a payment the store is holding as pending, not a failure', async () => {
+      const api = withTips();
+      const repo = createRevenueCatSubscriptionRepository(api, 'k');
+      api.purchasePackage.mockRejectedValueOnce({
+        code: '20',
+        userCancelled: false,
+      });
+      expect(await repo.tip('tip_small')).toBe(TipResult.Pending);
+      api.purchasePackage.mockRejectedValueOnce({ code: '2' });
+      await expect(repo.tip('tip_small')).rejects.toEqual({ code: '2' });
     });
 
     it('will not sell a plan as a tip', async () => {
       await expect(
-        createRevenueCatSubscriptionRepository(withTips(), 'k').tip('$rc_annual'),
+        createRevenueCatSubscriptionRepository(withTips(), 'k').tip(
+          '$rc_annual',
+        ),
       ).rejects.toThrow('No tip $rc_annual');
     });
   });
 
   it('will not buy a lifetime package, even by id', async () => {
     await expect(
-      createRevenueCatSubscriptionRepository(fakeApi(), 'k').purchase('$rc_lifetime'),
+      createRevenueCatSubscriptionRepository(fakeApi(), 'k').purchase(
+        '$rc_lifetime',
+      ),
     ).rejects.toThrow('No plan $rc_lifetime');
   });
 
   it('offers nothing when there is no current offering', async () => {
-    const api = fakeApi({ getOfferings: jest.fn().mockResolvedValue({ current: null }) });
-    expect(await createRevenueCatSubscriptionRepository(api, 'k').plans()).toEqual([]);
+    const api = fakeApi({
+      getOfferings: jest.fn().mockResolvedValue({ current: null }),
+    });
+    expect(
+      await createRevenueCatSubscriptionRepository(api, 'k').plans(),
+    ).toEqual([]);
   });
 
   it('buys the chosen package and returns the new status', async () => {
     const api = fakeApi();
-    const status = await createRevenueCatSubscriptionRepository(api, 'k').purchase(
-      '$rc_annual',
+    const status = await createRevenueCatSubscriptionRepository(
+      api,
+      'k',
+    ).purchase('$rc_annual');
+    expect(api.purchasePackage).toHaveBeenCalledWith(
+      pkg('$rc_annual', 'ANNUAL', '$29.99'),
     );
-    expect(api.purchasePackage).toHaveBeenCalledWith(pkg('$rc_annual', 'ANNUAL', '$29.99'));
     expect(status?.active).toBe(true);
   });
 
@@ -207,13 +267,17 @@ describe('RevenueCat subscription repository', () => {
       purchasePackage: jest.fn().mockRejectedValue({ userCancelled: true }),
     });
     expect(
-      await createRevenueCatSubscriptionRepository(api, 'k').purchase('$rc_annual'),
+      await createRevenueCatSubscriptionRepository(api, 'k').purchase(
+        '$rc_annual',
+      ),
     ).toBeNull();
   });
 
   it('passes a real store failure on', async () => {
     const api = fakeApi({
-      purchasePackage: jest.fn().mockRejectedValue(new Error('Billing unavailable')),
+      purchasePackage: jest
+        .fn()
+        .mockRejectedValue(new Error('Billing unavailable')),
     });
     await expect(
       createRevenueCatSubscriptionRepository(api, 'k').purchase('$rc_annual'),
@@ -239,10 +303,14 @@ describe('RevenueCat subscription repository', () => {
   it('reports status changes and stops when unsubscribed', () => {
     const api = fakeApi();
     const listener = jest.fn();
-    const stop = createRevenueCatSubscriptionRepository(api, 'k').onChange(listener);
+    const stop = createRevenueCatSubscriptionRepository(api, 'k').onChange(
+      listener,
+    );
     const handle = api.addCustomerInfoUpdateListener.mock.calls[0][0];
     handle(info(true));
-    expect(listener).toHaveBeenCalledWith(expect.objectContaining({ active: true }));
+    expect(listener).toHaveBeenCalledWith(
+      expect.objectContaining({ active: true }),
+    );
     stop();
     expect(api.removeCustomerInfoUpdateListener).toHaveBeenCalledWith(handle);
   });

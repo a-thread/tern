@@ -8,7 +8,6 @@ import {
   Plan,
   type PlanOption,
   savingsLabel,
-  SUPPORTER_THANKS,
   Tier,
   yearlySavings,
 } from '@/domain/subscription/models/subscription';
@@ -22,6 +21,9 @@ import { LegalLinks } from './components/LegalLinks/LegalLinks';
 import { PlanChoice } from './components/PlanChoice/PlanChoice';
 
 const STORE = storeName();
+/** What Supporter adds, said plainly under its name. */
+const SUPPORTER_THANKS =
+  "Everything in Plus, with a thank-you: a color of your choosing for your tern's trail on Journey.";
 
 // Honest about what's free: the phone's own backup and export already keep a log safe, so
 // Plus is the log on every phone, and keeping Tern going.
@@ -76,7 +78,8 @@ export default function PaywallScreen({ onBack }: { onBack: () => void }) {
   // Plus yearly carries the founding price while it's on sale, else what it saves.
   // Supporter gets no badge: nothing on the paywall leans towards it.
   const noteFor = (option: PlanOption) => {
-    if (option.tier !== Tier.Plus || option.plan !== Plan.Annual) return undefined;
+    if (option.tier !== Tier.Plus || option.plan !== Plan.Annual)
+      return undefined;
     return option.founding ? FOUNDING_NOTE : yearlyNote;
   };
 

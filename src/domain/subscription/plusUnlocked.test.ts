@@ -1,6 +1,7 @@
 import eas from '../../../eas.json';
 import { createSubscriptionRepository } from '../../BackendContext';
 import { plusUnlocked } from './plusUnlocked';
+import { devSupporter } from './devSupporter';
 
 type Profile = { extends?: string; env?: Record<string, string> };
 const profiles = eas.build as Record<string, Profile>;
@@ -52,7 +53,8 @@ describe('Tern Plus without a store key', () => {
     delete process.env.EXPO_PUBLIC_REVENUECAT_ANDROID_KEY;
   });
   afterEach(() => {
-    if (before !== undefined) process.env.EXPO_PUBLIC_REVENUECAT_IOS_KEY = before;
+    if (before !== undefined)
+      process.env.EXPO_PUBLIC_REVENUECAT_IOS_KEY = before;
     if (beforeAndroid !== undefined)
       process.env.EXPO_PUBLIC_REVENUECAT_ANDROID_KEY = beforeAndroid;
   });
@@ -65,7 +67,47 @@ describe('Tern Plus without a store key', () => {
   });
 
   it('lets development against Supabase treat accounts as having Plus', async () => {
+    delete process.env.EXPO_PUBLIC_DEV_SUPPORTER;
     const repo = createSubscriptionRepository(true);
-    expect((await repo.identify('user-1')).active).toBe(true);
+    const status = await repo.identify('user-1');
+    expect(status.active).toBe(true);
+    expect(status.supporter).toBe(false);
+  });
+
+  describe('with EXPO_PUBLIC_DEV_SUPPORTER', () => {
+    const beforeSupporter = process.env.EXPO_PUBLIC_DEV_SUPPORTER;
+    afterEach(() => {
+      if (beforeSupporter === undefined)
+        delete process.env.EXPO_PUBLIC_DEV_SUPPORTER;
+      else process.env.EXPO_PUBLIC_DEV_SUPPORTER = beforeSupporter;
+    });
+
+    it('treats accounts as Supporters in development', async () => {
+      process.env.EXPO_PUBLIC_DEV_SUPPORTER = '1';
+      expect(devSupporter()).toBe(true);
+      const status =
+        await createSubscriptionRepository(true).identify('user-1');
+      expect(status.supporter).toBe(true);
+    });
+
+    it('never makes anyone a Supporter in a release build', async () => {
+      process.env.EXPO_PUBLIC_DEV_SUPPORTER = '1';
+      const status =
+        await createSubscriptionRepository(false).identify('user-1');
+      expect(status.active).toBe(false);
+    });
+
+    it('is never set in an EAS build', () => {
+      for (const name of Object.keys(profiles)) {
+        expect(envOf(name).EXPO_PUBLIC_DEV_SUPPORTER).toBeUndefined();
+      }
+    });
+  });
+
+  it('keeps a Supporter plan bought in development through signing in', async () => {
+    delete process.env.EXPO_PUBLIC_DEV_SUPPORTER;
+    const repo = createSubscriptionRepository(true);
+    await repo.purchase('sample_supporter');
+    expect((await repo.identify('user-1')).supporter).toBe(true);
   });
 });

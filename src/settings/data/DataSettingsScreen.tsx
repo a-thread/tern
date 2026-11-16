@@ -6,8 +6,8 @@ import { useAuth } from '@/domain/auth/AuthContext';
 import { SettingsPage } from '../components/SettingsPage';
 import { DataSection } from './components/DataSection';
 import { PlusSection } from './components/PlusSection/PlusSection';
-import { AppointmentSummary } from './components/AppointmentSummary/AppointmentSummary';
 import { LogOutSection } from './components/LogOutSection/LogOutSection';
+import { AppointmentSummary } from './components/AppointmentSummary/AppointmentSummary';
 
 /**
  * Settings › Your data: where it is (Tern Plus, synced or on this phone) at the top, then
@@ -28,9 +28,7 @@ export default function DataSettingsScreen() {
           <DataSection />
         </>
       ) : (
-        <FootNote>
-          Sample data isn't stored, so there's nothing to export.
-        </FootNote>
+        <FootNote>Sample data isn't stored, so there's nothing to export.</FootNote>
       )}
       <LogOutSection />
     </SettingsPage>

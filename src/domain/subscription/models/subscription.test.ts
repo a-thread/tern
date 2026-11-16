@@ -49,7 +49,9 @@ describe('Tern Plus plans', () => {
   });
 
   it('names Supporter by its tier, and Plus by how it is billed', () => {
-    expect(planName({ plan: Plan.Annual, tier: Tier.Supporter })).toBe('Supporter');
+    expect(planName({ plan: Plan.Annual, tier: Tier.Supporter })).toBe(
+      'Supporter',
+    );
     expect(planName({ plan: Plan.Annual, tier: Tier.Plus })).toBe('Yearly');
     expect(planName({ plan: Plan.Monthly, tier: Tier.Plus })).toBe('Monthly');
   });
@@ -81,7 +83,10 @@ describe('yearlySavings', () => {
   it('is nothing without both plans, across currencies, or when yearly costs more', () => {
     expect(yearlySavings([plan(Plan.Annual, 29.99)])).toBeNull();
     expect(
-      yearlySavings([plan(Plan.Annual, 29.99, 'EUR'), plan(Plan.Monthly, 3.99)]),
+      yearlySavings([
+        plan(Plan.Annual, 29.99, 'EUR'),
+        plan(Plan.Monthly, 3.99),
+      ]),
     ).toBeNull();
     expect(
       yearlySavings([plan(Plan.Annual, 60), plan(Plan.Monthly, 3.99)]),
@@ -91,14 +96,14 @@ describe('yearlySavings', () => {
 
 describe('savingsLabel', () => {
   it('names the amount in the currency', () => {
-    expect(savingsLabel({ amount: 17.89, percent: 37, currency: 'USD' })).toMatch(
-      /^Save .*17\.89.* a year$/,
-    );
+    expect(
+      savingsLabel({ amount: 17.89, percent: 37, currency: 'USD' }),
+    ).toMatch(/^Save .*17\.89.* a year$/);
   });
 
   it('falls back to the percentage for a currency it cannot format', () => {
-    expect(savingsLabel({ amount: 17.89, percent: 37, currency: 'not a code' })).toBe(
-      'Save 37%',
-    );
+    expect(
+      savingsLabel({ amount: 17.89, percent: 37, currency: 'not a code' }),
+    ).toBe('Save 37%');
   });
 });

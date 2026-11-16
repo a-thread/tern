@@ -88,9 +88,15 @@ export class SubscriptionConfig {
  */
 export function isPlusLapsed(
   userId: string | null | undefined,
-  plus: { checkedFor: string | null | undefined; known: boolean; active: boolean },
+  plus: {
+    checkedFor: string | null | undefined;
+    known: boolean;
+    active: boolean;
+  },
 ): boolean {
-  return Boolean(userId) && plus.checkedFor === userId && plus.known && !plus.active;
+  return (
+    Boolean(userId) && plus.checkedFor === userId && plus.known && !plus.active
+  );
 }
 
 const ORDER = [Plan.Annual, Plan.Monthly, Plan.Other];
@@ -170,6 +176,11 @@ export function planName(option: Pick<PlanOption, 'plan' | 'tier'>): string {
   }
 }
 
-/** What Supporter adds, said plainly under its name on the paywall. */
-export const SUPPORTER_THANKS =
-  "Everything in Plus, with a thank-you: a colour of your choosing for your tern's trail on Journey.";
+/** How leaving a tip ended. */
+export enum TipResult {
+  Paid = 'paid',
+  /** The person backed out of the store's sheet. */
+  Cancelled = 'cancelled',
+  /** The store took it, but the payment hasn't gone through yet (a slow card, cash at a shop). */
+  Pending = 'pending',
+}

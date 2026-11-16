@@ -48,7 +48,7 @@ export default function SettingsScreen({ navigation }: Props) {
   const { settings } = useSettings();
   const auth = useAuth();
   const lapsed = usePlusLapsed();
-  const { supporter } = useSubscription();
+  const hasTips = useSubscription().tips.length > 0;
   const home = auth
     ? logHome({ signedIn: Boolean(auth.session), lapsed })
     : null;
@@ -176,7 +176,7 @@ export default function SettingsScreen({ navigation }: Props) {
             color={colors.sunDeep}
             tint={colors.sunTint}
             title='About Tern'
-            summary={aboutSummary(supporter)}
+            summary={aboutSummary(hasTips)}
             onPress={() => navigation.navigate('About')}
           />
         </Group>

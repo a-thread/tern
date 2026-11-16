@@ -50,6 +50,52 @@ describe('SubscriptionContext', () => {
     expect(result.current.active).toBe(false);
   });
 
+  it('reads again when the store is slow to show a Supporter purchase', async () => {
+    const repo = createMemorySubscriptionRepository();
+    const plain = { active: true, renews: true, expiresAt: null };
+    repo.purchase = async () => ({ ...plain, supporter: false });
+    const status = jest
+      .spyOn(repo, 'status')
+      .mockResolvedValue({ ...plain, supporter: true });
+    const { result } = setup(repo);
+    await waitFor(() => expect(result.current.plans.length).toBe(3));
+    await act(async () => {
+      await result.current.purchase('sample_supporter');
+    });
+    expect(status).toHaveBeenCalledTimes(1);
+    expect(result.current.supporter).toBe(true);
+  });
+
+  it('does not read again after buying plain Plus', async () => {
+    const repo = createMemorySubscriptionRepository();
+    const status = jest.spyOn(repo, 'status');
+    const { result } = setup(repo);
+    await waitFor(() => expect(result.current.ready).toBe(true));
+    await act(async () => {
+      await result.current.purchase('sample_annual');
+    });
+    expect(status).not.toHaveBeenCalled();
+  });
+
+  it('settles Plus without waiting on the tip jar', async () => {
+    const repo = createMemorySubscriptionRepository();
+    repo.tips = () => new Promise(() => {});
+    const { result } = setup(repo);
+    await waitFor(() => expect(result.current.ready).toBe(true));
+    expect(result.current.checkedFor).toBeNull();
+    expect(result.current.tips).toEqual([]);
+  });
+
+  it('loads the tip jar smallest first', async () => {
+    const { result } = setup();
+    await waitFor(() => expect(result.current.tips.length).toBe(3));
+    expect(result.current.tips.map((t) => t.price)).toEqual([
+      '$2.99',
+      '$4.99',
+      '$9.99',
+    ]);
+  });
+
   it("reads the signed-in account's status", async () => {
     const repo = createMemorySubscriptionRepository();
     const identify = jest
@@ -62,7 +108,11 @@ describe('SubscriptionContext', () => {
 
   it('counts Plus granted on the server when the store has no purchase', async () => {
     const repo = createMemorySubscriptionRepository();
-    let listener: (s: { active: boolean; renews: boolean; expiresAt: null }) => void = () => {};
+    let listener: (s: {
+      active: boolean;
+      renews: boolean;
+      expiresAt: null;
+    }) => void = () => {};
     repo.onChange = (l) => {
       listener = l;
       return () => {};
@@ -76,7 +126,11 @@ describe('SubscriptionContext', () => {
   });
 
   it('is lapsed only when the store and the server both say no', async () => {
-    const { result } = setup(createMemorySubscriptionRepository(), 'user-1', async () => false);
+    const { result } = setup(
+      createMemorySubscriptionRepository(),
+      'user-1',
+      async () => false,
+    );
     await waitFor(() => expect(result.current.checkedFor).toBe('user-1'));
     expect(result.current.active).toBe(false);
     expect(result.current.known).toBe(true);
@@ -84,9 +138,13 @@ describe('SubscriptionContext', () => {
 
   it("treats a server that can't be reached as unknown, not lapsed", async () => {
     const warn = jest.spyOn(console, 'warn').mockImplementation(() => {});
-    const { result } = setup(createMemorySubscriptionRepository(), 'user-1', async () => {
-      throw new Error('offline');
-    });
+    const { result } = setup(
+      createMemorySubscriptionRepository(),
+      'user-1',
+      async () => {
+        throw new Error('offline');
+      },
+    );
     await waitFor(() => expect(result.current.checkedFor).toBe('user-1'));
     expect(result.current.known).toBe(false);
     warn.mockRestore();
@@ -94,7 +152,11 @@ describe('SubscriptionContext', () => {
 
   it('does not ask the server when the store already has Plus', async () => {
     const serverGrant = jest.fn(async () => false);
-    const repo = createMemorySubscriptionRepository({ active: true, renews: true, expiresAt: null });
+    const repo = createMemorySubscriptionRepository({
+      active: true,
+      renews: true,
+      expiresAt: null,
+    });
     const { result } = setup(repo, 'user-1', serverGrant);
     await waitFor(() => expect(result.current.active).toBe(true));
     expect(serverGrant).not.toHaveBeenCalled();

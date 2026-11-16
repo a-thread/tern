@@ -48,9 +48,7 @@ export function PlanChoice({
             </View>
           ) : null}
         </View>
-        {description ? (
-          <Text style={s.description}>{description}</Text>
-        ) : null}
+        {description ? <Text style={s.description}>{description}</Text> : null}
       </View>
       <Text style={typography.meta}>{price}</Text>
     </Pressable>

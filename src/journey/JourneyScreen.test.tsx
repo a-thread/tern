@@ -16,6 +16,7 @@ import { JourneyView } from '../domain/settings/models/journeyView';
 import { SubscriptionProvider } from '../domain/subscription/SubscriptionContext';
 import { TernaryProvider } from '../domain/ternary/TernaryContext';
 import { createMemorySubscriptionRepository } from '../domain/subscription/subscription.repository';
+import type { SubscriptionStatus } from '../domain/subscription/models/subscription';
 import JourneyScreen from './JourneyScreen';
 
 const mockNavigate = jest.fn();
@@ -40,13 +41,13 @@ const metrics = {
   insets: { top: 0, left: 0, right: 0, bottom: 0 },
 };
 
-function open() {
+function open(status?: SubscriptionStatus) {
   const backend = createMemoryBackend();
   render(
     <SafeAreaProvider initialMetrics={metrics}>
       <ToastProvider>
         <SubscriptionProvider
-          repo={createMemorySubscriptionRepository()}
+          repo={createMemorySubscriptionRepository(status)}
           userId={null}
         >
           <SettingsProvider repo={backend.settings}>
@@ -99,6 +100,26 @@ describe('Journey stops', () => {
     open();
     fireEvent.press(await screen.findByLabelText('Where the route comes from'));
     expect(mockNavigate).toHaveBeenCalledWith('RouteInfo');
+  });
+});
+
+describe('Journey trail color', () => {
+  const plus = {
+    active: true,
+    renews: true,
+    expiresAt: '2027-11-01T12:00:00.000Z',
+  };
+
+  it('offers a Supporter the choice of trail color, under the map', async () => {
+    open({ ...plus, supporter: true });
+    fireEvent.press(await screen.findByLabelText('Choose your trail color'));
+    expect(mockNavigate).toHaveBeenCalledWith('Trail');
+  });
+
+  it('offers it to nobody else', async () => {
+    open({ ...plus, supporter: false });
+    await screen.findByText('Stops');
+    expect(screen.queryByLabelText('Choose your trail color')).toBeNull();
   });
 
   it('opens a passed stop’s card from its row', async () => {

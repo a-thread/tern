@@ -1,8 +1,8 @@
 import { aboutSummary } from './aboutSummary';
 
 describe('aboutSummary', () => {
-  it('thanks a Supporter on the Settings row', () => {
-    expect(aboutSummary(true)).toBe('What Tern is for · thank you for supporting it');
-    expect(aboutSummary(false)).toBe('What Tern is for, and supporting it');
+  it('points to the tip jar only when there is one', () => {
+    expect(aboutSummary(true)).toBe('Why Tern exists, and a tip jar');
+    expect(aboutSummary(false)).toBe('Why Tern exists');
   });
 });

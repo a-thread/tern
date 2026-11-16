@@ -7,8 +7,14 @@ import {
   sortTips,
   type SubscriptionStatus,
   Tier,
+  TipResult,
 } from './models/subscription';
 import type { SubscriptionRepository } from './subscription.repository';
+
+/** What `react-native-purchases` rejects with; `code` is one of its `PURCHASES_ERROR_CODE`s. */
+type PurchasesError = { userCancelled?: boolean; code?: string };
+/** `PURCHASES_ERROR_CODE.PAYMENT_PENDING_ERROR`, written out so the adapter tests without the native module. */
+const PAYMENT_PENDING_ERROR = '20';
 
 type Entitlement = {
   isActive: boolean;
@@ -101,7 +107,8 @@ export function createRevenueCatSubscriptionRepository(
       packages: (current?.availablePackages ?? []).filter(
         (p) => !NOT_OFFERED.has(p.packageType),
       ),
-      founding: current?.metadata?.[SubscriptionConfig.FOUNDING_METADATA] === true,
+      founding:
+        current?.metadata?.[SubscriptionConfig.FOUNDING_METADATA] === true,
     };
   };
   const packages = async () => (await offering()).packages;
@@ -143,16 +150,20 @@ export function createRevenueCatSubscriptionRepository(
       try {
         // A consumable: it can be bought again, and changes no entitlement.
         await api.purchasePackage(pkg);
-        return true;
+        return TipResult.Paid;
       } catch (error) {
-        if ((error as { userCancelled?: boolean }).userCancelled) return false;
+        const { userCancelled, code } = error as PurchasesError;
+        if (userCancelled) return TipResult.Cancelled;
+        // Google Play can hold a payment (a slow card, cash at a shop): it's not a failure.
+        if (code === PAYMENT_PENDING_ERROR) return TipResult.Pending;
         throw error;
       }
     },
     async identify(userId) {
       if (userId) return statusFrom((await api.logIn(userId)).customerInfo);
       // Logging out an anonymous user is an error in RevenueCat; there's nothing to undo.
-      if (await api.isAnonymous()) return statusFrom(await api.getCustomerInfo());
+      if (await api.isAnonymous())
+        return statusFrom(await api.getCustomerInfo());
       return statusFrom(await api.logOut());
     },
     onChange(listener) {
