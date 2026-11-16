@@ -11,7 +11,7 @@ import { Letter } from './components/Letter/Letter';
 /**
  * Settings › About Tern: what Tern is for and the promises it keeps, a letter from the person
  * who makes it, and ways to support it. A Supporter's plan is under Your data, and their
- * trail colour is chosen on Journey, where it's drawn.
+ * trail color is chosen on Journey, where it's drawn.
  */
 export default function AboutScreen() {
   return (

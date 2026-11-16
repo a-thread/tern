@@ -33,7 +33,7 @@ export function SupporterRow() {
     <Group style={s.apart}>
       <Row
         title='Become a Supporter'
-        sub='Tern Plus every year, with a trail colour for your tern'
+        sub='Tern Plus every year, with a trail color for your tern'
         icon={
           <IconBadge bg={colors.sunTint}>
             <Icon name='feather' size={16} color={colors.sunDeep} />

@@ -23,6 +23,7 @@ import DestinationScreen from './destination/DestinationScreen';
 import StreakScreen from '../today/streak/StreakScreen';
 import WaypointsInfoScreen from './waypoints-info/WaypointsInfoScreen';
 import RouteInfoScreen from './route-info/RouteInfoScreen';
+import TrailScreen from './trail/TrailScreen';
 
 // The waypoints card asks whether a goal day can be reached today and what was skipped; the
 // streak card, the streak and freezes held.
@@ -177,19 +178,30 @@ describe('route info card', () => {
     openURL.mockRestore();
   });
 
-  it('lets a Supporter choose the colour of their trail', async () => {
+  it('no longer holds the trail colors: they have their own card', async () => {
     const ui = open(<RouteInfoScreen />, SUPPORTER);
-    fireEvent.press(await ui.findByLabelText('Twilight trail'));
+    expect(await ui.findByText("A real tern's route")).toBeTruthy();
+    expect(ui.queryByLabelText('Twilight trail')).toBeNull();
+  });
+});
+
+describe('trail card', () => {
+  it('lets a Supporter choose the color of their trail, every name in full', async () => {
+    const ui = open(<TrailScreen />, SUPPORTER);
+    expect(await ui.findByText('Midnight sun')).toBeTruthy();
+    fireEvent.press(ui.getByLabelText('Twilight trail'));
     await waitFor(() => expect(trail).toBe(TrailColor.Twilight));
     expect(
       ui.getByLabelText('Twilight trail').props.accessibilityState,
     ).toMatchObject({ checked: true });
   });
 
-  it('offers no trail colour to anyone else', async () => {
-    const ui = open(<RouteInfoScreen />, { ...SUPPORTER, supporter: false });
-    expect(await ui.findByText("A real tern's route")).toBeTruthy();
-    expect(ui.queryByText('Your trail')).toBeNull();
+  it('offers no choice to anyone else', async () => {
+    const ui = open(<TrailScreen />, { ...SUPPORTER, supporter: false });
+    expect(await ui.findByText('Your tern’s trail')).toBeTruthy();
     expect(ui.queryByLabelText('Twilight trail')).toBeNull();
+    expect(
+      ui.getByText('Supporters choose the color of their tern’s trail.'),
+    ).toBeTruthy();
   });
 });

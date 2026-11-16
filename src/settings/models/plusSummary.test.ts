@@ -69,7 +69,7 @@ describe('plusSummary', () => {
     });
   });
 
-  it('tells a Supporter where to choose their trail colour, and nobody else', () => {
+  it('tells a Supporter where to choose their trail color, and nobody else', () => {
     const supporter = plusSummary({
       ...base,
       status: {
@@ -80,7 +80,7 @@ describe('plusSummary', () => {
       },
     });
     expect(supporter.footnote).toMatch(
-      /^Thank you for supporting Tern\. Choose your trail colour on Journey, from the info button by Stops\. Change plan/,
+      /^Thank you for supporting Tern\. Choose your trail color on Journey, under the map. Change plan/,
     );
     const plain = plusSummary({
       ...base,

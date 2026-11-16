@@ -23,7 +23,7 @@ import { PlanChoice } from './components/PlanChoice/PlanChoice';
 const STORE = storeName();
 /** What Supporter adds, said plainly under its name. */
 const SUPPORTER_THANKS =
-  "Everything in Plus, with a thank-you: a colour of your choosing for your tern's trail on Journey.";
+  "Everything in Plus, with a thank-you: a color of your choosing for your tern's trail on Journey.";
 
 // Honest about what's free: the phone's own backup and export already keep a log safe, so
 // Plus is the log on every phone, and keeping Tern going.

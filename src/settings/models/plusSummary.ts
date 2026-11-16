@@ -91,7 +91,7 @@ export function plusSummary(state: PlusSectionState): PlusSectionText {
   const name = status.supporter ? 'Tern Plus Supporter' : 'Tern Plus';
   // A Supporter's thank-you is chosen where it's drawn, so this says where to find it.
   const thanks = status.supporter
-    ? 'Thank you for supporting Tern. Choose your trail colour on Journey, from the info button by Stops. '
+    ? 'Thank you for supporting Tern. Choose your trail color on Journey, under the map. '
     : '';
   return {
     title: SYNCED,
