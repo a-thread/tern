@@ -22,6 +22,7 @@ They're published documents, not notes — changing one changes what the store s
 - `index.html` — the privacy policy
 - `delete-account.html` — how to delete an account, which Google Play requires (Apple wants it in the app, which it is)
 - `delete-data.html` — how to delete your data
+- `test.html` — how to join the closed test (Android) and TestFlight (iPhone), linked from social posts; its images are in `assets/testers/`
 
 ## Not built yet
 
