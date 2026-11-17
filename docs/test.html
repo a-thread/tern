@@ -1,0 +1,642 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Test Tern</title>
+    <meta
+      name="description"
+      content="Help test Tern, a health tracking app inspired by Arctic terns. No ads, no account needed."
+    />
+    <meta property="og:title" content="Help test Tern" />
+    <meta
+      property="og:description"
+      content="A health tracking app inspired by Arctic terns. No ads, no account needed. Try it for a week or two."
+    />
+    <meta property="og:image" content="assets/testers/intro.jpg" />
+    <style>
+      :root {
+        --bg: #f5f3ee;
+        --card: #ffffff;
+        --text: #26262b;
+        --muted: #6b6b73;
+        --line: #dcd8cf;
+        --link: #1f5f8b;
+        --accent: #c23b1b;
+        --accent-text: #ffffff;
+        --step: #ece8f6;
+        --step-text: #4a4372;
+        --mint: #e3f1ec;
+        --mint-text: #2f5c51;
+        --sand: #f6ead9;
+        --sand-text: #7a5426;
+        --lilac: #ece8f6;
+        --lilac-text: #4a4372;
+        --dusk: linear-gradient(
+          180deg,
+          #2f3c58 0%,
+          #5b5a80 38%,
+          #a47f98 70%,
+          #e2a989 100%
+        );
+        --journey: linear-gradient(160deg, #2a2440 0%, #4a4372 55%, #2f5c51 100%);
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --bg: #1b1b1f;
+          --card: #26262c;
+          --text: #ececef;
+          --muted: #a0a0a8;
+          --line: #33333a;
+          --link: #7fb8e0;
+          --accent: #e0603f;
+          --accent-text: #1b1b1f;
+          --step: #35304f;
+          --step-text: #d6d0f0;
+          --mint: #22362f;
+          --mint-text: #9fd6c4;
+          --sand: #3a2f22;
+          --sand-text: #f0cfa0;
+          --lilac: #35304f;
+          --lilac-text: #d6d0f0;
+        }
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        background: var(--bg);
+        color: var(--text);
+        font:
+          17px/1.6 -apple-system,
+          BlinkMacSystemFont,
+          'Segoe UI',
+          Roboto,
+          sans-serif;
+      }
+      a {
+        color: var(--link);
+      }
+      .wrap {
+        max-width: 64rem;
+        margin: 0 auto;
+        padding: 0 1rem;
+      }
+      h1,
+      h2 {
+        font-family: Georgia, 'Times New Roman', serif;
+        font-weight: 700;
+      }
+      h2 {
+        font-size: 1.6rem;
+        margin: 0 0 0.75rem;
+      }
+
+      /* Hero: the dusk sky from the Today card, with the tern on its arc. */
+      .hero {
+        background: var(--dusk);
+        color: #fff;
+        position: relative;
+        overflow: hidden;
+      }
+      .hero .wrap {
+        position: relative;
+        padding-top: 3rem;
+        padding-bottom: 3.5rem;
+        min-height: 26rem;
+      }
+      .hero h1 {
+        font-size: clamp(2.2rem, 7vw, 3.4rem);
+        line-height: 1.1;
+        margin: 0 0 0.75rem;
+        max-width: 14ch;
+      }
+      .hero p {
+        font-size: 1.1rem;
+        max-width: 30rem;
+        margin: 0 0 1.5rem;
+        color: rgba(255, 255, 255, 0.92);
+      }
+      .hero .arc {
+        position: absolute;
+        right: -2rem;
+        bottom: 1.5rem;
+        width: min(36rem, 90%);
+        height: auto;
+        opacity: 0.7;
+        pointer-events: none;
+      }
+      .hero .bird {
+        position: absolute;
+        right: max(1rem, 6%);
+        bottom: 4.5rem;
+        width: clamp(8rem, 24vw, 13rem);
+        height: auto;
+        animation: glide 6s ease-in-out infinite;
+        filter: drop-shadow(0 10px 16px rgba(20, 16, 40, 0.25));
+      }
+      @keyframes glide {
+        0%,
+        100% {
+          transform: translateY(0) rotate(0deg);
+        }
+        50% {
+          transform: translateY(-14px) rotate(-2deg);
+        }
+      }
+      .jump {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.75rem;
+        position: relative;
+        z-index: 1;
+      }
+      .button {
+        display: inline-block;
+        background: var(--accent);
+        color: var(--accent-text);
+        text-decoration: none;
+        font-weight: 600;
+        padding: 0.65rem 1.15rem;
+        border-radius: 999px;
+      }
+      .button.light {
+        background: #fff;
+        color: #2f3c58;
+      }
+      .button:focus-visible {
+        outline: 3px solid var(--link);
+        outline-offset: 3px;
+      }
+      .hero .button:focus-visible {
+        outline-color: #fff;
+      }
+      @media (max-width: 40rem) {
+        .hero .wrap {
+          padding-bottom: 11rem;
+        }
+        .hero .bird {
+          bottom: 2.5rem;
+        }
+      }
+
+      /* Promises */
+      .promises {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr));
+        gap: 0.75rem;
+        margin: -1.75rem 0 0;
+        padding: 0;
+        list-style: none;
+        position: relative;
+      }
+      .promises li {
+        background: var(--card);
+        border: 1px solid var(--line);
+        border-radius: 16px;
+        padding: 1rem 1.1rem;
+        display: flex;
+        gap: 0.75rem;
+        align-items: flex-start;
+      }
+      .promises .dot {
+        flex: none;
+        width: 2.25rem;
+        height: 2.25rem;
+        border-radius: 12px;
+        display: grid;
+        place-items: center;
+        font-size: 1.1rem;
+      }
+      .promises strong {
+        display: block;
+      }
+      .promises span.sub {
+        color: var(--muted);
+        font-size: 0.95rem;
+      }
+      .mint {
+        background: var(--mint);
+        color: var(--mint-text);
+      }
+      .sand {
+        background: var(--sand);
+        color: var(--sand-text);
+      }
+      .lilac {
+        background: var(--lilac);
+        color: var(--lilac-text);
+      }
+
+      section {
+        padding: 3rem 0 0;
+      }
+      .intro-copy {
+        max-width: 40rem;
+        font-size: 1.05rem;
+      }
+
+      /* Gallery */
+      .gallery {
+        display: flex;
+        gap: 1rem;
+        overflow-x: auto;
+        scroll-snap-type: x mandatory;
+        padding: 0.5rem 1rem 1.25rem;
+        margin: 0 -1rem;
+        list-style: none;
+        scrollbar-width: thin;
+      }
+      .gallery li {
+        flex: 0 0 min(15rem, 72vw);
+        scroll-snap-align: center;
+        margin: 0;
+      }
+      .gallery img {
+        width: 100%;
+        height: auto;
+        display: block;
+        border-radius: 18px;
+        border: 1px solid var(--line);
+      }
+      .gallery figcaption {
+        margin-top: 0.6rem;
+        font-size: 0.95rem;
+        color: var(--muted);
+      }
+      .gallery figcaption strong {
+        color: var(--text);
+        display: block;
+      }
+      .hint {
+        color: var(--muted);
+        font-size: 0.9rem;
+        margin: 0;
+      }
+
+      /* Install */
+      .platforms {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(19rem, 1fr));
+        gap: 1.25rem;
+        align-items: start;
+      }
+      .platform {
+        background: var(--card);
+        border: 1px solid var(--line);
+        border-radius: 20px;
+        padding: 1.5rem 1.25rem 1.25rem;
+        scroll-margin-top: 1rem;
+      }
+      .platform h3 {
+        margin: 0 0 0.25rem;
+        font-size: 1.3rem;
+      }
+      .platform > p {
+        color: var(--muted);
+        font-size: 0.95rem;
+        margin: 0 0 1rem;
+      }
+      ol.steps {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+        counter-reset: step;
+      }
+      ol.steps > li {
+        counter-increment: step;
+        padding: 0 0 1.25rem 2.75rem;
+        position: relative;
+      }
+      ol.steps > li:not(:last-child)::after {
+        content: '';
+        position: absolute;
+        left: 0.85rem;
+        top: 2rem;
+        bottom: 0.25rem;
+        border-left: 2px dashed var(--line);
+      }
+      ol.steps > li::before {
+        content: counter(step);
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 1.75rem;
+        height: 1.75rem;
+        border-radius: 50%;
+        background: var(--step);
+        color: var(--step-text);
+        font-weight: 600;
+        font-size: 0.95rem;
+        line-height: 1.75rem;
+        text-align: center;
+      }
+      .steps strong {
+        display: block;
+      }
+      .steps p {
+        margin: 0.15rem 0 0.65rem;
+        color: var(--muted);
+        font-size: 0.95rem;
+      }
+
+      /* The 14-day ask */
+      .stay {
+        background: var(--journey);
+        color: #fff;
+        border-radius: 20px;
+        padding: 1.5rem 1.25rem;
+        margin-top: 1.25rem;
+        display: flex;
+        gap: 1rem;
+        align-items: center;
+      }
+      .stay .big {
+        font-family: Georgia, 'Times New Roman', serif;
+        font-size: 2.6rem;
+        line-height: 1;
+        flex: none;
+      }
+      .stay .big small {
+        display: block;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
+          sans-serif;
+        font-size: 0.85rem;
+        opacity: 0.85;
+      }
+      .stay p {
+        margin: 0;
+        color: rgba(255, 255, 255, 0.92);
+      }
+
+      footer {
+        padding: 3rem 0 4rem;
+      }
+      footer .note {
+        color: var(--muted);
+        font-size: 0.95rem;
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        .hero .bird {
+          animation: none;
+        }
+        .gallery {
+          scroll-behavior: auto;
+        }
+      }
+      html {
+        scroll-behavior: smooth;
+      }
+      @media (prefers-reduced-motion: reduce) {
+        html {
+          scroll-behavior: auto;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <header class="hero">
+      <div class="wrap">
+        <h1>Help test Tern</h1>
+        <p>
+          A health tracking app inspired by Arctic terns, looking for testers
+          before it goes out into the world.
+        </p>
+        <div class="jump">
+          <a class="button light" href="#android">I have an Android</a>
+          <a class="button light" href="#iphone">I have an iPhone</a>
+        </div>
+        <svg
+          class="arc"
+          viewBox="0 0 600 160"
+          aria-hidden="true"
+          focusable="false"
+        >
+          <path
+            d="M10 150 C 140 150, 200 40, 330 50 S 520 120, 590 90"
+            fill="none"
+            stroke="#fff"
+            stroke-width="4"
+            stroke-linecap="round"
+            stroke-dasharray="2 12"
+          />
+        </svg>
+        <img
+          class="bird"
+          src="assets/testers/tern.png"
+          alt=""
+          width="440"
+          height="415"
+        />
+      </div>
+    </header>
+
+    <main class="wrap">
+      <ul class="promises">
+        <li>
+          <span class="dot mint" aria-hidden="true">✦</span>
+          <span><strong>No ads</strong><span class="sub">Not now, not later.</span></span>
+        </li>
+        <li>
+          <span class="dot sand" aria-hidden="true">⌂</span>
+          <span
+            ><strong>No account needed</strong
+            ><span class="sub">Your info can stay on your phone.</span></span
+          >
+        </li>
+        <li>
+          <span class="dot lilac" aria-hidden="true">◐</span>
+          <span
+            ><strong>Yours to shape</strong
+            ><span class="sub">Turn off anything you don't want to see, like weight.</span></span
+          >
+        </li>
+      </ul>
+
+      <section aria-labelledby="peek">
+        <h2 id="peek">A peek inside</h2>
+        <p class="intro-copy">
+          Tern is built with movement in mind and a focus on customizability,
+          for folks navigating complex relationships with food, bodies, movement
+          and tracking. Showing up earns waypoints, and your waypoints fly the
+          Arctic tern's real migration.
+        </p>
+        <ul class="gallery">
+          <li>
+            <figure style="margin: 0">
+              <img
+                src="assets/testers/intro.jpg"
+                width="720"
+                height="900"
+                loading="lazy"
+                alt="Tern's welcome screen: Progress answers to your pace. Waypoints for logging, moving and resting; rest days keep your streak going; targets are guides and nothing is flagged."
+              />
+              <figcaption>
+                <strong>Set up at your pace</strong>A minute of setup, and you
+                can skip it.
+              </figcaption>
+            </figure>
+          </li>
+          <li>
+            <figure style="margin: 0">
+              <img
+                src="assets/testers/home.jpg"
+                width="720"
+                height="900"
+                loading="lazy"
+                alt="The Today screen: a dusk-colored card with today's steps, a week of rings, and a short list of what's left to do."
+              />
+              <figcaption>
+                <strong>Today</strong>Just what's left to do, and a rest day
+                when you need one.
+              </figcaption>
+            </figure>
+          </li>
+          <li>
+            <figure style="margin: 0">
+              <img
+                src="assets/testers/home-waypoints.jpg"
+                width="720"
+                height="900"
+                loading="lazy"
+                alt="A waypoints summary: points so far, a streak, what's still open today, and the next stop on the journey."
+              />
+              <figcaption>
+                <strong>Waypoints</strong>Earned for logging, moving and
+                resting. Never for a number on a scale.
+              </figcaption>
+            </figure>
+          </li>
+          <li>
+            <figure style="margin: 0">
+              <img
+                src="assets/testers/journey.jpg"
+                width="720"
+                height="900"
+                loading="lazy"
+                alt="The Journey screen: a map of the tern's route along the coast of West Africa, with the next milestone and past stops."
+              />
+              <figcaption>
+                <strong>Journey</strong>Your waypoints fly the tern's real
+                route, pole to pole.
+              </figcaption>
+            </figure>
+          </li>
+          <li>
+            <figure style="margin: 0">
+              <img
+                src="assets/testers/journey-stop.jpg"
+                width="720"
+                height="900"
+                loading="lazy"
+                alt="A journey stop card for the Bijagós Islands, with a photo of terns on the water and three facts about the place."
+              />
+              <figcaption>
+                <strong>Real stops</strong>Each one comes with a photo and a
+                few facts.
+              </figcaption>
+            </figure>
+          </li>
+        </ul>
+        <p class="hint">Swipe for more →</p>
+      </section>
+
+      <section aria-labelledby="join">
+        <h2 id="join">Join the test</h2>
+        <p class="intro-copy">
+          All I'm asking is that you use it for a week or two and tell me what's
+          confusing, broken, missing or awesome.
+        </p>
+        <div class="platforms">
+          <div class="platform" id="android">
+            <h3>Android</h3>
+            <p>
+              Use the same Google account for all three steps: the one your
+              phone uses for the Play Store.
+            </p>
+            <ol class="steps">
+              <li>
+                <strong>Join the testers group</strong>
+                <p>Google uses it to know who can install the test version.</p>
+                <a class="button" href="https://groups.google.com/g/tern-testers"
+                  >Join the group</a
+                >
+              </li>
+              <li>
+                <strong>Become a tester</strong>
+                <p>Open this and tap <em>Become a tester</em>.</p>
+                <a
+                  class="button"
+                  href="https://play.google.com/apps/testing/com.purlieus.tern"
+                  >Opt in on Google Play</a
+                >
+              </li>
+              <li>
+                <strong>Install Tern</strong>
+                <p>It can take a few minutes after opting in to show up.</p>
+                <a
+                  class="button"
+                  href="https://play.google.com/store/apps/details?id=com.purlieus.tern"
+                  >Get it on Google Play</a
+                >
+              </li>
+            </ol>
+          </div>
+
+          <div class="platform" id="iphone">
+            <h3>iPhone</h3>
+            <p>Through TestFlight, Apple's app for trying apps early.</p>
+            <ol class="steps">
+              <li>
+                <strong>Install TestFlight</strong>
+                <p>It's free, from the App Store.</p>
+                <a
+                  class="button"
+                  href="https://apps.apple.com/app/testflight/id899247664"
+                  >Get TestFlight</a
+                >
+              </li>
+              <li>
+                <strong>Install Tern</strong>
+                <p>
+                  Open this on your iPhone and tap <em>Accept</em>, then
+                  <em>Install</em>.
+                </p>
+                <a class="button" href="https://testflight.apple.com/join/ajxMpFu1"
+                  >Join the Tern beta</a
+                >
+              </li>
+            </ol>
+          </div>
+        </div>
+
+        <div class="stay">
+          <div class="big">14<small>days</small></div>
+          <p>
+            Arctic terns fly about 70,000 km a year. I only need you for two
+            weeks. Google needs a group of testers to stay that long before Tern
+            can go out to everyone, so keeping it installed really helps.
+          </p>
+        </div>
+      </section>
+
+      <section aria-labelledby="feedback">
+        <h2 id="feedback">Sending feedback</h2>
+        <p class="intro-copy">
+          Anything helps, big or small, and screenshots are great. Email
+          <a href="mailto:a.threadless@proton.me">a.threadless@proton.me</a>
+          or message me wherever you found this link. 💛
+        </p>
+      </section>
+
+      <footer>
+        <p class="note">
+          Tern is for adults 18 and over.
+          <a href="index.html">Privacy policy</a>
+        </p>
+      </footer>
+    </main>
+  </body>
+</html>
