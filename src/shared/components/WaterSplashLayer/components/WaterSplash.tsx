@@ -36,10 +36,7 @@ type Bubble = { xs: number[]; ys: number[]; r: number; start: number };
 const between = (lo: number, hi: number) => lo + Math.random() * (hi - lo);
 const STEP_INPUT = Array.from({ length: STEPS + 1 }, (_, i) => i / STEPS);
 
-/**
- * A drop thrown up from the button: it flies a parabola under gravity, its tip trailing the way
- * it moves (so it tips over at the top and falls tip-up), and it stretches while it is fast.
- */
+/** A parabola with the tip trailing the motion, stretched while fast. */
 function fly(speed: number, spread: number, gravity: number): Flight {
   const angle = -Math.PI / 2 + between(-spread, spread);
   const vx = Math.cos(angle) * speed;
@@ -101,10 +98,7 @@ function makeBubbles(count: number, big: boolean): Bubble[] {
   });
 }
 
-/**
- * One splash of water at (`x`, `y`) in its layer: a flat ripple, drops thrown up
- * that arc over and fall, a fine spray and small bubbles that rise and pop. `onDone` fires once it has faded.
- */
+/** `onDone` fires once it has faded. */
 export function WaterSplash({
   x,
   y,

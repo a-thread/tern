@@ -36,11 +36,7 @@ class Timing {
   static readonly STORY = 2300;
 }
 
-/**
- * Passing a stop on the migration: the same feathers as an award burst from the tern mark,
- * the bird flies the leg it just finished, and then the place's name and a line about it
- * appear. Shown once per stop (see `useMilestoneReward`).
- */
+/** Once per stop (`useMilestoneReward`). */
 export default function MilestoneScreen({ route }: Props) {
   const still = useReduceMotion();
   const { waypoints, events } = useWaypoints();

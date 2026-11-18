@@ -8,10 +8,6 @@ import { useMovement } from '../../domain/movement/MovementContext';
 import { StreakFreezes } from '../../domain/activity/models/dayRecord';
 import { streakRules } from './models/streakRules';
 
-/**
- * What the ☀ streak and ❄ freeze chips on Today mean, from either chip: how many of each are
- * held now, how a streak grows, and how freezes are earned, held and spent.
- */
 export default function StreakScreen() {
   const { streak, freezes } = useActivity();
   const movement = useMovement();

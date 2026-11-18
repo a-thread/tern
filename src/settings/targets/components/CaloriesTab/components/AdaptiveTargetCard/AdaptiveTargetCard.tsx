@@ -19,10 +19,6 @@ import { Aim, AIM_LABEL } from '@/domain/settings/models/aim';
 
 const AIMS = Object.values(Aim);
 
-/**
- * The Calories tab's adaptive target: on or off, which way you're aiming, and
- * what Tern has learned about your burn, with the suggestion when there is one.
- */
 export function AdaptiveTargetCard() {
   const { settings, updateSettings } = useSettings();
   const adaptive = useAdaptiveTarget();

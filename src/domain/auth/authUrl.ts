@@ -5,11 +5,7 @@ export type AuthLink = {
   type: string | null;
 };
 
-/**
- * Reads the session tokens Supabase puts in the URL fragment when someone
- * taps a confirmation or password-reset link in their email and it opens the
- * app. Returns null for any URL that isn't one of those.
- */
+/** Tokens from a confirmation or reset link's fragment; null for any other URL. */
 export function parseAuthLink(url: string): AuthLink | null {
   const hash = url.split('#')[1];
   if (!hash) return null;

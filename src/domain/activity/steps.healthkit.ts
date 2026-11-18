@@ -4,12 +4,8 @@ import { StepsRepository } from './steps.repository';
 import { StepsStatus } from './models/stepsStatus';
 
 /**
- * Steps from Apple Health on iPhone. Needs a custom dev build (Expo Go can't load HealthKit);
- * see docs/healthkit.md.
- *
- * HealthKit never says whether *read* access was denied, so this can only tell "the permission
- * sheet hasn't been shown" (needs permission) from "it has" (connected). A denial reads as zero
- * steps, which the Health data screen explains.
+ * Steps from Apple Health; needs a dev build (docs/healthkit.md). HealthKit hides read denials,
+ * so a denial reads as connected with zero steps.
  */
 export function createHealthKitStepsRepository(
   health: HealthKitApi | null = loadHealthKit(),

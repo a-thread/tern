@@ -9,10 +9,6 @@ import { PlusSection } from './components/PlusSection/PlusSection';
 import { LogOutSection } from './components/LogOutSection/LogOutSection';
 import { AppointmentSummary } from './components/AppointmentSummary/AppointmentSummary';
 
-/**
- * Settings › Your data: where it is (Tern Plus, synced or on this phone) at the top, then
- * export, restore and delete.
- */
 export default function DataSettingsScreen() {
   const { available } = useData();
   // Signed in, it's reached from the profile card and holds the account too (Delete my account).
@@ -28,7 +24,9 @@ export default function DataSettingsScreen() {
           <DataSection />
         </>
       ) : (
-        <FootNote>Sample data isn't stored, so there's nothing to export.</FootNote>
+        <FootNote>
+          Sample data isn't stored, so there's nothing to export.
+        </FootNote>
       )}
       <LogOutSection />
     </SettingsPage>

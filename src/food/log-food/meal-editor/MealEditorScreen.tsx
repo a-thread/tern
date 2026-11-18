@@ -37,11 +37,7 @@ import { confirm } from '@shared/utils/confirm';
 
 type Props = NativeStackScreenProps<LogFoodStackParamList, 'MealEditor'>;
 
-/**
- * Builds a new saved meal, or edits an existing one: name it, change portions,
- * remove foods, and add more (through the normal food search in "pick" mode).
- * Nothing is saved until Save; Cancel throws the changes away.
- */
+/** Adds foods through search in "pick" mode. Nothing is saved until Save. */
 export default function MealEditorScreen({ navigation }: Props) {
   const insets = useSafeAreaInsets();
   const toast = useToast();

@@ -45,10 +45,7 @@ type Entry = ProviderSpec & {
   wrap: (children: React.ReactNode, backend: Backend) => React.ReactNode;
 };
 
-/**
- * Every provider, outermost first, with the ones above it that it reads from. Add a provider
- * here and say what it needs; the order is checked once, when the app starts.
- */
+/** Outermost first, each with what it needs; the order is checked at startup. */
 const PROVIDERS: readonly Entry[] = [
   {
     name: 'settings',

@@ -9,11 +9,7 @@ export type WaypointsSnapshot = {
   todaySources: WaypointSource[];
 };
 
-/**
- * The waypoints ledger. There is at most one award per source per day, so
- * `award` is idempotent, and taking one back (`revoke`) removes its entry.
- * Awards come from behavior only — see `waypointRules`.
- */
+/** One award per source per day, so `award` is idempotent. */
 export interface WaypointsRepository {
   load(day: string): Promise<WaypointsSnapshot>;
   /** Every award on record, in any order — used to date the journey's milestones. */
@@ -35,9 +31,8 @@ function syntheticHistory(total: number, today: string): LedgerEvent[] {
 }
 
 /**
- * Local-mode ledger. `history` is the total from before today; `today` lists
- * awards already made on whichever day is loaded first (the seed food log
- * already covers every meal and has a weigh-in today, so those awards start out earned).
+ * Local-mode ledger. `today` and `yesterday` are awards the seed data has already earned,
+ * so opening the app doesn't pay (and celebrate) them again.
  */
 const SEEDED_TODAY = [
   WaypointSource.Meals,
@@ -46,11 +41,17 @@ const SEEDED_TODAY = [
   WaypointSource.Dinner,
   WaypointSource.Weight,
 ];
+const SEEDED_YESTERDAY = [WaypointSource.Weight];
+
+const pointsOf = (sources: WaypointSource[]) =>
+  sources.reduce((sum, s) => sum + pointsFor(s), 0);
 
 export function createMemoryWaypointsRepository(
   history: number = INITIAL_WAYPOINTS -
-    SEEDED_TODAY.reduce((sum, s) => sum + pointsFor(s), 0),
+    pointsOf(SEEDED_TODAY) -
+    pointsOf(SEEDED_YESTERDAY),
   today: WaypointSource[] = SEEDED_TODAY,
+  yesterday: WaypointSource[] = today === SEEDED_TODAY ? SEEDED_YESTERDAY : [],
 ): WaypointsRepository {
   let events: LedgerEvent[] = [];
   let seeded = false;
@@ -58,8 +59,14 @@ export function createMemoryWaypointsRepository(
   const seed = (day: string) => {
     if (seeded) return;
     seeded = true;
+    const before = addDays(day, -1);
     events = [
       ...syntheticHistory(history, day),
+      ...yesterday.map((source) => ({
+        source,
+        day: before,
+        points: pointsFor(source),
+      })),
       ...today.map((source) => ({ source, day, points: pointsFor(source) })),
     ];
   };

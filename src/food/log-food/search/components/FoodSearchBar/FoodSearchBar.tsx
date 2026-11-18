@@ -11,11 +11,7 @@ import {
 
 import { colors, font, radius, space } from '@shared/theme';
 
-/**
- * The search field, with a button that opens the barcode scanner. While a
- * database search runs (`busy`), a thin line moves along the field's bottom
- * edge; it sits inside the field, so nothing below it moves.
- */
+/** The `busy` line sits inside the field so nothing below moves. */
 export function FoodSearchBar({
   value,
   onChange,

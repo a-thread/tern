@@ -71,7 +71,8 @@
       ],
       "expo-sqlite",
       "expo-asset",
-      "./plugins/withNativeDebugSymbols"
+      "./plugins/withNativeDebugSymbols",
+      "./plugins/withOptionalPortraitFeature"
     ],
     "extra": {
       "eas": {

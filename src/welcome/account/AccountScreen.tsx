@@ -17,10 +17,7 @@ const WHAT_AN_ACCOUNT_DOES = [
   { icon: 'lock-outline', text: 'Yours: no ads, and nothing sold' },
 ] as const;
 
-/**
- * The invitation to make an account (which comes with Tern Plus), or sign in to one. Shown once:
- * "Keep on this phone" settles it (a real choice, not a dead end), and so does having an account.
- */
+/** Shown once: "Keep on this phone" or having an account settles it. */
 export default function AccountScreen() {
   const wizard = useWizard(Step.Account);
   const auth = useAuth();

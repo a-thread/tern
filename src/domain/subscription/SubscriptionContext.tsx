@@ -27,11 +27,7 @@ type SubscriptionContextValue = {
   active: boolean;
   /** Plus is on as Tern Plus Supporter: the thank-you (a trail colour on Journey) is theirs. */
   supporter: boolean;
-  /**
-   * Who the store was last asked about: the signed-in account's id, or null for the phone;
-   * undefined before the first answer. It lags a sign-in until the store has looked the
-   * account up, so `active` is only acted on once this matches the account.
-   */
+  /** Account id, null for the phone, undefined before the first answer. Act on `active` only once it matches. */
   checkedFor: string | null | undefined;
   /** The store answered that check. False when it couldn't be reached: `active` is then unknown, not false. */
   known: boolean;
@@ -63,12 +59,8 @@ const GRANTED: SubscriptionStatus = {
 };
 
 /**
- * Tern Plus. App-wide, above the sign-in screens, since buying comes before making an
- * account. `userId` ties purchases to the signed-in account; null while on the phone.
- *
- * `serverGrant` asks the server whether the signed-in account has Plus. It's asked only
- * when the store says no, so an account given Plus by hand (no purchase behind it) counts
- * too, and a later "no" from the store doesn't take it away.
+ * Above the sign-in screens, since buying comes first. `serverGrant` is asked when the store
+ * says no, so a hand-granted Plus still counts.
  */
 export function SubscriptionProvider({
   repo,

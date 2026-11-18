@@ -1,5 +1,5 @@
 import type { TernClient } from '@shared/backend/supabase';
-import { ok, rows } from '@shared/backend/query';
+import { allRows, ok } from '@shared/backend/query';
 import { Meal } from '../food/models/foodEntry';
 import type { MealCheckIn } from './models/mealCheckIn';
 import type { MealCheckInsRepository } from './mealCheckIns.repository';
@@ -28,14 +28,15 @@ export function createSupabaseMealCheckInsRepository(
   return {
     async load(from, to) {
       return (
-        await rows<MealCheckInRow>(
+        await allRows<MealCheckInRow>((start, end) =>
           db
             .from('meal_checkins')
             .select('day, meal, fullness, feeling, note')
             .gte('day', from)
             .lte('day', to)
             .order('day', { ascending: true })
-            .limit(1000),
+            .order('meal')
+            .range(start, end),
         )
       )
         .filter((r) => MEALS.includes(r.meal))

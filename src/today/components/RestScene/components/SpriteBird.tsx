@@ -5,11 +5,7 @@ import { birdBox, Sprite, type ScenePose } from '@/today/models/restScene';
 
 const SPRITE = require('../../../../../assets/tern-landing.png');
 
-/**
- * The tern, from the landing sheet: one of its 18 frames shown through a window over the scene.
- * `unit` is screen pixels per scene unit. `birdBox` places the window so the feet land where
- * the pose says, whichever way it is turned.
- */
+/** `unit` is screen px per scene unit; `birdBox` puts the feet where the pose says. */
 export function SpriteBird({
   bird,
   unit,

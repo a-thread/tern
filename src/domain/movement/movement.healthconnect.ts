@@ -94,10 +94,7 @@ export function sessionToEntry(
   };
 }
 
-/**
- * Workouts from Android Health Connect, under the same switch as steps
- * (EXPO_PUBLIC_HEALTH=1, see docs/health-connect.md); null otherwise, and off Android.
- */
+/** Same switch as steps (EXPO_PUBLIC_HEALTH=1); null otherwise or off Android. */
 export function createHealthConnectWorkouts(): WorkoutsSource | null {
   if (Platform.OS !== 'android' || !healthEnabled()) return null;
   let hc: any;

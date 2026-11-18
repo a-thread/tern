@@ -80,10 +80,7 @@ export function workoutToEntry(w: HealthKitWorkout): MovementEntry | null {
   };
 }
 
-/**
- * Workouts from Apple Health on iPhone, read live and never stored. HealthKit asks for steps and
- * workouts in one permission sheet, so connecting either one covers both.
- */
+/** Read live, never stored. One permission sheet covers steps and workouts. */
 export function createHealthKitWorkouts(
   health: HealthKitApi | null = loadHealthKit(),
 ): WorkoutsSource | null {

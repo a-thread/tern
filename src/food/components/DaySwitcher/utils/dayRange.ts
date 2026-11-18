@@ -1,9 +1,6 @@
 import { addDays, weekStartKey } from '@shared/utils/date';
 
-/**
- * The days the Food tab's arrows can reach: back to Monday, like the week strip on Today, but
- * always as far as yesterday (which can still be filled in, even on a Monday), and never past today.
- */
+/** Back to Monday, but always as far as yesterday, and never past today. */
 export function dayRange(day: string, today: string) {
   const yesterday = addDays(today, -1);
   const weekStart = weekStartKey(today);

@@ -28,10 +28,7 @@ const fromParts = (hour: number, minute: number, meridiem: Meridiem) =>
 export const stepHour = (minutes: number, direction: 1 | -1): number =>
   wrap(minutes + direction * 60, DAY);
 
-/**
- * The minutes moved to the next `step` mark in that direction, inside the same hour:
- * 8:45 → 8:00 going up, 8:07 → 8:00 going down.
- */
+/** Wraps within the hour: 8:45 → 8:00 going up. */
 export function stepMinute(
   minutes: number,
   direction: 1 | -1,

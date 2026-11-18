@@ -3,12 +3,7 @@ import { StyleSheet, Text, View, type ViewStyle } from 'react-native';
 
 import { colors, radius, space, typography } from '../../theme';
 
-/**
- * A small label over a chart naming the piece that was tapped ("Aug 2 · 8,410 steps").
- * `at` is where that piece sits across the chart, 0 (left edge) to 1 (right edge); the
- * label hangs from that point towards the middle so it never runs off the chart. It sits at
- * the top of its parent, or with `above`, just over it (over a row of squares, say).
- */
+/** `at` is 0–1 across the chart; the label hangs toward the middle so it never runs off. */
 export function ChartTip({
   text,
   at,

@@ -23,11 +23,7 @@ import type { LogFoodStackParamList } from '../navigation';
 
 type Props = NativeStackScreenProps<LogFoodStackParamList, 'BarcodeScan'>;
 
-/**
- * Reads a barcode with the camera and looks it up on Open Food Facts. A
- * product with nutrition opens the details screen; anything else falls back
- * to adding the food by hand. A code can also be typed in.
- */
+/** Falls back to manual entry when there's no nutrition. */
 export default function BarcodeScanScreen({ navigation, route }: Props) {
   const { meal, pick } = route.params;
   const insets = useSafeAreaInsets();

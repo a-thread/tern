@@ -20,10 +20,7 @@ export class TrendRanges {
     '6 months': 180,
   };
 
-  /**
-   * How the range ends a sentence: "daily average in the last 7 days". Each range is the days
-   * up to today, not a calendar week or month, so it never says "this week" or "this month".
-   */
+  /** Rolling days, never "this week": "daily average in the last 7 days". */
   static readonly LABEL: Readonly<Record<TrendRange, string>> = {
     Week: 'in the last 7 days',
     Month: 'in the last 30 days',

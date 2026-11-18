@@ -39,10 +39,6 @@ import {
 
 type Props = NativeStackScreenProps<MovementStackParamList, 'Exercises'>;
 
-/**
- * Log movement: what's already logged for the day (with Remove for entries
- * logged here), then the list of exercises to choose from, with a search.
- */
 export default function ExercisesScreen({ navigation, route }: Props) {
   const insets = useSafeAreaInsets();
   const today = useDayKey();

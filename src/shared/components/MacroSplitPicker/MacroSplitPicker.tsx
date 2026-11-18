@@ -15,10 +15,6 @@ import { CustomSplitSheet } from './components/CustomSplitSheet/CustomSplitSheet
 import { Radio } from './components/Radio/Radio';
 import { SplitDetail } from './components/SplitDetail/SplitDetail';
 
-/**
- * The macro split: a preset or your own, turned into gram targets from the day's calories.
- * Used by Settings › Targets and the setup wizard.
- */
 export function MacroSplitPicker() {
   const { settings, updateSettings } = useSettings();
   const [editing, setEditing] = useState(false);

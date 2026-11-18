@@ -1,7 +1,4 @@
-/**
- * How the map is zoomed and turned: a point `p` on the unzoomed map shows in the frame at
- * `(x, y) + scale × p turned by rotate`. Turned, the close-up runs the current leg left to right.
- */
+/** A point `p` shows at `(x, y) + scale × rotate(p)`. */
 export type MapZoom = { scale: number; x: number; y: number; rotate: number };
 
 /** A point in the map's frame, in points. */
@@ -33,12 +30,7 @@ export const shortAngle = (degrees: number) =>
 export const isWhole = (z: MapZoom) =>
   z.scale <= 1.001 && Math.abs(shortAngle(z.rotate)) < 0.01;
 
-/**
- * Keeps the zoom between 1 and `ZoomLimits.MAX`. North up, it also keeps the map covering the
- * whole frame (`width` by `height`), so dragging never pulls an edge into view. Turned, the
- * corners can't all be kept covered, so instead the middle of the frame is kept over the map:
- * however far it's dragged, the map never leaves the frame.
- */
+/** North up, the map covers the frame; turned, corners can't all be covered, so the frame's middle stays on it. */
 export function clampZoom(z: MapZoom, width: number, height: number): MapZoom {
   const scale = clamp(z.scale, 1, ZoomLimits.MAX);
   if (Math.abs(shortAngle(z.rotate)) > 0.01) {
@@ -73,11 +65,7 @@ export function toMap(z: MapZoom, p: FramePoint): FramePoint {
   );
 }
 
-/**
- * Zooms to `scale`, keeping the spot that was under `from` (when the gesture started at
- * `start`) under `to` now. With `from` and `to` the same it zooms about a point; as the fingers
- * move together it also pans. The turn stays as it was.
- */
+/** Keeps the spot under `from` (at `start`) under `to`, so it pans as the fingers move. */
 export function zoomAbout(
   start: MapZoom,
   from: FramePoint,
@@ -100,10 +88,7 @@ export function zoomAbout(
   );
 }
 
-/**
- * The move that takes the map from `from` to `to`, as a zoom of its own applied on top of
- * `from`: how the drawing is moved while a gesture or glide is under way, before it's redrawn.
- */
+/** Applied on top of `from` to move the drawing mid-gesture, before the redraw. */
 export function zoomBetween(from: MapZoom, to: MapZoom): MapZoom {
   const scale = to.scale / from.scale;
   const rotate = shortAngle(to.rotate - from.rotate);

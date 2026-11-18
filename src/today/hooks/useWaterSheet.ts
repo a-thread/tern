@@ -9,11 +9,7 @@ const [WaterSheetContext, useOpenWaterSheet] =
   createRequiredContext<OpenWaterSheet>('useOpenWaterSheet', 'TodayScreen');
 export { WaterSheetContext, useOpenWaterSheet };
 
-/**
- * The one water sheet on Today. `showing` stays true until the sheet has finished closing,
- * so a waypoint burst or a milestone (a screen of its own) waits for it: opening one over
- * the sheet's modal left both stuck on screen.
- */
+/** `showing` holds until fully closed: opening a milestone over the modal left both stuck. */
 export function useWaterSheet() {
   const [visible, setVisible] = useState(false);
   const [showing, setShowing] = useState(false);

@@ -55,11 +55,7 @@ export function matchesQuery(
   ]);
 }
 
-/**
- * How well a food answers a query; higher is better. A strong name match beats
- * everything else, then shorter (more general) names, how common the food is
- * and your own history. Packaged rows with missing macros, or no brand, sink.
- */
+/** Name match first, then shorter names, commonness and history; incomplete packaged rows sink. */
 export function scoreResult(
   query: string,
   r: SearchResult,
@@ -130,9 +126,7 @@ export function dedupeFoods<T extends SearchResult>(list: T[]): T[] {
       out.push(r);
       continue;
     }
-    // Your own copy wins its place, but if it has no sizes (logged before they were known),
-    // it remembers the database copy so they can be fetched. A database food that wins
-    // keeps fetching its own sizes, never another product's.
+    // Your own copy wins, but borrows the database copy's id to fetch sizes it lacks.
     const winner = out[at];
     if (
       !isDatabase(winner) &&
@@ -169,12 +163,7 @@ export function rankFoods(
   return dedupeFoods(all).slice(0, FoodRanking.LIMIT);
 }
 
-/**
- * Folds a fresh ranking into what is already on screen without shuffling it.
- * Rows already shown keep their order; a new row slots in by score, but only
- * passes one of the top rows if it beats it by a clear margin (an exact match
- * arriving late can still rise to the top).
- */
+/** Shown rows keep their order; a new row passes a top row only by `PIN_MARGIN`. */
 export function stableMerge(
   shownIds: string[],
   ranked: RankedFood[],

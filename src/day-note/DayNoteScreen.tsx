@@ -15,10 +15,6 @@ import { DayNoteField } from './components/DayNoteField/DayNoteField';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'DayNote'>;
 
-/**
- * A note on the viewed day: how the body felt, what got in the way, anything worth
- * remembering when looking back at that day's steps and food.
- */
 export default function DayNoteScreen({ navigation }: Props) {
   const insets = useSafeAreaInsets();
   const { day, today, editable } = useViewedDay();

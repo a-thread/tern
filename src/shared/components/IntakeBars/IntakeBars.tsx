@@ -46,12 +46,7 @@ const MACROS = [
   { key: 'fat', label: 'Fat', color: colors.sunDeep },
 ] as const;
 
-/**
- * The viewed day's intake at a glance, heading the Food screen and sitting on Today: calories
- * against a soft target zone, macros against their targets, and the processing-level split.
- * Turned on and off in Food display settings, and absent while none of calories, macros or
- * processing levels are tracked; processing levels alone get the card to themselves. Neutral by design: nothing turns red and going past a target is never flagged.
- */
+/** Neutral by design: nothing turns red and going past a target is never flagged. */
 export function IntakeBars() {
   const { foodLog: entries } = useFood();
   const totals = dayTotals(entries);

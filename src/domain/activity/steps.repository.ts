@@ -1,16 +1,13 @@
 import { addDays, dayKey } from '@shared/utils/date';
 import { StepsStatus } from './models/stepsStatus';
 
-/** Where step counts come from (Health Connect on Android, Apple Health on iPhone; mock data in local mode). */
 export interface StepsRepository {
   status(): Promise<StepsStatus>;
-  /** Asks the user for access to their steps; resolves to the status afterwards. */
   connect(): Promise<StepsStatus>;
-  /** Steps per local day, keyed YYYY-MM-DD, for `from`..`to` inclusive. Empty unless connected. */
+  /** Inclusive; empty unless connected. */
   getRange(from: string, to: string): Promise<Record<string, number>>;
 }
 
-/** No step source. Steps stay at zero, so nothing is awarded and nothing is invented. */
 export function createUnavailableStepsRepository(): StepsRepository {
   return {
     status: async () => StepsStatus.Unavailable,
@@ -28,7 +25,6 @@ function hash(s: string): number {
   return h >>> 0;
 }
 
-/** A stable, plausible step count for a past day: mostly goal-ish days, some middling, a few quiet. */
 export function mockStepsFor(day: string): number {
   const h = hash(day);
   const r = h % 100;
@@ -37,11 +33,7 @@ export function mockStepsFor(day: string): number {
   return 8300 + (h % 3700); // goal
 }
 
-/**
- * Local-mode steps: deterministic mock history, with today part-way through. With `days`, only
- * the last that many days (today included) have steps; earlier ones have none, as on a phone
- * with a short history.
- */
+/** Deterministic mock steps; with `days`, only the last that many have any. */
 export function createMemoryStepsRepository(
   now: () => Date = () => new Date(),
   days?: number,

@@ -15,11 +15,7 @@ import { useChartSelection } from '../hooks/useChartSelection';
 import { formatShortDate } from '../utils/date';
 import { PointTapZones } from './PointTapZones/PointTapZones';
 
-/* ------------------------------------------------------------------ */
-/* Weight trend — the band is the point: it makes daily noise visible   */
-/* as normal rather than as change.                                     */
-/* ------------------------------------------------------------------ */
-
+/** The band is the point: it shows daily noise as normal rather than as change. */
 export function WeightTrend({
   trend,
   spread,
@@ -33,10 +29,7 @@ export function WeightTrend({
   height?: number;
   /** Optional weight goal; renders a dashed moss reference line. */
   goal?: number;
-  /**
-   * The day of each point, oldest first, one per `trend` value. Given these, tapping the
-   * chart names the nearest point's date and value; tap it again to clear.
-   */
+  /** One per `trend` value; given, points become tappable. */
   days?: readonly string[];
   /** What a tapped point's value reads as ("172.4 lb"). */
   formatValue?: (value: number) => string;

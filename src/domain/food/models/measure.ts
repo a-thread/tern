@@ -18,23 +18,15 @@ import {
 } from './volume';
 import { isWeightUnit, WeightSteps, WeightUnit, withWeights } from './weight';
 
-/**
- * How a logged amount was measured, kept with the entry so it can be changed
- * in the same unit later: "3 large eggs" stays eggs when you edit it or log it
- * again, instead of turning into a fixed label.
- */
+/** Kept with the entry so an edit stays in the same unit ("3 large eggs" stays eggs). */
 export type Measure = {
-  /** Nutrition per 100 g, so any amount can be worked out from it. */
   per100: Macros;
-  /** The household units on offer besides grams, e.g. "large egg" = 50 g. */
   portions: Portion[];
-  /** What `quantity` counts: a portion's label (a `VolumeUnit` or `WeightUnit` when typed), or null for grams. */
+  /** A portion label, a typed `VolumeUnit`/`WeightUnit`, or null for grams. */
   unit: string | null;
-  /** How many of `unit` (a weight in grams when `unit` is null). */
   quantity: number;
 };
 
-/** How grams step in a stepper, and the least one can log. */
 export class GramSteps {
   static readonly STEP = 10;
 
@@ -44,7 +36,6 @@ export class GramSteps {
 export const portionOf = (m: Measure): Portion | null =>
   m.unit === null ? null : (m.portions.find((p) => p.label === m.unit) ?? null);
 
-/** What the amount weighs. */
 export const measureGrams = (m: Measure): number => {
   const p = portionOf(m);
   return p ? portionGrams(p, m.quantity) : round1(m.quantity);
@@ -65,7 +56,7 @@ const UNIT_ABBREVIATIONS = new Set([
   'fl',
 ]);
 
-/** "egg" → "eggs" when `count` isn't 1. Leaves labels with numbers, brackets or unit abbreviations alone. */
+/** Leaves labels with numbers, brackets or unit abbreviations alone. */
 export function pluralize(label: string, count: number): string {
   // "cup, chopped" → "cups, chopped": the unit before the comma takes the plural.
   const comma = label.indexOf(',');
@@ -83,7 +74,7 @@ export function pluralize(label: string, count: number): string {
   return [...words.slice(0, -1), plural].join(' ');
 }
 
-/** "eggs" → "egg", "tomatoes" → "tomato", "berries" → "berry". Words that don't look plural are left alone. */
+/** "tomatoes" → "tomato", "berries" → "berry". */
 export function singular(word: string): string {
   // Only the endings that really turn into "y" (berries, cherries, candies): cookies and pies just lose the "s".
   if (/(rr|nd)ies$/i.test(word)) return `${word.slice(0, -3)}y`;
@@ -92,7 +83,6 @@ export function singular(word: string): string {
   return word;
 }
 
-/** A label to show on its own, e.g. a chip: "large egg" → "Large egg". */
 export const sentence = (label: string) =>
   label.charAt(0).toUpperCase() + label.slice(1);
 
@@ -103,7 +93,6 @@ export function measureLabel(m: Measure): string {
   return `${formatCount(m.quantity)} ${pluralize(p.label, m.quantity)} (${measureGrams(m)} g)`;
 }
 
-/** Whether the amount is typed rather than counted: grams, ounces, pounds, or a volume. */
 export const isTypedUnit = (unit: string | null) =>
   unit === null || isVolumeUnit(unit) || isWeightUnit(unit);
 
@@ -120,7 +109,7 @@ export function amountText(m: Measure): string {
   return `${formatCount(m.quantity)} ${pluralize(m.unit ?? '', m.quantity)}`;
 }
 
-/** The entry fields for this amount: one serving of exactly what was eaten, plus the measure itself. */
+/** One serving of exactly what was eaten, plus the measure. */
 export function amountOf(m: Measure) {
   return {
     servings: 1,
@@ -145,10 +134,7 @@ const roundTo = (n: number, digits: number) => {
   return Math.round(n * f) / f;
 };
 
-/**
- * One step up or down: a quarter of anything counted (a cup, a packet, an egg), ten grams,
- * an ounce, a quarter pound, ten ml or a fluid ounce.
- */
+/** A quarter of a count, 10 g, 1 oz, ¼ lb, 10 ml or 1 fl oz. */
 export function stepMeasure(m: Measure, direction: 1 | -1): Measure {
   if (isWeightUnit(m.unit)) {
     const { step, min, digits } = weightStep(m.unit);
@@ -173,9 +159,7 @@ export function stepMeasure(m: Measure, direction: 1 | -1): Measure {
       ),
     };
   }
-  // To the next whole quarter in that direction (a typed "1.3" goes down to 1.25, up to 1.5).
-  // Below a quarter there is nothing smaller to go to, so an amount under it (a third, from a
-  // scaled meal) stays put rather than jumping up.
+  // Snaps to the next quarter; an amount under a quarter (from a scaled meal) stays put.
   const step = Servings.STEP;
   const at = m.quantity / step;
   const next =
@@ -188,7 +172,7 @@ export function stepMeasure(m: Measure, direction: 1 | -1): Measure {
   };
 }
 
-/** The same amount (by weight) in another unit: a quarter-portion count (fl oz too), or whole grams or ml. */
+/** Same weight in another unit, rounded to quarters (counts, fl oz) or whole g/ml. */
 export function switchUnit(m: Measure, unit: string | null): Measure {
   if (unit === m.unit) return m;
   const grams = measureGrams(m);
@@ -230,11 +214,7 @@ export const scaleMeasure = (m: Measure, factor: number): Measure => ({
   quantity: Math.max(0.01, Math.round(m.quantity * factor * 100) / 100),
 });
 
-/**
- * Typing an amount: `text` in the volume or weight unit chosen, else in grams,
- * or zero while it isn't a sensible number. The cap (5000 g) is on what a
- * weight comes to; ounces are kept to a tenth and pounds to a hundredth.
- */
+/** Zero while not a sensible number; capped by weight. Oz keep a tenth, lb a hundredth. */
 export function typedAmount(m: Measure, text: string): Measure {
   const unit = isTypedUnit(m.unit) ? m.unit : null;
   const weight = isWeightUnit(unit) ? portionOf({ ...m, unit }) : null;
@@ -243,10 +223,7 @@ export function typedAmount(m: Measure, text: string): Measure {
   return { ...m, unit, quantity: n === null ? 0 : roundTo(n, digits) };
 }
 
-/**
- * The measure with ounces and pounds on offer, a cup (and spoons) when its weight per cup is
- * known, and fl oz and ml when `name` is a drink (entries logged before they were).
- */
+/** Adds oz/lb, household volumes and drink volumes (older entries lack them). */
 export function withTypedUnits(m: Measure, name: string): Measure {
   const portions = withWeights(
     withVolumes(withHouseholdVolumes(m.portions, name), name),
@@ -254,19 +231,12 @@ export function withTypedUnits(m: Measure, name: string): Measure {
   return portions.length === m.portions.length ? m : { ...m, portions };
 }
 
-/**
- * Where to start when logging `result`, whose values are for `baseGrams`: the
- * unit and amount used last time if it was logged before, else the first
- * portion (one of it; a tablespoon for oil and butter), else the weight the values are for (in ml for a drink,
- * ounces for Imperial, else grams). Every food gets oz and lb to choose from,
- * and drinks fl oz and ml.
- */
+/** Last time's unit and amount, else one of the first portion, else `baseGrams` in a fitting unit. */
 export function startingMeasure(
   result: SearchResult,
   baseGrams: number,
   units: Units,
 ): Measure {
-  // The food's sizes, with a cup and spoons when known (spoons first for oil and butter).
   const own = withHouseholdVolumes(result.portions ?? [], result.name);
   const portions = withWeights(withVolumes(own, result.name, result.liquid));
   const base = { per100: scaleForGrams(result, baseGrams, 100), portions };
@@ -295,10 +265,7 @@ export function startingMeasure(
   return { ...base, unit: null, quantity: baseGrams };
 }
 
-/**
- * The measure with `extra` portions offered first (sizes that arrived after it was made),
- * keeping the unit and amount already chosen.
- */
+/** Puts late-arriving sizes first, keeping the chosen unit and amount. */
 export function addPortions(m: Measure, extra: Portion[]): Measure {
   const fresh = extra.filter(
     (p) => !m.portions.some((q) => q.label === p.label),
@@ -319,7 +286,7 @@ const macros = (v: unknown): Macros | null => {
     : null;
 };
 
-/** A measure read back from storage, or undefined if it isn't a usable one (older entries have none). */
+/** Undefined when unusable (older entries have none). */
 export function parseMeasure(raw: unknown): Measure | undefined {
   const r = raw as Partial<Measure> | null | undefined;
   if (!r || typeof r !== 'object') return undefined;

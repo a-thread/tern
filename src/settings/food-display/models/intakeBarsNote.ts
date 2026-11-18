@@ -1,8 +1,4 @@
-/**
- * The note under "Show intake bars": the settings for the bars live under Calorie & macro
- * targets, and it names only those that exist for what's tracked (a calorie zone needs
- * calories, a protein minimum needs macros), and only while the bars are on.
- */
+/** Names only the bar settings that exist for what's tracked, and only while bars are on. */
 export function intakeBarsNote({
   trackCalories,
   trackMacros,

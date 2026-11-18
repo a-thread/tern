@@ -11,10 +11,7 @@ import {
 /** Reminder schedule; times are minutes since midnight, weekdays 1–7 (Sunday–Saturday). */
 export type ReminderConfig = {
   mealLog: { on: boolean; midday: number; evening: number };
-  /**
-   * Reminders to eat, for someone who doesn't track food: nothing to log, just a nudge at
-   * midday and in the evening. Used only while food isn't tracked.
-   */
+  /** Only while food isn't tracked. */
   eat: { on: boolean; midday: number; evening: number };
   /** Used for weekly weigh-ins. */
   weighIn: { on: boolean; weekday: number; at: number };
@@ -224,11 +221,7 @@ export type RemindersOn = {
   medication: boolean;
 };
 
-/**
- * The reminders that will actually fire: switched on, and for something tracked (a water
- * reminder does nothing while water is off). Streak alerts need steps read from the health
- * app; medication reminders are set on each medication.
- */
+/** On and for something tracked; streak alerts also need readable steps. */
 export function remindersOn(
   c: ReminderConfig,
   {

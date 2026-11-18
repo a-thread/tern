@@ -20,11 +20,7 @@ const barState = (minutes: number, goal: number): DayState =>
       ? DayState.Goal
       : DayState.Partial;
 
-/**
- * Minutes moved as bars, like the steps chart: one per day for a week or a
- * month, a weekly total for six months. A bar reads as a goal day when the
- * minutes that count toward one (`goalByDay`, all of them if absent) reach it.
- */
+/** A goal day when `goalByDay` minutes (all, if absent) reach the goal. */
 export function bucketMinutes(
   byDay: Readonly<Record<string, number>>,
   goal: number,

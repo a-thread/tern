@@ -3,11 +3,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const KEY = 'tern:waypoints:last-seen';
 
-/**
- * The waypoint total the last time the waypoints card was open, kept on this phone, so the
- * card can show how far you've come since you last looked. `lastSeen` is undefined while it's
- * read, and null when the card has never been opened (or storage can't be read).
- */
+/** `lastSeen`: undefined while reading, null if never opened or unreadable. */
 export function useLastSeenTotal(): {
   lastSeen: number | null | undefined;
   remember: (total: number) => void;

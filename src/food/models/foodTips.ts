@@ -2,10 +2,7 @@ import { Tip } from '@/domain/settings/models/onboarding';
 import { Meals } from '@/domain/food/models/meals';
 import type { FoodEntry } from '@/domain/food/models/foodEntry';
 
-/**
- * Where the Food tab's tips can point: the first "No breakfast today" row, and the first food
- * logged (in the order the day runs). Null where there's nothing to point at.
- */
+/** Null where there's nothing to point at. */
 export function foodTipTargets(input: {
   editable: boolean;
   foodLog: readonly FoodEntry[];
@@ -24,10 +21,7 @@ export function foodTipTargets(input: {
   return { skipMeal, firstFoodId: first?.id ?? null };
 }
 
-/**
- * What each tip on the Food tab says: a bold opening, then the rest. `when` is the viewed day
- * as the skip row words it ("today", or "yesterday", which can still be filled in).
- */
+/** `when` is "today" or "yesterday", as the skip row words it. */
 export function foodTipText(
   tip: Tip,
   mealName: string,

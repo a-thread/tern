@@ -1,8 +1,4 @@
-/**
- * How a day went: the goal was reached, some steps, a rest day, or nothing. A
- * frozen day is one that would have broken the streak but was covered by a
- * streak freeze.
- */
+/** Frozen: would have broken the streak, but a freeze covered it. */
 export enum DayState {
   Goal = 'goal',
   Partial = 'partial',

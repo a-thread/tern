@@ -6,11 +6,7 @@ import { GroupLabel } from '@shared/components/ui';
 import { useSettings } from '../../domain/settings/SettingsContext';
 import { useAdaptiveTarget } from '../../domain/food/hooks/useAdaptiveTarget';
 
-/**
- * The adaptive target's weekly suggestion, on Today. Shows only when there is
- * one worth making and it hasn't been answered this week; nothing changes
- * until "Use" is tapped.
- */
+/** Only when worth making and unanswered this week. */
 export function TargetSuggestionCard() {
   const { settings } = useSettings();
   const adaptive = useAdaptiveTarget();

@@ -18,12 +18,7 @@ import {
 const TARGET_MIN = 1200;
 const TARGET_MAX = 3500;
 
-/**
- * The adaptive target: an estimate of what someone burns, from their own log
- * and weight trend, and once a week at most, a suggested target to match their
- * aim. Nothing changes until they choose "Use". Works only with calories and
- * weight both tracked, and only does anything once "Adapt my target" is on.
- */
+/** Weekly target suggestions; needs calories and weight tracked and "Adapt my target" on. */
 export function useAdaptiveTarget() {
   const { settings, updateSettings } = useSettings();
   const { loadHistory, loadSkippedHistory, foodLog } = useFood();

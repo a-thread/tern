@@ -6,10 +6,7 @@ import { Card } from '@shared/components/ui';
 import { FadeIn } from '@shared/components/FadeIn/FadeIn';
 import { LetterRest } from './components/LetterRest/LetterRest';
 
-/**
- * Why Tern exists, in Aiden's words. Folded to its first paragraph so Support Tern stays in
- * reach; opening it shows the rest, the source code and a way to write back. It doesn't fold again.
- */
+/** Folded to its first paragraph so Support Tern stays in reach; it doesn't fold again. */
 export function Letter() {
   const [whole, setWhole] = useState(false);
 

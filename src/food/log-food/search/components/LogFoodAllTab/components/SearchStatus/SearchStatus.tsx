@@ -3,11 +3,7 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { colors, font, space } from '@shared/theme';
 
-/**
- * One quiet line when a source couldn't be reached. What else was found stays
- * on screen above it; loading itself is shown by the search bar, so nothing
- * here appears or disappears while a search runs.
- */
+/** Errors only; loading is the search bar's, so nothing here flickers. */
 export function SearchStatus({
   failedLabels,
   failedAll,

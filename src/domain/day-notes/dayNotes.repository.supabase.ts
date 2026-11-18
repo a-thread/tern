@@ -1,5 +1,5 @@
 import type { TernClient } from '@shared/backend/supabase';
-import { ok, rows } from '@shared/backend/query';
+import { allRows, ok } from '@shared/backend/query';
 import type { DayNote } from './models/dayNote';
 import type { DayNotesRepository } from './dayNotes.repository';
 
@@ -16,14 +16,14 @@ export function createSupabaseDayNotesRepository(
   return {
     async load(from, to) {
       return (
-        await rows<DayNoteRow>(
+        await allRows<DayNoteRow>((start, end) =>
           db
             .from('day_notes')
             .select('day, note')
             .gte('day', from)
             .lte('day', to)
             .order('day', { ascending: true })
-            .limit(1000),
+            .range(start, end),
         )
       ).map(rowToDayNote);
     },

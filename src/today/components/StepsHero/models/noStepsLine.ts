@@ -6,12 +6,7 @@ export type NoStepsLine = {
   opensHealthData: boolean;
 };
 
-/**
- * What the sky card says under the count while steps can't be read, or null for nothing.
- * Only today gets a line: a past day can't be fixed from here. Only something that can be
- * done from Health data is a link (nothing can connect on a phone with no health app), and
- * while movement is tracked it's named as the other way to a goal day.
- */
+/** Today only (a past day can't be fixed here); a link only when Health data can help. */
 export function noStepsLine({
   status,
   readSteps,

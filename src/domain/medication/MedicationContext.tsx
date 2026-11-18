@@ -6,7 +6,7 @@ import { useDayKey } from '@shared/hooks/useDayKey';
 import { useLoader } from '@shared/hooks/useLoader';
 import { usePersist } from '@shared/hooks/usePersist';
 import { useViewedDay } from '@shared/state/ViewedDayContext';
-import { parseDayKey } from '@shared/utils/date';
+import { addDays, parseDayKey } from '@shared/utils/date';
 import { useSettings } from '../settings/SettingsContext';
 import { useAward } from '../waypoints/hooks/useAward';
 import { WaypointSource } from '../waypoints/models/waypoint';
@@ -44,10 +44,7 @@ const weekdayOf = (day: string) => parseDayKey(day).getDay() + 1;
 const sameDose = (a: Dose, b: Dose) =>
   a.medicationId === b.medicationId && a.day === b.day;
 
-/**
- * The viewed day's doses, next to the medications in settings, and the waypoint for taking
- * everything due today. Must sit inside SettingsProvider.
- */
+/** Inside SettingsProvider. */
 export function MedicationProvider({
   repo,
   children,
@@ -158,8 +155,8 @@ export function MedicationProvider({
     [covered, medications, takenOnDay],
   );
 
-  // Everything scheduled today taken earns a waypoint; un-marking one takes it back. Nothing
-  // is due (or paid) on a day with no medication scheduled. Catching up on yesterday earns nothing.
+  // Everything due that day taken earns the waypoint. Yesterday's doses are only loaded while
+  // yesterday is viewed, so it's judged then.
   const dueToday = useMemo(
     () => dueMeds(medications, takenToday, weekdayOf(today)),
     [medications, takenToday, today],
@@ -168,6 +165,26 @@ export function MedicationProvider({
     WaypointSource.Medication,
     takenToday.size > 0 && dueToday.length === 0,
     ready && medications.length > 0,
+  );
+  const yesterday = addDays(today, -1);
+  const takenYesterday = useMemo(
+    () => takenOn(yesterday),
+    [takenOn, yesterday],
+  );
+  const dueYesterday = useMemo(
+    () =>
+      dueMeds(
+        medications.filter((m) => trackedOn(m, yesterday)),
+        takenYesterday,
+        weekdayOf(yesterday),
+      ),
+    [medications, takenYesterday, yesterday],
+  );
+  useAward(
+    WaypointSource.Medication,
+    takenYesterday.size > 0 && dueYesterday.length === 0,
+    ready && medications.length > 0 && loaded.from <= yesterday,
+    { day: yesterday },
   );
 
   const value = useMemo<MedicationContextValue>(

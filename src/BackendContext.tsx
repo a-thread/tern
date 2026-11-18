@@ -122,10 +122,7 @@ export type Backend = {
   dayNotes: DayNotesRepository;
   workouts: WorkoutsSource | null;
   commonFoods: CommonFoodsRepository;
-  /**
-   * Brings the server's record of Tern Plus up to date with the store, before an account
-   * with Plus is written to. Only an account has one.
-   */
+  /** Account only: syncs the server's Plus record before writing. */
   syncPlus?: () => Promise<boolean>;
   /** What never-saved settings start as; the app's usual defaults when absent. */
   settingsDefaults?: AppSettings;
@@ -154,10 +151,7 @@ export function createMemoryBackend(): Backend {
   };
 }
 
-/**
- * Steps on the phone, with or without an account: the health app's, or none. Sample steps
- * instead in a local demo build (`sampleSteps`).
- */
+/** The health app's, or sample steps in a demo build. */
 export function createPhoneStepsRepository(): StepsRepository {
   if (sampleSteps())
     return createMemoryStepsRepository(undefined, sampleStepDays());
@@ -176,11 +170,7 @@ export function createBlankMemoryBackend(): Backend {
   };
 }
 
-/**
- * Everything stored on the phone, in `db` (`openLocalDb()`): the free tier, with no account.
- * Steps and workouts still come from the phone's health app. The common-foods list is the
- * bundled seed for now, since the shared table is readable only when signed in.
- */
+/** Common foods are the bundled seed, since the shared table needs a sign-in. */
 export function createLocalBackend(db: LocalDb): Backend {
   return {
     food: createLocalFoodRepository(db),
@@ -204,12 +194,8 @@ export function createLocalBackend(db: LocalDb): Backend {
 }
 
 /**
- * Tern Plus. Not part of `Backend`: it outlives signing in and out, since buying comes
- * before the account. Already on in a test build that unlocks it (`plusUnlocked`). Otherwise
- * the store's through RevenueCat when there's a key for this platform. Without one, in
- * memory where buying is free in development and Expo Go (`dev`; accounts count as
- * Supporter with `devSupporter`), and unavailable in a
- * release build, so a missing key shows as no Plus rather than as saves the server refuses.
+ * Outside `Backend`, since it outlives sign-in. Unlocked build, else RevenueCat, else free
+ * in-memory in dev, else unavailable, so a missing release key means no Plus, not refused saves.
  */
 export function createSubscriptionRepository(
   dev: boolean = __DEV__,
@@ -235,10 +221,7 @@ export function createSubscriptionRepository(
   });
 }
 
-/**
- * Asks the server whether the signed-in account has Tern Plus, counting grants made by
- * hand; undefined without Supabase. Bound to the session, like the remote backend.
- */
+/** Counts hand grants; undefined without Supabase. */
 export function createServerPlusGrant(): (() => Promise<boolean>) | undefined {
   return supabase ? createSupabasePlusSync(supabase) : undefined;
 }
@@ -273,10 +256,7 @@ const [BackendContext, useBackend] = createRequiredContext<Backend>(
 );
 export { useBackend };
 
-/**
- * Erasing or restoring changes everything under the app at once, so afterwards every
- * Context below is remounted and reloads from the backend, whichever backend it is.
- */
+/** Erase or restore remounts every Context below so all reload. */
 export function BackendProvider({
   backend,
   children,

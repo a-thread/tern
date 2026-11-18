@@ -4,12 +4,7 @@ import { Path } from 'react-native-svg';
 import { colors } from '@shared/theme';
 import { type MapShape } from '../../models/journeyMapShapes';
 
-/**
- * The parts of the map that don't move while the tern flies: the sea (on the globe), the grid,
- * the land, and the route underneath the flown line. Memoised, so the tern's flight, which
- * re-renders the map about 30 times a second, doesn't redraw the large coastline path each time.
- * `k` is the zoom, which lines are drawn that much thinner for so they keep their size.
- */
+/** Memoised so the ~30 fps flight doesn't redraw the coastline. Lines thin by `k` (zoom). */
 export const MapBase = React.memo(function MapBase({
   shape,
   path,

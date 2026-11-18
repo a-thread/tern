@@ -1,9 +1,6 @@
 import { LogHome } from './logHome';
 
-/**
- * The "Your data" line on the Settings index: where the data is, then what the page does.
- * `home` is null for sample data, which isn't stored anywhere and can only be looked at.
- */
+/** `home` is null for sample data, which isn't stored anywhere. */
 export function dataSummary({
   home,
   canImport,

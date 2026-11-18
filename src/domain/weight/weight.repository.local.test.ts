@@ -57,14 +57,14 @@ describe('local weight repository', () => {
     expect(await createLocalWeightRepository(db).load()).toHaveLength(1);
   });
 
-  it('loads the newest 180, like the Supabase version', async () => {
+  it('loads every weigh-in, newest first, like the Supabase version', async () => {
     const repo = await local();
     for (let i = 0; i < 185; i++) {
       const day = new Date(Date.UTC(2026, 0, 1) + i * 86_400_000).toISOString();
       await repo.add({ id: String(i), lb: 180, loggedAt: day });
     }
     const loaded = await repo.load();
-    expect(loaded).toHaveLength(180);
+    expect(loaded).toHaveLength(185);
     expect(loaded[0].id).toBe('184');
   });
 });

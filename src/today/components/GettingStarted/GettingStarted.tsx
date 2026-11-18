@@ -11,12 +11,7 @@ import { StepsStatus } from '@/domain/activity/models/stepsStatus';
 import { useRootNavigation } from '@/navigation/useAppNavigation';
 import { startItems, StartItem } from '../../models/gettingStarted';
 
-/**
- * The one-off setup still to do, at the top of Today for someone new: steps and reminders (meals
- * and weigh-ins are in "Left to do" just below). Each row ticks off from what has really
- * happened, and opens the place to do it. Hidden with its ×, or once everything is done. It pays
- * no waypoints: those stay for the things themselves.
- */
+/** Rows tick off from what really happened. Pays no waypoints. */
 export function GettingStarted() {
   const navigation = useRootNavigation();
   const { settings, updateSettings } = useSettings();

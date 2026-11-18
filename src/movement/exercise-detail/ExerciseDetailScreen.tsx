@@ -44,10 +44,7 @@ const GUIDE: { effort: Effort; text: string }[] = [
   },
 ];
 
-/**
- * One exercise's details: how long (on a ruler), how hard, and how far where it applies. Opened
- * from a logged entry (`entryId`), it starts from that entry and saves changes to it.
- */
+/** With `entryId`, edits that entry. */
 export default function ExerciseDetailScreen({ navigation, route }: Props) {
   const insets = useSafeAreaInsets();
   const { activity, day, entryId } = route.params;

@@ -19,10 +19,7 @@ type Props = NativeStackScreenProps<RootStackParamList, 'MealCheckIn'>;
 /** "lunch", or "your snack": how the meal reads in a sentence. */
 const mealWords = (meal: Meal) => (meal === Meal.Snack ? 'your snack' : meal);
 
-/**
- * A quick check-in after a meal: how full you are and how you feel, each picked from five
- * choices, and a note if you like. Nothing is judged; it is only there to look back on.
- */
+/** Nothing is judged; it's only there to look back on. */
 export default function MealCheckInScreen({ navigation, route }: Props) {
   const { meal } = route.params;
   const insets = useSafeAreaInsets();

@@ -49,12 +49,7 @@ function surfacePath(
   return `${d} L ${W + WAVE_LENGTH} ${BOTTOM + 20} Z`;
 }
 
-/**
- * A large glass that fills as water is logged. It is still at rest; when the
- * level changes the surface rises, the waves rush across and the water sloshes
- * from side to side before settling flat again. `progress` is 0 to 1 toward the
- * goal; going past it just keeps the glass full.
- */
+/** `progress` 0–1; past the goal it just stays full. Still except when the level changes. */
 export default function WaterGlass({
   progress,
   pourKey,

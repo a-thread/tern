@@ -37,10 +37,7 @@ function useTrackedDayKey(enabled: boolean): string {
   return key;
 }
 
-/**
- * Provides today's date key to everything below it, with one midnight timer and
- * one AppState listener for the whole app instead of one per screen and context.
- */
+/** One midnight timer and AppState listener for the whole app. */
 export function DayKeyProvider({ children }: { children: React.ReactNode }) {
   const key = useTrackedDayKey(true);
   return (
@@ -48,10 +45,7 @@ export function DayKeyProvider({ children }: { children: React.ReactNode }) {
   );
 }
 
-/**
- * Today's local date key, kept current. Uses the app-wide provider when there is
- * one; otherwise (tests, isolated screens) tracks it on its own.
- */
+/** Tracks it on its own without a provider (tests). */
 export function useDayKey(): string {
   const shared = useContext(DayKeyContext);
   const own = useTrackedDayKey(shared === null);

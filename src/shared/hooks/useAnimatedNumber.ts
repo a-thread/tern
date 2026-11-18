@@ -5,9 +5,6 @@ import { useReduceMotion } from './useReduceMotion';
 /** Limit display updates so the number remains readable. */
 const NUMBER_UPDATE_MS = 66;
 
-/**
- * Animate the displayed integer toward `value` instead of snapping to it.
- */
 export function useAnimatedNumber(value: number, duration = 650) {
   const [display, setDisplay] = useState(value);
   const anim = useRef(new Animated.Value(value)).current;
@@ -73,11 +70,7 @@ export function usePulseOnIncrease(value: number) {
   return scale;
 }
 
-/**
- * Counts an integer up from 0 to `target`, and does it again whenever
- * `replayKey` changes — for numbers that should roll up each time their
- * screen comes into view. Use through `<CountUp>` so only a Text re-renders.
- */
+/** Replays when `replayKey` changes. Use through `<CountUp>` so only a Text re-renders. */
 export function useCountUp(target: number, replayKey = 0, duration = 1800) {
   const [display, setDisplay] = useState(0);
 

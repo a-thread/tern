@@ -78,12 +78,8 @@ const frozen = (n: number): ReminderText[] => [
 ];
 
 /**
- * The streak notifications to have scheduled. Both only exist while a streak is worth
- * protecting and today isn't settled, so reaching the goal (or taking a rest day) and
- * syncing clears them:
- *  - this evening, a heads-up that the streak is still open today;
- *  - tomorrow morning, a note that a freeze held it, if today's goal never gets reached and
- *    a freeze (not a rest day) is what covers the day. A streak that ends gets no note.
+ * While a streak is open today: an evening heads-up, and a morning note if a freeze ends up
+ * covering today. Reaching the goal or resting clears both.
  */
 export function planStreakAlerts(
   input: StreakAlertInput,

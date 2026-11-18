@@ -1,5 +1,5 @@
 import type { TernClient } from '@shared/backend/supabase';
-import { ok, rows } from '@shared/backend/query';
+import { allRows, ok } from '@shared/backend/query';
 import type { WaterEntry } from './models/waterEntry';
 import type { WaterRepository } from './water.repository';
 
@@ -21,14 +21,15 @@ export function createSupabaseWaterRepository(db: TernClient): WaterRepository {
   return {
     async load(from, to) {
       return (
-        await rows<WaterRow>(
+        await allRows<WaterRow>((start, end) =>
           db
             .from('water_entries')
             .select('id, oz, logged_on, logged_at')
             .gte('logged_on', from)
             .lte('logged_on', to)
             .order('logged_at', { ascending: true })
-            .limit(5000),
+            .order('id')
+            .range(start, end),
         )
       ).map(rowToWater);
     },

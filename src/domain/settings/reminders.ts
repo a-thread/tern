@@ -183,10 +183,7 @@ export async function syncReminders(
   return SyncResult.Ok;
 }
 
-/**
- * Sync streak alerts. With `mayAsk` (a reminder has been chosen) the phone asks for
- * notification permission if it hasn't been given; without it they wait until it is.
- */
+/** With `mayAsk`, asks for notification permission if needed. */
 export async function syncStreakAlerts(
   input: StreakAlertInput,
   mayAsk = false,

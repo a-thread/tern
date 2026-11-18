@@ -13,13 +13,7 @@ import { useTabAnchors } from '../../navigation/tabs/tabAnchors';
 /** Lets the week strip's rings fill before a tip points at them. */
 const SETTLE_MS = 900;
 
-/**
- * The one-time tips on Today: the week strip, the rest-day link, the waypoints chip, the
- * settings gear, then each tab along the bottom. They wait while `hold` is true (a celebration,
- * the water sheet) and while a past day is in view. The rest-day tip only applies while there's
- * a rest-day link (not once the goal is reached, or with none left), and the Food tab's only
- * while there is one; otherwise they're skipped and left out of the count.
- */
+/** Wait while `hold` or a past day is in view; tips without an anchor are skipped. */
 export function useTodayTips({
   rootRef,
   chipRef,

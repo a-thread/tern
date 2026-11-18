@@ -9,10 +9,7 @@ import { WizardStep as Step } from '../models/wizardSteps';
 import { space } from '@shared/theme';
 import { StyleSheet } from 'react-native';
 
-/**
- * The last screen: meal and weigh-in reminders. "Turn on reminders" lets the phone ask to send
- * notifications now that it's clear why; "Not now" finishes without asking.
- */
+/** Asks for notifications here, once it's clear why. */
 export default function RemindersStepScreen() {
   const { settings, updateSettings } = useSettings();
   const wizard = useWizard(Step.Reminders);

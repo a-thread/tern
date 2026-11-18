@@ -11,11 +11,7 @@ export class FoodApiError extends Error {
 
 const TIMEOUT_MS = 10_000;
 
-/**
- * GET JSON with a timeout. A caller cancelling through `signal` (a newer search
- * replaced this one) is let through untouched; anything else becomes a
- * FoodApiError.
- */
+/** A caller's own abort passes through untouched; any other failure becomes a FoodApiError. */
 export async function getJson(
   url: string,
   signal?: AbortSignal,

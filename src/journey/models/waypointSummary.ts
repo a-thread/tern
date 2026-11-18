@@ -40,10 +40,7 @@ function listOf(names: string[]): string {
   return text.charAt(0).toUpperCase() + text.slice(1);
 }
 
-/**
- * What `day` earned, as lines to read: the goal day first, the meals logged that day on one
- * line, then the rest in a steady order. Empty when nothing was earned.
- */
+/** Goal day first, meals on one line, then a steady order. */
 export function earnedOn(
   events: LedgerEvent[],
   day: string,
@@ -97,11 +94,7 @@ export type Tracking = {
   skippedMeals?: readonly string[];
 };
 
-/**
- * Up to `max` things still open today and what each pays, gently: the next meal to log, the
- * check-in, the water goal, the goal day, movement. Never a weigh-in or a rest day — Tern
- * doesn't nudge anyone onto the scale or into resting — and never medication.
- */
+/** Never a weigh-in, rest day or medication: Tern doesn't nudge onto the scale or into resting. */
 export function stillOpen(
   events: LedgerEvent[],
   day: string,

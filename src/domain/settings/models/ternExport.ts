@@ -38,16 +38,11 @@ export class TernExportLists {
 }
 
 export type ParsedExport =
-  | { ok: true; copy: TernExport }
-  | { ok: false; message: string };
+  { ok: true; copy: TernExport } | { ok: false; message: string };
 
 const NOT_TERN = "This file isn't a Tern export.";
 
-/**
- * Reads a file chosen to restore from. Only the overall shape is checked here; a row that
- * doesn't fit is skipped when it's written, so one bad row never blocks the rest. A list
- * added to exports after this file was made is simply absent, and treated as empty.
- */
+/** Checks only the shape; bad rows are skipped on write, and missing lists read as empty. */
 export function parseTernExport(text: string): ParsedExport {
   let raw: unknown;
   try {
@@ -61,7 +56,10 @@ export function parseTernExport(text: string): ParsedExport {
   const r = raw as Record<string, unknown>;
   if (typeof r.exportedAt !== 'string') return { ok: false, message: NOT_TERN };
   if (r.weightUnit !== 'lb') {
-    return { ok: false, message: "This export's weights are in a unit Tern can't read." };
+    return {
+      ok: false,
+      message: "This export's weights are in a unit Tern can't read.",
+    };
   }
   const lists = Object.fromEntries(
     TernExportLists.ALL.map((key) => [key, r[key] ?? []]),

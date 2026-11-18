@@ -8,10 +8,7 @@ import { TRAIL_PALETTE } from '@shared/models/trailPalette';
 import { useSettings } from '@/domain/settings/SettingsContext';
 import { TrailColors } from '@/domain/settings/models/trailColor';
 
-/**
- * The four trail colors, one under another so each name fits: a stroke on the night sky,
- * with a ring and a tick on the one chosen.
- */
+/** Stacked so each name fits. */
 export function TrailPicker() {
   const { settings, updateSettings } = useSettings();
 

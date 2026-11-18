@@ -30,10 +30,7 @@ type Props = NativeStackScreenProps<RootStackParamList, 'Destination'>;
 /** The photo's height over its width. */
 const PHOTO_RATIO = 0.62;
 
-/**
- * A stop already passed, from its row on Journey: a photo from there, when it was reached,
- * and a few things about the place. Still, unlike the card that celebrates reaching it.
- */
+/** Still, unlike the card that celebrates reaching it. */
 export default function DestinationScreen({ navigation, route }: Props) {
   const toast = useToast();
   const { waypoints, events, ready } = useWaypoints();

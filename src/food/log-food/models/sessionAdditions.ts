@@ -7,10 +7,7 @@ export const additionsSince = (
   log: FoodEntry[],
 ): FoodEntry[] => log.filter((f) => !baseline.has(f.id));
 
-/**
- * A short confirmation of what was added, e.g. "Added to Lunch: Oats, Banana
- * (+1 more)". Null when nothing was added.
- */
+/** "Added to Lunch: Oats, Banana (+1 more)"; null when nothing was. */
 export function describeAdditions(
   added: FoodEntry[],
   maxNames = 2,

@@ -5,11 +5,7 @@ import { useToast } from '../state/ToastContext';
 /** What to say when a background write fails: a console note, and a message for the person. */
 export type PersistFailure = { log: string; toast: string };
 
-/**
- * For optimistic edits: change the screen first, then pass the repository write here.
- * If it fails, the person is told and the data is reloaded, so the screen never keeps
- * showing something that wasn't saved.
- */
+/** For optimistic writes: on failure, tells the person and reloads. */
 export function usePersist(reload: () => unknown) {
   const toast = useToast();
   return useCallback(

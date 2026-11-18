@@ -6,10 +6,7 @@ import { Icon } from '@shared/components/ui';
 import { FadeIn } from '@shared/components/FadeIn/FadeIn';
 import { useReduceMotion } from '@shared/hooks/useReduceMotion';
 
-/**
- * The thank-you after a tip. It stays in the card rather than fading like a toast: it rises
- * in, and the heart beats twice. With Reduce Motion on, it simply appears.
- */
+/** Stays in the card rather than fading like a toast. */
 export function TipThanks({ text }: { text: string }) {
   const still = useReduceMotion();
   const beat = useRef(new Animated.Value(0)).current;

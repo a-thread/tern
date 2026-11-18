@@ -11,10 +11,7 @@ import { formatLoggedAt } from '../../domain/weight/models/weightEntry';
 import { useDayItems } from '../hooks/useDayItems';
 import { useRootNavigation } from '../../navigation/useAppNavigation';
 
-/**
- * What is still open on the viewed day: meals, a weigh-in, water, a check-in and
- * medication. Yesterday can still be filled in; earlier days have nothing open. Empty hides it.
- */
+/** Earlier than yesterday has nothing open. Hidden when empty. */
 export function LeftToDoList() {
   const navigation = useRootNavigation();
   const { openItems, lastWeight, isToday } = useDayItems();

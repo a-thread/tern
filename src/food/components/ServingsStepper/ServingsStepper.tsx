@@ -8,10 +8,7 @@ import {
   typedServings,
 } from '@/domain/food/models/servings';
 
-/**
- * How many servings: quarter steps, or tap the number and type it. Never more than `max`;
- * typing past it shows `max`, so the field always says what will be logged.
- */
+/** Typing past `max` shows `max`, so the field always says what will be logged. */
 export function ServingsStepper({
   value,
   onChange,

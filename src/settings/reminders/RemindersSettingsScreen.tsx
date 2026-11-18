@@ -17,11 +17,7 @@ type Section = keyof Pick<
   'FoodSettings' | 'WeightSettings' | 'WaterSettings' | 'MoodSettings'
 >;
 
-/**
- * Settings › Reminders: every reminder in one place. The rows are the same ones on each
- * feature's page, so a change here shows there too. A reminder for something that isn't
- * tracked says so, and leads to where it's turned on.
- */
+/** The same rows as each feature's page. */
 export default function RemindersSettingsScreen() {
   const navigation = useSettingsNavigation();
   const { settings } = useSettings();

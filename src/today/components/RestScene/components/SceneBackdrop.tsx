@@ -17,10 +17,7 @@ import { SceneCanvas } from '../models/sceneCanvas';
 
 const { WIDTH, HEIGHT } = SceneCanvas;
 
-/**
- * Everything in the scene but the tern, drawn for one pose: the sky and its stars, the sun and
- * its glow, the water with the sun's shimmer and the ripples, and the driftwood. Fills its box.
- */
+/** Everything but the tern, for one pose. */
 export function SceneBackdrop({ pose }: { pose: ScenePose }) {
   const sunY = RestScenes.SUN_DAY_Y + pose.sunDrop;
 

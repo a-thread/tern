@@ -11,10 +11,6 @@ import {
 
 const km = (n: number) => `${n.toLocaleString()} km`;
 
-/**
- * Where the route on Journey comes from, from the info button by "Stops": the tracking
- * studies it follows, how far each part of the trip is, and how far a waypoint goes.
- */
 export default function RouteInfoScreen() {
   const toast = useToast();
   const { PHASE_KM, KM_PER_WAYPOINT, SOURCES, STOPS } = MigrationRoute;
