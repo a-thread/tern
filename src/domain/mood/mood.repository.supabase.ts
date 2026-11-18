@@ -1,5 +1,5 @@
 import type { TernClient } from '@shared/backend/supabase';
-import { ok, rows } from '@shared/backend/query';
+import { allRows, ok } from '@shared/backend/query';
 import type { MoodEntry } from './models/moodEntry';
 import type { MoodRepository } from './mood.repository';
 
@@ -15,14 +15,14 @@ export function createSupabaseMoodRepository(db: TernClient): MoodRepository {
   return {
     async load(from, to) {
       return (
-        await rows<MoodRow>(
+        await allRows<MoodRow>((start, end) =>
           db
             .from('mood_checkins')
             .select('day, mood, stress')
             .gte('day', from)
             .lte('day', to)
             .order('day', { ascending: true })
-            .limit(1000),
+            .range(start, end),
         )
       ).map(rowToMood);
     },
