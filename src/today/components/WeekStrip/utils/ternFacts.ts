@@ -48,6 +48,7 @@ export const TERN_FACTS: readonly string[] = [
   'Arctic terns may move to a different breeding site after predators raid their colony or fish run short.',
   'At Penikese Island, Massachusetts, a male Arctic tern paired with a common tern female for at least 14 years, raising hybrid chicks.',
   'Maine researchers recently caught a 26-year-old Arctic tern that had been banded as a chick on Matinicus Rock in 2000.',
+  'Rising seas and storms can flood low nesting beaches and wash away eggs.',
   'Tracked Greenland terns reached the North Atlantic stopover around 22 August on average and left it around 15 September.',
   'Tracked Greenland terns reached their Antarctic winter waters around 24 November and left in mid-April, spending about 149 days there.',
   'After a dive, an Arctic tern rises from the water with a shake and swallows its fish head first.',

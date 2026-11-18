@@ -42,7 +42,6 @@ Eleven terns tracked from Greenland (10) and Iceland (1) in 2007–08. Read in f
 - The tracked terns spent the austral summer in the Weddell Sea region, which holds more Antarctic krill than other parts of the Southern Ocean.
 - A tern tagged in Iceland followed much the same route as the terns tagged in Greenland, even though it set off earlier.
 - The 2007 tracking study fitted terns at Sand Island in northeast Greenland (74°N) and Flatey Island in Iceland (65°N).
-- In 2007, 50 Greenland terns and 20 Icelandic terns were fitted with loggers, and 11 loggers were recovered the following year.
 - The zigzag route is longer on the map than a straight line, but it follows favorable winds, so it is easier in the air.
 - On the way north, many Arctic terns take a different path from the one they flew south.
 - On the way south, terns often pause in the middle of the North Atlantic for a few weeks to feed before the long run down.
@@ -103,14 +102,11 @@ Interviews with 11 Inuit experts in Kuujjuaraapik, Nunavik. Read in full, plus S
 - Near Hudson Bay, Arctic terns face predators as varied as polar bears, Arctic foxes, ravens, jaegers and falcons.
 - Arctic terns dive only a short way down, to about half a metre at most.
 - Inuit hunters in Nunavik watch terns diving at sea as a sign of good seal-hunting and fishing areas.
-- In Kuujjuaraapik, Nunavik, the Arctic tern is takatakiaq in Inuttitut, a name that mimics its calls.
 - Inuit harvesters in Nunavik often leave one or two eggs in each nest, and Arctic terns can lay new eggs to replace those taken.
 - Inuit hunters in Nunavik say terns will hold off laying while patches of ice remain, and their June arrival signals warmer weather.
 - Around Hudson Bay the land is rising about 12 mm a year, joining nesting islands to the mainland, and terns abandon islands once foxes can walk to them.
 - Yup’ik hunters in Alaska read Arctic terns swooping over the water as a sign that belugas are driving fish to the surface.
-- Arctic terns have been recorded killing lemmings, a surprise for a bird that mostly eats fish.
 - Inuit harvesters report a thin new fish, the sandlance, showing up in Hudson Bay and in the diet of local Arctic terns.
-- Near Kuujjuaraapik, Inuit harvesters say Common Ravens only recently began raiding Arctic tern eggs, flying out to the islands.
 - In the Canadian High Arctic, common eiders, long-tailed ducks and Sabine’s gulls all nest alongside Arctic terns.
 - Arctic terns in the High Arctic commonly lay one or two eggs, while farther south clutches of two or three are usual.
 - At Kitsissunnguit in west Greenland, Arctic terns usually start laying in mid-June, but in some years they began three weeks earlier as the sea ice retreated sooner.
@@ -131,7 +127,6 @@ Only the Introduction was available (the rest is subscriber-only). It gives a br
 - In North America, Arctic terns are seldom seen from land south of their breeding grounds because they migrate far offshore.
 - Arctic and common terns often nest side by side and look quite alike at a glance.
 - The Arctic tern and the Antarctic tern are different species with similar names. One lives mostly in the north, and the other stays in the south.
-- In the late 1800s, hunters shot terns in huge numbers for their feathers, which were used to decorate hats.
 - Terns are fierce parents. They dive at anything that gets too close to the nest, people included.
 - Arctic terns nest as far north as the land goes, in Greenland and on islands in the Arctic Ocean.
 
@@ -435,7 +430,6 @@ These are in the app without a citation. They are general bird or geography fact
 - The lifetime of a geolocator tag is about a year or more, so it has to be recovered when the bird returns to the colony.
 - You can report a ringed bird to the ringing scheme on the ring, and you’ll learn where it was ringed.
 - Terns incubate with a bare patch of skin on the belly, called a brood patch, that passes warmth to the eggs.
-- At the December solstice, places south of the Antarctic Circle see the same thing.
 - In the south, the terns share the waters with penguins, petrels and albatrosses.
 - A hatching chick uses a small egg tooth on its bill to break through the shell. The tooth falls off later.
 
