@@ -9,7 +9,7 @@ export function createLocalWeightRepository(db: LocalDb): WeightRepository {
   return {
     async load() {
       const data = await db.all<WeightRow>(
-        'SELECT id, lb, logged_at FROM weight_entries ORDER BY logged_at DESC LIMIT 180',
+        'SELECT id, lb, logged_at FROM weight_entries ORDER BY logged_at DESC, id DESC',
       );
       return data.map(
         (r): WeightEntry => ({ id: r.id, lb: r.lb, loggedAt: r.logged_at }),

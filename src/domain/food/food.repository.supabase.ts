@@ -1,5 +1,5 @@
 import type { TernClient } from '@shared/backend/supabase';
-import { ok, rows } from '@shared/backend/query';
+import { allRows, ok, rows } from '@shared/backend/query';
 import type { FoodEntry, NewFoodEntry, Tier } from './models/foodEntry';
 import { parseMeasure } from './models/measure';
 import type { FoodRepository } from './food.repository';
@@ -71,14 +71,16 @@ export function createSupabaseFoodRepository(db: TernClient): FoodRepository {
       return data.map(rowToFood);
     },
     async history(from, to) {
-      const data = await rows<FoodRow>(
+      const data = await allRows<FoodRow>((start, end) =>
         db
           .from('food_entries')
           .select('*')
           .gte('logged_on', from)
           .lte('logged_on', to)
           .order('logged_on')
-          .order('created_at'),
+          .order('created_at')
+          .order('id')
+          .range(start, end),
       );
       const byDay: Record<string, FoodEntry[]> = {};
       for (const row of data) {

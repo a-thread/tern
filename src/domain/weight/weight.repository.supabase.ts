@@ -1,5 +1,5 @@
 import type { TernClient } from '@shared/backend/supabase';
-import { ok, rows } from '@shared/backend/query';
+import { allRows, ok, rows } from '@shared/backend/query';
 import type { WeightEntry } from './models/weightEntry';
 import type { WeightRepository } from './weight.repository';
 
@@ -15,12 +15,13 @@ export function createSupabaseWeightRepository(
   return {
     async load() {
       return (
-        await rows<WeightRow>(
+        await allRows<WeightRow>((start, end) =>
           db
             .from('weight_entries')
             .select('id, lb, logged_at')
             .order('logged_at', { ascending: false })
-            .limit(180),
+            .order('id', { ascending: false })
+            .range(start, end),
         )
       ).map(rowToWeight);
     },
