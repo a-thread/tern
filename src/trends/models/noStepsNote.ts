@@ -1,9 +1,6 @@
 import { StepsStatus } from '../../domain/activity/models/stepsStatus';
 
-/**
- * Why a steps chart is empty, in place of the chart while steps can't be read: switched off,
- * not allowed yet, or not possible on this phone (where pointing at Settings would lead nowhere).
- */
+/** No Settings link where the phone can't read steps at all. */
 export function noStepsNote(status: StepsStatus, readSteps: boolean): string {
   switch (status) {
     case StepsStatus.Connected:

@@ -24,11 +24,7 @@ const INK = {
   },
 };
 
-/**
- * The top of every tab: a small line above (a date, a month), the big title, and on the right
- * anything the tab adds (the waypoints chip, "Back to today") followed by the settings gear,
- * so Settings is one tap from every tab.
- */
+/** Always ends with the settings gear, so Settings is one tap from every tab. */
 export function TabHeader({
   eyebrow,
   title,

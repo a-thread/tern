@@ -7,11 +7,7 @@ import {
   type SavedMeal,
 } from '@/domain/saved-meals/models/savedMeals';
 
-/**
- * Once a whole pot is saved as a recipe, today's log should hold what was eaten, not the pot:
- * swaps `entries` (the batch's ingredients) for `eaten` servings of the recipe in their meal,
- * in one write. Returns an undo that puts the ingredients back, or null when nothing changed.
- */
+/** Swaps the pot's ingredients for the share eaten, in one write; returns an undo or null. */
 export function useReplaceWithShare() {
   const { replaceFoodEntries } = useFood();
   return useCallback(
@@ -23,7 +19,13 @@ export function useReplaceWithShare() {
       if (!entries.length) return null;
       const added = replaceFoodEntries(
         entries.map((e) => e.id),
-        [recipeEntry(recipe, Math.min(eaten, recipe.servings), entries[0].meal)],
+        [
+          recipeEntry(
+            recipe,
+            Math.min(eaten, recipe.servings),
+            entries[0].meal,
+          ),
+        ],
       );
       if (!added.length) return null;
       const originals = entries.map(({ id: _id, ...e }) => e);

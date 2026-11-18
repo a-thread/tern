@@ -53,9 +53,7 @@ export default function FoodDetailScreen({ navigation, route }: Props) {
   const { showTiers, showTierNumber, showCalories, showMacros } =
     useFoodDisplay();
 
-  // Foods sized in grams ("100 g", the usual Open Food Facts unit) are logged by
-  // amount: pick a household unit ("large egg", "cup") and how many, or type a
-  // weight. Anything else ("1 bar") uses servings.
+  // Gram-sized foods are logged by amount; anything else ("1 bar") by servings.
   const baseGrams = gramsOf(result.servingLabel);
   const { units } = useUnits();
   const [measure, setMeasure] = useState<Measure | null>(() =>
@@ -71,10 +69,8 @@ export default function FoodDetailScreen({ navigation, route }: Props) {
     ]);
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Sizes that arrive after opening: until the amount is touched the food starts over on its
-  // first size ("1 packet"); after that (they came late) they're only added to the choices.
-  // Done while rendering, not in an effect, so no frame is ever drawn with the old units.
-  // State, not a ref: it's read while rendering, where a ref isn't tracked.
+  // Late sizes restart an untouched amount on "1 packet", else just join the choices. Done in
+  // render (state, not a ref) so no frame shows the old units.
   const [touched, setTouched] = useState(false);
   const [settledFor, setSettledFor] = useState(result);
   if (settledFor !== result) {

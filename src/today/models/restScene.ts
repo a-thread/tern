@@ -1,10 +1,8 @@
 import { mix } from '@shared/utils/color';
 
 /**
- * The tern's landing sheet (assets/tern-landing.png): 18 frames side by side, 2416 x 130, the
- * bird facing right. Frames 0-8 are the wingbeat in the air, 9-12 the flare as it brakes, and
- * 13-17 touchdown and standing still. It was drawn from one fixed camera, so the frames are
- * placed by their cell, not by the bird: the bird moves inside its cell as it lands.
+ * assets/tern-landing.png, facing right: 0–8 flight, 9–12 braking, 13–17 landed. One fixed
+ * camera, so frames are placed by cell, not by bird.
  */
 export class Sprite {
   static readonly FRAMES = 18;
@@ -46,13 +44,7 @@ export class RestScenes {
   static readonly DRIFTWOOD = { x: 155, top: 79 };
   /** Where its feet are when resting: on the top of the driftwood, at its middle. */
   static readonly REST = { x: 155, y: 79 };
-  /**
-   * The driftwood floats in from the left edge, ahead of the tern, and back out when it goes.
-   * `OFFSCREEN` is how far left of its place it starts (and ends); it has arrived `ARRIVED_K`
-   * of the way through the flight in, and starts to leave `DEPART_K` of the way through the
-   * flight out (after the tern has gone). On the water it bobs `BOB` units every `BOB_S`
-   * seconds and rocks `TILT` degrees.
-   */
+  /** Floats in ahead of the tern and out after it; `_K` values are shares of the flight. */
   static readonly LOG = {
     OFFSCREEN: -200,
     ARRIVED_K: 0.6,
@@ -65,10 +57,7 @@ export class RestScenes {
   static readonly FAR = { x: 310, y: 14 };
   /** Where sky meets water. */
   static readonly HORIZON = 82;
-  /**
-   * The sun: its centre's height by day, and how far it sinks by dusk, which leaves it half
-   * below the horizon (the water is drawn over its lower half).
-   */
+  /** At dusk it sinks half below the horizon (the water covers it). */
   static readonly SUN_DAY_Y = 44;
   static readonly SUN_DROP = 38;
   static readonly SUN_RADIUS = 12;
@@ -76,11 +65,6 @@ export class RestScenes {
   static readonly STARS_FROM = 0.5;
   /** After landing, how long it simply stands before it can ruffle, ms. */
   static readonly RUFFLE_GRACE_MS = 3000;
-  /**
-   * The sky runs from `skyTop` down to a glow at the horizon, the water from `waterTop` at the
-   * horizon down to `waterBottom`. By day it is a pale blue sky over blue water; at dusk a deep
-   * blue-teal sky burns gold at the horizon over dark teal water.
-   */
   static readonly DAY = {
     skyTop: '#6F9DB8',
     skyHorizon: '#B5D3E0',
@@ -154,10 +138,7 @@ const flapFrame = (sinceMs: number) =>
       Sprite.ACTIVE_FLAP_COUNT,
   ) % Sprite.ACTIVE_FLAP_COUNT;
 
-/**
- * Where everything is. `sinceMs` is the time since this motion began, `clockMs` a running
- * clock for the idle motion (the sun's glow, the water, the tern breathing).
- */
+/** `sinceMs` since this motion began; `clockMs` drives idle motion. */
 export function poseAt(
   motion: SceneMotion,
   sinceMs: number,
@@ -174,9 +155,7 @@ export function poseAt(
       : motion === SceneMotion.Leaving
         ? 1 - smooth(skyK)
         : 1;
-  // Progress along the path, 1 at the driftwood. Coming in, it slows to a stop exactly as its
-  // feet touch (the landed frames then play on the spot); going out, it stays down through the
-  // first of the launch frames, then eases into its climb.
+  // 1 at the driftwood: stops exactly at touchdown, and stays down through the first launch frames.
   const t =
     motion === SceneMotion.Arriving
       ? 1 - (1 - clamp01(k / RestScenes.TOUCHDOWN_K)) ** 2.2
@@ -328,12 +307,7 @@ export function poseAt(
 /** The scene as it stands when there is nothing in motion. */
 export const settledPose = () => poseAt(SceneMotion.Settled, 0, 0);
 
-/**
- * Where to put the sprite cell on screen so the feet land exactly on the bird's (x, y), when the
- * cell is turned about its own centre (the way a plain view is): flipped to face left or right,
- * squeezed by the breath, then tilted. `unit` is screen pixels per scene unit. The result is the
- * cell's size and its top-left corner.
- */
+/** Places the cell so the feet land on (x, y) after flipping, breathing and tilting about its centre. */
 export function birdBox(bird: ScenePose['bird'], unit: number) {
   const k = Sprite.SCALE * unit; // screen pixels per sprite pixel
   const width = Sprite.CELL.w * k;

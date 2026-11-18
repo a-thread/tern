@@ -10,10 +10,7 @@ export type IntakeInfoCopy = {
   action?: string;
 };
 
-/**
- * What the explainer for a slide says. The macros one follows how protein is set up: a minimum
- * with a mark it fills past, or a guide like carbs and fat.
- */
+/** The macros copy follows whether protein is a minimum or a guide. */
 export function intakeInfoCopy(
   kind: IntakeInfoKind,
   { proteinAsMinimum }: { proteinAsMinimum: boolean },

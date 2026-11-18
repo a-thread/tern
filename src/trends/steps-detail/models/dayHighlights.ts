@@ -10,10 +10,7 @@ export type DayHighlights<T extends Day> = {
   quietest: T | null;
 };
 
-/**
- * The strongest and quietest of `days`, among those with steps. A rest day is a day off, not a
- * quiet one, so it is never picked as the quietest (it can still be the strongest).
- */
+/** A rest day is never the quietest: it's a day off, not a quiet one. */
 export function dayHighlights<T extends Day>(
   days: readonly T[],
 ): DayHighlights<T> {

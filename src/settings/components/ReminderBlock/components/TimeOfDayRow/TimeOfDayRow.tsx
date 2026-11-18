@@ -16,10 +16,7 @@ import {
 
 const MERIDIEMS: readonly Meridiem[] = [Meridiem.Am, Meridiem.Pm];
 
-/**
- * A labelled time of day with the hour, the minutes and am / pm set apart, so 8 am to
- * 8 pm is one tap rather than a long run of steps. Hours and minutes can also be typed.
- */
+/** am/pm is its own control, so 8 am → 8 pm is one tap. */
 export default function TimeOfDayRow({
   label,
   minutes,
@@ -33,10 +30,7 @@ export default function TimeOfDayRow({
   onChange: (minutes: number) => void;
   /** How far − / + moves the minutes. */
   minuteStep: number;
-  /**
-   * Indented under a reminder's on/off row (the default). False for a row of its own,
-   * lined up with the rows around it.
-   */
+  /** Indent under a reminder's toggle (default). */
   nested?: boolean;
 }) {
   const { hour, minute, meridiem } = clockParts(minutes);

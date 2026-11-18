@@ -20,18 +20,10 @@ const CARD_ROOM = 170;
 const GAP = 18;
 /** Room around the thing pointed at, inside the outline. */
 const HOLE_PAD = 6;
-/**
- * Dark enough that the page underneath recedes, so text peeking past the card reads as
- * background rather than as part of the tip.
- */
+/** Dark enough that text peeking past the card reads as background. */
 const SCRIM = 'rgba(38,38,43,0.68)';
 
-/**
- * A one-time tip over a screen: the whole window dims, what it points at shows through an
- * outlined window, and a short card beside it has "Got it" and "Skip tips". It holds
- * screen-reader focus until dismissed, and fades in unless Reduce Motion is on. `rect` (from
- * `measureInWindow`) is null when there's nothing to point at.
- */
+/** Holds screen-reader focus until dismissed. `rect` is null when there's nothing to point at. */
 export function TipOverlay({
   rect: measured,
   lead,
@@ -164,10 +156,7 @@ export function TipOverlay({
   );
 }
 
-/**
- * The whole screen with a rounded-rectangle hole cut out (even-odd fill: the inner shape
- * subtracts from the outer one).
- */
+/** Even-odd fill, so the inner rounded rect cuts a hole. */
 function scrimWithHole(
   width: number,
   height: number,

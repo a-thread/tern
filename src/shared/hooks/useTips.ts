@@ -6,18 +6,12 @@ import { useSettings } from '@/domain/settings/SettingsContext';
 import type { Tip } from '@/domain/settings/models/onboarding';
 import { measureInWindow, type Rect } from '../utils/measureInWindow';
 
-/**
- * How long the next tip waits once one is dismissed: long enough for the last to fade, short
- * enough that a run of tips moves along. Only the first waits for the screen (`settleMs`).
- */
+/** Long enough for the last tip to fade. */
 const NEXT_TIP_MS = 120;
 
 export type ShownTip = {
   tip: Tip;
-  /**
-   * Where the thing it points at sits on screen (the tip covers the whole window), or null
-   * when it can't be found, and the tip stands on its own.
-   */
+  /** Null when the anchor can't be found; the tip then stands alone. */
   rect: Rect | null;
   /** 1-based, among the tips that apply right now. */
   position: number;
@@ -25,11 +19,8 @@ export type ShownTip = {
 };
 
 /**
- * One screen's one-time tips, one at a time and in order. Only `relevant` ones show (the rest
- * are skipped and left out of the count, and can come up another day); they wait until the
- * setup wizard is done, the screen is in view, and `ready` (nothing else is on top of it).
- * `settleMs` lets the screen finish animating in before the first tip measures what it points
- * at; the ones after it follow on quickly (`NEXT_TIP_MS`).
+ * One at a time, in order; irrelevant ones are skipped and can show another day. Waits for the
+ * wizard, focus and `ready`; `settleMs` lets the screen animate in before the first measures.
  */
 export function useTips({
   group,
@@ -46,10 +37,7 @@ export function useTips({
   anchors: Partial<Record<Tip, React.RefObject<View | null>>>;
   /** The screen's root view, to tell whether an anchor is on screen. */
   rootRef: React.RefObject<View | null>;
-  /**
-   * Tips whose anchor sits outside the screen's root, such as the tab bar below it. They only
-   * need to be found, not inside the root.
-   */
+  /** Anchored outside the screen's root (the tab bar). */
   outside?: readonly Tip[];
   ready: boolean;
   settleMs?: number;
@@ -82,9 +70,7 @@ export function useTips({
           anchor ? measureInWindow(anchor) : Promise.resolve(null),
         ]);
         const y = r && root ? r.y - root.y : -1;
-        // Point only at something on screen right now: not missing, not scrolled away. A tip
-        // that applies but can't be found still shows, without pointing, and says why in
-        // development.
+        // Not on screen (missing or scrolled away): show without pointing.
         const onScreen = outside.includes(tip)
           ? r !== null && r.height > 0
           : r !== null &&

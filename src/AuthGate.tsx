@@ -28,15 +28,8 @@ import ResetPasswordScreen from './auth/reset-password/ResetPasswordScreen';
 import { copyToPhone, lapsedData, moveToAccount } from './accountMoves';
 
 /**
- * Decides where the app's data comes from, under Tern Plus (which outlives signing in and
- * out, since buying comes before the account).
- *
- * - Signed out: the phone's own database. Signing in is something chosen from Settings.
- * - Signed in with Plus: the account. Anything on the phone is moved into it first.
- * - Signed in, Plus ended: the phone again, with the account's log copied onto it, so
- *   nothing is lost and nothing stops working. Renewing moves it all back.
- *
- * Without Supabase keys (development), the app runs on in-memory sample data.
+ * Signed out: the phone. Signed in with Plus: the account (the phone moves in first). Plus
+ * ended: the phone, with the account's log copied down. No Supabase keys: sample data.
  */
 export default function AuthGate({ children }: { children: React.ReactNode }) {
   if (!isBackendConfigured) {
@@ -54,10 +47,7 @@ export default function AuthGate({ children }: { children: React.ReactNode }) {
   );
 }
 
-/**
- * Tern Plus, above the sign-in screens: buying comes before making an account. Signed in,
- * the server is asked too, so Plus granted by hand (testers, grandfathered accounts) counts.
- */
+/** Above sign-in, since buying comes first. Asks the server too, so hand grants count. */
 function Plus({
   userId,
   children,
@@ -155,14 +145,8 @@ function ChooseBackend({ children }: { children: React.ReactNode }) {
 }
 
 /**
- * The sign-in screens (or the paywall) laid over the app rather than in place of it, so the
- * app stays exactly where it was underneath: closing them goes back to Settings, or to the
- * setup wizard, instead of rebuilding the app from Today. While they're open the app is hidden
- * from screen readers. Signing in still swaps the backend, which reloads the app.
- *
- * A `Modal`, not a view on top: Settings is itself a native modal sheet, which iOS draws above
- * everything in the root view, so an overlay there opened unseen behind it. A `Modal` is
- * presented from the topmost screen, so it lands over the sheet.
+ * Over the app, not in place of it, so closing returns where you were. A `Modal` because iOS
+ * draws the Settings sheet above any root-view overlay.
  */
 function SignInOver({
   open,
@@ -206,11 +190,8 @@ const NOT_SYNCED_NOTICE =
   "Your account can't sync yet, so Tern is saving to this phone for now. It moves into your account once Tern Plus is confirmed.";
 
 /**
- * Signed in with Plus, or with a store that couldn't be reached. The server's record of Plus
- * is brought up to date first either way (it's what lets the account be written to). If it
- * says the account has no Plus, the account would refuse every save, so the phone is used
- * instead, with the account's log copied onto it. Otherwise, with the store's Plus
- * (`moveIn`), whatever is on the phone goes into the account before it shows.
+ * Syncs the server's Plus record first, since it gates writes. If the server says no, falls
+ * back to the phone; otherwise `moveIn` uploads the phone's log.
  */
 function AccountBackend({
   userId,
@@ -229,9 +210,7 @@ function AccountBackend({
 
   useEffect(() => {
     let live = true;
-    // Whether the server now counts Plus (usually the webhook has already done it), or null
-    // when neither the function nor the database answered: offline, so the account gets the
-    // benefit of the doubt, since no save would reach it anyway.
+    // null when offline: benefit of the doubt, since no save would reach it anyway.
     const sync = async () => {
       try {
         return (await backend.syncPlus?.()) ?? true;
@@ -244,14 +223,21 @@ function AccountBackend({
       .then(async (synced) => {
         // The account would refuse every row: stay on the phone, and leave its log there.
         if (synced === false) {
-          console.warn("The server doesn't count Tern Plus yet; using the phone");
+          console.warn(
+            "The server doesn't count Tern Plus yet; using the phone",
+          );
           if (live) setRefused(true);
           return 0;
         }
         // Nothing is moved on a Plus the store didn't confirm, or the server couldn't.
         if (synced === null || !moveIn) return 0;
         const db = await openLocalDb();
-        return moveToAccount(createLocalBackend(db).data!, backend.data!, db, userId);
+        return moveToAccount(
+          createLocalBackend(db).data!,
+          backend.data!,
+          db,
+          userId,
+        );
       })
       .then((added) => {
         if (added) {
@@ -286,11 +272,7 @@ function AccountBackend({
   return <BackendProvider backend={backend}>{children}</BackendProvider>;
 }
 
-/**
- * Everything in the phone's database, opened once and kept across sign-ins: the free
- * tier, and where a signed-in account lands when its Plus has ended (`lapsed`), with the
- * account's log copied on first.
- */
+/** Opened once and kept across sign-ins; `lapsed` copies the account's log down first. */
 function PhoneBackend({
   lapsed,
   children,
@@ -338,7 +320,9 @@ function PhoneBackend({
         if (!live) return;
         // Rare (a full or damaged disk). Say so rather than lose what they log without a word.
         console.warn('Could not open the local database', error);
-        toast.show("Couldn't open Tern's storage on this phone. Nothing will be saved for now.");
+        toast.show(
+          "Couldn't open Tern's storage on this phone. Nothing will be saved for now.",
+        );
         setBackend(createBlankMemoryBackend());
       },
     );

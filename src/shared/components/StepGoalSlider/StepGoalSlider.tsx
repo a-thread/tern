@@ -9,10 +9,6 @@ import { StepGoal } from '@/domain/settings/models/stepGoalHistory';
 /** One tap to a common goal, under the slider. */
 const PRESETS = [4800, 6000, 8000, 10000];
 
-/**
- * The daily step goal: the number, a slider from `StepGoal.MIN` to `StepGoal.MAX` in steps of
- * 100, and a row of common goals. The same control in Settings › Step goal and the setup wizard.
- */
 export function StepGoalSlider() {
   const { settings, updateSettings } = useSettings();
 

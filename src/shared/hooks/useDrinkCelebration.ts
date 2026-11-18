@@ -5,11 +5,7 @@ import * as Haptics from 'expo-haptics';
 import { useReduceMotion } from './useReduceMotion';
 import { useWaterSplash } from '../components/WaterSplashLayer/WaterSplashLayer';
 
-/**
- * Feedback for a logged drink, so it registers as done: a haptic tap (a success buzz when the
- * drink reaches the goal) and a splash of droplets and bubbles around the button that logged it.
- * With reduce motion on there is no splash, only the buzz.
- */
+/** A haptic and a splash; reduce motion drops the splash. */
 export function useDrinkCelebration() {
   const reduceMotion = useReduceMotion();
   const layer = useWaterSplash();

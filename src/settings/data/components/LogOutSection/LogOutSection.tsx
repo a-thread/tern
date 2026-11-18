@@ -6,10 +6,6 @@ import { Group, GroupLabel } from '@shared/components/ui';
 import { useAuth } from '@/domain/auth/AuthContext';
 import { useToast } from '@shared/state/ToastContext';
 
-/**
- * Log out, at the foot of Account and data. Only shown signed in; once the session ends,
- * Tern goes back to the sign-in flow on its own.
- */
 export function LogOutSection() {
   const auth = useAuth();
   const toast = useToast();
@@ -32,10 +28,17 @@ export function LogOutSection() {
     <>
       <GroupLabel>Account</GroupLabel>
       <Group>
-        <Pressable style={s.row} onPress={logOut} disabled={busy} accessibilityRole='button'>
+        <Pressable
+          style={s.row}
+          onPress={logOut}
+          disabled={busy}
+          accessibilityRole='button'
+        >
           <View style={{ flex: 1 }}>
             <Text style={s.title}>Log out</Text>
-            <Text style={s.sub}>{auth.session.user.email ?? 'End this session on this phone'}</Text>
+            <Text style={s.sub}>
+              {auth.session.user.email ?? 'End this session on this phone'}
+            </Text>
           </View>
         </Pressable>
       </Group>

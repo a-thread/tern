@@ -3,9 +3,7 @@ import { AppState } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 
-// Only the origin matters: the client adds /auth/v1, /rest/v1 itself, so a URL
-// pasted with one of those suffixes (the dashboard shows the REST one) would
-// make every request fail with "invalid path specified in the request".
+// Origin only: a pasted /rest/v1 suffix would fail every request with "invalid path".
 const rawUrl = process.env.EXPO_PUBLIC_SUPABASE_URL?.trim();
 const url = rawUrl ? new URL(rawUrl).origin : undefined;
 const anonKey = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY;

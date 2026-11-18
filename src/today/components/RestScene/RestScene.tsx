@@ -26,10 +26,6 @@ interface RestSceneProps {
   noteLink?: NoteLink;
 }
 
-/**
- * The rest day card: the tern on its driftwood at dusk, over a few words about the day. It flies
- * in when the rest is taken here and off again when it is undone.
- */
 export function RestScene({
   heroRef,
   entrance,

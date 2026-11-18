@@ -7,11 +7,7 @@ export type TierShare = TierGroup & {
   share: number;
 };
 
-/**
- * How a day's food splits across processing groups. Information only: there are no targets.
- * Weighted by calories while they're tracked; otherwise by servings, since foods logged without
- * calorie tracking may have no energy recorded.
- */
+/** By calories when tracked, else servings (untracked foods may have no energy). No targets. */
 export function tierShares(
   log: readonly Pick<FoodEntry, 'tier' | 'calories' | 'servings'>[],
   byCalories: boolean,

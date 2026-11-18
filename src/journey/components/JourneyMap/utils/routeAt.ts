@@ -12,11 +12,7 @@ export type RoutePoint = {
 /** How many points the route has: the colony, then `LEG_POINTS` for each leg. */
 export const routePointCount = (shape: MapShape) => shape.route.length / 2;
 
-/**
- * Where on the route `progress` (0 to 1 through one migration, as `migrationProgress` gives it)
- * falls, as a fractional point index. Each leg runs between two stops' waypoint totals, so a
- * long leg (Cape Town to the Weddell Sea) takes as many waypoints as it says it does.
- */
+/** A fractional point index; legs span their stops' waypoint totals, so long legs take longer. */
 export function routeIndex(progress: number): number {
   const w = Math.min(Math.max(progress, 0), 1) * Milestones.MIGRATION_LENGTH;
   const n = JourneyMapShapes.LEG_POINTS;

@@ -11,11 +11,7 @@ import {
   portionsText,
 } from '@/domain/food/sources/foodApiLog';
 
-/**
- * Open Food Facts client: text search and barcode lookup. Data is used under
- * the Open Database License. OFF asks apps to identify themselves in the
- * User-Agent, and to be gentle with search (see useFoodSearch's debounce).
- */
+/** ODbL data. OFF asks for a User-Agent and gentle searching (useFoodSearch debounces). */
 const SEARCH_URL = 'https://search.openfoodfacts.org/search';
 const PRODUCT_URL = 'https://world.openfoodfacts.org/api/v2/product';
 const FIELDS =
@@ -43,12 +39,7 @@ function firstBrand(brands: OffProduct['brands']): string | undefined {
   return trimmed ? trimmed : undefined;
 }
 
-/**
- * Maps one OFF product to a loggable food, or null if it has no name or no
- * usable calorie figure (there's nothing to log from it). Nutrition in OFF is
- * per 100 g and stays that way; a serving the product declares in grams
- * becomes a portion.
- */
+/** Null without a name or calories. Per 100 g; a declared gram serving becomes a portion. */
 export function productToResult(p: OffProduct): SearchResult | null {
   const name = (p.product_name ?? '').trim();
   if (!name) return null;
@@ -133,15 +124,8 @@ async function runSearch(
 }
 
 /**
- * Text search. Results without usable nutrition are dropped, and duplicates by
- * barcode removed.
- *
- * Open Food Facts matches the query against translated names too, and most of
- * its products are French, so "apple" would otherwise return page after page of
- * "Pommes…". Products whose own language is English come first (`lang:en`); only
- * if there are none, and `fallback` allows it, do we search everything, e.g. for
- * a foreign dish name. The caller turns the fallback off when other sources
- * already answered the query, which saves a second, slow request.
+ * English products (`lang:en`) first, since OFF matches translations and "apple" returns pages
+ * of "Pommes…". With none, `fallback` searches everything.
  */
 export async function searchProducts(
   query: string,
@@ -199,10 +183,7 @@ export async function getProductByBarcode(
   return name ? { status: 'no-nutrition', name } : { status: 'not-found' };
 }
 
-/**
- * A product's declared serving, looked up by its code. Search leaves serving sizes out of
- * its results, so they are fetched when a product found by searching is opened.
- */
+/** Search omits serving sizes, so they're fetched on open. */
 export async function getProductPortions(
   code: string,
   signal?: AbortSignal,

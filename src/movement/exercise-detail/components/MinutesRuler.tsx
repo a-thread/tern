@@ -9,10 +9,6 @@ const PX_PER_MINUTE = 10;
 /** Ticks shown either side of the needle. */
 const SPAN = 30;
 
-/**
- * A ruler to drag for minutes, like the weigh-in ruler: a tick a minute, a
- * longer one every five, numbers every ten, and the needle in the middle.
- */
 export function MinutesRuler({
   value,
   onChange,

@@ -8,9 +8,6 @@ import { ChartTip } from '@shared/components/ChartTip/ChartTip';
 import { DayStateLook } from '../../utils/dayStateStyle';
 import { GridLayout, gridShape, type WeekRow } from './models/weekRows';
 
-/* ------------------------------------------------------------------ */
-/* Consistency grid — the range at a glance, by weekday                 */
-/* ------------------------------------------------------------------ */
 
 /** How each kind of day reads once a square is tapped. */
 const STATE_WORD: Readonly<Record<DayState, string>> = {
@@ -23,13 +20,7 @@ const STATE_WORD: Readonly<Record<DayState, string>> = {
 
 type Day = { day: string; state: DayState };
 
-/**
- * A cell per day, lined up by weekday so a pattern across the week shows (quieter weekends,
- * say). A month is a small calendar, a row per week from Monday, and a week is one row in day
- * order; six months turns on its side, a column per week (`gridShape`). Tapping a square
- * names its date and how it went in a label over it, as tapping a bar does in the charts; tap
- * it again to clear.
- */
+/** Lined up by weekday so weekly patterns show; layout from `gridShape`. */
 export function ConsistencyGrid({ days }: { days: readonly Day[] }) {
   const { selected, toggle } = useChartSelection(days.map((d) => d.day));
   const describe = (d: Day) =>

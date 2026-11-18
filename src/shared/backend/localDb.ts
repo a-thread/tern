@@ -3,11 +3,7 @@ import { LocalSchema } from './localSchema';
 /** A value SQLite can bind to a `?` placeholder. */
 export type SqlValue = string | number | null;
 
-/**
- * The little of SQLite the local repositories use. Small on purpose, so they test against
- * an in-process SQLite (`createSqlJsDb`) without the native module; `openLocalDb` is the
- * phone's.
- */
+/** Small on purpose so repositories test against `createSqlJsDb` without the native module. */
 export interface LocalDb {
   /** Runs one or more statements with no parameters (schema changes). */
   exec(sql: string): Promise<void>;
@@ -17,10 +13,7 @@ export interface LocalDb {
   all<T>(sql: string, params?: SqlValue[]): Promise<T[]>;
 }
 
-/**
- * Brings the database up to the newest schema. Each migration runs once, in order, and
- * `user_version` records how many have run, so opening an up-to-date database does nothing.
- */
+/** `user_version` counts migrations run, so each runs once. */
 export async function migrateLocalDb(
   db: LocalDb,
   migrations: readonly string[] = LocalSchema.MIGRATIONS,

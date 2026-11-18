@@ -19,12 +19,7 @@ export type Playing = {
 /** Stands in for a view that couldn't be measured, so a celebration still plays. */
 const NOWHERE: Rect = { x: 0, y: 0, width: 0, height: 0 };
 
-/**
- * Plays the next queued waypoint award while Today is actually on screen — an award made in
- * the food-logging sheet waits until you are back. The feathers fly from the hero card to the
- * waypoint chip, so the three views are measured and handed back as refs. While `hold` is
- * true the next award waits (the tern is still flying in; the feathers follow its landing).
- */
+/** Plays only while Today is focused; `hold` waits for the tern to land. */
 export function useCelebrationPlayback(hold = false) {
   const insets = useSafeAreaInsets();
   const { celebrations } = useWaypoints();

@@ -27,11 +27,7 @@ export type ViewedDay = {
 
 const ViewedDayContext = createContext<ViewedDay | null>(null);
 
-/**
- * The day being looked at, shared by Home and Food: pick Tuesday in the week
- * strip and the Food tab shows Tuesday too. It goes back to today when the app
- * leaves the screen and when the date changes, so the app always opens on today.
- */
+/** Shared by Today and Food; resets to today on backgrounding and at midnight. */
 export function ViewedDayProvider({ children }: { children: React.ReactNode }) {
   const today = useDayKey();
   const [picked, setPicked] = useState<string | null>(null);

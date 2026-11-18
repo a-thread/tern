@@ -15,10 +15,7 @@ export type StepBar = BarDays & {
 export const stepsValue = (bar: StepBar): string =>
   `${bar.value.toLocaleString()} steps${bar.week ? ' a day' : ''}`;
 
-/**
- * Build step-chart bars: daily bars for a week or month, or weekly averages
- * for six months. Weekly bars are labelled when a new month begins.
- */
+/** Weekly bars (six months) are labelled when a month begins. */
 export function bucketSteps(days: DayRecord[], range: TrendRange): StepBar[] {
   if (range === TrendRange.Week || range === TrendRange.Month) {
     return days.slice(-TrendRanges.DAYS[range]).map((d) => ({

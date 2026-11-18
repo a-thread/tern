@@ -7,10 +7,6 @@ import { Icon } from '@shared/components/ui';
 /** A link at the end of the note, to where the thing it mentions can be changed. */
 export type NoteLink = { label: string; onPress: () => void };
 
-/**
- * The words under the rest scene: its title, what the day means, the steps, and an optional note
- * (with a link after it, when there is somewhere to change what it says).
- */
 export function RestCaption({
   title,
   line,

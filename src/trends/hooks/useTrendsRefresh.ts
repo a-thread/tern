@@ -8,10 +8,7 @@ import { useMovement } from '../../domain/movement/MovementContext';
 import { useWater } from '../../domain/water/WaterContext';
 import { useWeight } from '../../domain/weight/WeightContext';
 
-/**
- * Pull to refresh for Trends. `refreshKey` goes up after each pull, so the history each card
- * read for the range is read again too.
- */
+/** `refreshKey` bumps after each pull so cards re-read their history. */
 export function useTrendsRefresh() {
   const { refresh: refreshSteps } = useActivity();
   const { reload: reloadFood } = useFood();

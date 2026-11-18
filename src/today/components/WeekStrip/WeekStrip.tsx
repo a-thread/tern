@@ -17,11 +17,7 @@ import { DayState } from '@shared/models/dayState';
 import { showsRestLink } from '../../models/restLink';
 import { confirm } from '@shared/utils/confirm';
 
-/**
- * A week's seven rings (this week unless an earlier one is paged to), a fact for the day,
- * and the rest-day link. Tapping a day that has happened views it (see `useViewedDay`):
- * Home and Food show that day, and a link here leads back to today.
- */
+/** Tapping a past day views it on Today and Food (`useViewedDay`). */
 export function WeekStrip({
   replayKey,
   stripRef,

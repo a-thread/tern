@@ -14,15 +14,7 @@ type PendingMilestone = {
   markCelebrated: (milestone: Milestone) => void;
 };
 
-/**
- * A milestone waiting to be celebrated.
- *
- * The last celebrated stop is remembered in settings, so crossing into one is
- * marked once and only once — not again on the next launch, and not for a
- * journey that was already past it when Tern first looked (an upgrade, or the
- * preview's sample total). Like everything on the map, it follows waypoints,
- * which are earned for showing up and never for weight or calories.
- */
+/** Remembered in settings, so each is celebrated once, and never one passed before Tern looked. */
 export function usePendingMilestone(): PendingMilestone {
   const { waypoints, ready: pointsReady } = useWaypoints();
   const { settings, ready: settingsReady, updateSettings } = useSettings();

@@ -18,11 +18,7 @@ const SLIDE_IN_MS = 280;
 const SLIDE_OUT_MS = 200;
 const FADE_OUT_MS = 160;
 
-/**
- * A sheet over the current screen. The screen dims first, then the sheet
- * slides up from the bottom; closing runs the same in reverse. (The built-in
- * "slide" modal animation drags the dimming up with the sheet.)
- */
+/** Custom animation: the built-in "slide" modal drags the dimming up with the sheet. */
 export function BottomSheet({
   visible,
   onClose,

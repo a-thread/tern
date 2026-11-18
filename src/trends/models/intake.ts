@@ -9,11 +9,7 @@ export type IntakeAverage = {
   fat: number;
 };
 
-/**
- * Average daily intake over the days that have food logged. `today`, if given,
- * is left out when other days exist: it's still in progress, so it would drag
- * the average down. Null when there's nothing to average.
- */
+/** Leaves out `today` when other days exist, since it's still in progress. */
 export function averageIntake(
   byDay: Record<string, FoodEntry[]>,
   today?: string,

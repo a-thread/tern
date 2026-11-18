@@ -14,18 +14,10 @@ export async function rows<T>(query: PromiseLike<Outcome>): Promise<T[]> {
   return (data ?? []) as T[];
 }
 
-/**
- * How many rows `allRows` asks for at once. It must not be more than the API's `max_rows`
- * (1000 on Supabase unless changed), or a full page would look short and end the read early.
- */
+/** Must not exceed the API's `max_rows`, or a full page looks short and ends the read early. */
 const PAGE = 1000;
 
-/**
- * Runs a select a page at a time and returns every row, so a long history is never cut off at
- * the server's row cap. `page(from, to)` builds the query for rows `from`..`to` (inclusive, as
- * `.range` takes them); its order must be unique per row, or rows can repeat or go missing
- * between pages. Stops at the first page shorter than asked for.
- */
+/** Pages past the server's row cap. `page`'s order must be unique per row, or rows repeat or vanish. */
 export async function allRows<T>(
   page: (from: number, to: number) => PromiseLike<Outcome>,
   size = PAGE,

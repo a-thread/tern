@@ -4,11 +4,7 @@ import { useFood } from '@/domain/food/FoodContext';
 import type { FoodEntry } from '@/domain/food/models/foodEntry';
 import { additionsSince } from '../models/sessionAdditions';
 
-/**
- * The foods added to today's log since this screen appeared. The Add food
- * screens stay open after adding, so they use this to confirm what went in
- * and to turn Cancel into Done.
- */
+/** Add food stays open, so this confirms what went in and turns Cancel into Done. */
 export function useSessionAdditions(): FoodEntry[] {
   const { foodLog } = useFood();
   const [baseline] = useState(() => new Set(foodLog.map((f) => f.id)));

@@ -7,10 +7,6 @@ import { useReduceMotion } from '../hooks/useReduceMotion';
 
 export const AnimatedPath = Animated.createAnimatedComponent(Path);
 
-/* ------------------------------------------------------------------ */
-/* Flight path — draws itself toward the goal on mount                  */
-/* ------------------------------------------------------------------ */
-
 const TRAIL = 'M4,42 C 58,42 54,13 112,13 S 186,40 232,26';
 
 // The trail's two cubic segments, sampled once into an arc-length lookup
@@ -88,10 +84,7 @@ function birdAt(value: number) {
   };
 }
 
-/**
- * The bird flies the trail from the start to today's progress. Bump
- * `replayKey` (e.g. each time the screen gains focus) to fly it again.
- */
+/** Bump `replayKey` to fly it again. */
 export function FlightPath({
   progress,
   replayKey = 0,

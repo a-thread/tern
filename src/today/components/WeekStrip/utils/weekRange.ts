@@ -1,10 +1,6 @@
 import { addDays, weekStartKey } from '@shared/utils/date';
 
-/**
- * Where the week strip's arrows go from the viewed `day`: the same weekday a week earlier or
- * later. Back stops at the week holding `earliest` (the oldest day of history), and forward
- * lands on today rather than past it; on this week there is no next.
- */
+/** Same weekday ±7, stopping at `earliest`'s week and never past today. */
 export function weekRange(day: string, today: string, earliest?: string) {
   const back = addDays(day, -7);
   const forward = addDays(day, 7);

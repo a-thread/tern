@@ -1,10 +1,7 @@
 import type { FoodEntry } from '../../domain/food/models/foodEntry';
 import type { SearchResult } from '../../domain/food/sources/searchResult';
 
-/**
- * `pick` puts the food screens in "choose a food for a saved meal" mode: the
- * food is added to the meal being edited instead of to today's log.
- */
+/** `pick` adds to the meal being edited instead of the log. */
 export type LogFoodStackParamList = {
   Search: { meal: FoodEntry['meal']; pick?: boolean };
   BarcodeScan: { meal: FoodEntry['meal']; pick?: boolean };

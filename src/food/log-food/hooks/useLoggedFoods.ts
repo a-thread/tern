@@ -10,11 +10,7 @@ import { recentMeals } from '../models/recentMeals';
 const RECENT_DAYS = 14;
 const MINE_DAYS = 90;
 
-/**
- * What you have logged yourself: `recent` foods (last two weeks), `mine` (last
- * three months) and `meals` — whole meals from the last two weeks, newest
- * first, ready to log again.
- */
+/** `recent` and `meals`: two weeks; `mine`: three months. */
 export function useLoggedFoods() {
   const { foodLog, loadHistory } = useFood();
   const today = useDayKey();

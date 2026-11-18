@@ -1,7 +1,4 @@
-/**
- * The one-off setup left to do, on the getting-started card. Daily logging (meals, a weigh-in)
- * isn't here: "Left to do" already lists it, right underneath.
- */
+/** Daily logging isn't here: "Left to do" already lists it. */
 export enum StartItem {
   ConnectHealth = 'connectHealth',
   StepGoal = 'stepGoal',
@@ -19,10 +16,7 @@ export type StartInput = {
 
 export type StartRow = { item: StartItem; done: boolean };
 
-/**
- * The card's rows, each done or not from what has actually happened, never from having tapped
- * it. Steps rows are left out where the phone has no health app.
- */
+/** Done from what happened, never from a tap. No steps rows without a health app. */
 export function startItems(input: StartInput): StartRow[] {
   return [
     ...(input.healthAvailable

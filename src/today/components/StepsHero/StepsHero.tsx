@@ -19,10 +19,7 @@ import {
 } from '@/domain/movement/models/movementEntry';
 import { useRootNavigation } from '@/navigation/useAppNavigation';
 
-/**
- * The sky card: greeting, streak, the bird's flight toward the step goal, and the steps, for the
- * viewed day. A past day shows how far the bird got that day, and its date in place of the greeting.
- */
+/** A past day shows its date in place of the greeting. */
 export function StepsHero({
   heroRef,
   replayKey,
