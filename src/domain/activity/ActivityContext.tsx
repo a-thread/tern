@@ -228,7 +228,7 @@ export function ActivityProvider({
     WaypointSource.Streak,
     reachedToday && bonus > 0,
     judging && movement.ready && (stepsReadable || movementGoal > 0),
-    bonus > 0 ? bonus : streakBonus(streak + 1),
+    { points: bonus > 0 ? bonus : streakBonus(streak + 1) },
   );
 
   const takeRestDay = useCallback(() => {

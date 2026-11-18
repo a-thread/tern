@@ -80,13 +80,12 @@ export function WaterProvider({
   const totalOz = dayTotal(entries, day);
   const reached = goalOz > 0 && totalOz >= goalOz;
 
-  // The waypoint follows the log, like "all meals": earned on reaching the goal, quietly
-  // taken back if removing a drink drops the total below it. Nothing happens while tracking is off,
-  // or until today's drinks are the ones loaded (a past day's total says nothing about today's).
+  // Follows the loaded day's total (today or yesterday), once that day has loaded.
   useAward(
     WaypointSource.Water,
     reached,
-    enabled && ready && loadedDay === today && day === today,
+    enabled && ready && loadedDay === day && editable,
+    { day },
   );
 
   const addWater = useCallback(
