@@ -24,6 +24,12 @@ import StreakScreen from '../today/streak/StreakScreen';
 import WaypointsInfoScreen from './waypoints-info/WaypointsInfoScreen';
 import RouteInfoScreen from './route-info/RouteInfoScreen';
 import TrailScreen from './trail/TrailScreen';
+import { TernaryProvider } from '../domain/ternary/TernaryContext';
+import {
+  createMemoryTernaryRepository,
+  type TernaryRepository,
+} from '../domain/ternary/ternary.repository';
+import { sampleTernary } from '../domain/ternary/ternary.mock';
 
 // The waypoints card asks whether a goal day can be reached today and what was skipped; the
 // streak card, the streak and freezes held.
@@ -55,9 +61,11 @@ function TrailProbe() {
   return null;
 }
 
+/** `ternary`: the ternary repository, when the person is in one; none by default. */
 function open(
   screen: React.ReactElement,
   status: SubscriptionStatus = NO_SUBSCRIPTION,
+  ternary?: TernaryRepository,
 ) {
   const backend = createMemoryBackend();
   return render(
@@ -69,7 +77,7 @@ function open(
         >
           <SettingsProvider repo={backend.settings}>
             <WaypointsProvider repo={backend.waypoints}>
-              {screen}
+              <TernaryProvider repo={ternary}>{screen}</TernaryProvider>
               <TrailProbe />
             </WaypointsProvider>
           </SettingsProvider>
@@ -114,6 +122,30 @@ describe('milestone card', () => {
     expect(ui.getByText('Milestone reached')).toBeTruthy();
     expect(ui.getByText(/a rare patch of land/)).toBeTruthy();
     expect(ui.getByText(/^The Canary Islands · /)).toBeTruthy();
+    // Not in a ternary: nothing to send a postcard to.
+    expect(ui.queryByText('Send a postcard')).toBeNull();
+  });
+
+  it('offers to send the ternary a postcard from the stop, once', async () => {
+    const repo = createMemoryTernaryRepository(sampleTernary('2026-11-15'));
+    const ui = open(
+      <MilestoneScreen {...milestoneProps} />,
+      NO_SUBSCRIPTION,
+      repo,
+    );
+    fireEvent.press(
+      await ui.findByLabelText(
+        'Send Sunday Walkers a postcard from The Azores',
+      ),
+    );
+    expect(
+      await ui.findByLabelText('Postcard sent to Sunday Walkers'),
+    ).toBeTruthy();
+    expect(ui.getByText('Postcard sent')).toBeTruthy();
+    const sent = (await repo.mine('2026-11-15'))!.postcards.find(
+      (p) => p.yours,
+    );
+    expect(sent?.stopId).toBe('1-azores');
   });
 });
 
@@ -132,6 +164,30 @@ describe('destination card', () => {
     expect(ui.getByText(/nine volcanic islands/)).toBeTruthy();
     // It opens from Journey, so there's no link back to it.
     expect(ui.queryByText('See your journey ›')).toBeNull();
+    // Not in a ternary: nothing to send a postcard to.
+    expect(ui.queryByText('Send a postcard')).toBeNull();
+  });
+
+  it('offers a postcard from a stop passed on this migration', async () => {
+    const repo = createMemoryTernaryRepository(sampleTernary('2026-11-15'));
+    const ui = open(
+      <DestinationScreen {...destinationProps} />,
+      NO_SUBSCRIPTION,
+      repo,
+    );
+    fireEvent.press(
+      await ui.findByLabelText(
+        'Send Sunday Walkers a postcard from The Azores',
+      ),
+    );
+    expect(
+      await ui.findByLabelText('Postcard sent to Sunday Walkers'),
+    ).toBeTruthy();
+    expect(ui.getByText('Postcard sent')).toBeTruthy();
+    const sent = (await repo.mine('2026-11-15'))!.postcards.find(
+      (p) => p.yours,
+    );
+    expect(sent?.stopId).toBe('1-azores');
   });
 });
 

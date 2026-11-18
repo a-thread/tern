@@ -15,6 +15,11 @@ export enum WaypointSource {
   Streak = 'streak',
   /** Logging any movement in a day: a walk, a swim, a class. */
   Movement = 'movement',
+  /**
+   * The shared bird of your ternary reaching a stop, at most once a week. The one source not
+   * earned by anything done that day, so it never counts as showing up.
+   */
+  Arrival = 'arrival',
 }
 
 /** One award in the ledger. */
@@ -25,8 +30,12 @@ export type LedgerEvent = {
 };
 
 /** Distinct days that earned at least one waypoint. */
-export function daysWithWaypoints(events: LedgerEvent[]): number {
-  return new Set(events.map((e) => e.day)).size;
+export function daysWithWaypoints(events: readonly LedgerEvent[]): number {
+  // A ternary's arrival isn't earned by anything done that day, so a day with only that
+  // isn't a day you showed up.
+  return new Set(
+    events.filter((e) => e.source !== WaypointSource.Arrival).map((e) => e.day),
+  ).size;
 }
 
 /** What earns waypoints. */
@@ -70,6 +79,11 @@ export class WaypointRules {
       {
         id: WaypointSource.Streak,
         label: 'Reaching a streak milestone',
+        points: 25,
+      },
+      {
+        id: WaypointSource.Arrival,
+        label: 'Arriving at a stop with your ternary',
         points: 25,
       },
     ];

@@ -20,7 +20,8 @@ export function LetterRest() {
     <>
       <Text style={s.para}>
         With feedback from my partner, I added safeguards for other traps around
-        tracking, food and movement, and more ways to keep notes.
+        tracking, food and movement, more ways to keep notes, and ternaries, so
+        we could send each other recipes and little fish.
       </Text>
       <Text style={s.para}>
         My hope is that Tern itself stays free, with Tern Plus covering the

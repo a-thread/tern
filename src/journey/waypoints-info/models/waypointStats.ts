@@ -1,8 +1,11 @@
 import { addDays } from '@shared/utils/date';
-import { type LedgerEvent } from '@/domain/waypoints/models/waypoint';
+import {
+  daysWithWaypoints,
+  type LedgerEvent,
+} from '@/domain/waypoints/models/waypoint';
 
 export type WaypointStats = {
-  /** Days that earned at least one waypoint. */
+  /** Days that earned at least one waypoint, not counting a ternary's arrival on its own. */
   days: number;
   /** Waypoints earned over the last 7 days, today included. */
   thisWeek: number;
@@ -26,6 +29,5 @@ export function waypointStats(
     if (day >= weekStart && day <= today) thisWeek += points;
     if (!best || points > best.points) best = { day, points };
   }
-  // One entry per day that earned anything, so its size is the day count.
-  return { days: byDay.size, thisWeek, best };
+  return { days: daysWithWaypoints(events), thisWeek, best };
 }

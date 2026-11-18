@@ -1,0 +1,106 @@
+import { addDays } from '@shared/utils/date';
+import {
+  latestMilestone,
+  type Milestone,
+  routeMilestones,
+} from '../../waypoints/models/milestone';
+import { RouteId, Routes } from '../../waypoints/models/routes';
+import { TernaryRules } from './ternary';
+
+/**
+ * What to bring to each stopover table. Warm, social and about the place or the people,
+ * never about the food's numbers: no "light", "healthy", "clean" or "guilt-free".
+ */
+export class StopoverPrompts {
+  static readonly ALL: readonly string[] = [
+    'Bring something warming',
+    'Bring something you’d make for a friend',
+    'Bring something from where you grew up',
+    'Bring something that travels well',
+    'Bring something you learned from someone',
+    'Bring something for a slow evening',
+    'Bring something bright',
+    'Bring something you could eat every week',
+  ];
+
+  /** Words that never appear in a prompt: a test holds the list to it. */
+  static readonly NEVER: readonly string[] = [
+    'light',
+    'healthy',
+    'clean',
+    'guilt',
+    'diet',
+    'skinny',
+    'low',
+    'calorie',
+  ];
+}
+
+/** The stop the shared bird is resting at on its route; null before the first. */
+export const restingAt = (
+  total: number,
+  route: RouteId = RouteId.Greenland,
+): Milestone | null => latestMilestone(total, route);
+
+const withoutLap = (stopId: string) => stopId.replace(/^\d+-/, '');
+
+/** A stop's place in its own route, and that route's stops; ids are unique across routes. */
+function placeOf(stopId: string) {
+  const id = withoutLap(stopId);
+  for (const route of Routes.ALL) {
+    const stops = routeMilestones(route.id);
+    const i = stops.findIndex((s) => s.id === id);
+    if (i >= 0) return { stops, i };
+  }
+  return null;
+}
+
+/** The idea for a stop's recipe swap, the same for everyone in the ternary. */
+export function promptFor(stopId: string): string {
+  const i = placeOf(stopId)?.i ?? 0;
+  return StopoverPrompts.ALL[i % StopoverPrompts.ALL.length];
+}
+
+/** The stop for an id on any route, with or without its lap ("2-iceland" or "nl-channel"). */
+export function stopNamed(stopId: string) {
+  const place = placeOf(stopId);
+  return place ? place.stops[place.i] : undefined;
+}
+
+/**
+ * The last arrival seen on this phone or account: which ternary, which stop, and the day it
+ * was paid (null if it hasn't been yet).
+ */
+export type ArrivalSeen = {
+  ternary?: string;
+  stop: string | null;
+  day: string | null;
+};
+
+/**
+ * Whether the shared bird's latest stop pays the 25-waypoint arrival bonus today, and what to
+ * remember afterwards. The first look at a ternary only remembers, so joining one that's
+ * already flown far doesn't pay out for stops reached without you, nor does leaving and
+ * joining another. After that each new stop pays once, at most once a week, and the week
+ * carries over from one ternary to the next.
+ */
+export function arrivalDue(
+  total: number,
+  seen: ArrivalSeen | null,
+  today: string,
+  route: RouteId = RouteId.Greenland,
+  ternary?: string,
+): { pay: boolean; seen: ArrivalSeen } {
+  const latest = latestMilestone(total, route)?.id ?? null;
+  if (!seen || seen.ternary !== ternary) {
+    return {
+      pay: false,
+      seen: { ternary, stop: latest, day: seen?.day ?? null },
+    };
+  }
+  if (latest === null || latest === seen.stop) return { pay: false, seen };
+  if (seen.day && addDays(seen.day, TernaryRules.ARRIVAL_EVERY_DAYS) > today) {
+    return { pay: false, seen };
+  }
+  return { pay: true, seen: { ternary, stop: latest, day: today } };
+}

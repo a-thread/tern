@@ -20,6 +20,18 @@ describe('waypointStats', () => {
     expect(stats.days).toBe(2);
   });
 
+  it("doesn't count a day with only the ternary's arrival", () => {
+    const stats = waypointStats(
+      [
+        award('2026-10-01', 40),
+        award('2026-10-02', 25, WaypointSource.Arrival),
+      ],
+      '2026-10-02',
+    );
+    expect(stats.days).toBe(1);
+    expect(stats.thisWeek).toBe(65);
+  });
+
   it('adds up the last seven days, today included', () => {
     const stats = waypointStats(
       [

@@ -1,6 +1,7 @@
 import type { NavigatorScreenParams } from '@react-navigation/native';
 import type { FoodEntry } from '../domain/food/models/foodEntry';
 import { TabParamList } from './tabs/types';
+import type { TernaryStackParamList } from '../journey/ternary/navigation';
 
 export type SettingsStackParamList = {
   SettingsRoot: undefined;
@@ -69,9 +70,13 @@ export type RootStackParamList = {
   Milestone: { waypoints: number };
   /** A stop already passed, from its row on Journey: `waypoints` is the stop's running total. */
   Destination: { waypoints: number };
+  /** A postcard from a friend's stop, from the ternary's postcards: `id` is the postcard's. */
+  Postcard: { id: string };
   /** What the streak and freeze chips on Today mean. */
   Streak: undefined;
   RestDay: RestDayParams;
+  /** Your ternary, from its card on Journey. */
+  Ternary: NavigatorScreenParams<TernaryStackParamList> | undefined;
 };
 
 declare global {

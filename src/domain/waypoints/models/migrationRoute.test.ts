@@ -3,6 +3,8 @@ import {
   MigrationPhase,
   MigrationRoute,
 } from './migrationRoute';
+import { NetherlandsRoute } from './netherlandsRoute';
+import { RouteId, Routes } from './routes';
 
 const EARTH_RADIUS_KM = 6371;
 const rad = (deg: number) => (deg * Math.PI) / 180;
@@ -17,9 +19,12 @@ function greatCircle(a: GeoPoint, b: GeoPoint): number {
   return 2 * EARTH_RADIUS_KM * Math.asin(Math.sqrt(h));
 }
 
-const { STOPS, PHASE_KM, COLONY, KM_PER_WAYPOINT } = MigrationRoute;
+const { KM_PER_WAYPOINT } = MigrationRoute;
 
-describe('MigrationRoute', () => {
+describe.each([
+  ['Greenland', MigrationRoute],
+  ['Dutch', NetherlandsRoute],
+] as const)('the %s route', (_, { STOPS, PHASE_KM, COLONY }) => {
   it('runs in order, south, then winter, then north, ending back at the colony', () => {
     const order = [
       MigrationPhase.South,
@@ -64,5 +69,23 @@ describe('MigrationRoute', () => {
       const leg = (s.km - (i === 0 ? 0 : STOPS[i - 1].km)) / KM_PER_WAYPOINT;
       expect(leg / TYPICAL_DAY).toBeLessThanOrEqual(28);
     });
+  });
+});
+
+describe('the routes', () => {
+  it('never share a stop id, so a stop is found by id alone', () => {
+    const ids = Routes.ALL.flatMap((r) => r.stops.map((s) => s.id));
+    expect(new Set(ids).size).toBe(ids.length);
+  });
+
+  it('falls back to Greenland for a route this version does not know', () => {
+    expect(Routes.of('somewhere').id).toBe(RouteId.Greenland);
+    expect(Routes.of(RouteId.Netherlands).id).toBe(RouteId.Netherlands);
+  });
+
+  it('flies the Dutch route farther than the Greenland one, as the tracked terns did', () => {
+    const last = (r: RouteId) => Routes.of(r).stops.at(-1)!.km;
+    expect(last(RouteId.Netherlands)).toBe(90_000);
+    expect(last(RouteId.Netherlands)).toBeGreaterThan(last(RouteId.Greenland));
   });
 });

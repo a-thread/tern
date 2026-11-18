@@ -1,3 +1,4 @@
+import type { RouteMilestone } from '@/domain/waypoints/models/milestone';
 import { JourneyMapShapes, type MapShape } from '../models/journeyMapShapes';
 import { type MapZoom, NO_ZOOM, ZoomLimits } from './mapZoom';
 import { pointAt, routeIndex, routePointCount } from './routeAt';
@@ -24,11 +25,16 @@ export function legZoom(
   progress: number,
   width: number,
   height: number,
+  /** The route's stops, Greenland's unless given. */
+  stops?: readonly RouteMilestone[],
 ): MapZoom {
   if (!width || !height) return NO_ZOOM;
   const n = JourneyMapShapes.LEG_POINTS;
   const last = routePointCount(shape) - 1;
-  const leg = Math.min(Math.floor(routeIndex(progress) / n), last / n - 1);
+  const leg = Math.min(
+    Math.floor(routeIndex(progress, stops) / n),
+    last / n - 1,
+  );
   // The drawing fills the frame's width, so one factor turns its units into points.
   const unit = width / JourneyMapShapes.WIDTH;
   const a = pointAt(shape, leg * n);

@@ -14,6 +14,7 @@ import { daysWithWaypoints } from '../../domain/waypoints/models/waypoint';
 import { legFor, routeFraction } from '../models/waypointSummary';
 import WaypointBurst from '@shared/components/WaypointBurst';
 import { RouteStrip } from './components/RouteStrip/RouteStrip';
+import { SendPostcard } from '../components/SendPostcard/SendPostcard';
 import { FadeIn } from '@shared/components/FadeIn/FadeIn';
 import {
   CARD_WIDTH,
@@ -130,6 +131,7 @@ export default function MilestoneScreen({ route }: Props) {
             {`${next.name} · ${Math.max(next.waypoints - waypoints, 0).toLocaleString()} to go`}
           </Text>
         </View>
+        <SendPostcard stopId={stop.id} name={stop.name} />
       </FadeIn>
     </PopupCard>
   );
