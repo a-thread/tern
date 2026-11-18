@@ -30,17 +30,17 @@ type DayNotesContextValue = {
   noted: ReadonlySet<string>;
   /** The viewed day's note (today unless a past day is picked; see `useViewedDay`). */
   onDay: DayNote | undefined;
-  /**
-   * Saves the viewed day's note, replacing an earlier one; blank text removes it. False if
-   * the day can't be edited (before yesterday).
-   */
+  /** Blank text removes it. False on a day that can't be edited. */
   save: (text: string) => boolean;
   /** Removes the viewed day's note. */
   clearDay: () => void;
 };
 
 const [DayNotesContext, useDayNotes] =
-  createRequiredContext<DayNotesContextValue>('useDayNotes', 'DayNotesProvider');
+  createRequiredContext<DayNotesContextValue>(
+    'useDayNotes',
+    'DayNotesProvider',
+  );
 export { useDayNotes };
 
 /** A free-text note per day: how the body felt, what shaped the day. Must sit inside SettingsProvider. */
@@ -116,6 +116,8 @@ export function DayNotesProvider({
   );
 
   return (
-    <DayNotesContext.Provider value={value}>{children}</DayNotesContext.Provider>
+    <DayNotesContext.Provider value={value}>
+      {children}
+    </DayNotesContext.Provider>
   );
 }

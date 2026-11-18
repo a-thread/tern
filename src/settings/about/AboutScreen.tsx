@@ -8,11 +8,6 @@ import { TipJar } from './components/TipJar/TipJar';
 import { SupporterRow } from './components/SupporterRow/SupporterRow';
 import { Letter } from './components/Letter/Letter';
 
-/**
- * Settings › About Tern: what Tern is for and the promises it keeps, a letter from the person
- * who makes it, and ways to support it. A Supporter's plan is under Your data, and their
- * trail color is chosen on Journey, where it's drawn.
- */
 export default function AboutScreen() {
   return (
     <SettingsPage title='About Tern'>

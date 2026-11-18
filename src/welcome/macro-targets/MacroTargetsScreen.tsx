@@ -6,10 +6,7 @@ import { useSettings } from '@/domain/settings/SettingsContext';
 import { WizardStep } from '../components/WizardStep/WizardStep';
 import { WizardStep as Step } from '../models/wizardSteps';
 
-/**
- * The macro split, the same control as Settings › Targets › Macros. Intake bars are offered
- * here when the calorie screen (which offers them otherwise) was left out.
- */
+/** Offers intake bars when the calorie screen was skipped. */
 export default function MacroTargetsScreen() {
   const { settings, updateSettings } = useSettings();
   const askedWithCalories = settings.trackCalories && settings.showCalories;

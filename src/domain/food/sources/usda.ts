@@ -6,11 +6,8 @@ import { FoodSource } from '../models/foodSource';
 import { isFoodApiLogOn, logFoodApi, portionsText } from './foodApiLog';
 
 /**
- * USDA FoodData Central (public domain): everyday foods with household
- * portions, e.g. "medium apple = 161 g", "cup of cooked rice = 158 g".
- * Branded products are deliberately not searched; packaged foods and barcodes
- * come from Open Food Facts. Needs a free API key (EXPO_PUBLIC_USDA_API_KEY);
- * without one this source is simply off.
+ * USDA FoodData Central: everyday foods with household portions. Branded foods come from Open
+ * Food Facts instead. Off without EXPO_PUBLIC_USDA_API_KEY.
  */
 const SEARCH_URL = 'https://api.nal.usda.gov/fdc/v1/foods/search';
 const DETAIL_URL = 'https://api.nal.usda.gov/fdc/v1/food';
@@ -85,24 +82,19 @@ const SIZE_WORD =
 
 const JUNK_LABEL = /^(undetermined|not specified|n\/?a|regular)$/i;
 
-// USDA's ways of saying "a usual serving": its typical amount ("Quantity not specified"), the
-// label serving (NLEA) and the reference amount (RACC). All become one "serving".
+// "Quantity not specified", NLEA and RACC all mean a usual serving.
 const SERVING_LABEL =
   /^(serving\b.*|nlea serving|racc|quantity not specified|\d+\s+quantity not specified)$/i;
 
 // Unit names that aren't a unit to show: USDA's placeholder, and RACC (read as a serving).
 const NOT_A_UNIT = /^(undetermined|racc)$/i;
 
-// Rows that aren't an amount anyone measures out: dietary guideline figures ("per fl oz of
-// beverage" = 2.5 g of milk), cooked yields ("1 oz yields" = 20 g), cubic inches, drinks
-// poured over ice, and ounces, which every food already has as a weight.
+// Not amounts anyone measures: guideline figures, cooked yields, cubic inches, "over ice", and
+// ounces (every food already has weight).
 const NOT_A_PORTION =
   /^guideline amount|\byields?\b|\bcubic inch|\bwith ice\b|^(oz|ounces?)\b/i;
 
-/**
- * Drops USDA's "not further specified" notes ("breast, NS as to size" → "breast", "fl oz (NFS)"
- * → "fl oz") and shortens spoons to the app's own words ("tablespoon" → "tbsp").
- */
+/** Drops "NS"/"NFS" notes and shortens spoons ("tablespoon" → "tbsp"). */
 const withoutNotes = (label: string) =>
   label
     .replace(/\s*\((nfs|no ice)\)/gi, '')
@@ -130,14 +122,8 @@ function splitLeadingAmount(
 }
 
 /**
- * One measure to a portion, or null if it has no usable label or weight.
- *
- * Two shapes arrive. Search results carry the whole phrase in
- * `disseminationText` ("1 medium", "1 cup"), and their `modifier` is a numeric
- * code ("62015") that must not be shown. A food's details carry the amount
- * separately and the name in `modifier` ("medium (3" dia)").
- *
- * `noun` ("egg") completes a bare size, so "large" reads as "large egg".
+ * Search results put the phrase in `disseminationText` (their `modifier` is a code, never
+ * shown); details put the name in `modifier`. `noun` completes a bare size ("large egg").
  */
 export function measureToPortion(
   m: UsdaMeasure,
@@ -156,34 +142,34 @@ export function measureToPortion(
     .map((c) => (c ?? '').trim())
     .find((c) => c && !JUNK_LABEL.test(c));
 
-  // Search results say it all in `disseminationText`. A food's details split it: Foundation
-  // foods put the unit in `measureUnit` and how it's cut in the words ("cup" + "chopped").
+  // Foundation details split it: unit in `measureUnit`, cut in the words ("cup" + "chopped").
   let text = (m.disseminationText ?? '').trim();
   if (!text || JUNK_LABEL.test(text)) {
     if (/^racc$/i.test(unit)) text = 'serving';
-    else if (realUnit && words && !words.toLowerCase().startsWith(realUnit.toLowerCase()))
+    else if (
+      realUnit &&
+      words &&
+      !words.toLowerCase().startsWith(realUnit.toLowerCase())
+    )
       text = `${realUnit}, ${words}`;
     else text = words ?? realUnit;
   }
   if (!text) return null;
 
-  // "2 slices = 56 g" is a portion of one slice weighing 28 g. Without a
-  // quantity in the text, `amount` (if any) says how many the weight covers.
+  // "2 slices = 56 g" is one 28 g slice; without a quantity, `amount` says how many.
   const lead = splitLeadingAmount(text);
   const amount = lead ? lead.amount : (toFiniteNumber(m.amount) ?? 1);
   const named = withoutNotes(lead ? lead.rest : text);
   if (!named || NOT_A_PORTION.test(named)) return null;
   const per = amount > 0 ? grams / amount : grams;
-  if (SERVING_LABEL.test(named)) return { label: 'serving', grams: round1(per) };
+  if (SERVING_LABEL.test(named))
+    return { label: 'serving', grams: round1(per) };
   const label =
     noun && SIZE_WORD.test(named) ? `${named.toLowerCase()} ${noun}` : named;
   return { label, grams: round1(per) };
 }
 
-/**
- * A food's household portions in USDA's order, without duplicates. Its usual serving comes
- * last, and only when no other portion already weighs the same (a medium apple is the serving).
- */
+/** Deduplicated; the usual serving goes last, and only if no portion already weighs the same. */
 export function usdaPortions(f: UsdaFood): Portion[] {
   const noun = nounFor(f.description ?? '');
   const seen = new Set<string>();
@@ -211,11 +197,7 @@ export function usdaPortions(f: UsdaFood): Portion[] {
   return portions;
 }
 
-/**
- * Maps one USDA food to a loggable one, or null when it has no name or energy
- * figure. Nutrition is per 100 g. USDA has no NOVA processing data, so the food
- * type is left for the user to choose.
- */
+/** Per 100 g; null without a name or energy. No NOVA data, so the user picks the type. */
 export function usdaFoodToResult(f: UsdaFood): SearchResult | null {
   const name = (f.description ?? '').trim();
   if (!name || f.fdcId === undefined) return null;
@@ -243,7 +225,6 @@ export function usdaFoodToResult(f: UsdaFood): SearchResult | null {
   };
 }
 
-/** Everyday-food search with the configured key. Resolves to nothing when there isn't one. */
 export function searchUsda(
   query: string,
   signal?: AbortSignal,
@@ -251,16 +232,14 @@ export function searchUsda(
   return searchUsdaWithKey(query, process.env.EXPO_PUBLIC_USDA_API_KEY, signal);
 }
 
-// Takes the key as an argument because Expo inlines EXPO_PUBLIC_* at build time,
-// which makes the environment variable itself impossible to vary in a test.
+// Key passed in because Expo inlines EXPO_PUBLIC_* at build time, so tests can't vary it.
 export async function searchUsdaWithKey(
   query: string,
   key: string | undefined,
   signal?: AbortSignal,
 ): Promise<SearchResult[]> {
   if (!key) return [];
-  // A POST with a JSON body: the equivalent GET was rejected (HTTP 400) for
-  // multi-word queries once the URL grew past a certain length.
+  // POST: the GET returned 400 for long multi-word queries.
   const json = (await getJson(
     `${SEARCH_URL}?api_key=${encodeURIComponent(key)}`,
     signal,
@@ -287,15 +266,16 @@ export async function searchUsdaWithKey(
   return out;
 }
 
-/**
- * The portions from a food's details. Search leaves them out for Foundation and SR Legacy
- * foods (broccoli, cheddar), so they are fetched when such a food is opened.
- */
+/** Search omits portions for Foundation and SR Legacy foods, so they're fetched on open. */
 export function getUsdaPortions(
   id: string,
   signal?: AbortSignal,
 ): Promise<Portion[]> {
-  return getUsdaPortionsWithKey(id, process.env.EXPO_PUBLIC_USDA_API_KEY, signal);
+  return getUsdaPortionsWithKey(
+    id,
+    process.env.EXPO_PUBLIC_USDA_API_KEY,
+    signal,
+  );
 }
 
 export async function getUsdaPortionsWithKey(

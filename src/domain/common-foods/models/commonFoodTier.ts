@@ -1,12 +1,6 @@
 import type { Tier } from '../../food/models/foodEntry';
 
-/**
- * A suggested NOVA tier for a common food, from its name, detail and USDA
- * category. Deliberately cautious: it only suggests the clear cases (1 whole,
- * 2 culinary ingredient, 3 processed) and leaves anything doubtful unset, so
- * the person picks. Never suggests 4 — that's for packaged-product data.
- * Used when the common-foods list is built.
- */
+// Build-time NOVA suggestion: clear cases (1–3) only, doubtful ones unset, never 4.
 
 // Signs that a food is more than its plain form, or a mixed dish: no suggestion.
 const NOT_PLAIN =

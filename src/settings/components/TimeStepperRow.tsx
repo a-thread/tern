@@ -13,10 +13,7 @@ export default function TimeStepperRow({
   label: string;
   value: string;
   onStep: (direction: 1 | -1) => void;
-  /**
-   * Indented under a reminder's on/off row (the default). False for a row of its own,
-   * lined up with the rows around it.
-   */
+  /** Indent under a reminder's toggle (default). */
   nested?: boolean;
 }) {
   return (

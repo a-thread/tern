@@ -41,10 +41,7 @@ class MapLayout {
   static readonly FLIGHT_MS = 1800;
   /** The tern's position updates at most this often (about 30 per second). */
   static readonly BIRD_UPDATE_MS = 33;
-  /**
-   * The tern image's width on the map, in the drawing's units (about points). Its wings run
-   * corner to corner, so the wingspan comes out at about twice this.
-   */
+  /** Wings run corner to corner, so the wingspan is about twice this. */
   static readonly BIRD_W = 20;
   static readonly LABEL_W = 180;
   /** How far above or below the stop its name sits. */
@@ -76,15 +73,6 @@ const SHAPES = {
   [JourneyView.Globe]: JourneyMapShapes.GLOBE,
 };
 
-/**
- * The migration on a real map of the Atlantic: coastlines, the route through every stop, and
- * the tern flying it from the colony to where it is now. Stops already passed are filled, the
- * next is gold, and a finished migration stays faintly underneath the current one. Tapping
- * names the nearest stop. A toggle switches between a flat map and a globe, and is remembered.
- * It opens close up on the leg the tern is flying. Double-tap (or the button beside the toggle)
- * to zoom out to the whole route, and again to come back. Pinch to zoom anywhere in between,
- * and drag to look around while zoomed.
- */
 export function JourneyMap({
   progress,
   lap,
@@ -231,9 +219,7 @@ export function JourneyMap({
       toggleWhole();
       return;
     }
-    // A single tap names the nearest stop, but only once no second tap has come, so a double
-    // tap doesn't flash a name first. Not while the map is moving: what's on screen then isn't
-    // drawn where the tap would be placed.
+    // Waits out a possible double tap, and ignores taps while the map is moving.
     heldTap.current = setTimeout(() => {
       heldTap.current = null;
       if (moving()) return;

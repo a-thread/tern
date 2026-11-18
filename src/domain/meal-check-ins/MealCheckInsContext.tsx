@@ -29,10 +29,7 @@ type MealCheckInsContextValue = {
   entries: MealCheckIn[];
   /** The viewed day's check-in for a meal, if there is one. */
   forMeal: (meal: Meal) => MealCheckIn | undefined;
-  /**
-   * Saves the viewed day's check-in for a meal, with an optional note, replacing an earlier
-   * one. False if a score is off the scale or the day can't be edited (before yesterday).
-   */
+  /** False if a score is off the scale or the day can't be edited. */
   checkIn: (
     meal: Meal,
     fullness: number,

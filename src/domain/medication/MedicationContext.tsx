@@ -44,10 +44,7 @@ const weekdayOf = (day: string) => parseDayKey(day).getDay() + 1;
 const sameDose = (a: Dose, b: Dose) =>
   a.medicationId === b.medicationId && a.day === b.day;
 
-/**
- * The viewed day's doses, next to the medications in settings, and the waypoint for taking
- * everything due today. Must sit inside SettingsProvider.
- */
+/** Inside SettingsProvider. */
 export function MedicationProvider({
   repo,
   children,

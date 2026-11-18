@@ -1,10 +1,7 @@
 import { isTodayOrYesterday } from '@shared/utils/date';
 import { Units } from '@shared/utils/units';
 
-/**
- * What kind of movement. Stored by id, so an id never changes once it is in use;
- * add new ones freely, and anything unknown reads back as Other.
- */
+/** Stored by id: never change one in use. Unknown ids read back as Other. */
 export enum Activity {
   Walk = 'walk',
   Run = 'run',
@@ -106,30 +103,24 @@ export const searchActivities = (query: string) => {
     : ACTIVITY_ORDER;
 };
 
-/**
- * One stretch of movement on a day. No calories: what someone burns shows up
- * in the adaptive target, from their own log and weight trend, never from a
- * per-workout estimate. `day` is the local day (YYYY-MM-DD).
- */
 export enum MovementSource {
   Manual = 'manual',
   HealthConnect = 'healthConnect',
   HealthKit = 'healthKit',
 }
 
-/** Whether an entry was read from Health Connect or Apple Health, rather than logged by hand. */
 export const isFromHealthApp = (source: MovementSource) =>
   source !== MovementSource.Manual;
 
+/** No calories on purpose: burn comes from the adaptive target, never per-workout estimates. */
 export type MovementEntry = {
   id: string;
   day: string;
   activity: Activity;
   minutes: number;
   effort: Effort | null;
-  /** Optional, in meters (miles or kilometers are a display choice). */
   distanceM?: number | null;
-  /** Logged by hand, or read from the phone's health app (read-only, never stored). */
+  /** Health-app entries are read-only and never stored. */
   source: MovementSource;
   loggedAt: string;
 };
@@ -137,9 +128,8 @@ export type MovementEntry = {
 export class MovementLimits {
   static readonly MIN_MINUTES = 1;
   static readonly MAX_MINUTES = 600;
-  /** What a new entry starts at. */
   static readonly DEFAULT_MINUTES = 30;
-  /** The longest distance an entry can hold: 300 km. */
+  /** 300 km. */
   static readonly MAX_DISTANCE_M = 300_000;
 }
 
@@ -163,11 +153,7 @@ export const clampMinutes = (m: number) =>
 /** Movement can be logged by hand for today and yesterday, never further back or ahead. */
 export const isLoggableDay = isTodayOrYesterday;
 
-/**
- * Whether an activity's minutes count toward a goal day. Walks and runs don't:
- * steps already count them, and counting them again would make a short walk a
- * goal day. Movement is for what steps can't see: swims, rides, lifting, classes.
- */
+/** Walks and runs don't: steps already count them. */
 export const countsTowardGoal = (activity: Activity) =>
   !ACTIVITY_INFO[activity].inSteps;
 

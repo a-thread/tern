@@ -8,10 +8,7 @@ import {
   TipResult,
 } from './models/subscription';
 
-/**
- * Tern Plus: what this person has bought, and buying it. The store is the source of truth,
- * so nothing here is kept in Tern's own database.
- */
+/** The store is the source of truth; nothing is kept in Tern's database. */
 export interface SubscriptionRepository {
   status(): Promise<SubscriptionStatus>;
   /** What can be bought, as priced for this person; empty when the store has nothing to offer. */
@@ -20,10 +17,7 @@ export interface SubscriptionRepository {
   purchase(id: string): Promise<SubscriptionStatus | null>;
   /** Finds purchases made on another phone, or before reinstalling. */
   restore(): Promise<SubscriptionStatus>;
-  /**
-   * Ties purchases to a Tern account (its user id), or back to this phone (null), so a
-   * subscription bought before signing up follows the account.
-   */
+  /** A user id, or null for the phone, so a pre-sign-up purchase follows the account. */
   identify(userId: string | null): Promise<SubscriptionStatus>;
   /** Calls `listener` when the status changes outside the app (a renewal, a refund); returns the unsubscribe. */
   onChange(listener: (status: SubscriptionStatus) => void): () => void;
@@ -68,11 +62,8 @@ const SIGNED_IN_PLUS: SubscriptionStatus = {
 };
 
 /**
- * In memory: used without RevenueCat keys and in tests. Buying works and costs nothing.
- * With `accountsHavePlus`, any signed-in account counts as having Plus, so developing
- * against Supabase without RevenueCat doesn't treat every account as lapsed; with
- * `accountsAreSupporters` too, as Supporter. A plan bought here is kept through signing
- * in until the app restarts.
+ * Free buying, for dev and tests. `accountsHavePlus` keeps Supabase-without-RevenueCat dev
+ * from reading every account as lapsed.
  */
 export function createMemorySubscriptionRepository(
   initial: SubscriptionStatus = NO_SUBSCRIPTION,
@@ -115,11 +106,7 @@ export function createMemorySubscriptionRepository(
   };
 }
 
-/**
- * A release build with no store key for this platform: nothing can be bought and nobody
- * has Plus, short of a grant the server knows about. Never the free in-memory store, which
- * would let an account think it has Plus that the server then refuses every write for.
- */
+/** Release builds without a store key; never the free store, which the server would contradict. */
 export function createUnavailableSubscriptionRepository(): SubscriptionRepository {
   return {
     status: async () => NO_SUBSCRIPTION,

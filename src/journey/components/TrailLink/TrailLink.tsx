@@ -9,10 +9,7 @@ import { useSubscription } from '@/domain/subscription/SubscriptionContext';
 import { trailFor } from '@/domain/settings/models/trailColor';
 import { useRootNavigation } from '@/navigation/useAppNavigation';
 
-/**
- * Under the map, for a Supporter: the way to choose the trail's color, marked with the one
- * drawn now. Nobody else sees it.
- */
+/** Supporters only. */
 export function TrailLink() {
   const { supporter } = useSubscription();
   const { settings } = useSettings();

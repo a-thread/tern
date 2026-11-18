@@ -1,11 +1,7 @@
 import type { Tier } from '@/domain/food/models/foodEntry';
 import { FoodSource } from '@/domain/food/models/foodSource';
 
-/**
- * The line under the food-type picker saying where the pre-picked type came from. `source` is
- * unset for a food you logged before (its suggestion is your last choice) and for one you made
- * yourself (nothing to say: the info sheet explains the levels). Null means no note.
- */
+/** Null means no note. `source` is unset for your own foods. */
 export function tierSuggestionNote(
   suggested: Tier | null | undefined,
   source: FoodSource | undefined,

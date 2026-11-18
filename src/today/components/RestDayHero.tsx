@@ -15,10 +15,6 @@ import { useSettings } from '@/domain/settings/SettingsContext';
 import { remindersOn } from '@/domain/settings/models/reminderPlan';
 import { useRootNavigation } from '../../navigation/useAppNavigation';
 
-/**
- * The rest scene in place of the sky card, with its copy for the viewed day. Today it promises
- * the streak is safe and the reminders quiet; a past rest day just says the streak carried on.
- */
 export function RestDayHero({
   heroRef,
   rest,

@@ -24,11 +24,7 @@ export function useWaterSplash() {
   return useContext(WaterSplashContext);
 }
 
-/**
- * A view whose children can splash water around a button. The splash is drawn on top of
- * everything inside it, so it isn't clipped by the card or list the button sits in. Put it
- * around a whole screen's content (or a sheet's, since a Modal draws above the screen).
- */
+/** Wrap a whole screen (or sheet) so splashes aren't clipped by the card or list. */
 export function WaterSplashLayer({
   style,
   children,

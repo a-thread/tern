@@ -8,11 +8,6 @@ import type { RootStackParamList } from '../../navigation/types';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'RestDay'>;
 
-/**
- * The rest-day explanation. Loafing days hold the streak, don't break it,
- * and earn waypoints — this card is where that gets said explicitly, in
- * place, rather than assumed.
- */
 export default function RestDayScreen({ navigation, route }: Props) {
   const { dayName, steps, waypoints } = route.params;
 

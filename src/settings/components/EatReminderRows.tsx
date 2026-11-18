@@ -4,10 +4,7 @@ import { ReminderKey } from '../../domain/settings/models/reminderPlan';
 import { useReminders } from '../hooks/useReminders';
 import { ReminderBlock, ReminderTimeRow } from './ReminderBlock/ReminderBlock';
 
-/**
- * Reminders to eat, for someone who doesn't track food: on or off, and the midday and
- * evening times. Nothing to log; like the others, they're quiet on rest days.
- */
+/** For someone who doesn't track food. */
 export function EatReminderRows() {
   const { reminders, text, patch } = useReminders();
   const eat = reminders.eat;

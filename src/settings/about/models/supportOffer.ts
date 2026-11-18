@@ -1,14 +1,8 @@
-/**
- * Whether About Tern offers Supporter under the tip jar. Someone who already has Plus sees
- * their plan under Your data, so About only ever asks.
- */
+/** Subscribers see their plan under Your data, so About only ever asks. */
 export enum SupportOffer {
   /** Signed out with no Plus, or signed in and lapsed: become a Supporter. */
   Join = 'join',
-  /**
-   * Nothing to offer: Plus is on, there's no account backend, or the store hasn't answered
-   * for a signed-in account (signing in again opens nothing for one that isn't lapsed).
-   */
+  /** Plus on, no backend, or the store hasn't answered for this account. */
   None = 'none',
 }
 

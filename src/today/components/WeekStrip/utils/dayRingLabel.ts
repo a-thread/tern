@@ -2,10 +2,7 @@ import { formatLongDate } from '@shared/utils/date';
 import { DayState } from '@shared/models/dayState';
 import type { DayRecord } from '@/domain/activity/models/dayRecord';
 
-/**
- * What a screen reader says for one ring of the week strip: the date, then how the day went
- * ("Tuesday, Oct 20, goal reached"), since the ring itself is only a colour and a letter.
- */
+/** The ring is only colour and a letter, so this says how the day went. */
 export function dayRingLabel(
   d: Pick<
     DayRecord,

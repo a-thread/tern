@@ -19,12 +19,8 @@ export enum ExportOutcome {
 }
 
 /**
- * Saves an export as a .json file the person can keep and restore from later.
- *
- * On Android, it asks for a folder (Downloads, Documents, Google Drive…) with the system's
- * own picker and writes the file there: Android's share sheet has no "save to device", only
- * apps. On iPhone the share sheet already has "Save to Files", so it hands the file to that.
- * Where sharing files isn't possible, it falls back to sharing the text.
+ * Android uses a folder picker (its share sheet can't save to the device); iPhone's share
+ * sheet has "Save to Files". Falls back to sharing the text.
  */
 export async function saveExport(
   copy: TernExport,

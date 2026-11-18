@@ -34,12 +34,7 @@ const isStored = (v: unknown): v is Stored =>
   typeof (v as Stored).version === 'string' &&
   Array.isArray((v as Stored).foods);
 
-/**
- * The common-foods list, searched on the phone. The copy from the last launch
- * is used straight away; the backend is then asked for its version, and the
- * list is downloaded only when it changed. Never holds the app back: until a
- * copy exists, search simply has no common foods.
- */
+/** Uses the cached copy at once, refreshing only when the version changed. Never blocks the app. */
 export function CommonFoodsProvider({
   repo,
   children,

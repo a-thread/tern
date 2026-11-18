@@ -20,13 +20,7 @@ export function DriftwoodDefs() {
   );
 }
 
-/**
- * A weathered log lying in the shallows: a grey-brown body that darkens toward the water, a
- * lit top edge, grain, cracks and a knot, a cut end with its rings, a snapped branch at each
- * side, and a shadow and a few laps of water where it meets the surface. `lap` shifts the
- * little ripples around its base (a few units either way). `float` moves the whole log as it
- * drifts in and bobs: an offset in scene units and a rock in degrees about its middle.
- */
+/** `lap` shifts the base ripples; `float` is an offset in scene units and a rock in degrees. */
 export function Driftwood({
   lap = 0,
   float = { dx: 0, dy: 0, tilt: 0 },

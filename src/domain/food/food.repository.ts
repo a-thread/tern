@@ -1,12 +1,7 @@
 import { foodLog as seed } from './food.mock';
 import type { FoodEntry, NewFoodEntry } from './models/foodEntry';
 
-/**
- * Where food entries are stored. The app talks to this interface only, so
- * the in-memory version below (used with no Supabase keys, and in tests) and
- * the Supabase one are interchangeable. Ids are chosen by the caller so an
- * optimistic add keeps the same id once it's persisted.
- */
+/** Ids come from the caller so an optimistic add keeps its id once saved. */
 export interface FoodRepository {
   /** Entries logged on `day` (local YYYY-MM-DD). */
   load(day: string): Promise<FoodEntry[]>;

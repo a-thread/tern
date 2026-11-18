@@ -22,12 +22,7 @@ import { useTodayTips } from './hooks/useTodayTips';
 import { TipOverlay } from '@shared/components/TipOverlay/TipOverlay';
 import { WaterSplashLayer } from '@shared/components/WaterSplashLayer/WaterSplashLayer';
 
-/**
- * The Today tab: steps, the week, what is left to do and what is done, and the waypoint
- * celebrations. On a rest day the sky card and the to-do list give way to a calm scene; the
- * day's logging stays one tap away ("Log something"). Every section follows the viewed
- * day: today, unless a past day was tapped in the week strip.
- */
+/** Every section follows the viewed day. */
 export default function TodayScreen() {
   const insets = useSafeAreaInsets();
   const refreshControl = useTodayRefresh();

@@ -9,10 +9,7 @@ import { tipThanks } from './models/tipThanks';
 import { TipTile } from './components/TipTile/TipTile';
 import { TipThanks } from './components/TipThanks/TipThanks';
 
-/**
- * The tip jar: a one-off thank-you through the store, shown as fish to bring Tern. It unlocks
- * nothing, and nothing is held back from anyone who doesn't tip. Hidden when the store has no tips.
- */
+/** Unlocks nothing. Hidden when the store has no tips. */
 export function TipJar() {
   const { tips, tip } = useSubscription();
   const toast = useToast();

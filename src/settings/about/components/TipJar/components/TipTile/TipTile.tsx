@@ -5,10 +5,6 @@ import { colors, radius, space, typography } from '@shared/theme';
 import { Icon } from '@shared/components/ui';
 import { useReduceMotion } from '@shared/hooks/useReduceMotion';
 
-/**
- * One amount in the tip jar, shown as a fish that grows with the tip. Pressed, the tile gives
- * a little and the fish flips out of the water; with Reduce Motion on, neither moves.
- */
 export function TipTile({
   price,
   fish,

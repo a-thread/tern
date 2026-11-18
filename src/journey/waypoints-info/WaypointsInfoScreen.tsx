@@ -9,11 +9,6 @@ import { useWaypoints } from '../../domain/waypoints/WaypointsContext';
 import { useActivity } from '../../domain/activity/ActivityContext';
 import { waypointStats } from './models/waypointStats';
 
-/**
- * What the total and the day count on Journey mean, from tapping them: how waypoints are
- * earned, what counts as a day, why the streak can be longer than the days, and a little
- * about how it's going.
- */
 export default function WaypointsInfoScreen() {
   const { waypoints, events } = useWaypoints();
   const { streak } = useActivity();

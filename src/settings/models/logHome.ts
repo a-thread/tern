@@ -6,10 +6,11 @@ export enum LogHome {
   Account = 'account',
 }
 
-/**
- * Signed in with Plus, the log is in the account (also while the store can't be reached,
- * since the account is still what's used). Otherwise it's on the phone: signed out, which
- * includes Plus bought before making an account, or signed in once Plus has ended.
- */
-export const logHome = ({ signedIn, lapsed }: { signedIn: boolean; lapsed: boolean }) =>
-  signedIn && !lapsed ? LogHome.Account : LogHome.Phone;
+/** Account when signed in with Plus (even if the store is unreachable); the phone otherwise. */
+export const logHome = ({
+  signedIn,
+  lapsed,
+}: {
+  signedIn: boolean;
+  lapsed: boolean;
+}) => (signedIn && !lapsed ? LogHome.Account : LogHome.Phone);

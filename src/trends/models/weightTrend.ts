@@ -20,11 +20,7 @@ function entriesInRange(
   );
 }
 
-/**
- * Returns the smoothed weight trend for the last `rangeDays` days.
- * Pass `Infinity` to include all entries. Entries must be newest-first; the
- * trend is calculated from the full history before the range is selected.
- */
+/** Smoothed over the full history, then cut to `rangeDays` (Infinity for all). Newest-first input. */
 export function weightTrendFor(
   entriesNewestFirst: WeightEntry[],
   rangeDays: number,

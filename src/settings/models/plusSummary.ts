@@ -40,12 +40,7 @@ export type PlusSectionText = {
 const SYNCED = 'Synced to your account';
 const ON_PHONE = 'Kept on this phone';
 
-/**
- * The Tern Plus row in Your data: where the data is, the subscription's state, and the one
- * thing to do about it. A subscription bought in the store has an end date it renews at or
- * stops at. Plus granted by hand (a tester, a grandfathered account, a test build) has
- * neither, and nothing to pay, renew or cancel, so it just says it's included.
- */
+/** Hand-granted Plus has no end date or billing, so it just says it's included. */
 export function plusSummary(state: PlusSectionState): PlusSectionText {
   const { signedIn, known, lapsed, status, store } = state;
   if (!signedIn) {

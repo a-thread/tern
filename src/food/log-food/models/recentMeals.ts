@@ -17,10 +17,7 @@ export type RecentMeal = {
   items: SavedMealItem[];
 };
 
-/**
- * Within a day, the latest meal first, so the meal you're most likely to
- * repeat is nearest the top. Snacks sit after the meals of that day.
- */
+/** Latest meal first within a day; snacks last. */
 const WITHIN_DAY: FoodEntry['meal'][] = [
   Meal.Dinner,
   Meal.Lunch,
@@ -55,14 +52,7 @@ export function recentMealTitle(
     : `${mealLabel(meal)} · ${formatShortDate(day)}`;
 }
 
-/**
- * The meals in your log, newest day first and latest meal first within a day,
- * each one a snapshot ready to add again (portions and food types kept, as in
- * a saved meal).
- *
- * `byDay` is entries grouped by day (YYYY-MM-DD). `fromDay` leaves out
- * anything before that day.
- */
+/** Snapshots ready to add again, newest first. */
 export function recentMeals(
   byDay: Record<string, FoodEntry[]>,
   options: { today: string; fromDay?: string; limit?: number },

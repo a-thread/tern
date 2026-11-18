@@ -29,11 +29,7 @@ const withoutNotes = (text: string) =>
     .replace(/\s+/g, ' ')
     .trim();
 
-/**
- * The portion a serving size describes, as a product label writes it. "1 bar (40 g)" is a
- * bar of 40 g, "2 cookies (30 g)" a cookie of 15 g, "2 tbsp (30 g)" a tbsp of 15 g; a bare
- * weight ("30 g", "1 oz") or anything else is just "serving".
- */
+/** "2 cookies (30 g)" is a 15 g cookie; a bare weight is just "serving". */
 export function servingPortion(
   servingSize: string | undefined,
   grams: number,
@@ -47,8 +43,6 @@ export function servingPortion(
   const measure = HOUSEHOLD_MEASURE.find(([re]) => re.test(noun));
   if (measure && count > 0)
     return { label: measure[1], grams: round1(grams / count) };
-  // Any count but one is shared out: "2 cookies" is a cookie of 15 g, "1.5 bowls" a bowl of
-  // two thirds the weight.
   if (count > 0 && count !== 1) {
     return {
       label: singular(noun.toLowerCase()),
@@ -66,12 +60,7 @@ function singularLabel(label: string): string {
     : singular(label);
 }
 
-/**
- * A serving someone typed in, weighing `grams`, as a portion and how many of it: "bowl" is
- * 1 bowl, "1/2 cup" half a cup, "2 cups, chopped" two of "cup, chopped". Their own words are
- * kept even where a product label would be read as just "serving"; blank (or only a weight)
- * is 1 serving.
- */
+/** "1/2 cup" is half a cup; the user's own words are kept. Blank or a bare weight is 1 serving. */
 export function typedServing(
   text: string,
   grams: number,
@@ -101,7 +90,8 @@ export function typedServing(
   // Words a label reader wouldn't take ("cups, chopped"): kept as typed.
   return {
     portion: {
-      label: count === 1 ? noun.toLowerCase() : singularLabel(noun.toLowerCase()),
+      label:
+        count === 1 ? noun.toLowerCase() : singularLabel(noun.toLowerCase()),
       grams: round1(grams / count),
     },
     quantity: count,

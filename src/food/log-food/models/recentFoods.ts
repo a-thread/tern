@@ -4,11 +4,7 @@ import type { SearchResult } from '@/domain/food/sources/searchResult';
 const key = (name: string, brand?: string) =>
   `${name.trim().toLowerCase()}|${(brand ?? '').trim().toLowerCase()}`;
 
-/**
- * A logged food as something to log again: its values, food type and the amount
- * you had. Logged by amount, it comes back per 100 g with its units and the unit
- * and count last used; otherwise it keeps its serving label and how many.
- */
+/** Measured foods come back per 100 g with the last unit; others keep their serving label. */
 export function loggedAsResult(
   e: Pick<
     FoodEntry,
@@ -52,14 +48,7 @@ export function loggedAsResult(
   };
 }
 
-/**
- * Distinct foods from your log, newest first, ready to log again. A food's
- * values are those from the last time you logged it, including the food type
- * you chose, so a correction you made is remembered.
- *
- * `byDay` is entries grouped by day (YYYY-MM-DD); within a day, later entries
- * count as newer. `fromDay` leaves out anything before that day.
- */
+/** Newest first, with the last-logged values so corrections stick. */
 export function recentFoods(
   byDay: Record<string, FoodEntry[]>,
   options: { fromDay?: string; limit?: number } = {},

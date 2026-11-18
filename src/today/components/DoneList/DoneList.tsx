@@ -30,11 +30,7 @@ import { useActivity } from '@/domain/activity/ActivityContext';
 import { DoneBadge } from './components/DoneBadge';
 import { useRootNavigation } from '@/navigation/useAppNavigation';
 
-/**
- * What has been done on the viewed day ("Today so far", "Yesterday", "Tuesday"), with a way
- * to undo or edit the ones that allow it. Before yesterday it's read-only, except that
- * "Meals logged" still opens that day in the Food tab.
- */
+/** Read-only before yesterday, except "Meals logged" still opens the day in Food. */
 export function DoneList({
   quietWhenEmpty = false,
 }: { quietWhenEmpty?: boolean } = {}) {

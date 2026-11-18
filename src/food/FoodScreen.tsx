@@ -343,10 +343,7 @@ function SaveMealRow({ onPress }: { onPress: () => void }) {
   );
 }
 
-/**
- * Marks an empty core meal as "nothing today". It counts toward "logging all
- * meals" exactly like food does, so a complete log never means eating more.
- */
+/** Counts toward "all meals" like food, so a complete log never means eating more. */
 function SkipMealRow({ text, onPress }: { text: string; onPress: () => void }) {
   return (
     <Pressable

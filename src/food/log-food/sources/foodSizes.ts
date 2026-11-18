@@ -7,18 +7,13 @@ import { getProductPortions } from './openFoodFacts';
 /** The household sizes a food's details add: its portions, and whether it is poured. */
 export type Sizes = Pick<SearchResult, 'portions' | 'liquid'>;
 
-// Sizes already fetched this session (null: the food has none), and requests on their way,
-// so the search list and the details screen share one request per food. Keyed by the
-// database id the sizes come from.
+// One request per food, shared by the list and details screen. null: the food has none.
 const fetched = new Map<string, Sizes | null>();
 const pending = new Map<string, Promise<Sizes | null>>();
 // Requests that failed this session: the list stops waiting on them; opening the food retries.
 const failed = new Set<string>();
 
-/**
- * Where a food's sizes can be fetched from: a USDA or Open Food Facts food itself, or for
- * a food you logged before it had sizes, its database copy (`sizesFrom`).
- */
+/** The food itself, or its database copy (`sizesFrom`). */
 function sourceOf(r: SearchResult): { id: string; source: FoodSource } | null {
   if (r.sizesFrom) return r.sizesFrom;
   if (r.last) return null;
@@ -41,10 +36,7 @@ export const sizesKnown = (r: SearchResult) =>
 export const sizesSettled = (r: SearchResult) =>
   sizesKnown(r) || failed.has(idOf(r));
 
-/**
- * The food with any sizes fetched for it filled in, ahead of what it had ("packet" before
- * the oz and lb of a food you logged by weight).
- */
+/** Fetched sizes go ahead of what it had. */
 export function withSizes(r: SearchResult): SearchResult {
   const sizes = needsSizes(r) ? fetched.get(idOf(r)) : null;
   if (!sizes?.portions?.length) return r;
@@ -56,15 +48,12 @@ export function withSizes(r: SearchResult): SearchResult {
   return { ...r, portions, liquid: r.liquid || sizes.liquid };
 }
 
-/**
- * Fetches a food's sizes once: USDA's Foundation and SR Legacy foods and Open Food Facts
- * products come from search without them. Resolves to null when there are none; a failure
- * is noted, so the list stops waiting, and the next request tries again.
- */
+/** Null when there are none; a failure stops the wait and the next request retries. */
 export function loadSizes(r: SearchResult): Promise<Sizes | null> {
   const from = needsSizes(r) ? sourceOf(r) : null;
   if (!from) return Promise.resolve(null);
-  if (fetched.has(from.id)) return Promise.resolve(fetched.get(from.id) ?? null);
+  if (fetched.has(from.id))
+    return Promise.resolve(fetched.get(from.id) ?? null);
   const waiting = pending.get(from.id);
   if (waiting) return waiting;
   failed.delete(from.id);

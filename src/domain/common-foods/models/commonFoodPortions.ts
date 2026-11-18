@@ -2,15 +2,7 @@ import type { Portion } from '../../food/sources/searchResult';
 import { singular } from '../../food/models/measure';
 import { isSpooned, LIQUID_WORDS } from '../../food/models/volume';
 
-/**
- * Picks the portions people actually use for a common food, in the order to
- * offer them (the first is the default):
- *  - sizes and whole items first ("medium apple", "avocado"),
- *  - a cup first for small things ("blueberry" is too small to be the default),
- *  - a cup first for drinks, a tablespoon for oils, butter and spreads,
- *  - ounces for cheese, nuts, meat and fish (added when USDA has none).
- * Used when the common-foods list is built.
- */
+// Build-time portion picking; the first portion is the default.
 
 export enum PortionKind {
   Size = 'size',
@@ -67,12 +59,7 @@ export function portionKind(label: string): PortionKind {
   return PortionKind.Count;
 }
 
-/**
- * A portion label made readable, or null to drop it: dimensions in brackets go
- * ("large (8" long)" → "large"), a bare size or generic item gets the food's
- * noun ("medium" → "medium apple", "medium whole" → "medium tomato",
- * "fruit" → "orange"), and a plural count reads as one ("berries" → "berry").
- */
+/** Null to drop it. "large (8" long)" → "large", "medium" → "medium apple", "berries" → "berry". */
 export function tidyPortionLabel(
   label: string,
   noun: string | null,

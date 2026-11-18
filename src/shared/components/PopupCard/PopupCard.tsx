@@ -12,11 +12,7 @@ const CARD_PADDING = 20;
 /** The width inside the padding, for anything that should run from edge to edge (a photo). */
 export const CARD_INNER_WIDTH = CARD_WIDTH - CARD_PADDING * 2;
 
-/**
- * The dark card the waypoint popups sit on: the screen dims, the card springs in, and a tap
- * outside (or ✕) closes it. Ends with a link to Journey unless `journeyLink` is false.
- * `overlay` draws over the card (confetti), outside its rounded edge.
- */
+/** `overlay` (confetti) draws outside the card's rounded edge. */
 export function PopupCard({
   colors,
   children,

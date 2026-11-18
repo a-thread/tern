@@ -23,15 +23,8 @@ export type RouteStop = {
 };
 
 /**
- * One year's migration as tracked Greenland terns fly it (Egevang et al. 2010, with the
- * eastward swing into the Antarctic from Alerstam et al. 2019; see
- * docs/journey-route-sources.md). South from the colony, down the African coast and the
- * Benguela Current, east to the ice off Dronning Maud Land, west with the ice through the
- * southern summer, then home on the loops round the South and North Atlantic gyres.
- *
- * Each phase is as long as the tracked birds flew it on average (`PHASE_KM`); within a
- * phase, a stop's `km` shares that distance out by the great-circle length of each leg,
- * rounded to 50. Nothing here depends on weight or calories.
+ * Tracked Greenland terns' migration (docs/journey-route-sources.md). Phases are their average
+ * `PHASE_KM`, shared among stops by great-circle leg length, rounded to 50.
  */
 export class MigrationRoute {
   /** How far the tern flies for each waypoint. A migration takes about a year at a typical pace. */

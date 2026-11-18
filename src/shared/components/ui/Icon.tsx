@@ -7,11 +7,7 @@ export type IconName = React.ComponentProps<
   typeof MaterialCommunityIcons
 >['name'];
 
-/**
- * An icon from Material Community Icons (https://pictogrammers.com/library/mdi/), the one icon
- * set the app uses. Decorative by default: give it an `accessibilityLabel` only when the icon
- * stands alone, with no text beside it saying the same thing.
- */
+/** Material Community Icons. Decorative unless given an `accessibilityLabel` (only when it stands alone). */
 export function Icon({
   name,
   size = 16,

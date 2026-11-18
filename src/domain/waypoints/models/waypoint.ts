@@ -31,12 +31,7 @@ export function daysWithWaypoints(events: LedgerEvent[]): number {
 
 /** What earns waypoints. */
 export class WaypointRules {
-  /**
-   * Waypoints are earned for behavior only — logging, moving, resting, showing
-   * up. Never for a number on the scale or a calorie total: the weigh-in
-   * award is for logging one, whatever it says. For the streak rule, `points`
-   * is the first milestone's bonus; later ones pay more.
-   */
+  /** Behavior only (docs/design.md). The streak's `points` is the first milestone's bonus. */
   static readonly ALL: { id: WaypointSource; label: string; points: number }[] =
     [
       {

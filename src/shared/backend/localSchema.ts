@@ -1,10 +1,6 @@
 /**
- * The on-device database's schema, the local counterpart of `supabase/migrations/`.
- * Append a migration to change it; never edit one that has shipped, since phones that
- * already ran it won't run it again. Tables mirror their Supabase ones, minus `user_id`:
- * the whole file belongs to the one person using the phone. Primary keys match too, so
- * marking something twice is harmless here as it is there. Days are YYYY-MM-DD text and
- * times ISO text, which sort the same way they read.
+ * Mirrors `supabase/migrations/` minus `user_id`. Append only: never edit a shipped migration,
+ * since phones that ran it won't run it again.
  */
 export class LocalSchema {
   static readonly FILE_NAME = 'tern.db';

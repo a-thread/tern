@@ -1,10 +1,7 @@
 import initSqlJs from 'sql.js';
 import { migrateLocalDb, type LocalDb } from './localDb';
 
-/**
- * A `LocalDb` over sql.js, SQLite compiled to WebAssembly, for tests. Same SQL engine as
- * the phone, held in memory, so local repositories are tested against real queries.
- */
+/** sql.js for tests: the phone's SQL engine, in memory. */
 export async function createSqlJsDb(): Promise<LocalDb> {
   const SQL = await initSqlJs();
   const db = new SQL.Database();

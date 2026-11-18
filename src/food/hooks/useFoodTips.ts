@@ -8,11 +8,7 @@ import { Meals } from '@/domain/food/models/meals';
 import { Tip, Tips } from '@/domain/settings/models/onboarding';
 import { foodTipTargets, foodTipText } from '../models/foodTips';
 
-/**
- * The Food tab's one-time tips: that "No breakfast today" counts as logged (while a core meal
- * is still open), and that a food can be swiped away (once one is logged). Each applies only
- * when its row is there to point at; otherwise it's skipped and left out of the count.
- */
+/** Each applies only when its row is there to point at. */
 export function useFoodTips() {
   const rootRef = useRef<View>(null);
   const skipMealRef = useRef<View>(null);

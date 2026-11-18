@@ -40,38 +40,25 @@ const REST_FAILURE = {
 };
 
 type ActivityContextValue = {
-  /** False until steps and rest days have loaded once. */
   ready: boolean;
   status: StepsStatus;
-  /**
-   * Steps can be read: the health app is connected and "Read steps" is on. The one test for
-   * whether anything about steps (a count, a step goal to reach, a streak alert) means anything.
-   */
+  /** Connected and "Read steps" on: the one test for whether step data means anything. */
   stepsReadable: boolean;
-  /** A goal day can be reached at all: by steps, or by movement while it's tracked. */
+  /** By steps, or by movement while it's tracked. */
   goalReachable: boolean;
   todaySteps: number;
-  /** The last HISTORY_DAYS days, oldest to newest, ending today. */
+  /** HISTORY_DAYS days, oldest to newest. */
   days: DayRecord[];
-  /** Monday to Sunday of this week. */
   week: DayRecord[];
   streak: number;
-  /** Streak freezes held: each covers a day that would otherwise break the streak. */
   freezes: number;
-  /** Rest days left in this week's allowance. */
   restLeft: number;
-  /** Whether the user chose today as a rest day: a day off from Tern, even if the goal is reached. */
   todayIsRest: boolean;
-  /** Re-reads steps. Resolves to the step status afterwards, or 'failed' if it could not be read. */
   refresh: () => Promise<StepsStatus | 'failed'>;
-  /** Ask for access to the step source (Health Connect). Resolves to the status afterwards. */
   connect: () => Promise<StepsStatus>;
-  /** Take today as a rest day. False if the week's allowance is used up. */
+  /** False if the week's allowance is used up. */
   takeRestDay: () => boolean;
-  /**
-   * Undoes the rest day taken on `day` (today unless given). Only today or yesterday: older days
-   * are settled. Waypoints a finished day already earned stay; the streak is worked out again.
-   */
+  /** Today (default) or yesterday only. */
   undoRestDay: (day?: string) => void;
 };
 
@@ -83,12 +70,7 @@ const [ActivityContext, useActivity] =
 export { useActivity };
 const LastSyncedContext = createContext<Date | null>(null);
 
-/**
- * Steps and rest days, and everything derived from them: the day-by-day
- * record, the streak, and today's awards. Awards here are for behavior only —
- * reaching the step goal, or taking a rest day — and only ever for today.
- * Must sit inside SettingsProvider and WaypointsProvider.
- */
+/** Steps, rest days, the streak and today's step/rest awards. Inside Settings and Waypoints. */
 export function ActivityProvider({
   steps: stepsRepo,
   restDays: restRepo,
@@ -101,7 +83,6 @@ export function ActivityProvider({
   const { settings, ready: settingsReady } = useSettings();
   const today = useDayKey();
   const movement = useMovement();
-  // With movement tracked, enough of it in a day makes a goal day too.
   const movementGoal = movement.enabled ? settings.movementGoalMinutes : 0;
 
   const [status, setStatus] = useState<StepsStatus>(StepsStatus.Unavailable);
@@ -109,7 +90,6 @@ export function ActivityProvider({
   const [restList, setRestList] = useState<string[]>([]);
   const [lastSynced, setLastSynced] = useState<Date | null>(null);
 
-  /** Reads steps and rest days. */
   const { ready, reload: load } = useLoader(
     useCallback(async () => {
       const from = addDays(today, -(HISTORY_DAYS - 1));
@@ -132,7 +112,6 @@ export function ActivityProvider({
   );
   const persist = usePersist(load);
 
-  // Pick up new steps when the app returns to the foreground, and every few minutes while open.
   useEffect(() => {
     const sub = AppState.addEventListener('change', (s) => {
       if (s === 'active') load();
@@ -145,7 +124,7 @@ export function ActivityProvider({
   }, [load]);
 
   const restSet = useMemo(() => new Set(restList), [restList]);
-  // Switching off "read steps" in Settings hides the data without deleting anything.
+  // "Read steps" off hides the data without deleting it.
   const readSteps = settings.healthData.readSteps;
   const stepsByDay = useMemo(
     () => (readSteps ? rawStepsByDay : {}),
@@ -179,8 +158,6 @@ export function ActivityProvider({
     ],
   );
 
-  // Freezes are played forward through the record: a day that would have broken the streak
-  // is marked frozen when one was there to spend.
   const { days, streak, freezes } = useMemo(
     () => withFreezes(recorded),
     [recorded],
@@ -190,37 +167,26 @@ export function ActivityProvider({
   const todaySteps = stepsByDay[today] ?? 0;
   const todayIsRest = restSet.has(today);
 
-  // Awards. The waypoints ledger ignores repeats (one per source per day), so
-  // these can run freely; they wait for today's ledger so a stale one never decides.
-  // Like meals and water, they follow the day as it stands now, not its high-water mark.
   const goalReachedToday = todaySteps >= settings.stepGoal;
   const movedToGoalToday =
     movementGoal > 0 && movement.todayGoalMinutes >= movementGoal;
-  // Steps are only judged while they can be read: with Health Connect
-  // disconnected or "read steps" switched off, what was earned stays put.
+  // Unreadable steps leave what was earned alone.
   const stepsReadable = status === StepsStatus.Connected && readSteps;
-  // Nothing is judged before the settings arrive: until then the goal is only the default,
-  // and an award written that early would make an empty phone look in use, skipping the wizard.
+  // Before settings load the goal is only the default, and an early award would make an
+  // empty phone look in use and skip the wizard.
   const judging = ready && settingsReady;
 
-  // Lowering the goal to collect the award and raising it again doesn't
-  // keep it: today is judged against the goal it ends up with.
-  // A goal day reached by movement earns it too. With steps unreadable, movement decides alone
-  // (so removing the swim that made the goal day takes the award back).
+  // Judged against the goal as it ends up, so lowering it and raising it again doesn't keep it.
   useAward(
     WaypointSource.Steps,
     goalReachedToday || movedToGoalToday,
     judging && movement.ready && (stepsReadable || movementGoal > 0),
   );
 
-  // A rest day is a day off from Tern, and it stays one: reaching the goal anyway doesn't take
-  // it back. It earns the rest day's waypoints, and the goal's on top if it's reached.
   useAward(WaypointSource.Rest, todayIsRest, judging);
 
-  // A streak milestone pays a one-time bonus on the day the streak gets there, so it needs
-  // today's goal reached (a streak of 7 that ended yesterday was paid yesterday). If today's
-  // goal moves out of reach the streak drops a day, and the bonus is taken back at the amount
-  // it was given: the milestone the streak would have reached with today.
+  // Paid on the day the streak reaches a milestone. If today falls short, the streak drops a
+  // day and the bonus is revoked at the amount given (the next milestone's).
   const lastDay = days[days.length - 1];
   const reachedToday = lastDay ? addsToStreak(lastDay) : false;
   const bonus = streakBonus(streak);
@@ -303,10 +269,7 @@ export function ActivityProvider({
   );
 }
 
-/**
- * When steps were last read. Kept out of the main context on purpose: it changes
- * on every refresh, and only the Health data screen shows it.
- */
+/** Separate from the main context: it changes every refresh and only one screen reads it. */
 export function useLastSynced(): Date | null {
   return useContext(LastSyncedContext);
 }

@@ -10,10 +10,6 @@ import { MealReminderRows } from '../components/MealReminderRows';
 import { EatReminderRows } from '../components/EatReminderRows';
 import { useSettingsNavigation } from '../../navigation/useAppNavigation';
 
-/**
- * Settings › Food: whether food is logged at all, then targets, how food is shown, the
- * "How was it?" after meals, and the meal reminders.
- */
 export default function FoodSettingsScreen() {
   const navigation = useSettingsNavigation();
   const { settings, updateSettings } = useSettings();

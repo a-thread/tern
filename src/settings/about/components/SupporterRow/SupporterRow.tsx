@@ -8,10 +8,7 @@ import { useSubscription } from '@/domain/subscription/SubscriptionContext';
 import { usePlusLapsed } from '@/settings/hooks/usePlusLapsed';
 import { SupportOffer, supportOffer } from '../../models/supportOffer';
 
-/**
- * Under the tip jar: the way to become a Supporter, for someone without Plus. Someone who
- * has it sees their plan under Your data instead, so there's no row for them here.
- */
+/** Only without Plus; subscribers see their plan under Your data. */
 export function SupporterRow() {
   const auth = useAuth();
   const { active } = useSubscription();

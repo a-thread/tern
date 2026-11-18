@@ -12,13 +12,7 @@ class LegFrame {
   static readonly Y = 0.42;
 }
 
-/**
- * The close-up on the leg `progress` is on (from the stop before, or the colony, to the next
- * stop) in a `width` × `height` frame, turned so the tern flies left to right: the last stop
- * near the left edge, the next one past the middle, and the rest of the route curving away. As
- * close as that takes, up to `ZoomLimits.MAX`; on a long leg that can't get that close, the leg
- * is centred instead.
- */
+/** Turned so the tern flies left to right, up to `ZoomLimits.MAX`; a long leg is centred instead. */
 export function legZoom(
   shape: MapShape,
   progress: number,

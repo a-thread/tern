@@ -6,11 +6,7 @@ import type { SearchResult } from '@/domain/food/sources/searchResult';
 import { getProductByBarcode } from '../../sources/openFoodFacts';
 import { ScanPhaseKind, type ScanPhase } from '../models/scanPhase';
 
-/**
- * Looks barcodes up on Open Food Facts, one at a time (the camera fires repeatedly while a code is
- * in view). A product with nutrition goes to `onFound`; anything else leaves a phase saying why.
- * Coming back to the screen starts a fresh scan.
- */
+/** One lookup at a time, since the camera fires repeatedly. Refocusing starts a fresh scan. */
 export function useBarcodeLookup(onFound: (result: SearchResult) => void) {
   const [phase, setPhase] = useState<ScanPhase>({
     kind: ScanPhaseKind.Scanning,

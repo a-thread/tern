@@ -31,11 +31,7 @@ function pathBetween(a: number, b: number): string {
   }).join(' ');
 }
 
-/**
- * One migration as a small strip: every stop as a dot, and the bird flying from the stop
- * before (`from`, 0 to 1) to the one just reached (`to`), drawing its trail. The new stop
- * pops when the bird lands. Starts after `delay` ms; with reduce motion on, it's already there.
- */
+/** `from`/`to` are 0–1. With reduce motion, it starts at the end. */
 export function RouteStrip({
   from,
   to,

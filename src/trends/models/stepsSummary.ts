@@ -4,11 +4,7 @@ import {
   type DayRecord,
 } from '../../domain/activity/models/dayRecord';
 
-/**
- * The longest streak in `days`, counted the way Today counts the streak (`computeStreak`): a
- * goal day adds one (a rest day walked to the goal too), a rest or frozen day holds it without
- * adding, today doesn't break it while it's in progress, and a partial or missed day ends it.
- */
+/** Counted the same way as `computeStreak`. */
 export function longestConsecutiveStreak(
   days: readonly Pick<DayRecord, 'state' | 'reachedGoal' | 'isToday'>[],
 ): number {

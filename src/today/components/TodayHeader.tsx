@@ -13,10 +13,7 @@ import { useWaypoints } from '../../domain/waypoints/WaypointsContext';
 import { useActivity } from '../../domain/activity/ActivityContext';
 import { useRootNavigation } from '../../navigation/useAppNavigation';
 
-/**
- * The tab header with the date and the waypoint chip beside the gear. The chip holds back awards
- * that haven't been celebrated yet, so its number ticks up (and pulses) as the feathers land on it.
- */
+/** The chip holds back uncelebrated awards so it ticks up as the feathers land. */
 export function TodayHeader({
   chipRef,
   gearRef,

@@ -1,10 +1,4 @@
-/**
- * Tern design tokens.
- *
- * Palette rule: coral is the PRIMARY ACTION color only — the way the bill is
- * one small bright mark on a mostly-white bird. Every other domain gets its
- * own hue so the tabs read as distinct places.
- */
+/** Coral is for the primary action only; every other area gets its own hue. */
 
 export const colors = {
   // neutrals
@@ -144,10 +138,7 @@ export function skyFor(progress: number): readonly string[] {
   return gradients.midday;
 }
 
-/**
- * Text styles that recur across screens. Spread one and add layout (`{ ...typography.caption,
- * marginTop: 1 }`) rather than re-declaring the font, size and colour.
- */
+/** Spread one and add layout rather than re-declaring font, size and colour. */
 export const typography = {
   /** A tab's big title ("Today", "Food"). */
   screenTitle: {

@@ -11,10 +11,7 @@ import { colors } from '../../theme';
 import { useReduceMotion } from '../../hooks/useReduceMotion';
 import LoadingBird from '../LoadingBird/LoadingBird';
 
-/**
- * A progress value that runs 0 → 1 over `ms` and starts again, beginning
- * `start` of the way through so things sharing a screen aren't in step.
- */
+/** Loops 0 → 1 over `ms`, offset by `start` so things on screen aren't in step. */
 function useLap(start: number, ms: number) {
   const t = useRef(new Animated.Value(start)).current;
   useEffect(() => {
@@ -186,11 +183,7 @@ function WindStreak({
   );
 }
 
-/**
- * The full-screen loading state: one bird beating its wings at the middle with
- * wind sliding past, and a few more crossing the sky behind it at different
- * sizes and speeds. With "reduce motion" on it is the one bird, still.
- */
+/** With reduce motion, one still bird. */
 export default function LoadingScreen({
   background = colors.paper,
 }: {

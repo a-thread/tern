@@ -24,13 +24,7 @@ export type WizardInput = {
   offerAccount: boolean;
 };
 
-/**
- * The screens that apply, from what has been chosen so far: no Steps screen without a health
- * app, no food screens without food, no calorie target without calorie numbers, no zone
- * without intake bars, no macro split without macros, no account invitation once answered or signed in, and no reminders
- * without food or weight to remind about. Worked out again
- * after each step, since each step can change it.
- */
+/** Recomputed after each step, since each choice can change which screens apply. */
 export function wizardSteps(input: WizardInput): WizardStep[] {
   const food = input.trackFood;
   const calories = food && input.trackCalories && input.showCalories;

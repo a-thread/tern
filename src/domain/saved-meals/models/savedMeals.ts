@@ -10,10 +10,7 @@ import { amountOf, scaleMeasure } from '../../food/models/measure';
 
 /** One food in a saved meal: a log entry without its id or which meal it was in. */
 export type SavedMealItem = Omit<FoodEntry, 'id' | 'meal'> & {
-  /**
-   * A homemade batch typed in on New food: the one item of a recipe, standing for the whole
-   * pot. Its share is logged weighed, like the serving first logged from it.
-   */
+  /** A homemade batch: one item for the whole pot, its share logged by weight. */
   batch?: boolean;
 };
 
@@ -99,10 +96,7 @@ export function snapshotItems(entries: FoodEntry[]): SavedMealItem[] {
 export const scaleServings = (servings: number, factor: number) =>
   Math.round(servings * factor * 100) / 100;
 
-/**
- * New log entries for a saved meal's items, all in `meal`. `scale` multiplies
- * every item's servings (0.5 = half portions), leaving the saved meal alone.
- */
+/** `scale` multiplies every item's servings (0.5 = half). */
 export function itemsToEntries(
   items: SavedMealItem[],
   meal: FoodEntry['meal'],
@@ -138,10 +132,7 @@ export function dominantTier(items: SavedMealItem[]): Tier {
   return best;
 }
 
-/**
- * The one log entry for eating `eaten` servings of a recipe. Macros are per serving, so the
- * entry scales like any food ("1.5 × 1 serving").
- */
+/** Macros per serving, so it scales like any food ("1.5 × 1 serving"). */
 export function recipeEntry(
   meal: Pick<SavedMeal, 'name' | 'items' | 'servings'>,
   eaten: number,
@@ -155,9 +146,7 @@ export function recipeEntry(
     tier: dominantTier(meal.items),
     tierOverridden: false,
   };
-  // A homemade batch saved with a serving weight is one weighed item ("8 bowls"): its share
-  // stays weighed ("1 bowl"), so it can be changed by the ounce or gram like the first one.
-  // Any other recipe is logged by the serving, whatever its foods were measured in.
+  // A weighed batch's share stays weighed; any other recipe is logged by the serving.
   const only = meal.items.length === 1 ? meal.items[0] : null;
   if (only?.batch && only.measure) {
     const share = eaten / meal.servings;

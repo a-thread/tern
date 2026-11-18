@@ -21,12 +21,7 @@ const navTheme = {
   },
 };
 
-/**
- * The app's navigation, picking up where it was after a remount (sign-in, a change of
- * account, erasing or restoring data). While the setup wizard is still to do, it starts
- * there instead: a remembered place in the app would skip it, since the wizard's route
- * isn't in that state. A tapped notification opens what it asked for once the wizard is done.
- */
+/** Restores the place after a remount, except while the wizard is pending (it'd be skipped). */
 export function AppNavigationContainer({
   children,
 }: {

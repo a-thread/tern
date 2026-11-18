@@ -3,10 +3,7 @@ import type { View } from 'react-native';
 
 export type Rect = { x: number; y: number; width: number; height: number };
 
-/**
- * Where a view sits on screen. Null when the view isn't mounted (a rest-day link that isn't
- * showing), so a caller can leave that one out rather than wait forever.
- */
+/** Null when unmounted, so callers don't wait forever. */
 export function measureInWindow(
   ref: React.RefObject<View | null>,
 ): Promise<Rect | null> {
