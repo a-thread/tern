@@ -70,14 +70,17 @@ totals. The amounts live in
 | Source | Waypoints | For |
 | --- | --- | --- |
 | Goal day | 40 | reaching the step goal, or the movement goal (30 minutes with an account, 60 on the phone without one, unless changed) of activity steps can't see: swims, rides, lifting, yoga, classes. Walks and runs are already in the steps |
-| Movement | 10 | logging any movement today |
+| Movement | 10 | logging any movement that day |
 | All meals | 15 | every core meal logged or marked "nothing today" |
 | Each meal | 5 each | food logged in breakfast, lunch and dinner. A skipped meal doesn't pay this one |
 | Rest day | 10 | taking one (a goal day is never also a rest day) |
 | Water, mood | 10 each | reaching the water goal, checking in |
-| Medication | 10 | every dose due today taken |
+| Medication | 10 | every dose due that day taken |
 | Weigh-in | 5 | logging one, whatever it says |
 | Streak milestone | 25 – 500 | once, on the day a streak reaches 7, 14, 30, 60, 100, 200 and 365 days |
+
+Logging for yesterday earns yesterday's waypoints. The goal day, rest days and streak
+milestones are today only.
 
 ### How far a waypoint goes
 

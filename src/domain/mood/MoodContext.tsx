@@ -68,9 +68,15 @@ export function MoodProvider({
   const onDay = entryFor(entries, day);
   const checkedIn = todays !== undefined;
 
-  // The waypoint follows the check-in, like the water goal: earned on checking in,
-  // quietly taken back if today's check-in is removed. Nothing happens while tracking is off.
+  // Today's and yesterday's check-ins each earn their own day's waypoint.
+  const yesterday = addDays(today, -1);
   useAward(WaypointSource.Mood, checkedIn, enabled && ready);
+  useAward(
+    WaypointSource.Mood,
+    entryFor(entries, yesterday) !== undefined,
+    enabled && ready,
+    { day: yesterday },
+  );
 
   const checkIn = useCallback(
     (mood: number, stress: number) => {

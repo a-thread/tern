@@ -94,8 +94,8 @@ Every context loads its data and saves edits the same way, so that part is share
   `change(update, write, failure)` that edits the list and persists in one call.
 - `createRequiredContext(hookName, providerName)` — the context and a hook that throws when
   used outside its provider.
-- `useAward(source, earned, active)` (in `domain/waypoints/hooks`) — keeps today's waypoint
-  award in step with a condition.
+- `useAward(source, earned, active, { day })` (in `domain/waypoints/hooks`) — keeps today's
+  (or yesterday's) waypoint award in step with a condition.
 - `ok(query)` and `rows<T>(query)` (`shared/backend/query`) — what every Supabase repository
   uses instead of repeating the `if (error) throw error` check.
 
@@ -195,10 +195,10 @@ record.
 
 ## The waypoints ledger
 
-Past days in `waypoint_events` are never recomputed or clawed back. Today's awards
-follow today as it stands (removing a meal, a drink or a check-in quietly takes that
-award back), and once the day is over its awards are settled. The migrations add sanity
-checks: fixed points per source, and only the current day.
+Awards for today and yesterday follow the log as it stands (removing a meal takes its
+award back); earlier days are settled. The step goal, rest days and streak bonuses are
+today only. The migrations add sanity checks: fixed points per source, and only today or
+yesterday.
 
 ## Schema sketch
 

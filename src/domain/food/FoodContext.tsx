@@ -1,6 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { createRequiredContext } from '@shared/state/createRequiredContext';
-import { useDayKey } from '@shared/hooks/useDayKey';
 import { useViewedDay } from '@shared/state/ViewedDayContext';
 import { useLoader } from '@shared/hooks/useLoader';
 import { usePersist } from '@shared/hooks/usePersist';
@@ -73,7 +72,6 @@ export function FoodProvider({
 }) {
   const [foodLog, setFoodLog] = useState<FoodEntry[]>([]);
   const [skippedMeals, setSkippedMeals] = useState<FoodEntry['meal'][]>([]);
-  const today = useDayKey();
   const { day, editable } = useViewedDay();
   const [loadedDay, setLoadedDay] = useState<string | null>(null);
 
@@ -182,12 +180,16 @@ export function FoodProvider({
     [food, day, editable, persist],
   );
 
-  // The "logging all meals" bonus follows the log, like the water goal: earned once every core
-  // meal has an entry (or is marked "nothing today"), quietly taken back if a removal or edit
-  // drops coverage again. It waits for today's log, so an unloaded (empty) one is never mistaken
-  // for a dropped one, and sits out while a past day is loaded (nothing is paid or taken back then).
-  const loaded = ready && loadedDay === today;
-  useAward(WaypointSource.Meals, allMealsLogged(foodLog, skippedMeals), loaded);
+  // Meal awards follow the loaded day's log (today or yesterday). Waiting for the load keeps
+  // an empty, unloaded log from taking them back.
+  const loaded = ready && loadedDay === day && editable;
+  const award = { day };
+  useAward(
+    WaypointSource.Meals,
+    allMealsLogged(foodLog, skippedMeals),
+    loaded,
+    award,
+  );
 
   // Each meal logged also earns a little on its own, so a partial day still counts for something.
   // Only food logged: marking a meal "nothing today" completes the day above but isn't paid here.
@@ -195,16 +197,19 @@ export function FoodProvider({
     WaypointSource.Breakfast,
     foodLog.some((f) => f.meal === Meal.Breakfast),
     loaded,
+    award,
   );
   useAward(
     WaypointSource.Lunch,
     foodLog.some((f) => f.meal === Meal.Lunch),
     loaded,
+    award,
   );
   useAward(
     WaypointSource.Dinner,
     foodLog.some((f) => f.meal === Meal.Dinner),
     loaded,
+    award,
   );
 
   // A meal with food in it isn't skipped any more, however the food got there

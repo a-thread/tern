@@ -133,8 +133,15 @@ export function MovementProvider({
   );
   const todayGoalMinutes = goalByDay[today] ?? 0;
 
-  // Logging any movement today earns its waypoint; removing it all takes it back.
+  // Any movement today or yesterday earns that day's waypoint.
+  const yesterday = addDays(today, -1);
   useAward(WaypointSource.Movement, todayMinutes > 0, enabled && ready);
+  useAward(
+    WaypointSource.Movement,
+    enabled && dayMinutes(entries, yesterday) > 0,
+    enabled && ready,
+    { day: yesterday },
+  );
 
   const add = useCallback<MovementContextValue['add']>(
     ({ day, activity, minutes, effort, distanceM = null }) => {

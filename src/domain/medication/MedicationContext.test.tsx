@@ -13,6 +13,7 @@ import { WaypointsProvider, useWaypoints } from '../waypoints/WaypointsContext';
 import { MedicationProvider, useMedication } from './MedicationContext';
 import { Frequency } from '@shared/models/frequency';
 import { newMedication } from '../settings/models/medication';
+import { WaypointSource } from '../waypoints/models/waypoint';
 
 const today = dayKey();
 const vitaminD = newMedication('Vitamin D', 'med-d');
@@ -82,7 +83,9 @@ describe('MedicationProvider', () => {
     const { result } = await setup();
     expect(result.current.meds.medications).toEqual([]);
     expect(
-      result.current.points.events.some((e) => e.source === 'medication'),
+      result.current.points.events.some(
+        (e) => e.source === WaypointSource.Medication,
+      ),
     ).toBe(false);
   });
 
@@ -206,7 +209,7 @@ describe('MedicationProvider', () => {
     // Tracked since before yesterday, so it was due then.
     const longTaken = { ...vitaminD, since: addDays(today, -30) };
 
-    it('lists what was due, logs the dose to yesterday and earns nothing', async () => {
+    it("lists what was due, logs the dose to yesterday and earns yesterday's waypoint", async () => {
       const { result, backend } = await setup();
       await track(result, longTaken);
       await act(async () => result.current.viewed.setDay(yesterday));
@@ -222,10 +225,41 @@ describe('MedicationProvider', () => {
       expect(await backend.medication.load(yesterday, today)).toEqual([
         { medicationId: 'med-d', day: yesterday },
       ]);
-      expect(result.current.points.waypoints).toBe(before);
+      await waitFor(() =>
+        expect(result.current.points.waypoints).toBe(before + 10),
+      );
+      expect(
+        (await backend.waypoints.history()).filter(
+          (e) => e.day === yesterday && e.source === WaypointSource.Medication,
+        ),
+      ).toHaveLength(1);
+      expect(result.current.points.celebrations).toMatchObject([
+        { day: yesterday, source: WaypointSource.Medication },
+      ]);
 
       await act(async () => result.current.meds.setTaken('med-d', false));
       expect(await backend.medication.load(yesterday, today)).toEqual([]);
+      await waitFor(() => expect(result.current.points.waypoints).toBe(before));
+    });
+
+    it("doesn't touch today's medication waypoint when yesterday is caught up on", async () => {
+      const { result } = await setup();
+      await track(result, longTaken);
+      await act(async () => result.current.meds.setTaken('med-d', true));
+      await waitFor(() =>
+        expect(
+          result.current.points.events.some(
+            (e) => e.day === today && e.source === WaypointSource.Medication,
+          ),
+        ).toBe(true),
+      );
+      const before = result.current.points.waypoints;
+
+      await act(async () => result.current.viewed.setDay(yesterday));
+      await act(async () => result.current.meds.setTaken('med-d', true));
+      await waitFor(() =>
+        expect(result.current.points.waypoints).toBe(before + 10),
+      );
     });
 
     it("keeps today's doses while yesterday is shown", async () => {

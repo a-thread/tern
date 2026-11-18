@@ -1,35 +1,40 @@
 import { useEffect } from 'react';
 
 import { useDayKey } from '@shared/hooks/useDayKey';
+import { isTodayOrYesterday } from '@shared/utils/date';
 import { useWaypoints } from '../WaypointsContext';
 import { pointsFor, type WaypointSource } from '../models/waypoint';
 
-/**
- * Keeps today's award for `source` in step with `earned`: given when it becomes true,
- * quietly taken back when it stops being true. The ledger ignores repeats (one per source
- * per day), so this can run freely. `active` is the caller's own gate (tracking switched on,
- * data loaded, steps readable); nothing happens while it is false, so what was earned stays put.
- * It also waits for today's ledger, so a stale one never decides. `points` is the rule's
- * own amount unless the source's varies (a streak milestone).
+type AwardOptions = {
+  /** Default today; only today and yesterday are paid. */
+  day?: string;
+  /** Default the rule's amount (a streak milestone varies). */
+  points?: number;
+};
+
+/** Keeps the source's award in sync with `earned` for today or yesterday.
+ * Does nothing while inactive or until today's ledger is ready.
  */
 export function useAward(
   source: WaypointSource,
   earned: boolean,
   active: boolean,
-  points: number = pointsFor(source),
+  { day, points = pointsFor(source) }: AwardOptions = {},
 ) {
   const { day: awardDay, addWaypoints, revokeWaypoints } = useWaypoints();
   const today = useDayKey();
+  const on = day ?? today;
 
   useEffect(() => {
-    if (!active || awardDay !== today) return;
-    if (earned) addWaypoints(points, source);
-    else revokeWaypoints(points, source);
+    if (!active || awardDay !== today || !isTodayOrYesterday(on, today)) return;
+    if (earned) addWaypoints(points, source, on);
+    else revokeWaypoints(points, source, on);
   }, [
     source,
     earned,
     active,
     points,
+    on,
     awardDay,
     today,
     addWaypoints,
