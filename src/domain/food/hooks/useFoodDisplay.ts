@@ -8,23 +8,16 @@ export function useFoodDisplay() {
   return {
     showTiers: settings.showTiers,
     showTierNumber: settings.showTierNumber,
-    // No calorie numbers anywhere once calorie tracking is off: there is nothing
-    // to count, so the separate "show calorie counts" switch has nothing to decide.
+    // With tracking off, "show calorie counts" has nothing to decide.
     showCalories:
       settings.trackFood && settings.trackCalories && settings.showCalories,
-    /**
-     * Calories are recorded, whether or not counts are shown: anywhere food is entered asks
-     * for them, or a hidden count would be saved as zero.
-     */
+    /** Recorded even when hidden, so food entry still asks or they'd save as zero. */
     tracksCalories: settings.trackFood && settings.trackCalories,
     /** Protein, carbs and fat; tracked on their own switch, apart from calories. */
     showMacros: settings.trackFood && settings.trackMacros,
     /** Calories or macros are tracked, so there are nutrient totals and targets. */
     tracksNutrients,
-    /**
-     * The intake bars have a page to show: nutrients, or processing levels on their own (the
-     * split needs no calorie or macro targets).
-     */
+    /** Nutrients, or processing levels alone (which need no targets). */
     hasIntakeSummary:
       tracksNutrients || (settings.trackFood && settings.showTiers),
   };

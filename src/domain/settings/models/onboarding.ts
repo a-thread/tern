@@ -36,10 +36,6 @@ export class Tips {
   ];
 }
 
-/**
- * How far someone is through getting started: the setup wizard, the tips on Today, the
- * getting-started card, and whether the phone may ask to send notifications yet.
- */
 export type OnboardingState = {
   wizardDone: boolean;
   tipsSeen: Tip[];
@@ -70,11 +66,7 @@ export class Onboarding {
   };
 }
 
-/**
- * Reads the saved onboarding state. With nothing saved or logged at all this is a new install;
- * an install in use without it comes from before it existed (an account, or a phone), so
- * that person never sees it. Anything malformed takes the "done" value, never a repeat.
- */
+/** Nothing saved or logged means a new install; an older install in use skips it. Malformed reads as done. */
 export function loadOnboarding(
   saved: unknown,
   inUse: boolean,

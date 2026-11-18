@@ -4,11 +4,7 @@ import { allWordsPrefix, wordsOf } from '../../food/models/foodQuery';
 import { scoreResult } from '../../food/models/foodRanking';
 import { FoodSource } from '../../food/models/foodSource';
 
-/**
- * One food from the common-foods list: everyday foods with clean names,
- * per-100 g nutrition, household portions, how common they are and a
- * suggested food type. Built from USDA data and synced from the backend.
- */
+/** Built from USDA data, synced from the backend. Nutrition per 100 g. */
 export type CommonFood = {
   id: string;
   name: string;

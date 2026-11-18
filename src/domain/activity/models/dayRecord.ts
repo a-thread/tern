@@ -4,54 +4,38 @@ import { DayState } from '@shared/models/dayState';
 export type DayRecord = {
   day: string;
   steps: number;
-  /** The step goal that applied on this day (goal changes only affect days from then on). */
+  /** The goal that applied that day (goal changes only affect later days). */
   goal: number;
-  /** Minutes of movement that count toward a goal day (walks and runs are in the steps). */
+  /** Movement minutes that count toward a goal day (walks and runs are in the steps). */
   minutes: number;
-  /** A goal day reached by movement rather than steps. */
   movedToGoal: boolean;
-  /** The step or movement goal was reached, even on a rest day (which still reads as rest). */
+  /** True even on a rest day, which still reads as rest. */
   reachedGoal: boolean;
   state: DayState;
-  /** The user chose this as a rest day (as opposed to it being detected). */
+  /** Chosen by the user, not detected. */
   chosenRest: boolean;
   isToday: boolean;
-  /** Later this week than today — nothing has happened yet. */
   future: boolean;
 };
 
 export type BuildDaysInput = {
   stepsByDay: Record<string, number>;
-  /** Day keys the user marked as rest days. */
   restDays: ReadonlySet<string>;
-  /** The step goal in effect on a given day; see `goalFor`. */
   goalFor: (day: string) => number;
   restPerWeek: number;
   autoDetect: boolean;
   today: string;
-  /** How many days to return, ending today. */
+  /** Days to return, ending today. */
   count: number;
-  /** Movement minutes per day that count toward a goal day; with `movementGoal`, enough makes one. */
   minutesByDay?: Record<string, number>;
-  /** Minutes that make a goal day; 0 or absent when movement doesn't count. */
+  /** 0 or absent when movement doesn't count. */
   movementGoal?: number;
 };
 
 /**
- * Turns raw step counts into a day-by-day record, oldest to newest, ending
- * today. A chosen rest day reads as 'rest' however far someone walks: it's a
- * day off from Tern, and hitting the goal anyway doesn't take it back (it's
- * marked `reachedGoal`, which the streak counts). Otherwise reaching the step
- * goal, or moving for `movementGoal` minutes, reads as 'goal' (once, either
- * way); with auto-detect on, a past day under the goal reads as 'rest' within
- * the weekly allowance, chosen days first; and anything else is 'partial'
- * (some steps) or 'none'. Weeks run Monday to Sunday.
- *
- * Auto-detect treats every day under the goal alike, so walking part of the
- * way is never worse for the streak than not walking at all, and a day with no
- * data (phone left at home, a sync that didn't happen) is covered too. It
- * starts from the first day with any steps, so the time before someone began
- * using Tern isn't read as rest.
+ * Day-by-day record, oldest to newest, Monday-to-Sunday weeks. A chosen rest day stays rest even
+ * if the goal is reached. Auto-detect covers past days under the goal within the weekly allowance
+ * (chosen days first), starting from the first day with steps so pre-Tern time isn't rest.
  */
 export function buildDays(input: BuildDaysInput): DayRecord[] {
   const {
@@ -72,9 +56,7 @@ export function buildDays(input: BuildDaysInput): DayRecord[] {
     addDays(today, i - (count - 1)),
   );
 
-  // Chosen rest days use the allowance first, so a detected day earlier in the
-  // week never crowds one the user picked. One walked to the goal anyway uses it
-  // too, from `RestDayRules.WALKED_COUNTS_FROM` on (see `usesRestDay`).
+  // Chosen rest days use the allowance first, so a detected day never crowds one out.
   const chosenPerWeek = new Map<string, number>();
   for (const k of keys) {
     if (restDays.has(k) && usesRestDay(k, reached(k))) {
@@ -122,16 +104,10 @@ export function buildDays(input: BuildDaysInput): DayRecord[] {
   });
 }
 
-/** Whether a day adds to the streak: a goal day, or a rest day on which the goal was reached anyway. */
 export const addsToStreak = (d: Pick<DayRecord, 'state' | 'reachedGoal'>) =>
   d.state === DayState.Goal || (d.state === DayState.Rest && d.reachedGoal);
 
-/**
- * The current streak: days that reached the goal, counted back from today.
- * Rest days and frozen days hold the streak without adding to it (unless the
- * goal was reached on the rest day anyway), and today doesn't break it while
- * it's still in progress.
- */
+/** Counted back from today. Rest and frozen days hold it; today never breaks it. */
 export function computeStreak(days: DayRecord[]): number {
   let streak = 0;
   for (let i = days.length - 1; i >= 0; i--) {
@@ -145,51 +121,32 @@ export function computeStreak(days: DayRecord[]): number {
   return streak;
 }
 
-/** How rest days count against the week. */
 export class RestDayRules {
   /**
-   * From this day on, a rest day taken and then walked to the goal anyway still uses up one of
-   * the week's rest days, both in what's left to take and in how many past days Tern covers on
-   * its own. Before it, such a day didn't use one, and those weeks are left reading as they
-   * always have, so no existing streak changes.
+   * From here on, a rest day walked to the goal anyway still uses up the week's allowance.
+   * Earlier weeks keep the old rule so no existing streak changes.
    */
   static readonly WALKED_COUNTS_FROM = '2026-11-01';
 }
 
-/** Whether a rest day taken on `day` uses up one of its week's rest days. */
 const usesRestDay = (day: string, reachedGoal: boolean) =>
   !reachedGoal || day >= RestDayRules.WALKED_COUNTS_FROM;
 
-/** How streak freezes are earned and held. */
 export class StreakFreezes {
-  /** One is earned each time a streak reaches a multiple of this many days. */
+  /** One earned each time the streak reaches a multiple of this. */
   static readonly EVERY = 7;
-
-  /** Freezes that can be held at once; earning more while full gives nothing extra. */
   static readonly MAX = 2;
 }
 
 export type StreakSummary = {
-  /** The days, with any that a freeze covered marked `Frozen`. */
   days: DayRecord[];
-  /** The streak, counting back from today (see `computeStreak`). */
   streak: number;
-  /** Freezes held now. */
   freezes: number;
 };
 
 /**
- * Plays the streak forward through `days` (oldest to newest, as `buildDays`
- * returns them) and spends freezes on the way. A day that would break a streak
- * (some steps or none, with no rest day to hold it) uses a freeze if there is
- * one, and is marked `Frozen`: it holds the streak without adding to it. With
- * none to spend, or no streak to protect, the streak ends as usual. Today is
- * never judged while it is in progress. A freeze is earned every
- * `StreakFreezes.EVERY` goal days in a row, up to `StreakFreezes.MAX`.
- *
- * Freezes are worked out, not stored: the same days always give the same answer,
- * and changing a goal or a rest day re-plays history consistently. Pass days
- * from `buildDays`, not ones this has already marked.
+ * Replays the streak through `buildDays` output, spending a freeze on each day that would break
+ * it (marked `Frozen`). Freezes are derived, not stored, so editing history replays consistently.
  */
 export function withFreezes(days: DayRecord[]): StreakSummary {
   let streak = 0;
@@ -213,10 +170,7 @@ export function withFreezes(days: DayRecord[]): StreakSummary {
   return { days: out, streak, freezes };
 }
 
-/**
- * Monday to Sunday of the week containing `anchor` (today unless an earlier week is shown),
- * for the week strip. Days after today, or before the history, are placeholders.
- */
+/** Monday to Sunday of `anchor`'s week; days outside the history are placeholders. */
 export function weekOf(
   days: DayRecord[],
   today: string,
@@ -243,11 +197,7 @@ export function weekOf(
   });
 }
 
-/**
- * Rest days still available this week (chosen and detected both count). A rest
- * day taken counts even if the goal was reached anyway, by the same rule as
- * `buildDays` (`usesRestDay`), so what's left and what's covered always agree.
- */
+/** Rest days left this week, by the same `usesRestDay` rule as `buildDays`. */
 export function restDaysLeft(
   days: DayRecord[],
   today: string,
@@ -258,11 +208,8 @@ export function restDaysLeft(
   ).length;
   return Math.max(restPerWeek - used, 0);
 }
-/**
- * Whether the past week shows no steps at all. On iPhone that usually means Tern was refused
- * access to steps in Apple Health, which HealthKit won't say outright, so the screen can point
- * to where to change it. A week of true zeros is rare enough that a hint costs little.
- */
+
+/** A week of zero steps usually means HealthKit access was refused, which it won't report. */
 export function noStepsThisWeek(
   days: readonly Pick<DayRecord, 'steps' | 'future'>[],
 ): boolean {

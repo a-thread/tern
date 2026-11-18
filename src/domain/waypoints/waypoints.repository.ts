@@ -9,11 +9,7 @@ export type WaypointsSnapshot = {
   todaySources: WaypointSource[];
 };
 
-/**
- * The waypoints ledger. There is at most one award per source per day, so
- * `award` is idempotent, and taking one back (`revoke`) removes its entry.
- * Awards come from behavior only — see `waypointRules`.
- */
+/** One award per source per day, so `award` is idempotent. */
 export interface WaypointsRepository {
   load(day: string): Promise<WaypointsSnapshot>;
   /** Every award on record, in any order — used to date the journey's milestones. */

@@ -1,11 +1,7 @@
 import { Units } from '@shared/utils/units';
 import type { Portion } from '../sources/searchResult';
 
-/**
- * Ounces and pounds, offered for every food besides grams. Each is stored as a
- * portion like any other ("oz" = 28.35 g), so an amount in ounces is still a
- * weight underneath and older app versions read it as a plain portion.
- */
+/** Stored as portions ("oz" = 28.35 g), so older app versions read them as plain portions. */
 export enum WeightUnit {
   Oz = 'oz',
   Lb = 'lb',
@@ -33,11 +29,7 @@ export const weightGrams = (unit: WeightUnit) => GRAMS[unit];
 export const isWeightUnit = (unit: string | null): unit is WeightUnit =>
   unit === WeightUnit.Oz || unit === WeightUnit.Lb;
 
-/**
- * What an amount weighs, in the person's own units: "1.2 oz" on Imperial, "35 g" on
- * Metric. `typed` is the unit an amount is typed in (null for grams), or undefined when it is
- * counted ("2 packets"). Null when the typed unit is already a weight in their units.
- */
+/** In the person's units; null when the typed unit already is one. `typed` undefined means counted. */
 export function weightNote(
   grams: number,
   units: Units,

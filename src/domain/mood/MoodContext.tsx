@@ -28,10 +28,7 @@ type MoodContextValue = {
   today: MoodEntry | undefined;
   /** The viewed day's check-in (today unless a past day is picked; see `useViewedDay`). */
   onDay: MoodEntry | undefined;
-  /**
-   * Saves the viewed day's check-in, replacing an earlier one. False if a score is off the
-   * scale or the day can't be edited (before yesterday).
-   */
+  /** False if a score is off the scale or the day can't be edited. */
   checkIn: (mood: number, stress: number) => boolean;
   /** Removes the viewed day's check-in. */
   clearDay: () => void;

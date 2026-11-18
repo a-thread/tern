@@ -5,10 +5,7 @@ export enum Plan {
   Other = 'other',
 }
 
-/**
- * Which Tern Plus is bought. Supporter is the same Plus with a thank-you, yearly only: it
- * unlocks nothing that Plus doesn't, so nothing in Tern is held back for it.
- */
+/** Supporter is yearly Plus with a thank-you; it unlocks nothing more. */
 export enum Tier {
   Plus = 'plus',
   Supporter = 'supporter',
@@ -20,11 +17,7 @@ export type PlanOption = {
   id: string;
   plan: Plan;
   tier: Tier;
-  /**
-   * Sold at the founding price, kept for as long as the person stays subscribed. Switched
-   * on and off in RevenueCat (the offering's metadata), so the paywall never calls a price
-   * "founding" once it has gone up.
-   */
+  /** Set from RevenueCat offering metadata, so the paywall stops saying "founding" after a rise. */
   founding: boolean;
   /** Already formatted in the person's currency: "$4.99". */
   price: string;
@@ -34,10 +27,7 @@ export type PlanOption = {
   currency: string;
 };
 
-/**
- * A one-off tip for the developer, bought through the store. It unlocks nothing: Tern holds
- * nothing back from anyone who doesn't tip.
- */
+/** A one-off tip; unlocks nothing. */
 export type TipOption = {
   /** The store's id for it, passed back to buy it. */
   id: string;
@@ -82,10 +72,7 @@ export class SubscriptionConfig {
   static readonly TIPS_OFFERING = 'tips';
 }
 
-/**
- * Signed in, and the store has answered for this account that its Tern Plus has ended: the
- * log then lives on the phone. False while the store hasn't answered, or couldn't be reached.
- */
+/** Only once the store has answered for this account; false while unknown. */
 export function isPlusLapsed(
   userId: string | null | undefined,
   plus: {
@@ -122,11 +109,7 @@ export function priceLabel(option: PlanOption): string {
   }
 }
 
-/**
- * What Plus yearly saves over twelve months of Plus monthly, or null when there isn't both
- * plan, they're priced in different currencies, or yearly doesn't come out cheaper.
- * Supporter costs more on purpose, so it's never weighed as a saving.
- */
+/** Plus yearly vs 12× monthly; null unless comparable and cheaper. Supporter is never counted. */
 export function yearlySavings(
   plans: PlanOption[],
 ): { amount: number; percent: number; currency: string } | null {
@@ -144,10 +127,7 @@ export function yearlySavings(
   };
 }
 
-/**
- * "Save $19.89 a year", in the person's currency. Falls back to the percentage ("Save 33%")
- * where the currency can't be formatted.
- */
+/** "Save $19.89 a year", or "Save 33%" when the currency can't be formatted. */
 export function savingsLabel(savings: {
   amount: number;
   percent: number;

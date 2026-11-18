@@ -1,10 +1,6 @@
 import type { Portion } from './searchResult';
 
-/**
- * Development-only logging of what the food databases send and the portions we make of it,
- * so serving sizes can be checked against the raw data in the Metro console. Silent in
- * release builds and in tests.
- */
+/** Dev-only logging of raw food API data and our portions; silent in release and tests. */
 export const isFoodApiLogOn = () =>
   typeof __DEV__ !== 'undefined' && __DEV__ && process.env.NODE_ENV !== 'test';
 
@@ -17,5 +13,7 @@ export const portionsText = (portions: Portion[] | undefined) =>
 /** One block per request: a heading, then one line per food. */
 export function logFoodApi(heading: string, lines: string[]): void {
   if (!isFoodApiLogOn()) return;
-  console.log(`[food api] ${heading}\n${lines.map((l) => `  ${l}`).join('\n')}`);
+  console.log(
+    `[food api] ${heading}\n${lines.map((l) => `  ${l}`).join('\n')}`,
+  );
 }

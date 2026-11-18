@@ -9,11 +9,7 @@ export class TrendSmoothing {
   static readonly ALPHA = 0.3;
 }
 
-/**
- * The smoothed weight trend (an exponential moving average, oldest to
- * newest) — what the charts draw, so day-to-day fluctuation never reads as
- * gain or loss. Takes entries newest-first, the order they're stored in.
- */
+/** EMA, oldest to newest, from newest-first entries. */
 export function computeTrend(
   entriesNewestFirst: WeightEntry[],
   maxPoints: number = TrendSmoothing.POINTS,

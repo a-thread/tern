@@ -41,21 +41,15 @@ type SavedMealsContextValue = {
   meals: SavedMeal[];
   ready: boolean;
   /**
-   * Saves `entries` as a meal called `name`, making `servings` servings (more than 1 makes it
-   * a recipe, logged by the serving). A meal that already has that name (ignoring case) is
-   * replaced, keeping its id; callers should confirm first. A recipe is only replaced by
-   * another recipe.
+   * `servings` > 1 makes a recipe. Replaces a same-named meal (ignoring case), keeping its id,
+   * so confirm first; a recipe is only replaced by a recipe.
    */
   saveMeal: (
     name: string,
     entries: FoodEntry[],
     servings?: number,
   ) => SaveOutcome;
-  /**
-   * Saves a homemade batch as a recipe: one item for the whole batch, making `servings`
-   * servings, so it can be logged by the serving. A meal already called `name` is not
-   * replaced; the error says so.
-   */
+  /** Never replaces a same-named meal; the error says so. */
   saveRecipe: (
     name: string,
     batch: SavedMealItem,
@@ -87,10 +81,7 @@ const [SavedMealsContext, useSavedMeals] =
   );
 export { useSavedMeals };
 
-/**
- * Edits apply to the screen immediately and are saved in the background; if a
- * write fails, the list is reloaded so it never shows something that wasn't saved.
- */
+/** Optimistic edits; a failed write reloads the list. */
 export function SavedMealsProvider({
   repo,
   children,

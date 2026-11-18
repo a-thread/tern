@@ -11,10 +11,7 @@ export type HealthKitWorkout = {
   activityType: number;
 };
 
-/**
- * The few HealthKit calls Tern makes, so the adapters and their tests don't depend on the
- * native library. `createHealthKitApi` wires it to `@kingstinct/react-native-healthkit`.
- */
+/** So adapters test without the native library. */
 export interface HealthKitApi {
   /** False on a device without Apple Health (e.g. some iPads) or when it is restricted. */
   isAvailable(): Promise<boolean>;
@@ -119,11 +116,7 @@ export function createHealthKitApi(hk: HealthKitModule): HealthKitApi {
   };
 }
 
-/**
- * HealthKit on iPhone, or null: on any other platform, with the health flag off, or if the
- * package isn't in this build (Expo Go). Metro turns a require of a missing package into a
- * runtime error even inside try/catch, so this must never be reached without it installed.
- */
+/** Null off iPhone, with the flag off, or without the package (Metro fails on its require even in try/catch). */
 export function loadHealthKit(): HealthKitApi | null {
   if (Platform.OS !== 'ios' || !healthEnabled()) return null;
   let hk: HealthKitModule;

@@ -54,21 +54,18 @@ export function SettingsProvider({
   const [ready, setReady] = useState(false);
   const latest = useRef(settings);
   latest.current = settings;
-  // Sign-up stores the first name in auth metadata (no session, so no settings
-  // row, until the email is confirmed); the first load copies it across.
+  // Sign-up keeps the name in auth metadata until confirmation; the first load copies it.
   const signedUpName = useAuth()?.session?.user.user_metadata?.first_name;
   const signedUpNameRef = useRef<string | undefined>(signedUpName);
   signedUpNameRef.current = signedUpName;
 
-  // Saved settings are merged over the defaults, so a setting added in a
-  // later version simply takes its default until the user changes it.
+  // Merged over defaults, so new settings start at their default.
   useEffect(() => {
     let cancelled = false;
     repo
       .load()
       .then(async (saved) => {
-        // Settings are only saved once one changes, so someone who has logged things but never
-        // changed a setting has none saved either. If that can't be told, they aren't new.
+        // No saved settings doesn't mean new; when unsure, assume not new.
         const inUse =
           saved !== null ||
           (await repo.hasLoggedAnything().catch((e) => {

@@ -1,11 +1,7 @@
 import { ozToMl } from '@shared/utils/units';
 import type { Portion } from '../sources/searchResult';
 
-/**
- * Drinks can be measured by volume as well as by weight. These are the two
- * volume units offered for them; each is stored as a portion like any other
- * ("ml" = 1.03 g for milk), so an amount in ml is still a weight underneath.
- */
+/** Stored as portions like any other ("ml" = 1.03 g for milk), so volume is weight underneath. */
 export enum VolumeUnit {
   Ml = 'ml',
   FlOz = 'fl oz',
@@ -65,10 +61,7 @@ function mlOf(label: string): number | null {
   return unit && count > 0 ? unit[1] * count : null;
 }
 
-/**
- * Grams per millilitre, from the first portion that is a known volume. Water
- * (1 g/ml) when there is none, or when the figure is implausible for a drink.
- */
+/** From the first known-volume portion; water's 1 g/ml when none or implausible. */
 export function gramsPerMl(portions: Portion[]): number {
   for (const p of portions) {
     const ml = mlOf(p.label);
@@ -108,17 +101,11 @@ export class Density {
 
 /** Which foods are measured by the spoon as well as the cup. */
 export class SpoonedFoods {
-  /**
-   * Oils, spreads, sauces, sweeteners, spices and creams. Plain "cream" so USDA's noun-first
-   * names match too ("Cream, sour", "Cheese, cream", "Cream, fluid, heavy whipping").
-   */
+  /** Plain "cream" so USDA's noun-first names ("Cream, sour") match too. */
   static readonly WORDS =
     /\b(oil|butter|honey|syrup|jam|jelly|mayonnaise|mayo|dressing|sauce|ketchup|mustard|sugar|salsa|hummus|spread|salt|spice|cinnamon|vinegar|creams?|powder)\b/i;
 
-  /**
-   * Foods those words turn up in that are eaten by the cup or the piece: ice cream, Cream of
-   * Wheat, cream soda, sugar cookies, cereal bars.
-   */
+  /** Matches for those words that aren't spooned: ice cream, cream soda, sugar cookies. */
   static readonly EATEN_WHOLE =
     /\b(ice creams?|cream of|sodas?|cookies?|cakes?|cupcakes?|bars?|pies?|cereals?|shakes?|smoothies?|candy|candies|donuts?|doughnuts?|muffins?)\b/i;
 }
@@ -139,11 +126,7 @@ function householdMl(label: string): number | null {
   return null;
 }
 
-/**
- * Grams per millilitre from a cup or spoon the food really has ("cup, chopped" = 76 g), or
- * null when it has none or the figure can't be right. Never a guess: ml and fl oz are left
- * out, since for drinks they may have been added at the weight of water.
- */
+/** From a real cup or spoon only; ml and fl oz are skipped as they may be water-weight guesses. */
 export function knownDensity(portions: Portion[]): number | null {
   for (const p of portions) {
     const ml = householdMl(p.label);
@@ -154,12 +137,7 @@ export function knownDensity(portions: Portion[]): number | null {
   return null;
 }
 
-/**
- * The portions with a cup added, and a tbsp and tsp for spooned foods (`isSpooned`), when the
- * food's own sizes say what a cup of it weighs. A food with no cup or spoon of its own gets
- * none: a cup of an unknown food can't be worked out from its weight. Spooned foods list
- * their spoons first and a cup last, so oil starts on a tablespoon.
- */
+/** Adds a cup (and spoons for spooned foods) only when the food's own sizes give its density. */
 export function withHouseholdVolumes(
   portions: Portion[],
   name: string,
@@ -205,10 +183,7 @@ function withAddedVolumes(portions: Portion[], name: string): Portion[] {
   return added.length ? [...portions, ...added] : portions;
 }
 
-/**
- * Whether a food is a drink: the source said so (`hint`), it already comes in
- * fluid ounces or ml, or its name says it ("Orange juice", "Milk, whole").
- */
+/** By the source's `hint`, an existing ml/fl oz size, or the name. */
 export function isLiquid(
   name: string,
   portions: Portion[],
@@ -219,10 +194,7 @@ export function isLiquid(
   return LIQUID_WORDS.test(name) && !NOT_POURED.test(name);
 }
 
-/**
- * The portions with fl oz and ml added for a drink, after its own ("cup",
- * "can"). Anything else is returned as it is.
- */
+/** Appends fl oz and ml for drinks; other foods are unchanged. */
 export function withVolumes(
   portions: Portion[],
   name: string,

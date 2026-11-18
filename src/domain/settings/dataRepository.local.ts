@@ -128,8 +128,7 @@ function toColumn(spec: TableImport, column: string, value: unknown): SqlValue {
     return value === true || value === 1 ? 1 : 0;
   if (spec.numbers?.includes(column)) {
     const n = Number(value);
-    // Not a usable number: its default if it has one (servings: 1), so a NOT NULL column
-    // doesn't make INSERT OR IGNORE drop the whole row.
+    // Fall back to a default so a NOT NULL column doesn't make INSERT OR IGNORE drop the row.
     return typeof value !== 'boolean' && value !== '' && Number.isFinite(n)
       ? n
       : (spec.defaults?.[column]?.() ?? null);
@@ -174,8 +173,7 @@ export function createLocalDataRepository(db: LocalDb): DataRepository {
       for (const table of LocalSchema.DATA_TABLES) {
         await db.run(`DELETE FROM ${table}`);
       }
-      // The account log copied down is gone with the rest, so the phone no longer holds
-      // anyone else's: what's logged from here can go into whichever account signs in.
+      // The phone no longer holds another account's copy, so any account may claim it.
       await setLocalMeta(db, LocalMetaKey.COPIED_FROM_ACCOUNT, null);
     });
 

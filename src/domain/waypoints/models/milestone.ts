@@ -21,11 +21,7 @@ export type Milestone = {
 
 /** The stops on one migration. */
 export class Milestones {
-  /**
-   * The stops of `MigrationRoute`, each at the running total within one trip that
-   * covers its distance (`MigrationRoute.KM_PER_WAYPOINT` km a waypoint). After the
-   * last stop the next migration begins, so the journey never runs out.
-   */
+  /** Running waypoint totals within one migration; after the last, the next one begins. */
   static readonly STOPS: {
     id: string;
     name: string;
@@ -60,12 +56,7 @@ export function migrationProgress(total: number): {
   };
 }
 
-/**
- * Milestones up to and including the next one to reach, with the day each was
- * reached, found by replaying the ledger in date order. The stops repeat for
- * every migration. A stop counts as reached when `total` has passed it, even
- * if the events that got there are no longer on record (`reachedOn` is then unset).
- */
+/** Through the next one, dated by replaying the ledger; `reachedOn` is unset when events are missing. */
 export function milestonesFor(
   total: number,
   events: LedgerEvent[],
@@ -95,11 +86,7 @@ export function milestonesFor(
   }
 }
 
-/**
- * The stop `total` has most recently reached, or null before the first one.
- * Between the end of one migration and the first stop of the next, that's the
- * last stop of the migration just finished.
- */
+/** Null before the first stop; between migrations, the last stop of the one just finished. */
 export function latestMilestone(total: number): Milestone | null {
   if (total < Milestones.STOPS[0].waypoints) return null;
   const lap = Math.floor(total / Milestones.MIGRATION_LENGTH) + 1;
