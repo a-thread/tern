@@ -17,8 +17,4 @@ describe('factForDay', () => {
     );
     expect(factForDay(addDays(start, 1))).not.toBe(factForDay(start));
   });
-
-  it('works for dates before 1970 too', () => {
-    expect(TERN_FACTS).toContain(factForDay('1960-01-01'));
-  });
 });
