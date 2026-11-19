@@ -1,6 +1,6 @@
 import React from 'react';
-import { Text } from 'react-native';
-import { act, fireEvent, render, screen } from '@testing-library/react-native';
+import { Linking, Share, Text } from 'react-native';
+import { act, fireEvent, render, screen, waitFor } from '@testing-library/react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import CrashBoundary from './CrashBoundary';
 import { installFatalHandler, resetFatalHandlerForTests } from '../../fatalErrors';
@@ -40,6 +40,23 @@ it('shows the crash screen for a render error, and Try again remounts', () => {
   broken = false;
   fireEvent.press(screen.getByRole('button', { name: 'Try again' }));
   expect(screen.getByText('Today')).toBeTruthy();
+});
+
+it('Send details opens an email with the report, or the share sheet without a mail app', async () => {
+  const openURL = jest.spyOn(Linking, 'openURL').mockResolvedValueOnce(true);
+  const share = jest.spyOn(Share, 'share').mockResolvedValue({ action: 'sharedAction' });
+  renderBoundary(<Flaky />);
+
+  fireEvent.press(screen.getByRole('button', { name: 'Send details' }));
+  await waitFor(() => expect(openURL).toHaveBeenCalledTimes(1));
+  expect(openURL.mock.calls[0][0]).toMatch(/^mailto:.+\?subject=.+&body=.*rows%20is%20undefined/);
+  expect(share).not.toHaveBeenCalled();
+
+  openURL.mockRejectedValueOnce(new Error('no handler'));
+  fireEvent.press(screen.getByRole('button', { name: 'Send details' }));
+  await waitFor(() =>
+    expect(share).toHaveBeenCalledWith({ message: expect.stringContaining('rows is undefined') }),
+  );
 });
 
 it('shows a fatal error from outside render instead of the default crash', () => {

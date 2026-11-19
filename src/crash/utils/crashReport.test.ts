@@ -1,4 +1,12 @@
-import { asError, crashReport } from './crashReport';
+import { asError, crashEmailUrl, crashReport } from './crashReport';
+
+it('addresses the email and encodes the report into it', () => {
+  const url = crashEmailUrl('dev@example.com', '0.10.0', 'TypeError: a & b\nat x');
+  expect(url).toBe(
+    'mailto:dev@example.com?subject=Tern%200.10.0%20crash%20report' +
+      '&body=TypeError%3A%20a%20%26%20b%0Aat%20x',
+  );
+});
 
 it('turns anything thrown into an Error', () => {
   expect(asError('boom').message).toBe('boom');

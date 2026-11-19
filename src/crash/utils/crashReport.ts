@@ -20,6 +20,12 @@ export function asError(thrown: unknown): Error {
   }
 }
 
+/** A mail link to `to` with the report as its body. */
+export function crashEmailUrl(to: string, version: string, report: string): string {
+  const subject = encodeURIComponent(`Tern ${version} crash report`);
+  return `mailto:${to}?subject=${subject}&body=${encodeURIComponent(report)}`;
+}
+
 /** Plain text a person can paste into an email or issue. */
 export function crashReport(error: Error, ctx: CrashContext): string {
   const stack = (error?.stack ?? '')

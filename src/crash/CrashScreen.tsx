@@ -1,5 +1,6 @@
 import React from 'react';
 import {
+  Linking,
   Platform,
   Pressable,
   Share,
@@ -10,7 +11,8 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Constants from 'expo-constants';
 import { colors, font, radius, space, typography } from '@shared/theme';
-import { crashReport } from './utils/crashReport';
+import { Contact } from '@shared/models/contact';
+import { crashEmailUrl, crashReport } from './utils/crashReport';
 import RestingTern from './components/RestingTern/RestingTern';
 
 /** Drawn outside every provider, since one of them may be what broke. */
@@ -22,14 +24,20 @@ export default function CrashScreen({
   onRetry: () => void;
 }) {
   const insets = useSafeAreaInsets();
-  const share = () =>
-    Share.share({
-      message: crashReport(error, {
-        version: Constants.expoConfig?.version ?? 'unknown',
-        platform: `${Platform.OS} ${Platform.Version}`,
-        at: new Date(),
-      }),
-    }).catch(() => undefined);
+  const send = async () => {
+    const version = Constants.expoConfig?.version ?? 'unknown';
+    const report = crashReport(error, {
+      version,
+      platform: `${Platform.OS} ${Platform.Version}`,
+      at: new Date(),
+    });
+    try {
+      await Linking.openURL(crashEmailUrl(Contact.EMAIL, version, report));
+    } catch {
+      // No mail app: let them pick another way to send it.
+      await Share.share({ message: report }).catch(() => undefined);
+    }
+  };
 
   return (
     <View
@@ -62,7 +70,7 @@ export default function CrashScreen({
         <Text style={s.primaryText}>Try again</Text>
       </Pressable>
       <Pressable
-        onPress={share}
+        onPress={send}
         hitSlop={8}
         style={s.secondary}
         accessibilityRole='button'
