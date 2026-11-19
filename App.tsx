@@ -21,8 +21,11 @@ import RootNavigator from '@/navigation/RootNavigator';
 import { AppNavigationContainer } from '@/navigation/AppNavigationContainer';
 import AuthGate from '@/AuthGate';
 import { ToastProvider } from '@shared/state/ToastContext';
+import CrashBoundary from '@/crash/components/CrashBoundary/CrashBoundary';
+import { installFatalHandler } from '@/crash/fatalErrors';
 
 enableFreeze(true);
+installFatalHandler();
 
 export default function App() {
   const [loaded] = useFonts({
@@ -43,15 +46,17 @@ export default function App() {
   return (
     <SafeAreaProvider>
       <StatusBar style='dark' />
-      <ToastProvider>
-        <AuthGate>
-          <AppProviders>
-            <AppNavigationContainer>
-              <RootNavigator />
-            </AppNavigationContainer>
-          </AppProviders>
-        </AuthGate>
-      </ToastProvider>
+      <CrashBoundary>
+        <ToastProvider>
+          <AuthGate>
+            <AppProviders>
+              <AppNavigationContainer>
+                <RootNavigator />
+              </AppNavigationContainer>
+            </AppProviders>
+          </AuthGate>
+        </ToastProvider>
+      </CrashBoundary>
     </SafeAreaProvider>
   );
 }
