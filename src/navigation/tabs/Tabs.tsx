@@ -40,9 +40,11 @@ export default function Tabs() {
               backgroundColor: 'rgba(255,255,255,0.94)',
               borderTopColor: colors.border,
               height: TAB_BAR_CONTENT_HEIGHT + bottomPadding,
-              paddingTop: 8,
-              paddingBottom: bottomPadding,
+              paddingTop: 0,
+              paddingBottom: 0,
             },
+            // Padded on the items, not the bar, so a pressed tab tints the bar's full height.
+            tabBarItemStyle: { paddingTop: 8, paddingBottom: bottomPadding },
             tabBarLabelStyle: {
               fontFamily: font.medium,
               fontSize: typography.small.fontSize,

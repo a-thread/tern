@@ -6,6 +6,7 @@ import {
   screen,
   waitFor,
 } from '@testing-library/react-native';
+import { StyleSheet } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import { createMemoryBackend } from '../BackendContext';
@@ -34,6 +35,11 @@ jest.mock('@shared/hooks/useReplayOnFocus', () => ({
 jest.mock('./hooks/useLightStatusBar', () => ({
   useLightStatusBar: () => {},
 }));
+let mockWide = false;
+jest.mock('./hooks/useWideLayout', () => ({ useWideLayout: () => mockWide }));
+afterEach(() => {
+  mockWide = false;
+});
 
 const metrics = {
   frame: { x: 0, y: 0, width: 360, height: 800 },
@@ -97,6 +103,26 @@ describe('Journey stops', () => {
     open();
     fireEvent.press(await screen.findByLabelText('Where the route comes from'));
     expect(mockNavigate).toHaveBeenCalledWith('RouteInfo');
+  });
+});
+
+describe('Journey on a wide screen', () => {
+  it('puts the map beside the stops instead of above them', async () => {
+    mockWide = true;
+    open();
+    await screen.findByText('Stops');
+    expect(screen.getByTestId('journey-map')).toBeTruthy();
+    expect(StyleSheet.flatten(screen.getByTestId('journey').props.style)).toMatchObject({
+      flexDirection: 'row',
+    });
+  });
+
+  it('stacks them on a phone', async () => {
+    open();
+    await screen.findByText('Stops');
+    expect(
+      StyleSheet.flatten(screen.getByTestId('journey').props.style).flexDirection,
+    ).toBeUndefined();
   });
 });
 

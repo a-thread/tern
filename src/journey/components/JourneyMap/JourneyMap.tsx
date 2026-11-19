@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { Animated, Easing, type GestureResponderEvent, Pressable, StyleSheet, Text, View, type HostInstance } from 'react-native';
+import { Animated, Easing, type GestureResponderEvent, Pressable, StyleSheet, Text, useWindowDimensions, View, type HostInstance } from 'react-native';
 import Svg, { Circle, G, Image as SvgImage } from 'react-native-svg';
 
 import { colors, radius, space, typography } from '@shared/theme';
@@ -96,6 +96,10 @@ export function JourneyMap({
   const travel = useRef(new Animated.Value(still ? target : 0)).current;
   const [birdIndex, setBirdIndex] = useState(still ? target : 0);
   const [width, setWidth] = useState(0);
+  // Wide screens would make the map nearly screen-tall; narrowing it keeps its proportions.
+  const maxWidth =
+    (useWindowDimensions().height * MAX_SCREEN_SHARE * JourneyMapShapes.WIDTH) /
+    shape.height;
   // `tap` counts taps, so tapping the same stop again keeps its name up for longer.
   const [tapped, setTapped] = useState<{ stop: number; tap: number } | null>(
     null,
@@ -275,7 +279,7 @@ export function JourneyMap({
 
   return (
     // The visible frame, for the tip about stops (the layer inside it moves and scales).
-    <View ref={tipRefs?.map} collapsable={false}>
+    <View ref={tipRefs?.map} collapsable={false} style={[s.fit, { maxWidth }]}>
       <View
         {...frameProps}
         // Each view keeps its own proportions: the flat map is shorter than the globe.
@@ -446,7 +450,11 @@ export function JourneyMap({
   );
 }
 
+/** The most of the screen's height the map may take. */
+const MAX_SCREEN_SHARE = 0.45;
+
 const s = StyleSheet.create({
+  fit: { width: '100%', alignSelf: 'center' },
   // Zoomed in, the map stays inside its frame, rounded like the app's other cards.
   frame: {
     width: '100%',
