@@ -76,16 +76,17 @@ describe('DayNoteCard', () => {
     await waitFor(() => expect(ui.getByText('Joint pain')).toBeTruthy());
   });
 
-  it('shows an older day read-only, and nothing when it has no note', async () => {
+  it('shows an older day read-only', async () => {
     const old = addDays(today, -4);
     const ui = await show({ day: old, notes: [{ day: old, text: 'Headache' }] });
     await waitFor(() => expect(ui.getByText('Headache')).toBeTruthy());
     fireEvent.press(ui.getByText('Headache'));
     expect(mockNavigate).not.toHaveBeenCalled();
+  });
 
-    const empty = await show({ day: addDays(today, -5) });
-    await waitFor(() => expect(empty.queryByText('Add a note')).toBeNull());
-    expect(empty.queryByText('Notes')).toBeNull();
+  it('shows nothing on an older day with no note', async () => {
+    const ui = await show({ day: addDays(today, -5) });
+    await waitFor(() => expect(ui.toJSON()).toBeNull());
   });
 
   it('is gone while notes are switched off', async () => {

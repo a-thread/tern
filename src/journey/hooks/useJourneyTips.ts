@@ -1,5 +1,5 @@
 import { useRef } from 'react';
-import type { View } from 'react-native';
+import type { HostInstance } from 'react-native';
 
 import { useTips } from '@shared/hooks/useTips';
 import { Tip, Tips } from '@/domain/settings/models/onboarding';
@@ -12,11 +12,11 @@ const SETTLE_MS = 2000;
 export function useJourneyTips({
   rootRef,
 }: {
-  rootRef: React.RefObject<View | null>;
+  rootRef: React.RefObject<HostInstance | null>;
 }) {
-  const zoom = useRef<View>(null);
-  const view = useRef<View>(null);
-  const map = useRef<View>(null);
+  const zoom = useRef<HostInstance>(null);
+  const view = useRef<HostInstance>(null);
+  const map = useRef<HostInstance>(null);
 
   const tips = useTips({
     group: Tips.JOURNEY,

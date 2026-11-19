@@ -12,6 +12,7 @@ import { useSettings } from '../../domain/settings/SettingsContext';
 import { ChartIcon, FoodIcon, HomeIcon } from './TabIcons';
 import { TabAnchorsProvider } from './tabAnchors';
 import { AnchoredTabButton } from './AnchoredTabButton';
+import { TabPill } from './TabPill';
 
 class TabBarLayout {
   static readonly CONTENT_HEIGHT = 54;
@@ -51,6 +52,8 @@ export default function Tabs() {
               paddingTop: 8,
               paddingBottom: bottomPadding,
             },
+            // Wide screens default to labels beside the icon, whose margins push a stacked label off centre.
+            tabBarLabelPosition: 'below-icon',
             tabBarLabelStyle: {
               fontFamily: font.medium,
               fontSize: typography.small.fontSize,
@@ -61,7 +64,11 @@ export default function Tabs() {
             name='Today'
             component={TodayScreen}
             options={{
-              tabBarIcon: ({ color }) => <HomeIcon color={color} />,
+              tabBarIcon: ({ color, focused }) => (
+                <TabPill focused={focused}>
+                  <HomeIcon color={color} />
+                </TabPill>
+              ),
               tabBarButton: (props) => (
                 <AnchoredTabButton anchor={anchors.Today} {...props} />
               ),
@@ -72,7 +79,11 @@ export default function Tabs() {
               name='Food'
               component={FoodScreen}
               options={{
-                tabBarIcon: ({ color }) => <FoodIcon color={color} />,
+                tabBarIcon: ({ color, focused }) => (
+                  <TabPill focused={focused}>
+                    <FoodIcon color={color} />
+                  </TabPill>
+                ),
                 tabBarButton: (props) => (
                   <AnchoredTabButton anchor={anchors.Food} {...props} />
                 ),
@@ -83,7 +94,11 @@ export default function Tabs() {
             name='Trends'
             component={TrendsStack}
             options={{
-              tabBarIcon: ({ color }) => <ChartIcon color={color} />,
+              tabBarIcon: ({ color, focused }) => (
+                <TabPill focused={focused}>
+                  <ChartIcon color={color} />
+                </TabPill>
+              ),
               tabBarButton: (props) => (
                 <AnchoredTabButton anchor={anchors.Trends} {...props} />
               ),
@@ -93,7 +108,11 @@ export default function Tabs() {
             name='Journey'
             component={JourneyScreen}
             options={{
-              tabBarIcon: ({ color }) => <TernMark size={21} color={color} />,
+              tabBarIcon: ({ color, focused }) => (
+                <TabPill focused={focused}>
+                  <TernMark size={21} color={color} />
+                </TabPill>
+              ),
               tabBarButton: (props) => (
                 <AnchoredTabButton anchor={anchors.Journey} {...props} />
               ),

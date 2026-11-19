@@ -1,5 +1,5 @@
 import React from 'react';
-import type { View } from 'react-native';
+import type { HostInstance } from 'react-native';
 
 import { useViewedDay } from '@shared/state/ViewedDayContext';
 import { useActivity } from '@/domain/activity/ActivityContext';
@@ -19,7 +19,7 @@ export function RestDayHero({
   heroRef,
   rest,
 }: {
-  heroRef: React.RefObject<View | null>;
+  heroRef: React.RefObject<HostInstance | null>;
   rest: RestDay;
 }) {
   const { isToday } = useViewedDay();

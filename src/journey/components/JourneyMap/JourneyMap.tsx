@@ -1,13 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import {
-  Animated,
-  Easing,
-  type GestureResponderEvent,
-  Pressable,
-  StyleSheet,
-  Text,
-  View,
-} from 'react-native';
+import { Animated, Easing, type GestureResponderEvent, Pressable, StyleSheet, Text, useWindowDimensions, View, type HostInstance } from 'react-native';
 import Svg, { Circle, G, Image as SvgImage } from 'react-native-svg';
 
 import { colors, radius, space, typography } from '@shared/theme';
@@ -78,6 +70,7 @@ export function JourneyMap({
   lap,
   replayKey = 0,
   tipRefs,
+  fill = false,
 }: {
   /** How far through the current migration, 0 to 1. */
   progress: number;
@@ -86,10 +79,12 @@ export function JourneyMap({
   replayKey?: number;
   /** The zoom button, the view toggle and the map itself, for Journey's tips to point at. */
   tipRefs?: {
-    zoom: React.RefObject<View | null>;
-    view: React.RefObject<View | null>;
-    map: React.RefObject<View | null>;
+    zoom: React.RefObject<HostInstance | null>;
+    view: React.RefObject<HostInstance | null>;
+    map: React.RefObject<HostInstance | null>;
   };
+  /** Take the space it's given and fit inside it, instead of sizing from its width. */
+  fill?: boolean;
 }) {
   const { settings, updateSettings } = useSettings();
   const view = settings.journeyView;
@@ -104,6 +99,15 @@ export function JourneyMap({
   const travel = useRef(new Animated.Value(still ? target : 0)).current;
   const [birdIndex, setBirdIndex] = useState(still ? target : 0);
   const [width, setWidth] = useState(0);
+  // Wide screens would make the map nearly screen-tall; narrowing it keeps its proportions.
+  const maxWidth =
+    (useWindowDimensions().height * MAX_SCREEN_SHARE * JourneyMapShapes.WIDTH) /
+    shape.height;
+  const [room, setRoom] = useState({ width: 0, height: 0 });
+  const fitWidth = Math.min(
+    room.width,
+    (room.height * JourneyMapShapes.WIDTH) / shape.height,
+  );
   // `tap` counts taps, so tapping the same stop again keeps its name up for longer.
   const [tapped, setTapped] = useState<{ stop: number; tap: number } | null>(
     null,
@@ -281,9 +285,13 @@ export function JourneyMap({
     if (to !== view) updateSettings({ journeyView: to });
   };
 
-  return (
+  const map = (
     // The visible frame, for the tip about stops (the layer inside it moves and scales).
-    <View ref={tipRefs?.map} collapsable={false}>
+    <View
+      ref={tipRefs?.map}
+      collapsable={false}
+      style={fill ? { width: fitWidth } : [s.fit, { maxWidth }]}
+    >
       <View
         {...frameProps}
         // Each view keeps its own proportions: the flat map is shorter than the globe.
@@ -452,9 +460,34 @@ export function JourneyMap({
       </View>
     </View>
   );
+  if (!fill) return map;
+  return (
+    <View
+      style={s.fill}
+      testID='journey-map-room'
+      onLayout={(e) => {
+        const { width: w, height: h } = e.nativeEvent.layout;
+        setRoom({ width: w, height: h });
+      }}
+    >
+      {map}
+    </View>
+  );
 }
 
+/** The most of the screen's height the map may take. */
+const MAX_SCREEN_SHARE = 0.45;
+
 const s = StyleSheet.create({
+  fit: { width: '100%', alignSelf: 'center' },
+  // Shrinks to what's left beside the rest of its column, so the map never pushes past it.
+  fill: {
+    flex: 1,
+    minHeight: 0,
+    alignSelf: 'stretch',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   // Zoomed in, the map stays inside its frame, rounded like the app's other cards.
   frame: {
     width: '100%',

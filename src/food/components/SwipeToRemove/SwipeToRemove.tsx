@@ -103,7 +103,7 @@ const s = StyleSheet.create({
   wrap: { overflow: 'hidden' },
   front: { backgroundColor: colors.card },
   action: {
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill,
     alignItems: 'flex-end',
     backgroundColor: colors.danger,
   },

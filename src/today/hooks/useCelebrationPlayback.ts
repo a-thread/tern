@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import type { View } from 'react-native';
+import type { HostInstance } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useIsFocused } from '@react-navigation/native';
 
@@ -24,9 +24,9 @@ export function useCelebrationPlayback(hold = false) {
   const insets = useSafeAreaInsets();
   const { celebrations } = useWaypoints();
   const isFocused = useIsFocused();
-  const rootRef = useRef<View>(null);
-  const heroRef = useRef<View>(null);
-  const chipRef = useRef<View>(null);
+  const rootRef = useRef<HostInstance>(null);
+  const heroRef = useRef<HostInstance>(null);
+  const chipRef = useRef<HostInstance>(null);
   const [playing, setPlaying] = useState<Playing | null>(null);
   const starting = useRef(false);
   const nextCelebration = celebrations[0];

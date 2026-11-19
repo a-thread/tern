@@ -1,5 +1,5 @@
 import { useCallback } from 'react';
-import type { View } from 'react-native';
+import type { HostInstance } from 'react-native';
 import * as Haptics from 'expo-haptics';
 
 import { useReduceMotion } from './useReduceMotion';
@@ -11,7 +11,7 @@ export function useDrinkCelebration() {
   const layer = useWaterSplash();
 
   return useCallback(
-    (reachedGoal: boolean, from: View | null) => {
+    (reachedGoal: boolean, from: HostInstance | null) => {
       const buzz = reachedGoal
         ? Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success)
         : Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);

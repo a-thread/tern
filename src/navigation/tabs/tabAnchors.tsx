@@ -1,10 +1,10 @@
 import React, { createContext, useContext, useRef } from 'react';
-import type { View } from 'react-native';
+import type { HostInstance } from 'react-native';
 
 import type { TabParamList } from './types';
 
 export type TabName = keyof TabParamList;
-export type TabAnchors = Record<TabName, React.RefObject<View | null>>;
+export type TabAnchors = Record<TabName, React.RefObject<HostInstance | null>>;
 
 /** Optional (`createContext`): null outside the tab navigator, as in tests. */
 const TabAnchorsContext = createContext<TabAnchors | null>(null);
@@ -15,10 +15,10 @@ export function TabAnchorsProvider({
 }: {
   children: (anchors: TabAnchors) => React.ReactNode;
 }) {
-  const today = useRef<View>(null);
-  const food = useRef<View>(null);
-  const trends = useRef<View>(null);
-  const journey = useRef<View>(null);
+  const today = useRef<HostInstance>(null);
+  const food = useRef<HostInstance>(null);
+  const trends = useRef<HostInstance>(null);
+  const journey = useRef<HostInstance>(null);
   const anchors = useRef<TabAnchors>({
     Today: today,
     Food: food,

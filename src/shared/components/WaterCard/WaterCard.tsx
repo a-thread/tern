@@ -1,5 +1,5 @@
 import React, { useRef, useState } from 'react';
-import { View, Text, TextInput, Pressable, StyleSheet } from 'react-native';
+import { View, Text, TextInput, Pressable, StyleSheet, type HostInstance } from 'react-native';
 
 import { colors, font, radius, space } from '../../theme';
 import { Card, ProgressBar, Icon } from '../ui';
@@ -39,11 +39,11 @@ function WaterCardBody({ bare }: { bare: boolean }) {
   const [custom, setCustom] = useState<string | null>(null); // the typed amount, while "Other" is open
   const celebrate = useDrinkCelebration();
   // The buttons a drink can come from, so the splash comes out of the one that was tapped.
-  const quickRefs = useRef<Record<number, View | null>>({});
-  const customRef = useRef<View>(null);
+  const quickRefs = useRef<Record<number, HostInstance | null>>({});
+  const customRef = useRef<HostInstance>(null);
 
   /** Logs a drink and, when it saves, splashes water around `from` and buzzes so the tap feels finished. */
-  const add = (oz: number, from: View | null) => {
+  const add = (oz: number, from: HostInstance | null) => {
     const wasShort = totalOz < goalOz;
     if (!addWater(oz)) return false;
     celebrate(wasShort && totalOz + oz >= goalOz, from);

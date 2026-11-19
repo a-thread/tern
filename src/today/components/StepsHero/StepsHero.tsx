@@ -1,5 +1,5 @@
 import React from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, Text, View, type HostInstance } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 
 import { colors, font, radius, skyFor, space } from '@shared/theme';
@@ -24,7 +24,7 @@ export function StepsHero({
   heroRef,
   replayKey,
 }: {
-  heroRef: React.RefObject<View | null>;
+  heroRef: React.RefObject<HostInstance | null>;
   replayKey: number;
 }) {
   const navigation = useRootNavigation();

@@ -1,5 +1,5 @@
 import React, { useRef } from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, Text, type HostInstance } from 'react-native';
 
 import { colors, font, radius } from '@shared/theme';
 import { IconBadge, Row, Icon } from '@shared/components/ui';
@@ -14,7 +14,7 @@ export function WaterTodoRow() {
   const { formatVolume, quickWaterOz } = useUnits();
   const openWaterSheet = useOpenWaterSheet();
   const celebrate = useDrinkCelebration();
-  const buttonRef = useRef<View>(null);
+  const buttonRef = useRef<HostInstance>(null);
   const oz = quickWaterOz[0];
 
   // The splash is drawn on Today's splash layer, so it outlives this row when the goal drink moves water to the done list.

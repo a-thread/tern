@@ -1,5 +1,5 @@
 import { useRef } from 'react';
-import type { View } from 'react-native';
+import type { HostInstance } from 'react-native';
 
 import { useViewedDay } from '@shared/state/ViewedDayContext';
 import { useTips } from '@shared/hooks/useTips';
@@ -19,13 +19,13 @@ export function useTodayTips({
   chipRef,
   hold,
 }: {
-  rootRef: React.RefObject<View | null>;
-  chipRef: React.RefObject<View | null>;
+  rootRef: React.RefObject<HostInstance | null>;
+  chipRef: React.RefObject<HostInstance | null>;
   hold: boolean;
 }) {
-  const stripRef = useRef<View>(null);
-  const restRef = useRef<View>(null);
-  const gearRef = useRef<View>(null);
+  const stripRef = useRef<HostInstance>(null);
+  const restRef = useRef<HostInstance>(null);
+  const gearRef = useRef<HostInstance>(null);
   const tabs = useTabAnchors();
   const { settings } = useSettings();
   const { isToday } = useViewedDay();

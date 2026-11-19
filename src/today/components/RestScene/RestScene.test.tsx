@@ -1,5 +1,5 @@
 import React from 'react';
-import { Dimensions, Image, StyleSheet } from 'react-native';
+import { Dimensions, Image, StyleSheet, type HostInstance } from 'react-native';
 import { fireEvent, render } from '@testing-library/react-native';
 
 import { space } from '@shared/theme';
@@ -118,7 +118,7 @@ describe('RestScene', () => {
   });
 
   it('hands its card to the waypoint feathers as the place they start from', () => {
-    const heroRef = React.createRef<import('react-native').View>();
+    const heroRef = React.createRef<HostInstance>();
     show({ heroRef });
     expect(heroRef.current).not.toBeNull();
   });
