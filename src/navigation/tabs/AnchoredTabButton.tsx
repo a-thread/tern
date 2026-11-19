@@ -1,13 +1,9 @@
 import React, { useState } from 'react';
-import { Platform, StyleSheet, View, type HostInstance } from 'react-native';
+import { StyleSheet, View, type HostInstance } from 'react-native';
 import { PlatformPressable } from '@react-navigation/elements';
 import type { BottomTabBarButtonProps } from '@react-navigation/bottom-tabs';
 
-import { colors } from '@shared/theme';
-
-// Android's borderless ripple grows with the button, which is huge on tablets and foldables;
-// a flat tint that fills the tab item reads the same at every width.
-const tintOnPress = Platform.OS === 'android';
+import { TabPressedContext } from './TabPill';
 
 /** Wraps icon and label in a measurable view so tips spotlight them, not the whole button. */
 export function AnchoredTabButton({
@@ -15,32 +11,30 @@ export function AnchoredTabButton({
   children,
   onPressIn,
   onPressOut,
-  style,
   ...props
 }: BottomTabBarButtonProps & { anchor: React.RefObject<HostInstance | null> }) {
   const [pressed, setPressed] = useState(false);
   return (
     <PlatformPressable
       {...props}
-      pressColor={tintOnPress ? 'transparent' : props.pressColor}
+      // The pill behind the icon shows the press, so no ripple across the whole button.
+      pressColor='transparent'
       onPressIn={(e) => {
-        if (tintOnPress) setPressed(true);
+        setPressed(true);
         onPressIn?.(e);
       }}
       onPressOut={(e) => {
-        if (tintOnPress) setPressed(false);
+        setPressed(false);
         onPressOut?.(e);
       }}
-      style={[style, pressed && s.pressed]}
     >
-      <View ref={anchor} collapsable={false} style={s.content}>
-        {children}
-      </View>
+      <TabPressedContext.Provider value={pressed}>
+        <View ref={anchor} collapsable={false} style={s.content}>
+          {children}
+        </View>
+      </TabPressedContext.Provider>
     </PlatformPressable>
   );
 }
 
-const s = StyleSheet.create({
-  content: { alignItems: 'center' },
-  pressed: { backgroundColor: colors.doveTint },
-});
+const s = StyleSheet.create({ content: { alignItems: 'center' } });
