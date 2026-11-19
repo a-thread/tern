@@ -117,6 +117,21 @@ describe('Journey on a wide screen', () => {
     });
   });
 
+  it('fits the map inside the height its column has left, at its own proportions', async () => {
+    mockWide = true;
+    open();
+    await screen.findByText('Stops');
+    // A short, wide space, as on a phone turned sideways: the height is what limits it.
+    fireEvent(screen.getByTestId('journey-map-room'), 'layout', {
+      nativeEvent: { layout: { x: 0, y: 0, width: 400, height: 100 } },
+    });
+    // The flat map is 340 wide for every 200 tall.
+    const fitted = screen.getByTestId('journey-map-room').children[0];
+    expect(typeof fitted === 'string' ? null : StyleSheet.flatten(fitted.props.style)).toEqual({
+      width: 170,
+    });
+  });
+
   it('stacks them on a phone', async () => {
     open();
     await screen.findByText('Stops');

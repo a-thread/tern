@@ -43,8 +43,10 @@ it('shows the crash screen for a render error, and Try again remounts', () => {
 });
 
 it('Send details opens an email with the report, or the share sheet without a mail app', async () => {
-  const openURL = jest.spyOn(Linking, 'openURL').mockResolvedValueOnce(true);
-  const share = jest.spyOn(Share, 'share').mockResolvedValue({ action: 'sharedAction' });
+  const openURL = jest.spyOn(Linking, 'openURL').mockResolvedValueOnce(undefined);
+  const share = jest
+    .spyOn(Share, 'share')
+    .mockResolvedValue({ action: 'sharedAction', activityType: undefined });
   renderBoundary(<Flaky />);
 
   fireEvent.press(screen.getByRole('button', { name: 'Send details' }));

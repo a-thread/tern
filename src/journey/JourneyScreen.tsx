@@ -122,6 +122,7 @@ export default function JourneyScreen() {
             lap={migration.lap}
             replayKey={replayKey}
             tipRefs={tips.mapRefs}
+            fill={wide}
           />
 
           {/* Tapping the total explains it: what a waypoint is, and what counts as a day. */}
