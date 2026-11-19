@@ -1,6 +1,6 @@
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { colors, font, typography } from '@shared/theme';
+import { colors, font, space, typography } from '@shared/theme';
 import TernMark from '@shared/components/TernMark';
 import TodayScreen from '../../today/TodayScreen';
 import FoodScreen from '../../food/FoodScreen';
@@ -13,8 +13,13 @@ import { ChartIcon, FoodIcon, HomeIcon } from './TabIcons';
 import { TabAnchorsProvider } from './tabAnchors';
 import { AnchoredTabButton } from './AnchoredTabButton';
 
-const TAB_BAR_CONTENT_HEIGHT = 54;
-const MIN_TAB_BAR_BOTTOM_INSET = 10;
+class TabBarLayout {
+  static readonly CONTENT_HEIGHT = 54;
+  /** Without a system inset (a home button phone), the labels still don't touch the edge. */
+  static readonly MIN_BOTTOM = 10;
+  /** Keeps the labels clear of Android's gesture handle, which sits inside the inset. */
+  static readonly ABOVE_INSET = space.sm;
+}
 
 const Tab = createBottomTabNavigator<TabParamList>();
 
@@ -23,7 +28,10 @@ export default function Tabs() {
   // The app draws edge-to-edge, so the bar must make room for the system
   // navigation area itself (a fixed height would sit under it).
   const insets = useSafeAreaInsets();
-  const bottomPadding = Math.max(insets.bottom, MIN_TAB_BAR_BOTTOM_INSET);
+  const bottomPadding =
+    insets.bottom > 0
+      ? insets.bottom + TabBarLayout.ABOVE_INSET
+      : TabBarLayout.MIN_BOTTOM;
   // No Food tab for someone who doesn't log food (Settings › Food › Track food).
   const { settings } = useSettings();
   return (
@@ -39,7 +47,7 @@ export default function Tabs() {
             tabBarStyle: {
               backgroundColor: 'rgba(255,255,255,0.94)',
               borderTopColor: colors.border,
-              height: TAB_BAR_CONTENT_HEIGHT + bottomPadding,
+              height: TabBarLayout.CONTENT_HEIGHT + bottomPadding,
               paddingTop: 8,
               paddingBottom: bottomPadding,
             },
