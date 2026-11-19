@@ -1,11 +1,5 @@
 import { useLayoutEffect, useMemo, useRef, useState } from 'react';
-import {
-  Animated,
-  Easing,
-  type GestureResponderEvent,
-  PanResponder,
-  type View,
-} from 'react-native';
+import { Animated, Easing, type GestureResponderEvent, PanResponder, type HostInstance } from 'react-native';
 
 import {
   clampZoom,
@@ -61,7 +55,7 @@ export function useMapZoom({
   const chosenWhole = useRef(false);
   /** The frame's top-left corner on screen, to turn touches into frame points. */
   const origin = useRef<FramePoint>({ x: 0, y: 0 });
-  const frameRef = useRef<View>(null);
+  const frameRef = useRef<HostInstance>(null);
   const start = useRef<{
     zoom: MapZoom;
     from: FramePoint;

@@ -43,7 +43,7 @@ beforeAll(() => {
 
 beforeEach(() => {
   jest.spyOn(Alert, 'alert').mockImplementation(() => {});
-  jest.spyOn(Linking, 'openURL').mockResolvedValue(true);
+  jest.spyOn(Linking, 'openURL').mockResolvedValue(undefined);
   mockAuth.openSignIn.mockClear();
 });
 afterEach(() => jest.restoreAllMocks());

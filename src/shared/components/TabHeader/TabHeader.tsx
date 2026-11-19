@@ -1,5 +1,5 @@
 import React from 'react';
-import { Pressable, StyleSheet, Text, View, ViewStyle } from 'react-native';
+import { Pressable, StyleSheet, Text, View, ViewStyle, type HostInstance } from 'react-native';
 
 import { colors, space, typography } from '../../theme';
 import { Icon } from '../ui';
@@ -42,7 +42,7 @@ export function TabHeader({
   /** Layout overrides, e.g. Journey drops the padding its hero already has. */
   style?: ViewStyle;
   /** The settings gear, for a tip to point at. */
-  gearRef?: React.RefObject<View | null>;
+  gearRef?: React.RefObject<HostInstance | null>;
 }) {
   const navigation = useRootNavigation();
   const ink = INK[tone];

@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import type { View } from 'react-native';
+import type { HostInstance } from 'react-native';
 import { useIsFocused } from '@react-navigation/native';
 
 import { useSettings } from '@/domain/settings/SettingsContext';
@@ -34,9 +34,9 @@ export function useTips({
   /** All of this screen's tips, so "Skip tips" can settle them all. */
   group: readonly Tip[];
   relevant: readonly Tip[];
-  anchors: Partial<Record<Tip, React.RefObject<View | null>>>;
+  anchors: Partial<Record<Tip, React.RefObject<HostInstance | null>>>;
   /** The screen's root view, to tell whether an anchor is on screen. */
-  rootRef: React.RefObject<View | null>;
+  rootRef: React.RefObject<HostInstance | null>;
   /** Anchored outside the screen's root (the tab bar). */
   outside?: readonly Tip[];
   ready: boolean;

@@ -47,7 +47,7 @@ export function PointTapZones({
 }
 
 const s = StyleSheet.create({
-  overlay: { ...StyleSheet.absoluteFillObject, alignItems: 'center' },
+  overlay: { ...StyleSheet.absoluteFill, alignItems: 'center' },
   chart: { width: '100%', height: '100%' },
-  zones: { ...StyleSheet.absoluteFillObject, flexDirection: 'row' },
+  zones: { ...StyleSheet.absoluteFill, flexDirection: 'row' },
 });

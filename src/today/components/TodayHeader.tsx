@@ -1,5 +1,5 @@
 import React from 'react';
-import { Animated, Pressable, StyleSheet, View } from 'react-native';
+import { Animated, Pressable, StyleSheet, type HostInstance } from 'react-native';
 
 import { colors, font } from '@shared/theme';
 import { Chip } from '@shared/components/ui';
@@ -18,9 +18,9 @@ export function TodayHeader({
   chipRef,
   gearRef,
 }: {
-  chipRef: React.RefObject<View | null>;
+  chipRef: React.RefObject<HostInstance | null>;
   /** The settings gear, for the tip about Settings. */
-  gearRef?: React.RefObject<View | null>;
+  gearRef?: React.RefObject<HostInstance | null>;
 }) {
   const navigation = useRootNavigation();
   // Follows the week strip: a past day that was tapped is named here too, not just below.

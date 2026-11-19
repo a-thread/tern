@@ -146,8 +146,8 @@ export function WaterSplash({
     inputRange: [0, 0.6, 1],
     outputRange: [1, 1, 0],
   });
-  const along = (values: number[] | string[]) =>
-    t.interpolate({ inputRange: STEP_INPUT, outputRange: values });
+  const along = <T extends number | string>(values: T[]) =>
+    t.interpolate<T>({ inputRange: STEP_INPUT, outputRange: values });
 
   return (
     <View style={[s.origin, { left: x, top: y }]} pointerEvents='none'>

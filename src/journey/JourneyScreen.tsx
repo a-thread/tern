@@ -1,5 +1,5 @@
 import React, { useMemo, useRef } from 'react';
-import { Animated, Pressable, View, Text, StyleSheet } from 'react-native';
+import { Animated, Pressable, View, Text, StyleSheet, type HostInstance } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -65,7 +65,7 @@ export default function JourneyScreen() {
   const { waypoints, events, reload } = useWaypoints();
   const refreshControl = usePullToRefresh([reload]);
   const scrollY = useRef(new Animated.Value(0)).current;
-  const rootRef = useRef<View>(null);
+  const rootRef = useRef<HostInstance>(null);
   const tips = useJourneyTips({ rootRef });
   useLightStatusBar();
   const days = daysWithWaypoints(events);

@@ -1,13 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import {
-  Animated,
-  Easing,
-  type GestureResponderEvent,
-  Pressable,
-  StyleSheet,
-  Text,
-  View,
-} from 'react-native';
+import { Animated, Easing, type GestureResponderEvent, Pressable, StyleSheet, Text, View, type HostInstance } from 'react-native';
 import Svg, { Circle, G, Image as SvgImage } from 'react-native-svg';
 
 import { colors, radius, space, typography } from '@shared/theme';
@@ -86,9 +78,9 @@ export function JourneyMap({
   replayKey?: number;
   /** The zoom button, the view toggle and the map itself, for Journey's tips to point at. */
   tipRefs?: {
-    zoom: React.RefObject<View | null>;
-    view: React.RefObject<View | null>;
-    map: React.RefObject<View | null>;
+    zoom: React.RefObject<HostInstance | null>;
+    view: React.RefObject<HostInstance | null>;
+    map: React.RefObject<HostInstance | null>;
   };
 }) {
   const { settings, updateSettings } = useSettings();

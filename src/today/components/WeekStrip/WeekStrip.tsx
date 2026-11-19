@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, Text, View, type HostInstance } from 'react-native';
 
 import { colors, font, space } from '@shared/theme';
 import { Icon } from '@shared/components/ui';
@@ -25,8 +25,8 @@ export function WeekStrip({
 }: {
   replayKey: number;
   /** The rings and the rest-day link, for the tips on Today to point at. */
-  stripRef?: React.RefObject<View | null>;
-  restRef?: React.RefObject<View | null>;
+  stripRef?: React.RefObject<HostInstance | null>;
+  restRef?: React.RefObject<HostInstance | null>;
 }) {
   const {
     day: selectedDay,

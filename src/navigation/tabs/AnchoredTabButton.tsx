@@ -1,5 +1,5 @@
 import React from 'react';
-import { StyleSheet, View } from 'react-native';
+import { StyleSheet, View, type HostInstance } from 'react-native';
 import { PlatformPressable } from '@react-navigation/elements';
 import type { BottomTabBarButtonProps } from '@react-navigation/bottom-tabs';
 
@@ -8,7 +8,7 @@ export function AnchoredTabButton({
   anchor,
   children,
   ...props
-}: BottomTabBarButtonProps & { anchor: React.RefObject<View | null> }) {
+}: BottomTabBarButtonProps & { anchor: React.RefObject<HostInstance | null> }) {
   return (
     <PlatformPressable {...props}>
       <View ref={anchor} collapsable={false} style={s.content}>
