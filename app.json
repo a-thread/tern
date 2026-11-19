@@ -78,7 +78,6 @@
       "expo-sqlite",
       "expo-asset",
       "./plugins/withNativeDebugSymbols",
-      "./plugins/withOptionalPortraitFeature",
       "./plugins/withoutAndroidOrientationLock"
     ],
     "extra": {
