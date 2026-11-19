@@ -36,11 +36,9 @@ export default class CrashBoundary extends React.Component<
     this.setState(({ attempt }) => ({ error: null, attempt: attempt + 1 }));
 
   render() {
-    // if (this.state.error) {
-    return (
-      <CrashScreen error={null as unknown as Error} onRetry={this.retry} />
-    );
-    // }
+    if (this.state.error) {
+      return <CrashScreen error={this.state.error} onRetry={this.retry} />;
+    }
     return (
       <React.Fragment key={this.state.attempt}>
         {this.props.children}
