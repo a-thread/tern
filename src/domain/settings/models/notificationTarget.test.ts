@@ -92,4 +92,12 @@ describe('tappedTarget', () => {
     );
     expect(tappedTarget({ target: 'nowhere' }, 'something-else')).toBeNull();
   });
+
+  it('survives a tap with no id', () => {
+    expect(tappedTarget(null, null)).toBeNull();
+    expect(tappedTarget(undefined, undefined)).toBeNull();
+    expect(tappedTarget(notificationData(NotificationTarget.Today), null)).toBe(
+      NotificationTarget.Today,
+    );
+  });
 });
