@@ -58,14 +58,13 @@ export const notificationData = (
 /** From `data`, falling back to the id for older notifications; null if not Tern's. */
 export function tappedTarget(
   data: unknown,
-  id: string,
+  // Typed as a string, but Android can hand back null for a tap that opened the app.
+  id: string | null | undefined,
 ): NotificationTarget | null {
   const target = (data as Partial<NotificationData> | null | undefined)?.target;
-  return Object.values(NotificationTarget).includes(
-    target as NotificationTarget,
-  )
-    ? (target as NotificationTarget)
-    : notificationTarget(id);
+  if (Object.values(NotificationTarget).includes(target as NotificationTarget))
+    return target as NotificationTarget;
+  return typeof id === 'string' ? notificationTarget(id) : null;
 }
 
 /** Matches on the id's start, since rotated copies carry a suffix (`tern-meals-midday-3`). */
