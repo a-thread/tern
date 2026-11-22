@@ -3,7 +3,7 @@
 # App/build only: breaking → major (minor before 1.0), feat → minor, fix/perf/revert → patch; FORCE=1 scans all (min patch).
 set -euo pipefail
 
-shipped=(src assets App.tsx app.json app.config.ts eas.json package.json package-lock.json babel.config.js
+shipped=(src assets plugins App.tsx app.json app.config.ts eas.json package.json package-lock.json babel.config.js
   .github/actions/build-android .github/actions/build-ios)
 if [ "${FORCE:-}" = 1 ]; then shipped=(.); fi
 
