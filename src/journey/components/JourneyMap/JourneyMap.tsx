@@ -34,7 +34,7 @@ import {
   stopIndex,
 } from './utils/routeAt';
 import { ternPose } from './utils/ternPose';
-import { routeView, routeViews } from './utils/routeShapes';
+import { RouteShapes, routeView, routeViews } from './utils/routeShapes';
 import { FlockLooks } from '../../models/flockLooks';
 import { toFrame, toMap } from './utils/mapZoom';
 import { legZoom } from './utils/legZoom';
@@ -106,6 +106,7 @@ export function JourneyMap({
   tipRefs,
   flock,
   route = RouteId.Greenland,
+  fill = false,
 }: {
   /**
    * Which migration is drawn: Greenland's for your own journey, or whichever a ternary chose.
@@ -136,8 +137,10 @@ export function JourneyMap({
   const { settings, updateSettings } = useSettings();
   const views = routeViews(route);
   const view = routeView(route, settings.journeyView);
-  const shape = views[view]!;
-  const stops = routeMilestones(route);
+  // Read from the module constant, so memos keyed on it stay valid.
+  const shape = RouteShapes.VIEWS[route][view]!;
+  // Memoised so the React Compiler knows nothing below changes it.
+  const stops = useMemo(() => routeMilestones(route), [route]);
   const length = stops[stops.length - 1].waypoints;
   const { supporter } = useSubscription();
   const trail = TRAIL_PALETTE[trailFor(settings.trailColor, supporter)];
