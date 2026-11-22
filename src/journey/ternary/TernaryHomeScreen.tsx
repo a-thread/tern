@@ -1,4 +1,5 @@
 import React from 'react';
+import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 
 import { FootNote, Group, GroupLabel, Row } from '@shared/components/ui';
 import { useTernary } from '@/domain/ternary/TernaryContext';
@@ -9,8 +10,9 @@ import {
 } from '@/domain/ternary/models/ternary';
 import { promptFor, restingAt } from '@/domain/ternary/models/stopover';
 import { useTernaryNavigation } from '../../navigation/useAppNavigation';
+import type { TernaryStackParamList } from './navigation';
 import { TernaryPage } from './components/TernaryPage/TernaryPage';
-import { StartTernary } from './components/StartTernary/StartTernary';
+import { TernaryIntro } from './components/TernaryIntro/TernaryIntro';
 import { FlockMap } from './components/FlockMap/FlockMap';
 import { BringFish } from './components/BringFish/BringFish';
 import { FlockBadge } from './components/FlockBadge/FlockBadge';
@@ -20,9 +22,12 @@ import { FlockBadge } from './components/FlockBadge/FlockBadge';
  * recipe swap, postcards and the ternary's settings. Out of a ternary, starting or joining
  * one. Only the friends who are here are listed; nobody is ever shown as missing.
  */
-export default function TernaryHomeScreen() {
+export default function TernaryHomeScreen({
+  route,
+}: Partial<NativeStackScreenProps<TernaryStackParamList, 'TernaryHome'>>) {
   const { available, ternary } = useTernary();
   const navigation = useTernaryNavigation();
+  const arrived = Boolean(route?.params?.arrived);
 
   if (!available) {
     return (
@@ -37,7 +42,7 @@ export default function TernaryHomeScreen() {
   if (!ternary) {
     return (
       <TernaryPage title='Fly with friends'>
-        <StartTernary />
+        <TernaryIntro />
       </TernaryPage>
     );
   }
@@ -45,7 +50,15 @@ export default function TernaryHomeScreen() {
   const here = flockWithLooks(ternary.members);
   const stop = restingAt(ternary.total, routeOf(ternary));
   return (
-    <TernaryPage title={ternary.name} top={<FlockMap />}>
+    <TernaryPage
+      title={ternary.name}
+      top={
+        <FlockMap
+          arriving={arrived}
+          onArrived={() => navigation.setParams({ arrived: undefined })}
+        />
+      }
+    >
       <GroupLabel>Flying today</GroupLabel>
       <Group>
         {here.length ? (

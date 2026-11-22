@@ -2,7 +2,7 @@ import React from 'react';
 import { StyleSheet, View } from 'react-native';
 
 import { colors } from '@shared/theme';
-import { FlockBadge } from '../../../components/FlockBadge/FlockBadge';
+import { FlockBadge } from '@/journey/ternary/components/FlockBadge/FlockBadge';
 
 /** Three friends' birds overlapping, as they fly on the map. */
 const LOOKS = [1, 4, 2];

@@ -8,6 +8,8 @@ import RecipeScreen from './recipe-swap/recipe/RecipeScreen';
 import PostcardsScreen from './postcards/PostcardsScreen';
 import TernarySettingsScreen from './settings/TernarySettingsScreen';
 import AboutTernaryScreen from './about/AboutTernaryScreen';
+import StartTernaryScreen from './start/StartTernaryScreen';
+import JoinTernaryScreen from './join/JoinTernaryScreen';
 
 const Stack = createNativeStackNavigator<TernaryStackParamList>();
 
@@ -16,6 +18,8 @@ export default function TernaryStack() {
   return (
     <Stack.Navigator screenOptions={{ headerShown: false }}>
       <Stack.Screen name='TernaryHome' component={TernaryHomeScreen} />
+      <Stack.Screen name='StartTernary' component={StartTernaryScreen} />
+      <Stack.Screen name='JoinTernary' component={JoinTernaryScreen} />
       <Stack.Screen name='RecipeSwap' component={RecipeSwapScreen} />
       <Stack.Screen name='Recipe' component={RecipeScreen} />
       <Stack.Screen name='Postcards' component={PostcardsScreen} />

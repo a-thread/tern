@@ -2,7 +2,7 @@ import React from 'react';
 import { Image, StyleSheet, View } from 'react-native';
 
 import { gradients } from '@shared/theme';
-import { FlockLooks } from '../../../models/flockLooks';
+import { FlockLooks } from '@/journey/models/flockLooks';
 
 /**
  * A friend's bird as it flies on the map, on a scrap of Journey's night sky so its light
