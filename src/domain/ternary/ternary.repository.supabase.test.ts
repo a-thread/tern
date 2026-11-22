@@ -19,6 +19,21 @@ describe('Supabase ternary repository', () => {
     expect(ternary?.name).toBe('Sunday Walkers');
   });
 
+  it('gives a member the server sent without a look their place', async () => {
+    const { db } = fakeDb({
+      id: 't',
+      name: 'Silly goose',
+      members: [
+        { userId: 'a', name: 'You', you: true, presence: 'here' },
+        { userId: 'b', name: 'Maya', you: false, presence: null, look: 5 },
+        { userId: 'c', name: 'Jo', you: false, presence: null, look: null },
+      ],
+    });
+    const ternary =
+      await createSupabaseTernaryRepository(db).mine('2026-11-10');
+    expect(ternary?.members.map((m) => m.look)).toEqual([0, 5, 2]);
+  });
+
   it('is in no ternary when the server says so', async () => {
     const { db } = fakeDb(null);
     expect(

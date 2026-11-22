@@ -15,7 +15,16 @@ export function createSupabaseTernaryRepository(
     async mine(today) {
       const { data, error } = await db.rpc('ternary_state', { p_today: today });
       if (error) throw error;
-      return (data as Ternary | null) ?? null;
+      const ternary = (data as Ternary | null) ?? null;
+      if (!ternary) return null;
+      // Before 20261118000000_ternary_looks runs there's no look: fly as your place.
+      return {
+        ...ternary,
+        members: (ternary.members ?? []).map((m, place) => ({
+          ...m,
+          look: Number.isInteger(m.look) ? m.look : place,
+        })),
+      };
     },
     create: (name, yourName, route, look) =>
       ok(
