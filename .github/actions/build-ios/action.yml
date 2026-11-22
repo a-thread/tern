@@ -39,7 +39,7 @@ runs:
         EXPO_TOKEN: ${{ inputs.expo-token }}
         APP_VERSION: ${{ inputs.app-version }}
       run: |
-        npx eas build --platform ios --profile production --local --non-interactive \
+        npx -y eas-cli@25.3.0 build --platform ios --profile production --local --non-interactive \
           --output "$RUNNER_TEMP/tern-ios.ipa"
     - if: github.ref_name == github.event.repository.default_branch
       uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0

@@ -52,7 +52,7 @@ runs:
         # Use ccache for module CMake builds; fixed working paths keep cache keys stable.
         export CMAKE_C_COMPILER_LAUNCHER=ccache CMAKE_CXX_COMPILER_LAUNCHER=ccache
         export CCACHE_BASEDIR="$EAS_LOCAL_BUILD_WORKINGDIR"
-        npx eas build --platform android --profile "$PROFILE" --local --non-interactive \
+        npx -y eas-cli@25.3.0 build --platform android --profile "$PROFILE" --local --non-interactive \
           --output "$RUNNER_TEMP/tern-android.$ext"
         mapping="$(find "$EAS_LOCAL_BUILD_WORKINGDIR" -path '*/outputs/mapping/release/mapping.txt' -print -quit)"
         if [ -z "$mapping" ]; then
