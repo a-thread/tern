@@ -94,12 +94,15 @@ export default function TernarySettingsScreen() {
         unblock(userId).catch(() => toast.show('Couldn’t unblock just now.')),
     });
 
+  // The server deletes a ternary its last member leaves; someone you blocked still counts.
+  const alone = ternary.members.length === 1 && ternary.blocked.length === 0;
   const askLeave = () =>
     confirm({
-      title: `Leave ${ternary.name}?`,
-      message:
-        'You keep every waypoint you’ve earned, and the shared bird keeps the days you flew together. Your fish, postcards and dishes leave with you.',
-      action: 'Leave',
+      title: alone ? `Delete ${ternary.name}?` : `Leave ${ternary.name}?`,
+      message: alone
+        ? 'You’re the only one in it, so leaving deletes it for good. You keep every waypoint you’ve earned.'
+        : 'You keep every waypoint you’ve earned, and the shared bird keeps the days you flew together. The fish, postcards and meals you sent leave with you, and so do the fish brought to you.',
+      action: alone ? 'Leave and delete' : 'Leave',
       onConfirm: async () => {
         try {
           await leave();
