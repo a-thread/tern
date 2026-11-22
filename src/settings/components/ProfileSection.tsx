@@ -12,15 +12,11 @@ import { usePlusLapsed } from '../hooks/usePlusLapsed';
 import { LogHomeMark } from './LogHomeMark/LogHomeMark';
 import { useSettingsNavigation } from '../../navigation/useAppNavigation';
 
-/**
- * The top of Settings. Without an account it says the data is on this phone and offers to
- * sign in or make an account (the sign-in screen has both). With one, it's who is signed
- * in: an avatar marked with where the data is (synced, or back on the phone once Tern Plus
- * has ended), the first name (editable) and the email, and it opens Account and data.
- */
+/** Signed out, offers sign-in; signed in, shows who and where the data is. */
 export function ProfileSection() {
   const auth = useAuth();
-  if (auth && !auth.session) return <PhoneOnlyCard onPress={() => auth.openSignIn()} />;
+  if (auth && !auth.session)
+    return <PhoneOnlyCard onPress={() => auth.openSignIn()} />;
   return <SignedInCard />;
 }
 
@@ -35,7 +31,11 @@ function PhoneOnlyCard({ onPress }: { onPress: () => void }) {
         accessibilityLabel='Saved on phone only. Sign in or create an account'
       >
         <View style={[s.avatar, { backgroundColor: colors.driftwoodTint }]}>
-          <MaterialCommunityIcons name='cellphone-check' size={20} color={colors.driftwood} />
+          <MaterialCommunityIcons
+            name='cellphone-check'
+            size={20}
+            color={colors.driftwood}
+          />
         </View>
         <View style={{ flex: 1 }}>
           <Text style={typography.rowTitle}>Saved on phone only</Text>
@@ -88,7 +88,10 @@ function SignedInCard() {
           {auth?.session ? (
             // On the avatar rather than after the name: the name is a text field, which
             // doesn't size to its text, so a mark after it would drift with the field.
-            <LogHomeMark home={logHome({ signedIn: true, lapsed })} variant='corner' />
+            <LogHomeMark
+              home={logHome({ signedIn: true, lapsed })}
+              variant='corner'
+            />
           ) : null}
         </View>
         <View style={{ flex: 1 }}>

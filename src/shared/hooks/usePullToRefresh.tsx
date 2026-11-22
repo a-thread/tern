@@ -2,13 +2,7 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { RefreshControl } from 'react-native';
 import { colors } from '../theme';
 
-/**
- * Pull to refresh for a ScrollView: pass the result as its `refreshControl`.
- *
- * Pulling runs every `refreshers` at once and the spinner stays until all have
- * settled. A refresher that fails is ignored (each one logs its own failure),
- * and a pull while one is already running does nothing.
- */
+/** Runs all `refreshers` in parallel; failures are ignored (each logs its own). */
 export function usePullToRefresh(
   refreshers: readonly (() => Promise<unknown>)[],
 ): React.ReactElement<React.ComponentProps<typeof RefreshControl>> {

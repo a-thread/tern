@@ -3,10 +3,6 @@ import React, { useState } from 'react';
 import { GroupLabel, InfoDot } from '@shared/components/ui';
 import { NovaInfoSheet } from '@shared/components/NovaInfoSheet/NovaInfoSheet';
 
-/**
- * The "Food type" heading over the processing-level picker, with an info button that explains
- * each NOVA level and gives examples, so the choice is easier to make.
- */
 export function FoodTypeLabel() {
   const [open, setOpen] = useState(false);
   return (

@@ -15,10 +15,7 @@ import RemindersStepScreen from './reminders/RemindersStepScreen';
 
 const Stack = createNativeStackNavigator<WelcomeStackParamList>();
 
-/**
- * The setup wizard for a new install. A stack, so swiping back (or Android's back button) goes to
- * the previous screen. Only mounted until it's finished or skipped; see `RootNavigator`.
- */
+/** Mounted only until finished or skipped (`RootNavigator`). */
 export default function WelcomeStack() {
   return (
     <Stack.Navigator screenOptions={{ headerShown: false }}>

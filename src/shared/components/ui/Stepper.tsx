@@ -10,11 +10,7 @@ import {
 } from 'react-native';
 import { colors, font } from '../../theme';
 
-/**
- * A − / + control around a value, for servings, scales, times and counts. `compact`
- * is the tighter version for rows that already hold a name and a remove button.
- * With `onChangeValue` the value can also be typed (tap it and enter a number).
- */
+/** With `onChangeValue`, the value can also be typed. */
 export function Stepper({
   value,
   onDecrement,

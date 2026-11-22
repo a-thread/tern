@@ -6,11 +6,7 @@ import { gradients, space } from '@shared/theme';
 import { useSubscription } from '@/domain/subscription/SubscriptionContext';
 import { TrailPicker } from './components/TrailPicker/TrailPicker';
 
-/**
- * A Supporter's thank-you: the color of the line their tern has flown, from the link under
- * the map on Journey. Anyone else who lands here (Supporter ended while it was open) is told
- * what it is instead of being offered a choice that wouldn't show.
- */
+/** Non-Supporters (it lapsed while open) are told what it is rather than offered a dead choice. */
 export default function TrailScreen() {
   const { supporter } = useSubscription();
 

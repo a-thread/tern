@@ -18,7 +18,7 @@ inputs:
 runs:
   using: composite
   steps:
-    - uses: actions/setup-java@77dd5b2ce225ea11469928ac317850245a74ae78 # v6.2.0
+    - uses: actions/setup-java@d1374f8ac74474200d16ef8ecee22c7ae7a51880 # v6.3.0
       with:
         distribution: temurin
         java-version: '17'
@@ -52,7 +52,7 @@ runs:
         # Use ccache for module CMake builds; fixed working paths keep cache keys stable.
         export CMAKE_C_COMPILER_LAUNCHER=ccache CMAKE_CXX_COMPILER_LAUNCHER=ccache
         export CCACHE_BASEDIR="$EAS_LOCAL_BUILD_WORKINGDIR"
-        npx eas build --platform android --profile "$PROFILE" --local --non-interactive \
+        npx -y eas-cli@25.3.0 build --platform android --profile "$PROFILE" --local --non-interactive \
           --output "$RUNNER_TEMP/tern-android.$ext"
         mapping="$(find "$EAS_LOCAL_BUILD_WORKINGDIR" -path '*/outputs/mapping/release/mapping.txt' -print -quit)"
         if [ -z "$mapping" ]; then

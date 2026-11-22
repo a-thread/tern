@@ -13,3 +13,19 @@ export async function rows<T>(query: PromiseLike<Outcome>): Promise<T[]> {
   if (error) throw error;
   return (data ?? []) as T[];
 }
+
+/** Must not exceed the API's `max_rows`, or a full page looks short and ends the read early. */
+const PAGE = 1000;
+
+/** Pages past the server's row cap. `page`'s order must be unique per row, or rows repeat or vanish. */
+export async function allRows<T>(
+  page: (from: number, to: number) => PromiseLike<Outcome>,
+  size = PAGE,
+): Promise<T[]> {
+  const found: T[] = [];
+  for (;;) {
+    const next = await rows<T>(page(found.length, found.length + size - 1));
+    found.push(...next);
+    if (next.length < size) return found;
+  }
+}

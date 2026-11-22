@@ -46,9 +46,7 @@ export default function LogFoodScreen({ navigation, route }: Props) {
     ? FOOD_FILTERS.filter((f) => f !== 'Meals')
     : FOOD_FILTERS;
 
-  // Once a food goes in, the search that found it has done its job: the next
-  // one is rarely the same words, and a stale query hides your own foods and
-  // meals underneath it. (In pick mode the food lands in the draft, not the log.)
+  // Clear the query after adding: a stale one hides your own foods and meals.
   const goneIn = pickMode ? (draft?.items.length ?? 0) : added.length;
   const lastGoneIn = useRef(goneIn);
   useEffect(() => {

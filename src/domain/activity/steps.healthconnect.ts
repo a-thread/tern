@@ -5,17 +5,11 @@ import { StepsRepository } from './steps.repository';
 import { StepsStatus } from './models/stepsStatus';
 
 /**
- * Steps from Android Health Connect.
- *
- * Verified by manual testing on an Android device. It needs a custom dev build
- * (Expo Go can't load native modules); to turn it on, see docs/health-connect.md.
- * It is off unless EXPO_PUBLIC_HEALTH=1, and returns null (steps unavailable) off
- * Android or if the package isn't installed. The iPhone equivalent is steps.healthkit.ts.
+ * Steps from Android Health Connect; needs a dev build and EXPO_PUBLIC_HEALTH=1
+ * (docs/health-connect.md). Null off Android or without the package.
  */
 export function createHealthConnectStepsRepository(): StepsRepository | null {
-  // Off unless asked for. Metro turns a require of a missing package into a
-  // runtime error even inside try/catch, so it must never be reached without
-  // the package installed.
+  // Metro fails on a missing package's require even inside try/catch, so never reach it unasked.
   if (Platform.OS !== 'android' || !healthEnabled()) return null;
 
   let hc: any;

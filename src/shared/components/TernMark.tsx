@@ -3,10 +3,6 @@ import Svg, { Path } from 'react-native-svg';
 
 type Props = { size?: number; color?: string };
 
-/**
- * The Tern mark. Single path, inherits color from props so it can be
- * tinted per context (nav bar, flight-path marker, brand moments).
- */
 export default function TernMark({ size = 24, color = '#26262B' }: Props) {
   return (
     <Svg width={size} height={size} viewBox='0 0 2000 2000'>

@@ -48,10 +48,7 @@ type MovementContextValue = {
     effort: Effort | null;
     distanceM?: number | null;
   }) => boolean;
-  /**
-   * Changes how long, how hard and how far a manual entry was, on a day it can still be logged
-   * for. False if it can't be changed (a workout from the health app, or an older day).
-   */
+  /** Manual entries on an editable day only. */
   update: (
     id: string,
     input: {
@@ -77,12 +74,7 @@ const [MovementContext, useMovement] =
   );
 export { useMovement };
 
-/**
- * Movement logged by hand plus workouts read from Health Connect (when allowed),
- * and the waypoint for logging any movement today. Activity reads `goalMinutesByDay`
- * to count movement toward goal days. Must sit inside SettingsProvider and
- * WaypointsProvider.
- */
+/** Manual entries plus health-app workouts. Inside Settings and Waypoints. */
 export function MovementProvider({
   repo,
   workouts,
@@ -133,8 +125,15 @@ export function MovementProvider({
   );
   const todayGoalMinutes = goalByDay[today] ?? 0;
 
-  // Logging any movement today earns its waypoint; removing it all takes it back.
+  // Any movement today or yesterday earns that day's waypoint.
+  const yesterday = addDays(today, -1);
   useAward(WaypointSource.Movement, todayMinutes > 0, enabled && ready);
+  useAward(
+    WaypointSource.Movement,
+    enabled && dayMinutes(entries, yesterday) > 0,
+    enabled && ready,
+    { day: yesterday },
+  );
 
   const add = useCallback<MovementContextValue['add']>(
     ({ day, activity, minutes, effort, distanceM = null }) => {

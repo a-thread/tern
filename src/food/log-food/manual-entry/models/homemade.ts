@@ -1,6 +1,14 @@
 import type { NewFoodEntry, Tier } from '@/domain/food/models/foodEntry';
-import { amountOf, scaleMeasure, type Measure } from '@/domain/food/models/measure';
-import { parseGrams, scaleForGrams, type Macros } from '@/domain/food/models/servings';
+import {
+  amountOf,
+  scaleMeasure,
+  type Measure,
+} from '@/domain/food/models/measure';
+import {
+  parseGrams,
+  scaleForGrams,
+  type Macros,
+} from '@/domain/food/models/servings';
 import {
   HomemadeBatch,
   type SavedMealItem,
@@ -36,10 +44,7 @@ export function perServing(h: Pick<Homemade, 'makes' | 'totals'>): Macros {
   };
 }
 
-/**
- * One serving as a weighed amount, so it can later be changed in oz, g or a cup: "2 cups"
- * weighing 300 g is two cups of 150 g, and "bowl" one bowl. Null without a weight.
- */
+/** "2 cups" of 300 g is two 150 g cups. Null without a weight. */
 export function servingMeasure(
   h: Pick<Homemade, 'serving' | 'servingGrams' | 'makes' | 'totals'>,
 ): Measure | null {
@@ -53,10 +58,6 @@ export function servingMeasure(
   };
 }
 
-/**
- * One serving as an item, for a meal being built or (with its meal) the log: weighed when
- * its weight is known.
- */
 export function homemadeItem(h: Homemade): SavedMealItem {
   const measure = servingMeasure(h);
   const base = { name: h.name.trim(), tier: h.tier };
@@ -76,11 +77,7 @@ export const homemadeEntry = (
   meal: NewFoodEntry['meal'],
 ): NewFoodEntry => ({ ...homemadeItem(h), meal });
 
-/**
- * The whole batch as one item, to save as a recipe that makes `makes` servings. With a
- * serving weight it keeps a measure for the whole pot ("8 bowls"), so a serving logged from
- * the recipe later can still be changed by the ounce or gram.
- */
+/** With a serving weight it keeps a whole-pot measure, so later servings stay weighable. */
 export function batchItem(h: Homemade): SavedMealItem {
   const serving = servingMeasure(h);
   return {

@@ -7,11 +7,6 @@
     "orientation": "portrait",
     "userInterfaceStyle": "light",
     "icon": "./assets/icon.png",
-    "splash": {
-      "image": "./assets/splash.png",
-      "resizeMode": "contain",
-      "backgroundColor": "#F5F3EE"
-    },
     "ios": {
       "supportsTablet": false,
       "bundleIdentifier": "com.purlieus.tern",
@@ -34,6 +29,17 @@
     },
     "plugins": [
       "expo-font",
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/splash.png",
+          "imageWidth": 360,
+          "resizeMode": "contain",
+          "backgroundColor": "#F5F3EE"
+        }
+      ],
+      "expo-sharing",
+      "expo-status-bar",
       [
         "expo-notifications",
         {
@@ -61,7 +67,7 @@
         "expo-build-properties",
         {
           "android": {
-            "compileSdkVersion": 36,
+            "compileSdkVersion": 37,
             "targetSdkVersion": 36,
             "minSdkVersion": 26,
             "enableMinifyInReleaseBuilds": true,
@@ -70,7 +76,9 @@
         }
       ],
       "expo-sqlite",
-      "expo-asset"
+      "expo-asset",
+      "./plugins/withNativeDebugSymbols",
+      "./plugins/withoutAndroidOrientationLock"
     ],
     "extra": {
       "eas": {

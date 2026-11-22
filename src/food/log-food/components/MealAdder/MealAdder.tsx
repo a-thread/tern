@@ -24,11 +24,7 @@ import { RecipeServings } from '@/food/components/RecipeServings/RecipeServings'
 
 type Nav = NativeStackNavigationProp<LogFoodStackParamList>;
 
-/**
- * The state behind adding a past or saved meal to today: which meal it goes into, the portion
- * scale (0.5 = half portions), and the two ways to add it (all of it, or one food to tweak first).
- * A recipe (a saved meal that makes several servings) is added as one entry, by the serving.
- */
+/** A recipe is added as one entry, by the serving. */
 export function useMealAdder(
   items: SavedMealItem[],
   initialMeal: Parameters<typeof itemsToEntries>[1],
@@ -55,7 +51,13 @@ export function useMealAdder(
   const add = () => {
     addFoodEntries(
       batch
-        ? [recipeEntry({ ...batch, items }, Math.min(eaten, batch.servings), target)]
+        ? [
+            recipeEntry(
+              { ...batch, items },
+              Math.min(eaten, batch.servings),
+              target,
+            ),
+          ]
         : itemsToEntries(items, target, scale),
     );
     navigation.goBack();

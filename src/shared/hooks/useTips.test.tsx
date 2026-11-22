@@ -1,6 +1,6 @@
 import React from 'react';
 import { act, renderHook, waitFor } from '@testing-library/react-native';
-import type { View } from 'react-native';
+import type { HostInstance } from 'react-native';
 
 import { createMemorySettingsRepository } from '@/domain/settings/settings.repository';
 import {
@@ -32,7 +32,7 @@ async function setup() {
   const wrapper = ({ children }: { children: React.ReactNode }) => (
     <SettingsProvider repo={repo}>{children}</SettingsProvider>
   );
-  const rootRef = { current: null } as React.RefObject<View | null>;
+  const rootRef = { current: null } as React.RefObject<HostInstance | null>;
   const hook = renderHook(
     () => ({
       settings: useSettings(),

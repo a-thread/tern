@@ -5,10 +5,7 @@ import { healthAppName } from '@shared/utils/healthApp';
 import { useSettings } from '../../domain/settings/SettingsContext';
 import { useReminders } from '../hooks/useReminders';
 
-/**
- * Streak notifications: an evening heads-up while today's goal is open, and a note the morning
- * after a freeze is used. They follow steps, so with reading steps off the row says so.
- */
+/** Says so when reading steps is off, since they follow steps. */
 export function StreakReminderRows() {
   const { reminders, text, patch } = useReminders();
   const { settings } = useSettings();

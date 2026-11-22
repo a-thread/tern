@@ -8,10 +8,7 @@ import { useFood } from '@/domain/food/FoodContext';
 import { DoneList } from './DoneList/DoneList';
 import { DayNoteCard } from './DayNoteCard/DayNoteCard';
 
-/**
- * The quiet lists under the rest scene: what was done, the food if any was logged, and "Log
- * something" to bring back the usual lists (not while the tern is flying off).
- */
+/** "Log something" brings back the usual lists (not while the tern is flying off). */
 export function RestDayLists({
   onReveal,
   leaving,

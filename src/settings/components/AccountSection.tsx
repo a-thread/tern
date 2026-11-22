@@ -6,11 +6,7 @@ import { colors, font, space } from '@shared/theme';
 import { useAuth } from '../../domain/auth/AuthContext';
 import { plusUnlocked } from '../../domain/subscription/plusUnlocked';
 
-/**
- * Signing out, and the app version, at the foot of Settings. Signing in (and making an
- * account) is the profile card at the top; Tern Plus is in Your data (Account and data, signed in). The version is the
- * build's (a release build's comes from its release tag; see app.config.ts).
- */
+/** A release build's version comes from its tag (app.config.ts). */
 export function AccountSection() {
   const auth = useAuth();
   const name = `Tern ${Constants.expoConfig?.version ?? ''}`.trim();
@@ -18,7 +14,11 @@ export function AccountSection() {
     <>
       {auth?.session ? (
         <View style={s.signOut}>
-          <Pressable onPress={() => auth.signOut()} hitSlop={8} accessibilityRole='button'>
+          <Pressable
+            onPress={() => auth.signOut()}
+            hitSlop={8}
+            accessibilityRole='button'
+          >
             <Text style={s.signOutText}>Sign out</Text>
           </Pressable>
         </View>

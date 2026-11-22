@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { StyleSheet, View, useWindowDimensions } from 'react-native';
+import { StyleSheet, View, useWindowDimensions, type HostInstance } from 'react-native';
 
 import { colors, radius, space } from '@shared/theme';
 import { useScenePose } from './hooks/useScenePose';
@@ -10,7 +10,7 @@ import { SceneCanvas } from './models/sceneCanvas';
 
 interface RestSceneProps {
   /** Where the waypoint feathers start from when resting earns its waypoints. */
-  heroRef?: React.RefObject<View | null>;
+  heroRef?: React.RefObject<HostInstance | null>;
   /** True when the rest day has just been taken: the tern flies in and lands. */
   entrance: boolean;
   /** True once the rest day is undone: the tern takes off, then `onLeft` is called. */
@@ -26,10 +26,6 @@ interface RestSceneProps {
   noteLink?: NoteLink;
 }
 
-/**
- * The rest day card: the tern on its driftwood at dusk, over a few words about the day. It flies
- * in when the rest is taken here and off again when it is undone.
- */
 export function RestScene({
   heroRef,
   entrance,

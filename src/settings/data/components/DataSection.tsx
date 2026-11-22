@@ -14,10 +14,7 @@ import { manageSubscription } from '../../utils/manageSubscription';
 import { useSubscription } from '@/domain/subscription/SubscriptionContext';
 import { storeName } from '@shared/utils/storeApp';
 
-/**
- * Export everything Tern holds, restore it from an export, or erase it: in the account when
- * signed in with Tern Plus, on the phone otherwise. Once Plus has ended, erasing reaches both.
- */
+/** Account with Plus, phone otherwise. Once Plus has ended, erasing reaches both. */
 export function DataSection() {
   const data = useData();
   const auth = useAuth();
@@ -118,7 +115,9 @@ export function DataSection() {
   const openStore = () =>
     manageSubscription().catch((e) => {
       console.warn('Could not open the store', e);
-      toast.show(`Couldn't open ${storeName()} — cancel Tern Plus from its subscriptions page.`);
+      toast.show(
+        `Couldn't open ${storeName()} — cancel Tern Plus from its subscriptions page.`,
+      );
     });
 
   const deleteAccount = () => {
@@ -156,9 +155,7 @@ export function DataSection() {
     });
   };
 
-  // Synced, every row says exactly what it touches. On the phone (no account, or Tern Plus
-  // ended) the list is kept short: with Plus ended the account can't be added to, so erasing
-  // the data alone has little point, and deleting the account erases everything anyway.
+  // Shorter on the phone: with Plus ended, erasing just the data has little point.
   const synced = signedIn && !lapsed;
   return (
     <Group>
@@ -171,7 +168,9 @@ export function DataSection() {
         <View style={{ flex: 1 }}>
           <Text style={s.title}>Export my data</Text>
           <Text style={s.sub}>
-            {synced ? 'Save a file of everything, to restore from later' : 'Save a file of everything'}
+            {synced
+              ? 'Save a file of everything, to restore from later'
+              : 'Save a file of everything'}
           </Text>
         </View>
       </Pressable>
@@ -218,7 +217,9 @@ export function DataSection() {
         >
           <View style={{ flex: 1 }}>
             <Text style={[s.title, s.danger]}>Delete my account</Text>
-            <Text style={s.sub}>Close your account and erase all your data</Text>
+            <Text style={s.sub}>
+              Close your account and erase all your data
+            </Text>
           </View>
         </Pressable>
       ) : null}

@@ -1,10 +1,6 @@
 import { Alert } from 'react-native';
 
-/**
- * Asks before something that is hard to undo (or that overwrites). The action button is red unless
- * `destructive` is false; `cancel` names the way out ("Keep editing" when leaving a form).
- * `also` adds a third choice between the two, for a sensible detour ("Open Google Play").
- */
+/** Red unless `destructive` is false; `also` adds a middle choice ("Open Google Play"). */
 export function confirm({
   title,
   message,

@@ -3,11 +3,7 @@ import { useCallback, useState } from 'react';
 import { useLoader } from './useLoader';
 import { usePersist, type PersistFailure } from './usePersist';
 
-/**
- * A list a context loads from storage and edits optimistically. `change` updates the list on
- * screen straight away and hands the repository write to `usePersist`, which tells the person and
- * reloads if it fails.
- */
+/** `useLoader` + `usePersist` for an optimistic list. */
 export function useSyncedList<T>(
   load: () => Promise<T[]>,
   failureNote: string,

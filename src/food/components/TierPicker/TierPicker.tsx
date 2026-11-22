@@ -11,11 +11,7 @@ import {
 } from '@/domain/food/models/tierGroups';
 import { tierSuggestionNote } from './utils/tierSuggestionNote';
 
-/**
- * Food-type picker: Whole (tiers 1–2) / Processed (3) / Ultra-processed (4).
- * `suggested` shows where the pre-picked type came from; the user's own tap always wins. What
- * each level means lives in the info sheet beside the "Food type" label (`FoodTypeLabel`).
- */
+/** Whole (1–2) / Processed (3) / Ultra-processed (4). The user's tap always wins. */
 export function TierPicker({
   value,
   onChange,
@@ -26,10 +22,7 @@ export function TierPicker({
   value: Tier | null;
   onChange: (tier: Tier) => void;
   suggested?: Tier | null;
-  /**
-   * Where the suggestion came from, for the note under the picker. Unset for a food you logged
-   * before, or one you made yourself.
-   */
+  /** Unset for your own foods. */
   suggestedBy?: SearchResult['source'];
   showNumber?: boolean;
 }) {

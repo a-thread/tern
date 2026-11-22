@@ -8,10 +8,7 @@ export enum NotificationTarget {
   LogDinner = 'logDinner',
   LogWeight = 'logWeight',
   CheckIn = 'checkIn',
-  /**
-   * Water and medication are marked from their rows on Today, and the streak is shown there.
-   * A reminder to eat has nothing to log, so it opens Today too.
-   */
+  /** Water, medication, streak, and eat reminders (nothing to log). */
   Today = 'today',
   /** What a streak freeze did, after one held the streak overnight. */
   Streak = 'streak',
@@ -25,10 +22,7 @@ export const targetMeal = (
 /** What a notification carries in its `data`, so a tap knows where to go. */
 export type NotificationData = { target: NotificationTarget };
 
-/**
- * Where a reminder's tap goes, from what kind of reminder it is. Scheduled into the
- * notification's `data` (`notificationData`), so a tap needn't work it out from the id.
- */
+/** Stored in the notification's `data`, so a tap needn't parse the id. */
 export function reminderTarget(
   r: Pick<PlannedReminder, 'id' | 'key'>,
 ): NotificationTarget {
@@ -61,29 +55,19 @@ export const notificationData = (
   target,
 });
 
-/**
- * Where a tapped notification goes: the target in its `data`, or, for one scheduled before
- * targets were (or with none), from the identifier it was scheduled under. Null for anything
- * Tern didn't schedule.
- */
+/** From `data`, falling back to the id for older notifications; null if not Tern's. */
 export function tappedTarget(
   data: unknown,
-  id: string,
+  // Typed as a string, but Android can hand back null for a tap that opened the app.
+  id: string | null | undefined,
 ): NotificationTarget | null {
   const target = (data as Partial<NotificationData> | null | undefined)?.target;
-  return Object.values(NotificationTarget).includes(
-    target as NotificationTarget,
-  )
-    ? (target as NotificationTarget)
-    : notificationTarget(id);
+  if (Object.values(NotificationTarget).includes(target as NotificationTarget))
+    return target as NotificationTarget;
+  return typeof id === 'string' ? notificationTarget(id) : null;
 }
 
-/**
- * The target of a notification, from the identifier it was scheduled under: the fallback for
- * notifications scheduled without a target in their data. Rotated and rest-day copies carry a
- * suffix (`tern-meals-midday-3`, `tern-weigh-in-rest-2`), so the match is on the start. Null
- * for anything Tern didn't schedule.
- */
+/** Matches on the id's start, since rotated copies carry a suffix (`tern-meals-midday-3`). */
 export function notificationTarget(id: string): NotificationTarget | null {
   const starts = (prefix: string) =>
     id === prefix || id.startsWith(`${prefix}-`);

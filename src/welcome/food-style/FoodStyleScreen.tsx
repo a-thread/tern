@@ -8,11 +8,7 @@ import { WizardStep } from '../components/WizardStep/WizardStep';
 import { WizardStep as Step } from '../models/wizardSteps';
 import { space } from '@/shared/theme';
 
-/**
- * Calories and macros, each on its own switch: the same two as Settings › Targets. Turning
- * calories on here also shows the counts, since that is what was asked for. The check-in after
- * meals is the same switch as Settings › Food.
- */
+/** Turning calories on here also shows the counts, since that's what was asked for. */
 export default function FoodStyleScreen() {
   const { settings, updateSettings } = useSettings();
   const calories = settings.trackCalories && settings.showCalories;

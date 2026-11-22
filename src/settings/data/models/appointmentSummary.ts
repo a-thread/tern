@@ -48,12 +48,7 @@ const dayOf = (iso: string) => {
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
 };
 
-/**
- * A plain-text summary of the last `span` days for the person to send to a dietitian,
- * therapist or doctor, built on the phone from their own export. It follows their display
- * choices: calories only if they track and show them, weight only if they track it. Written
- * notes are left out, since those were written for themselves.
- */
+/** Follows display choices; notes are left out, since they were written for themselves. */
 export function appointmentSummary(
   data: TernExport,
   choices: SummaryChoices,
@@ -71,9 +66,15 @@ export function appointmentSummary(
   ];
 
   if (choices.trackFood) {
-    const food = (data.food as Row[]).filter((r) => inSpan(str(r, 'logged_on')));
-    const skipped = (data.skippedMeals as Row[]).filter((r) => inSpan(str(r, 'day')));
-    const checkIns = (data.mealCheckins as Row[]).filter((r) => inSpan(str(r, 'day')));
+    const food = (data.food as Row[]).filter((r) =>
+      inSpan(str(r, 'logged_on')),
+    );
+    const skipped = (data.skippedMeals as Row[]).filter((r) =>
+      inSpan(str(r, 'day')),
+    );
+    const checkIns = (data.mealCheckins as Row[]).filter((r) =>
+      inSpan(str(r, 'day')),
+    );
     const showCalories = choices.trackCalories && choices.showCalories;
     const logged = days.filter(
       (d) =>
@@ -81,7 +82,11 @@ export function appointmentSummary(
         skipped.some((r) => str(r, 'day') === d),
     );
 
-    lines.push('', 'MEALS', `Days with meals logged: ${logged.length} of ${span}`);
+    lines.push(
+      '',
+      'MEALS',
+      `Days with meals logged: ${logged.length} of ${span}`,
+    );
     for (const day of logged) {
       lines.push('', formatLongDate(day));
       for (const meal of Meals.ALL) {
@@ -97,7 +102,9 @@ export function appointmentSummary(
           (r) => str(r, 'day') === day && str(r, 'meal') === meal,
         );
         const how =
-          checkIn && num(checkIn, 'fullness') !== null && num(checkIn, 'feeling') !== null
+          checkIn &&
+          num(checkIn, 'fullness') !== null &&
+          num(checkIn, 'feeling') !== null
             ? ` (${mealScoreWord(MealCheckInMetric.Fullness, num(checkIn, 'fullness')!)}, feeling ${mealScoreWord(MealCheckInMetric.Feeling, num(checkIn, 'feeling')!).toLowerCase()})`
             : '';
         const what = names.length ? names.join(', ') : 'nothing today';
@@ -107,7 +114,10 @@ export function appointmentSummary(
         const total = food
           .filter((r) => str(r, 'logged_on') === day)
           .reduce((sum, r) => sum + (num(r, 'calories') ?? 0), 0);
-        if (total > 0) lines.push(`  About ${Math.round(total).toLocaleString('en-US')} calories`);
+        if (total > 0)
+          lines.push(
+            `  About ${Math.round(total).toLocaleString('en-US')} calories`,
+          );
       }
     }
   }
@@ -124,7 +134,8 @@ export function appointmentSummary(
     lines.push(
       ...(weights.length
         ? weights.map(
-            (w) => `  ${formatShortDate(dayOf(w.at))}: ${formatWeight(w.lb, choices.units)}`,
+            (w) =>
+              `  ${formatShortDate(dayOf(w.at))}: ${formatWeight(w.lb, choices.units)}`,
           )
         : ['  No weigh-ins']),
     );
@@ -137,19 +148,19 @@ export function appointmentSummary(
     lines.push('', 'MOOD AND STRESS');
     lines.push(
       ...(moods.length
-        ? moods.map(
-            (r) => {
-              const mood = num(r, 'mood') ?? MoodScale.DEFAULT;
-              const stress = num(r, 'stress') ?? MoodScale.DEFAULT;
-              return `  ${formatShortDate(str(r, 'day')!)}: mood ${mood}/${MoodScale.MAX} (${scoreWord(MoodMetric.Mood, mood).toLowerCase()}), stress ${stress}/${MoodScale.MAX} (${scoreWord(MoodMetric.Stress, stress).toLowerCase()})`;
-            },
-          )
+        ? moods.map((r) => {
+            const mood = num(r, 'mood') ?? MoodScale.DEFAULT;
+            const stress = num(r, 'stress') ?? MoodScale.DEFAULT;
+            return `  ${formatShortDate(str(r, 'day')!)}: mood ${mood}/${MoodScale.MAX} (${scoreWord(MoodMetric.Mood, mood).toLowerCase()}), stress ${stress}/${MoodScale.MAX} (${scoreWord(MoodMetric.Stress, stress).toLowerCase()})`;
+          })
         : ['  No check-ins']),
     );
   }
 
   if (choices.trackMovement) {
-    const moves = (data.movementEntries as Row[]).filter((r) => inSpan(str(r, 'day')));
+    const moves = (data.movementEntries as Row[]).filter((r) =>
+      inSpan(str(r, 'day')),
+    );
     const rest = (data.restDays as Row[]).filter((r) => inSpan(str(r, 'day')));
     lines.push('', 'MOVEMENT AND REST');
     const active = days.filter((d) => moves.some((r) => str(r, 'day') === d));

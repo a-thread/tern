@@ -29,11 +29,7 @@ const START_MS = 150;
 const COUNT_MS = 900;
 const LINE_STAGGER_MS = 60;
 
-/**
- * The waypoints card, from the chip on Today: the total, what today earned, a couple of
- * things still open, and the leg of the route the bird is on. The total counts up and the
- * bar fills from where they stood the last time this was open.
- */
+/** Counts up from the total the last time this was open. */
 export default function WaypointsScreen({ route }: Props) {
   const { streak } = route.params;
   const { waypoints, events } = useWaypoints();

@@ -22,10 +22,7 @@ const WEEKS = 8;
 const W = 300;
 const H = 90;
 
-/**
- * Estimated energy use against logged intake, week by week, for the last eight
- * weeks: why the adaptive target moves. Shown in Trends while it's on.
- */
+/** Why the adaptive target moves; shown while it's on. */
 export function EnergyTrendCard({
   refreshKey = 0,
 }: {

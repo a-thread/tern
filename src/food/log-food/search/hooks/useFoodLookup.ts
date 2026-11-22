@@ -46,12 +46,7 @@ function rowsFor(state: SearchState, query: string): SearchResult[] {
   return state.results.filter((r) => matchesQuery(r, query));
 }
 
-/**
- * Everything the Add food screen can offer for a query, as one ranked list:
- * your own foods and the common-foods list straight away (no network), then
- * packaged products from Open Food Facts, and live USDA when the phone has
- * little to offer. Late results fold in without reordering what's on screen.
- */
+/** Local results first, then OFF and USDA (when local is thin), folded in without reordering. */
 export function useFoodLookup({
   query,
   filter,

@@ -1,5 +1,5 @@
 import React, { useMemo, useRef } from 'react';
-import { Animated, Pressable, View, Text, StyleSheet } from 'react-native';
+import { Animated, Pressable, View, Text, StyleSheet, type HostInstance } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -19,6 +19,7 @@ import { JourneyMap } from './components/JourneyMap/JourneyMap';
 import { TrailLink } from './components/TrailLink/TrailLink';
 import { useJourneyTips } from './hooks/useJourneyTips';
 import { useLightStatusBar } from './hooks/useLightStatusBar';
+import { useWideLayout } from './hooks/useWideLayout';
 import { TipOverlay } from '@shared/components/TipOverlay/TipOverlay';
 import { useReplayOnFocus } from '@shared/hooks/useReplayOnFocus';
 import { usePullToRefresh } from '@shared/hooks/usePullToRefresh';
@@ -68,9 +69,10 @@ export default function JourneyScreen() {
   const { waypoints, events, reload } = useWaypoints();
   const refreshControl = usePullToRefresh([reload]);
   const scrollY = useRef(new Animated.Value(0)).current;
-  const rootRef = useRef<View>(null);
+  const rootRef = useRef<HostInstance>(null);
   const tips = useJourneyTips({ rootRef });
   useLightStatusBar();
+  const wide = useWideLayout();
   const days = daysWithWaypoints(events);
   const { settings } = useSettings();
   const { goalReachable } = useActivity();
@@ -98,11 +100,12 @@ export default function JourneyScreen() {
     <View
       ref={rootRef}
       collapsable={false}
-      style={{ flex: 1, backgroundColor: colors.paper }}
+      style={[s.root, wide && s.rootWide]}
+      testID='journey'
     >
       <LinearGradient
         colors={[...gradients.journey]}
-        style={[s.hero, { paddingTop: insets.top + 8 }]}
+        style={[s.hero, wide && s.column, { paddingTop: insets.top + 8 }]}
       >
         <TabHeader
           eyebrow={
@@ -117,37 +120,40 @@ export default function JourneyScreen() {
           style={s.heroHeader}
         />
 
-        <View>
+        <View style={wide && s.heroBody}>
           <JourneyMap
             progress={migration.progress}
             lap={migration.lap}
             replayKey={replayKey}
             tipRefs={tips.mapRefs}
+            fill={wide}
           />
-        </View>
 
-        {/* Tapping the total explains it: what a waypoint is, and what counts as a day. */}
-        <Pressable
-          style={s.heroTotal}
-          onPress={() => navigation.navigate('WaypointsInfo')}
-          hitSlop={8}
-          accessibilityRole='button'
-          accessibilityLabel={`${waypoints.toLocaleString()} waypoints, earned on ${days} ${days === 1 ? 'day' : 'days'}`}
-          accessibilityHint='Explains waypoints and how days are counted'
-        >
-          <AnimatedNumber
-            value={waypoints}
-            duration={900}
-            style={s.heroNumber}
-          />
-          <Text style={s.heroLabel}>
-            {`waypoints · earned on ${days} ${days === 1 ? 'day' : 'days'}`}
-          </Text>
-        </Pressable>
-        <TrailLink />
+          {/* Tapping the total explains it: what a waypoint is, and what counts as a day. */}
+          <Pressable
+            style={s.heroTotal}
+            onPress={() => navigation.navigate('WaypointsInfo')}
+            hitSlop={8}
+            accessibilityRole='button'
+            accessibilityLabel={`${waypoints.toLocaleString()} waypoints, earned on ${days} ${days === 1 ? 'day' : 'days'}`}
+            accessibilityHint='Explains waypoints and how days are counted'
+          >
+            <AnimatedNumber
+              value={waypoints}
+              duration={900}
+              style={s.heroNumber}
+            />
+            <Text style={s.heroLabel}>
+              {`waypoints · earned on ${days} ${days === 1 ? 'day' : 'days'}`}
+            </Text>
+          </Pressable>
+          <TrailLink />
+        </View>
       </LinearGradient>
 
-      <View style={s.listArea}>
+      <View style={[s.listArea, wide && s.column]}>
+        {/* Behind the status bar, so its light icons still read over this column. */}
+        {wide ? <View style={[s.statusStrip, { height: insets.top }]} /> : null}
         <Animated.ScrollView
           refreshControl={refreshControl}
           onScroll={Animated.event(
@@ -283,24 +289,26 @@ export default function JourneyScreen() {
           </Group>
         </Animated.ScrollView>
         {/* Once the list scrolls under the hero, a soft shadow shows where it goes beneath. */}
-        <Animated.View
-          pointerEvents='none'
-          style={[
-            s.heroShadow,
-            {
-              opacity: scrollY.interpolate({
-                inputRange: [0, 12],
-                outputRange: [0, 1],
-                extrapolate: 'clamp',
-              }),
-            },
-          ]}
-        >
-          <LinearGradient
-            colors={[colors.heroShadow, colors.heroShadowClear]}
-            style={StyleSheet.absoluteFill}
-          />
-        </Animated.View>
+        {wide ? null : (
+          <Animated.View
+            pointerEvents='none'
+            style={[
+              s.heroShadow,
+              {
+                opacity: scrollY.interpolate({
+                  inputRange: [0, 12],
+                  outputRange: [0, 1],
+                  extrapolate: 'clamp',
+                }),
+              },
+            ]}
+          >
+            <LinearGradient
+              colors={[colors.heroShadow, colors.heroShadowClear]}
+              style={StyleSheet.absoluteFill}
+            />
+          </Animated.View>
+        )}
       </View>
       {tips.shown && tips.text ? (
         <TipOverlay
@@ -318,6 +326,12 @@ export default function JourneyScreen() {
 }
 
 const s = StyleSheet.create({
+  root: { flex: 1, backgroundColor: colors.paper },
+  rootWide: { flexDirection: 'row' },
+  column: { flex: 1 },
+  // Wide, the map and total sit in the middle of the space under the header.
+  heroBody: { flex: 1, justifyContent: 'center' },
+  statusStrip: { backgroundColor: gradients.journey[0] },
   listArea: { flex: 1 },
   heroTotal: { alignItems: 'center', marginTop: 6 },
   heroShadow: { position: 'absolute', top: 0, left: 0, right: 0, height: 14 },

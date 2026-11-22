@@ -1,8 +1,4 @@
-/**
- * The colour of the line your tern has flown on Journey: a Supporter's thank-you. Everyone
- * else sees Arctic. If Supporter ends the trail is drawn Arctic again; the choice is still
- * saved, so it comes back if they support again.
- */
+/** Supporter-only; others see Arctic, and the choice is kept if Supporter lapses. */
 export enum TrailColor {
   Arctic = 'arctic',
   MidnightSun = 'midnightSun',

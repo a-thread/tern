@@ -1,9 +1,4 @@
-/**
- * Turns a USDA description into a short name and a detail line:
- * "Chicken, broilers or fryers, breast, meat only, cooked, roasted"
- *   → { name: "Chicken breast", detail: "meat only, cooked, roasted" }.
- * Used when the common-foods list is built, not at search time.
- */
+// USDA description → name + detail ("Chicken breast" / "meat only, cooked, roasted"), at build time.
 
 // Segments that describe the animal or the data set, not the food you'd log.
 const NOISE =
@@ -90,10 +85,7 @@ const VARIANT =
 const PLAIN =
   /\b(raw|plain|whole|cooked|brewed|baked|boiled|roasted|fresh|regular)\b/i;
 
-/**
- * How plain a food's detail is; lower is plainer. Picks "Egg, whole, raw" over
- * "Egg, creamed" as the food a bare "Egg" means.
- */
+/** Lower is plainer: picks "Egg, whole, raw" over "Egg, creamed" for "Egg". */
 export function plainness(detail = ''): number {
   const words = detail.split(/[\s,]+/).filter(Boolean).length;
   return words + (VARIANT.test(detail) ? 10 : 0) - (PLAIN.test(detail) ? 2 : 0);

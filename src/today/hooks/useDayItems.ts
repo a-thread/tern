@@ -22,11 +22,7 @@ const lateOn = (day: string) => {
   return d;
 };
 
-/**
- * What is still open and what has been done on the viewed day (today unless a past day
- * is picked), drawn from every tracked domain. Yesterday can still be filled in, so it
- * has open items too; earlier days have none.
- */
+/** Days before yesterday have no open items. */
 export function useDayItems() {
   const { day, isToday, editable } = useViewedDay();
   // Food, water, medication and the check-in already follow the viewed day.

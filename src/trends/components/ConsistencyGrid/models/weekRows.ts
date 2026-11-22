@@ -16,11 +16,7 @@ export class GridLimits {
   static readonly CALENDAR_MAX_WEEKS = 6;
 }
 
-/**
- * The days, consecutive and oldest first, set out in weeks from Monday to Sunday. The first
- * week starts on the Monday before the first day and the last ends on the Sunday after the
- * last, with null for the days outside the list.
- */
+/** Monday-to-Sunday weeks, null-padded at both ends. */
 export function weekRows(days: readonly { day: string }[]): WeekRow[] {
   if (days.length === 0) return [];
   const index = new Map(days.map((d, i) => [d.day, i]));
@@ -58,10 +54,6 @@ export class GridLabels {
   ];
 }
 
-/**
- * The grid's shape for `days`, decided in one place. `letters` head the calendar's columns, or
- * label the strip's rows; each of `rows` is a row of day indexes (null where there's no day).
- */
 export type GridShape = {
   layout: GridLayout;
   letters: readonly string[];
@@ -69,13 +61,8 @@ export type GridShape = {
 };
 
 /**
- * How the grid sets out `days` (consecutive, oldest first):
- * - a week or less: one calendar row in the order the days came, headed by their own weekday
- *   letters, as the bar chart above lays them out (seven days up to today would otherwise split
- *   across two Monday-to-Sunday rows, a lone Sunday above the rest); fewer than seven keep the
- *   same seven columns, empty at the end;
- * - up to `GridLimits.CALENDAR_MAX_WEEKS` weeks: a calendar, a row per week from Monday;
- * - longer (six months): a strip on its side, a row per weekday and a column per week.
+ * A week is one row in day order (Monday rows would strand a lone Sunday); up to
+ * `CALENDAR_MAX_WEEKS` a calendar; longer, a strip with a row per weekday.
  */
 export function gridShape(days: readonly { day: string }[]): GridShape {
   if (days.length <= 7) {

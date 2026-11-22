@@ -28,11 +28,7 @@ import { confirm } from '@shared/utils/confirm';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'SaveMeal'>;
 
-/**
- * Names the foods in one of today's meals and saves them as a reusable meal. Saved as making
- * several servings, it is a recipe: the whole pot's ingredients, logged later by the serving,
- * and today's log can swap the pot for the share that was eaten.
- */
+/** Several servings makes a recipe, and today's log can swap the pot for the share eaten. */
 export default function SaveMealScreen({ navigation, route }: Props) {
   const { meal } = route.params;
   const insets = useSafeAreaInsets();
@@ -65,9 +61,7 @@ export default function SaveMealScreen({ navigation, route }: Props) {
         ? `Updated “${result.meal.name}”`
         : `Saved “${result.meal.name}”`;
       const undo =
-        recipe && logShare
-          ? replaceWithShare(items, result.meal, eaten)
-          : null;
+        recipe && logShare ? replaceWithShare(items, result.meal, eaten) : null;
       const share = Math.min(eaten, servings);
       if (undo)
         toast.show(

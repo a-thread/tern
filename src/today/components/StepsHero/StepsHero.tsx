@@ -1,5 +1,5 @@
 import React from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, Text, View, type HostInstance } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 
 import { colors, font, radius, skyFor, space } from '@shared/theme';
@@ -19,15 +19,12 @@ import {
 } from '@/domain/movement/models/movementEntry';
 import { useRootNavigation } from '@/navigation/useAppNavigation';
 
-/**
- * The sky card: greeting, streak, the bird's flight toward the step goal, and the steps, for the
- * viewed day. A past day shows how far the bird got that day, and its date in place of the greeting.
- */
+/** A past day shows its date in place of the greeting. */
 export function StepsHero({
   heroRef,
   replayKey,
 }: {
-  heroRef: React.RefObject<View | null>;
+  heroRef: React.RefObject<HostInstance | null>;
   replayKey: number;
 }) {
   const navigation = useRootNavigation();

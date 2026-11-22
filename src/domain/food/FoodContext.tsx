@@ -1,6 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { createRequiredContext } from '@shared/state/createRequiredContext';
-import { useDayKey } from '@shared/hooks/useDayKey';
 import { useViewedDay } from '@shared/state/ViewedDayContext';
 import { useLoader } from '@shared/hooks/useLoader';
 import { usePersist } from '@shared/hooks/usePersist';
@@ -12,10 +11,7 @@ import type { FoodRepository } from './food.repository';
 import { WaypointSource } from '../waypoints/models/waypoint';
 
 type FoodContextValue = {
-  /**
-   * The viewed day's entries (today unless a past day is picked; see `useViewedDay`).
-   * Empty until that day has loaded: check `loadedDay`.
-   */
+  /** The viewed day's entries; empty until `loadedDay` matches it. */
   foodLog: FoodEntry[];
   /** The day `foodLog` was loaded for; differs from the viewed day while it loads. */
   loadedDay: string | null;
@@ -39,10 +35,7 @@ type FoodContextValue = {
   addFoodEntries: (entries: NewFoodEntry[]) => void;
   updateFoodEntry: (id: string, patch: Partial<NewFoodEntry>) => void;
   removeFoodEntry: (id: string) => void;
-  /**
-   * Swaps the entries with `ids` for `entries` as one update and one write (a cooked batch for
-   * the share eaten). Returns what was added, so the swap can be undone; empty when nothing changed.
-   */
+  /** One update and one write; returns what was added so it can be undone. */
   replaceFoodEntries: (ids: string[], entries: NewFoodEntry[]) => FoodEntry[];
   /** Core meals marked "nothing today" on the viewed day. Logging food to one un-marks it. */
   skippedMeals: FoodEntry['meal'][];
@@ -59,11 +52,7 @@ const [FoodContext, useFood] = createRequiredContext<FoodContextValue>(
 );
 export { useFood };
 
-/**
- * Edits apply to the screen immediately and are persisted in the
- * background; if a write fails, the log is reloaded from the repository so
- * the screen never keeps showing something that wasn't saved.
- */
+/** Optimistic edits; a failed write reloads the log so nothing unsaved stays on screen. */
 export function FoodProvider({
   repo: food,
   children,
@@ -73,7 +62,6 @@ export function FoodProvider({
 }) {
   const [foodLog, setFoodLog] = useState<FoodEntry[]>([]);
   const [skippedMeals, setSkippedMeals] = useState<FoodEntry['meal'][]>([]);
-  const today = useDayKey();
   const { day, editable } = useViewedDay();
   const [loadedDay, setLoadedDay] = useState<string | null>(null);
 
@@ -182,33 +170,38 @@ export function FoodProvider({
     [food, day, editable, persist],
   );
 
-  // The "logging all meals" bonus follows the log, like the water goal: earned once every core
-  // meal has an entry (or is marked "nothing today"), quietly taken back if a removal or edit
-  // drops coverage again. It waits for today's log, so an unloaded (empty) one is never mistaken
-  // for a dropped one, and sits out while a past day is loaded (nothing is paid or taken back then).
-  const loaded = ready && loadedDay === today;
-  useAward(WaypointSource.Meals, allMealsLogged(foodLog, skippedMeals), loaded);
+  // Meal awards follow the loaded day's log (today or yesterday). Waiting for the load keeps
+  // an empty, unloaded log from taking them back.
+  const loaded = ready && loadedDay === day && editable;
+  const award = { day };
+  useAward(
+    WaypointSource.Meals,
+    allMealsLogged(foodLog, skippedMeals),
+    loaded,
+    award,
+  );
 
-  // Each meal logged also earns a little on its own, so a partial day still counts for something.
-  // Only food logged: marking a meal "nothing today" completes the day above but isn't paid here.
+  // Per-meal awards need food; "nothing today" only counts toward all meals.
   useAward(
     WaypointSource.Breakfast,
     foodLog.some((f) => f.meal === Meal.Breakfast),
     loaded,
+    award,
   );
   useAward(
     WaypointSource.Lunch,
     foodLog.some((f) => f.meal === Meal.Lunch),
     loaded,
+    award,
   );
   useAward(
     WaypointSource.Dinner,
     foodLog.some((f) => f.meal === Meal.Dinner),
     loaded,
+    award,
   );
 
-  // A meal with food in it isn't skipped any more, however the food got there
-  // (added, moved from another meal, or a saved meal).
+  // A meal with food in it isn't skipped, however the food got there.
   useEffect(() => {
     for (const meal of skippedMeals) {
       if (foodLog.some((f) => f.meal === meal)) setMealSkipped(meal, false);

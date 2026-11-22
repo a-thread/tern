@@ -4,11 +4,7 @@ import { pointAt } from './routeAt';
 /** Where the tern is drawn, and how far to turn it (degrees clockwise). */
 export type TernPose = { x: number; y: number; rotate: number };
 
-/**
- * The tern at a fractional point index, for an icon drawn from above heading `iconHeading`
- * degrees (clockwise from east). Seen from above it reads the same whichever way it faces, so
- * turning it is all it needs.
- */
+/** `iconHeading` is clockwise from east; seen from above, rotating is all it needs. */
 export function ternPose(
   shape: MapShape,
   index: number,

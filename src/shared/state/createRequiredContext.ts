@@ -1,9 +1,6 @@
 import { createContext, useContext } from 'react';
 
-/**
- * A context that has no default: reading it outside its provider is a bug, so the hook
- * throws instead of returning null. Returns the context (for its `.Provider`) and the hook.
- */
+/** The hook throws outside its provider instead of returning null. */
 export function createRequiredContext<T>(
   hookName: string,
   providerName: string,

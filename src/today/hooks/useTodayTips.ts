@@ -1,5 +1,5 @@
 import { useRef } from 'react';
-import type { View } from 'react-native';
+import type { HostInstance } from 'react-native';
 
 import { useViewedDay } from '@shared/state/ViewedDayContext';
 import { useTips } from '@shared/hooks/useTips';
@@ -13,25 +13,19 @@ import { useTabAnchors } from '../../navigation/tabs/tabAnchors';
 /** Lets the week strip's rings fill before a tip points at them. */
 const SETTLE_MS = 900;
 
-/**
- * The one-time tips on Today: the week strip, the rest-day link, the waypoints chip, the
- * settings gear, then each tab along the bottom. They wait while `hold` is true (a celebration,
- * the water sheet) and while a past day is in view. The rest-day tip only applies while there's
- * a rest-day link (not once the goal is reached, or with none left), and the Food tab's only
- * while there is one; otherwise they're skipped and left out of the count.
- */
+/** Wait while `hold` or a past day is in view; tips without an anchor are skipped. */
 export function useTodayTips({
   rootRef,
   chipRef,
   hold,
 }: {
-  rootRef: React.RefObject<View | null>;
-  chipRef: React.RefObject<View | null>;
+  rootRef: React.RefObject<HostInstance | null>;
+  chipRef: React.RefObject<HostInstance | null>;
   hold: boolean;
 }) {
-  const stripRef = useRef<View>(null);
-  const restRef = useRef<View>(null);
-  const gearRef = useRef<View>(null);
+  const stripRef = useRef<HostInstance>(null);
+  const restRef = useRef<HostInstance>(null);
+  const gearRef = useRef<HostInstance>(null);
   const tabs = useTabAnchors();
   const { settings } = useSettings();
   const { isToday } = useViewedDay();

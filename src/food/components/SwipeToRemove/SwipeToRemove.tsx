@@ -15,12 +15,7 @@ const ACTION_WIDTH = 88;
 /** A drag has to be mostly sideways before it takes over from scrolling. */
 const SIDEWAYS = { MIN: 8, RATIO: 1.5 };
 
-/**
- * A list row that slides left to reveal a Remove button, so an item can be
- * removed without opening it. Tapping the row while the button is showing
- * slides it shut instead of opening the item. The button is hidden from screen
- * readers until it is showing; they remove an item from its edit screen.
- */
+/** A tap while open closes it. Screen readers remove from the edit screen instead. */
 export function SwipeToRemove({
   children,
   onRemove,
@@ -108,7 +103,7 @@ const s = StyleSheet.create({
   wrap: { overflow: 'hidden' },
   front: { backgroundColor: colors.card },
   action: {
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill,
     alignItems: 'flex-end',
     backgroundColor: colors.danger,
   },

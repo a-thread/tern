@@ -10,9 +10,6 @@ import { DayState } from '@shared/models/dayState';
 import { barDate, type DaySpan } from '../models/barDate';
 import { useDayNotes } from '@/domain/day-notes/DayNotesContext';
 
-/* ------------------------------------------------------------------ */
-/* Step bars                                                            */
-/* ------------------------------------------------------------------ */
 
 export type DayBar = {
   label: string;
@@ -24,12 +21,7 @@ export type DayBar = {
   week?: DaySpan;
 };
 
-/**
- * Tapping a bar names its date (and value, given `formatValue`) over the chart and fades the others;
- * tap it again to clear. The goal line is named in the legend, not on the chart, so its label
- * never covers a bar. Without a label under each bar (a month of thin bars), the first and last
- * dates are shown at the ends instead.
- */
+/** The goal line is named in the legend so its label never covers a bar. */
 export function StepBars({
   days,
   height = 76,

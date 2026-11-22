@@ -11,12 +11,7 @@ export class StepGoal {
   static readonly MAX = 15000;
 }
 
-/**
- * Records a change of step goal effective today. Past days keep the goal they
- * were judged against, so raising the goal never retroactively breaks a
- * streak (and lowering it never rewrites history either). Changes made on the
- * same day replace each other, so dragging a slider leaves one entry.
- */
+/** Effective today, so past days keep their goal; same-day changes replace each other. */
 export function recordGoalChange(
   history: GoalChange[],
   previousGoal: number,

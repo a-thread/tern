@@ -15,12 +15,7 @@ import type { RootStackParamList } from './types';
 
 type Nav = NavigationContainerRefWithCurrent<RootStackParamList>;
 
-/**
- * Opens the screen a notification target asks for. With nothing open over the tabs, it goes to
- * Today first, so closing the logging screen lands there. With a screen already open (half a
- * meal built in Log food, say), it opens on top and leaves that screen as it was, rather than
- * closing it and losing what was in it; a Today target then leaves it be.
- */
+/** Opens over any open screen rather than losing its work; otherwise via Today. */
 function open(nav: Nav, target: NotificationTarget) {
   const root = nav.getRootState();
   const onTabs = !root || root.routes[root.index]?.name === 'Tabs';
@@ -47,13 +42,7 @@ function open(nav: Nav, target: NotificationTarget) {
   }
 }
 
-/**
- * Tapping a notification opens what it asked for: the lunch reminder opens logging lunch, the
- * weigh-in reminder opens Log weight, and so on. Works whether the tap launched the app or
- * brought it back. Waits for `ready` (navigation mounted, setup wizard done) and for the
- * navigator itself, and only then clears the tap, so a remount (sign-in, a change of account)
- * neither opens it twice nor drops it.
- */
+/** Clears the tap only once handled, so a remount neither repeats nor drops it. */
 export function useNotificationNavigation(nav: Nav, ready: boolean) {
   const response = Notifications.useLastNotificationResponse();
   const { showToday } = useViewedDay();

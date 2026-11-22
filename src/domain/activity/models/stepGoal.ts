@@ -2,12 +2,8 @@ import type { DayRecord } from './dayRecord';
 import { StepGoal } from '../../settings/models/stepGoalHistory';
 
 /**
- * A gentle, optional suggestion for the step goal, from the last 30 days that
- * have steps. Only when the goal is clearly off: reached on nearly every day
- * (suggest a bit more) or on very few (suggest something more reachable).
- * A day made a goal day by movement says nothing about the step goal either way, so it's
- * left out rather than counted as a miss. Null when there's too little data or the goal
- * already fits.
+ * A step goal suggestion from the last 30 days with steps, only when it's clearly too easy or
+ * too hard. Days made goal days by movement are left out.
  */
 export function suggestGoal(
   days: DayRecord[],

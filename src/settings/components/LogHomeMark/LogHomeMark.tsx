@@ -7,12 +7,8 @@ import { IconBadge } from '@shared/components/ui';
 import { LogHome } from '../../models/logHome';
 
 /**
- * Where the data lives: a phone with a check while it's kept on this phone, a cloud with a
- * check once it's synced to Tern Plus. Warm driftwood against cool deep water, so the two
- * differ by colour as well as shape, on pale tints that keep the icons legible.
- *
- * `corner` is the ringed mark on the profile avatar, and says where to a screen reader.
- * `badge` is a row icon beside text that already says it, so it stays out of the way.
+ * Phone vs cloud differ by colour as well as shape. `corner` speaks to screen readers; `badge`
+ * sits beside text that already says it.
  */
 export function LogHomeMark({
   home,
@@ -34,7 +30,10 @@ export function LogHomeMark({
 
   if (variant === 'badge') {
     return (
-      <View importantForAccessibility='no-hide-descendants' accessibilityElementsHidden>
+      <View
+        importantForAccessibility='no-hide-descendants'
+        accessibilityElementsHidden
+      >
         <IconBadge bg={tint}>{glyph}</IconBadge>
       </View>
     );
@@ -44,7 +43,9 @@ export function LogHomeMark({
       style={[s.corner, { backgroundColor: tint }]}
       accessible
       accessibilityRole='image'
-      accessibilityLabel={synced ? 'Synced to your account' : 'Kept on this phone'}
+      accessibilityLabel={
+        synced ? 'Synced to your account' : 'Kept on this phone'
+      }
     >
       {glyph}
     </View>

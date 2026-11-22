@@ -29,10 +29,7 @@ export type AppSettings = {
   suggestStepAdjustments: boolean;
   calorieTarget: number;
   macroTargets: { protein: number; carbs: number; fat: number };
-  /**
-   * Logging food at all. Off, the Food tab and everything about meals (the meal row on Today,
-   * meal reminders, meal waypoints and check-ins) go away; past logs are kept.
-   */
+  /** Off hides the Food tab and everything about meals; past logs are kept. */
   trackFood: boolean;
   /** Calorie targets and calorie numbers. Independent of macros: either can be tracked alone. */
   trackCalories: boolean;
@@ -66,10 +63,7 @@ export type AppSettings = {
   waterGoalOz: number;
   /** Optional daily mood and stress check-in; off by default so it stays out of the way. */
   trackMood: boolean;
-  /**
-   * A free-text note per day, from Today. On by default, unlike the other optional
-   * tracking: it never reminds or asks, so it costs nothing until someone writes one.
-   */
+  /** On by default: it never reminds or asks, so it costs nothing until used. */
   trackNotes: boolean;
   /** Optional check-in after each meal (fullness and how you feel); off by default. */
   checkInAfterMeals: boolean;
@@ -83,11 +77,7 @@ export type AppSettings = {
   aim: Aim;
   /** The week (its Monday) a target suggestion was last offered, so it's offered at most weekly. */
   lastSuggestionWeek: string | null;
-  /**
-   * The waypoint total of the last milestone that was celebrated, so each one
-   * is marked once. Null until the first time Tern looks, when it's set to
-   * whatever has already been passed — an existing journey isn't re-celebrated.
-   */
+  /** Null until first checked, then set to what's already passed so it isn't re-celebrated. */
   celebratedMilestone: number | null;
   /** Whether Journey draws the migration on a flat map or a globe. */
   journeyView: JourneyView;
@@ -154,10 +144,7 @@ export const initialSettings: AppSettings = {
   onboarding: Onboarding.NEW,
 };
 
-/**
- * The defaults for someone using Tern on the phone with no account: movement in place of
- * weight and calories, with water and mood on. Defaults only: anything they change is kept.
- */
+/** No-account defaults: movement instead of weight and calories, with water and mood on. */
 export const phoneSettings: AppSettings = {
   ...initialSettings,
   trackMovement: true,

@@ -61,13 +61,7 @@ const VOLUME_ORDER: Record<Units, TypedChoice[]> = {
   [Units.Metric]: [VolumeUnit.Ml, VolumeUnit.FlOz],
 };
 
-/**
- * Chooses how much of a food: first the unit, from one unlabelled list (the food's own sizes,
- * then weights, and volumes for a drink), then how much of it. Counted sizes ("packet") use a
- * stepper in quarters whose number can also be typed; weights and volumes are typed. The
- * amount is named with its unit and what it weighs. Switching unit keeps the weight; a
- * quantity of zero means a typed weight or volume isn't usable yet.
- */
+/** Switching unit keeps the weight. Quantity 0 means a typed amount isn't usable yet. */
 export function MeasurePicker({
   measure,
   onChange,

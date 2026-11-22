@@ -6,14 +6,14 @@ import React, {
   useRef,
   useState,
 } from 'react';
-import { StyleSheet, View, type StyleProp, type ViewStyle } from 'react-native';
+import { StyleSheet, View, type StyleProp, type ViewStyle, type HostInstance } from 'react-native';
 
 import { WaterSplash } from './components/WaterSplash';
 
 type Splash = { id: number; x: number; y: number; big: boolean };
 type WaterSplashApi = {
   /** Splashes water around `from` (the button that logged the drink); `big` for the goal drink. */
-  splash: (from: View | null, big: boolean) => void;
+  splash: (from: HostInstance | null, big: boolean) => void;
 };
 
 // Optional on purpose: outside a layer a drink still buzzes, it just doesn't splash.
@@ -24,11 +24,7 @@ export function useWaterSplash() {
   return useContext(WaterSplashContext);
 }
 
-/**
- * A view whose children can splash water around a button. The splash is drawn on top of
- * everything inside it, so it isn't clipped by the card or list the button sits in. Put it
- * around a whole screen's content (or a sheet's, since a Modal draws above the screen).
- */
+/** Wrap a whole screen (or sheet) so splashes aren't clipped by the card or list. */
 export function WaterSplashLayer({
   style,
   children,
@@ -36,11 +32,11 @@ export function WaterSplashLayer({
   style?: StyleProp<ViewStyle>;
   children: React.ReactNode;
 }) {
-  const layerRef = useRef<View>(null);
+  const layerRef = useRef<HostInstance>(null);
   const nextId = useRef(0);
   const [splashes, setSplashes] = useState<Splash[]>([]);
 
-  const splash = useCallback((from: View | null, big: boolean) => {
+  const splash = useCallback((from: HostInstance | null, big: boolean) => {
     const layer = layerRef.current;
     if (!from || !layer) return;
     layer.measureInWindow((lx, ly) =>

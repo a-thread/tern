@@ -37,11 +37,7 @@ import { aboutSummary } from './about/models/aboutSummary';
 
 type Props = NativeStackScreenProps<SettingsStackParamList, 'SettingsRoot'>;
 
-/**
- * The settings index: one row per section, each with a line saying how it's set, so the
- * whole page fits on a screen. Each section's page is made of rows its feature supplies,
- * and each feature supplies its own summary line here.
- */
+/** One summary row per section, so the page fits on a screen. */
 export default function SettingsScreen({ navigation }: Props) {
   const insets = useSafeAreaInsets();
   const { available: dataAvailable, canImport } = useData();

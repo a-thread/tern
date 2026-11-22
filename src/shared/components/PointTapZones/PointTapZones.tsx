@@ -4,14 +4,8 @@ import { Pressable, StyleSheet, View } from 'react-native';
 import { ChartTip } from '../ChartTip/ChartTip';
 
 /**
- * Invisible tap targets laid over an SVG line chart whose points are spread evenly from its
- * left edge to its right (one point sits in the middle). Each zone reaches halfway to its
- * neighbours, so a tap picks the nearest point, and the picked point's label shows over the
- * chart. `labels` say what each point is, date first ("Aug 2 · 172.4 lb"); screen readers
- * read them too.
- *
- * `viewBoxWidth` is the chart's viewBox width: an SVG drawn 100% wide keeps its aspect ratio,
- * so on a wide card it is drawn no wider than that, centred, and the zones match it.
+ * Each zone reaches halfway to its neighbours, so a tap picks the nearest point. Zones follow
+ * `viewBoxWidth`, since a 100%-wide SVG keeps its aspect ratio and centres on a wide card.
  */
 export function PointTapZones({
   labels,
@@ -53,7 +47,7 @@ export function PointTapZones({
 }
 
 const s = StyleSheet.create({
-  overlay: { ...StyleSheet.absoluteFillObject, alignItems: 'center' },
+  overlay: { ...StyleSheet.absoluteFill, alignItems: 'center' },
   chart: { width: '100%', height: '100%' },
-  zones: { ...StyleSheet.absoluteFillObject, flexDirection: 'row' },
+  zones: { ...StyleSheet.absoluteFill, flexDirection: 'row' },
 });

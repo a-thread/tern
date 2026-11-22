@@ -6,10 +6,6 @@ import { useReduceMotion } from '@shared/hooks/useReduceMotion';
 
 const AnimatedCircle = Animated.createAnimatedComponent(Circle);
 
-/* ------------------------------------------------------------------ */
-/* Day rings (week strip)                                               */
-/* ------------------------------------------------------------------ */
-
 function DayRingBase({
   progress,
   label,

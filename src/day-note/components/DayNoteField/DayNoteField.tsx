@@ -4,10 +4,7 @@ import { StyleSheet, Text, TextInput, View } from 'react-native';
 import { colors, font, radius, space, typography } from '@shared/theme';
 import { DayNoteText } from '@/domain/day-notes/models/dayNote';
 
-/**
- * The day's note: free text, with how much room is left once the end is near, and why it
- * can't be saved (`error`) right under it.
- */
+/** Shows the remaining room near the limit, and `error` right under it. */
 export function DayNoteField({
   value,
   onChange,

@@ -35,10 +35,7 @@ function Badge({
   );
 }
 
-/**
- * The same tracking switches as Settings, and units. No name here: a name belongs to an
- * account, which asks for it when one is made (and Settings edits it once signed in).
- */
+/** No name here: that belongs to an account. */
 export default function TrackScreen() {
   const { settings, updateSettings } = useSettings();
 

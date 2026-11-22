@@ -21,7 +21,7 @@ describe('legalLinks', () => {
 
 describe('LegalLinks', () => {
   it('opens the privacy policy', () => {
-    const open = jest.spyOn(Linking, 'openURL').mockResolvedValue(true);
+    const open = jest.spyOn(Linking, 'openURL').mockResolvedValue(undefined);
     const ui = render(
       <ToastProvider>
         <LegalLinks />

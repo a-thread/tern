@@ -1,5 +1,5 @@
 import React from 'react';
-import type { View } from 'react-native';
+import type { HostInstance } from 'react-native';
 
 import { useViewedDay } from '@shared/state/ViewedDayContext';
 import { useActivity } from '@/domain/activity/ActivityContext';
@@ -15,15 +15,11 @@ import { useSettings } from '@/domain/settings/SettingsContext';
 import { remindersOn } from '@/domain/settings/models/reminderPlan';
 import { useRootNavigation } from '../../navigation/useAppNavigation';
 
-/**
- * The rest scene in place of the sky card, with its copy for the viewed day. Today it promises
- * the streak is safe and the reminders quiet; a past rest day just says the streak carried on.
- */
 export function RestDayHero({
   heroRef,
   rest,
 }: {
-  heroRef: React.RefObject<View | null>;
+  heroRef: React.RefObject<HostInstance | null>;
   rest: RestDay;
 }) {
   const { isToday } = useViewedDay();

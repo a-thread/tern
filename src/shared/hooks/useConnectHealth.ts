@@ -7,10 +7,7 @@ import { useSettings } from '@/domain/settings/SettingsContext';
 import { useToast } from '../state/ToastContext';
 import { healthAppName } from '../utils/healthApp';
 
-/**
- * Asks for access to steps (the health app's permission prompt), and to workouts when they
- * count as movement, and says how it went. Shared by Settings › Health data and the setup wizard.
- */
+/** Steps, plus workouts when they count as movement. */
 export function useConnectHealth() {
   const { settings } = useSettings();
   const movement = useMovement();

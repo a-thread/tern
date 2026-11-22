@@ -1,10 +1,7 @@
 import type { CommonFood } from './models/commonFoods';
 import { commonFoodsSeed } from './commonFoods.seed';
 
-/**
- * The shared common-foods list. It is the same for everyone and changes rarely,
- * so the app keeps a copy and only downloads it again when `version` changes.
- */
+/** Same for everyone; re-downloaded only when `version` changes. */
 export interface CommonFoodsRepository {
   /** An opaque version of the list; null when there is no list yet. */
   version(): Promise<string | null>;

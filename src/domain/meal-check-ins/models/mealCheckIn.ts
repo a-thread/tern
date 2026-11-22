@@ -1,9 +1,6 @@
 import type { Meal } from '../../food/models/foodEntry';
 
-/**
- * How a meal sat: fullness and how you feel afterward, each 1 to 5. One per meal per local
- * day (`day` is YYYY-MM-DD); checking in on the same meal again replaces it.
- */
+/** Fullness and feeling, 1 to 5. One per meal per day; a repeat replaces it. */
 export type MealCheckIn = {
   day: string;
   meal: Meal;

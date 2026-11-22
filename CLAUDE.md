@@ -83,6 +83,9 @@ src/
   Connect" in the UI with `healthAppName()`, never a literal.
 - Navigation: `useRootNavigation()` / `useSettingsNavigation()` / `useTrendsNavigation()`, not a hand-typed `useNavigation<…>()`.
 - One component, one responsibility; if it does two things, split it.
+- **Comments say why, briefly**: one or two lines for a non-obvious rule, a magic number or a
+  workaround. Don't restate the name or the code, walk through a function, or repeat product
+  reasoning that belongs in `docs/design.md`.
 
 ## Accessibility
 

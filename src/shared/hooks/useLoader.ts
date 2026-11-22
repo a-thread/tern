@@ -1,13 +1,8 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 
 /**
- * Loads a context's data when `load` changes (it should be a `useCallback`, so its deps
- * say when to read again) and hands the result to `onLoaded`.
- *
- * - `ready` is false until the first load has settled, success or not.
- * - `reload` reads again and resolves to what was read, or null if reading failed
- *   (the failure is logged with `failureNote`, never thrown).
- * - Nothing is applied after unmount.
+ * Reloads when `load` (a `useCallback`) changes. `ready` once the first load settles either
+ * way; `reload` resolves to null on failure (logged, never thrown).
  */
 export function useLoader<T>(
   load: () => Promise<T>,

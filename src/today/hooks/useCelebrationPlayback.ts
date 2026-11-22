@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import type { View } from 'react-native';
+import type { HostInstance } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useIsFocused } from '@react-navigation/native';
 
@@ -19,19 +19,14 @@ export type Playing = {
 /** Stands in for a view that couldn't be measured, so a celebration still plays. */
 const NOWHERE: Rect = { x: 0, y: 0, width: 0, height: 0 };
 
-/**
- * Plays the next queued waypoint award while Today is actually on screen — an award made in
- * the food-logging sheet waits until you are back. The feathers fly from the hero card to the
- * waypoint chip, so the three views are measured and handed back as refs. While `hold` is
- * true the next award waits (the tern is still flying in; the feathers follow its landing).
- */
+/** Plays only while Today is focused; `hold` waits for the tern to land. */
 export function useCelebrationPlayback(hold = false) {
   const insets = useSafeAreaInsets();
   const { celebrations } = useWaypoints();
   const isFocused = useIsFocused();
-  const rootRef = useRef<View>(null);
-  const heroRef = useRef<View>(null);
-  const chipRef = useRef<View>(null);
+  const rootRef = useRef<HostInstance>(null);
+  const heroRef = useRef<HostInstance>(null);
+  const chipRef = useRef<HostInstance>(null);
   const [playing, setPlaying] = useState<Playing | null>(null);
   const starting = useRef(false);
   const nextCelebration = celebrations[0];

@@ -7,10 +7,7 @@ import { useSettings } from '@/domain/settings/SettingsContext';
 import { CalorieTarget } from '@/domain/food/models/calorieTarget';
 import { rescaleMacros } from '@/domain/food/models/macroSplit';
 
-/**
- * The daily calorie target: the number, quick −20% / −10% / +10% / +20% chips and a slider. Macro grams
- * move with it so the split holds. Used by Settings › Targets and the setup wizard.
- */
+/** Macro grams move with it so the split holds. */
 export function CalorieTargetPicker() {
   const { settings, updateSettings } = useSettings();
 

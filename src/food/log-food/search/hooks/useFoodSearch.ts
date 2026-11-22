@@ -13,11 +13,7 @@ export class FoodSearch {
 }
 const CACHE_MAX = 60;
 
-/**
- * One source's search. `results` is what to show: the answer for `query`, or
- * while a newer search runs (or after it failed), the last answer, so the list
- * never empties between keystrokes. `query` says which search they belong to.
- */
+/** `results` keeps the last answer while a newer search runs, so the list never empties. */
 export type SearchState =
   | { status: 'idle' }
   | { status: 'loading'; results: SearchResult[]; query: string | null }
@@ -67,15 +63,7 @@ const lastResults = (
     ? { results: [], query: null }
     : { results: s.results, query: s.query };
 
-/**
- * Food search as you type: waits for a pause in typing, needs a couple of
- * characters, and cancels a request that a newer query replaces. Nothing is
- * requested while `enabled` is false or the query is too short. Call it once
- * per source; each keeps its own state, so one failing doesn't hide the other.
- *
- * While you type, the last results stay (status unchanged) and the source only
- * reports `loading` once the pause is over and a request is really running.
- */
+/** Debounced and cancellable; call once per source so one failing doesn't hide another. */
 export function useFoodSearch(
   query: string,
   enabled = true,

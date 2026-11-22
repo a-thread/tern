@@ -34,6 +34,14 @@ module.exports = [
     files: ['**/*.ts', '**/*.tsx'],
     rules: {
       '@typescript-eslint/no-unused-vars': ['warn', { argsIgnorePattern: '^_' }],
+      // TypeScript already checks namespace members; this rule can't follow `export *` in Expo's builds.
+      'import/namespace': 'off',
+      // React Compiler rules arrived with Expo SDK 58; off until the code is migrated to them.
+      'react-hooks/refs': 'off',
+      'react-hooks/set-state-in-effect': 'off',
+      'react-hooks/immutability': 'off',
+      'react-hooks/globals': 'off',
+      'react-hooks/use-memo': 'off',
     },
   },
 ];

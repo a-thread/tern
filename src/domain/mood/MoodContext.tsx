@@ -28,10 +28,7 @@ type MoodContextValue = {
   today: MoodEntry | undefined;
   /** The viewed day's check-in (today unless a past day is picked; see `useViewedDay`). */
   onDay: MoodEntry | undefined;
-  /**
-   * Saves the viewed day's check-in, replacing an earlier one. False if a score is off the
-   * scale or the day can't be edited (before yesterday).
-   */
+  /** False if a score is off the scale or the day can't be edited. */
   checkIn: (mood: number, stress: number) => boolean;
   /** Removes the viewed day's check-in. */
   clearDay: () => void;
@@ -68,9 +65,15 @@ export function MoodProvider({
   const onDay = entryFor(entries, day);
   const checkedIn = todays !== undefined;
 
-  // The waypoint follows the check-in, like the water goal: earned on checking in,
-  // quietly taken back if today's check-in is removed. Nothing happens while tracking is off.
+  // Today's and yesterday's check-ins each earn their own day's waypoint.
+  const yesterday = addDays(today, -1);
   useAward(WaypointSource.Mood, checkedIn, enabled && ready);
+  useAward(
+    WaypointSource.Mood,
+    entryFor(entries, yesterday) !== undefined,
+    enabled && ready,
+    { day: yesterday },
+  );
 
   const checkIn = useCallback(
     (mood: number, stress: number) => {

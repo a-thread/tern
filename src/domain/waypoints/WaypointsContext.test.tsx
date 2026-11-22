@@ -2,7 +2,12 @@ import React from 'react';
 import { renderHook, act, waitFor } from '@testing-library/react-native';
 import { FoodProvider, useFood } from '../food/FoodContext';
 import { createMemoryBackend, type Backend } from '../../BackendContext';
-import { dayKey } from '@shared/utils/date';
+import { addDays, dayKey } from '@shared/utils/date';
+import {
+  ViewedDayProvider,
+  useViewedDay,
+} from '@shared/state/ViewedDayContext';
+import { createMemoryFoodRepository } from '../food/food.repository';
 import { WaypointsProvider, useWaypoints } from './WaypointsContext';
 import { INITIAL_WAYPOINTS } from './waypoints.mock';
 import { Meal } from '../food/models/foodEntry';
@@ -196,5 +201,122 @@ describe('waypoints ledger', () => {
       'steps',
       'weight',
     ]);
+  });
+});
+
+describe('waypoints for yesterday', () => {
+  const today = dayKey();
+  const yesterday = addDays(today, -1);
+
+  it('awards and celebrates yesterday once, apart from today', async () => {
+    const { result, backend } = await setup();
+    const initial = result.current.waypoints;
+
+    await act(async () =>
+      result.current.addWaypoints(10, WaypointSource.Water, yesterday),
+    );
+    await act(async () =>
+      result.current.addWaypoints(10, WaypointSource.Water, yesterday),
+    );
+    await act(async () =>
+      result.current.addWaypoints(10, WaypointSource.Water),
+    );
+
+    expect(result.current.waypoints).toBe(initial + 20);
+    expect(result.current.celebrations.map((c) => [c.day, c.source])).toEqual([
+      [yesterday, WaypointSource.Water],
+      [today, WaypointSource.Water],
+    ]);
+    const water = (await backend.waypoints.history()).filter(
+      (e) => e.source === WaypointSource.Water,
+    );
+    expect(water.map((e) => e.day).sort()).toEqual([yesterday, today]);
+  });
+
+  it('takes back only the day asked', async () => {
+    const { result } = await setup();
+    const initial = result.current.waypoints;
+    await act(async () => {
+      result.current.addWaypoints(10, WaypointSource.Water, yesterday);
+      result.current.addWaypoints(10, WaypointSource.Water);
+    });
+
+    await act(async () =>
+      result.current.revokeWaypoints(10, WaypointSource.Water, yesterday),
+    );
+
+    expect(result.current.waypoints).toBe(initial + 10);
+    expect(result.current.celebrations.map((c) => c.day)).toEqual([today]);
+  });
+
+  it('ignores a day before yesterday', async () => {
+    const { result } = await setup();
+    const initial = result.current.waypoints;
+    await act(async () =>
+      result.current.addWaypoints(10, WaypointSource.Water, addDays(today, -2)),
+    );
+    expect(result.current.waypoints).toBe(initial);
+  });
+
+  it("remembers yesterday's awards from the ledger, so they aren't paid twice", async () => {
+    const backend = createMemoryBackend();
+    await backend.waypoints.load(today); // seeds the ledger
+    await backend.waypoints.award(WaypointSource.Mood, 10, yesterday);
+    const { result } = await setup(backend);
+    const initial = result.current.waypoints;
+
+    await act(async () =>
+      result.current.addWaypoints(10, WaypointSource.Mood, yesterday),
+    );
+    expect(result.current.waypoints).toBe(initial);
+  });
+
+  it('pays for a meal logged to yesterday, and takes it back when removed, like today', async () => {
+    const backend = createMemoryBackend();
+    backend.food = createMemoryFoodRepository([]);
+    const wrapper = ({ children }: { children: React.ReactNode }) => (
+      <WaypointsProvider repo={backend.waypoints}>
+        <ViewedDayProvider>
+          <FoodProvider repo={backend.food}>{children}</FoodProvider>
+        </ViewedDayProvider>
+      </WaypointsProvider>
+    );
+    const { result } = renderHook(
+      () => ({ ...useHarness(), viewed: useViewedDay() }),
+      { wrapper },
+    );
+    await waitFor(() => expect(result.current.ready).toBe(true));
+    await act(async () => result.current.viewed.setDay(yesterday));
+    await waitFor(() => expect(result.current.loadedDay).toBe(yesterday));
+    const initial = result.current.waypoints;
+
+    await act(async () =>
+      result.current.addFoodEntry({
+        name: 'Oats',
+        meal: Meal.Breakfast,
+        servings: 1,
+        servingLabel: '1 bowl',
+        calories: 150,
+        protein: 5,
+        carbs: 27,
+        fat: 3,
+        tier: 1,
+      }),
+    );
+
+    await waitFor(() => expect(result.current.waypoints).toBe(initial + 5));
+    expect(
+      result.current.events.filter(
+        (e) => e.day === yesterday && e.source === WaypointSource.Breakfast,
+      ),
+    ).toHaveLength(1);
+    expect(result.current.celebrations).toMatchObject([
+      { day: yesterday, source: WaypointSource.Breakfast, points: 5 },
+    ]);
+
+    const oats = result.current.foodLog.find((f) => f.name === 'Oats')!;
+    await act(async () => result.current.removeFoodEntry(oats.id));
+    await waitFor(() => expect(result.current.waypoints).toBe(initial));
+    expect(result.current.celebrations).toEqual([]);
   });
 });

@@ -4,10 +4,7 @@ export interface SettingsRepository {
   /** Saved settings, or null if the user has never saved any. */
   load(): Promise<Partial<AppSettings> | null>;
   save(settings: AppSettings): Promise<void>;
-  /**
-   * Whether anything has ever been logged (food, a weigh-in, a waypoint…). Settings are only
-   * saved once one changes, so this is what tells someone already using Tern from a new install.
-   */
+  /** Settings save only on change, so this tells an install in use from a new one. */
   hasLoggedAnything(): Promise<boolean>;
 }
 

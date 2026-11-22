@@ -17,11 +17,7 @@ import { WizardStep as Step } from '../models/wizardSteps';
 
 const AIMS = Object.values(Aim);
 
-/**
- * The daily calorie target, the same control as Settings › Targets, then whether to show it as
- * intake bars and whether Tern may learn a better target. No estimate from age or height: Tern
- * doesn't ask for those, and the adaptive target finds the real number from the log.
- */
+/** No estimate from age or height: the adaptive target learns the real number. */
 export default function CalorieTargetScreen() {
   const { settings, updateSettings } = useSettings();
   const adaptive = useAdaptiveTarget();

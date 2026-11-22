@@ -1,11 +1,7 @@
 import { useCallback } from 'react';
 import { useFocusEffect } from '@react-navigation/native';
 
-/**
- * Reads history each time the screen comes into focus (and whenever `deps` change), handing the
- * result to `apply` unless the screen has moved on. `deps` are the values `load` and `apply` use,
- * plus any trigger that should read again (a count that changes after logging, a refresh key).
- */
+/** On focus and on `deps` change; a stale read is dropped. Include any re-read trigger in `deps`. */
 export function useFocusLoad<T>(
   load: () => Promise<T>,
   apply: (loaded: T) => void,

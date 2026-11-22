@@ -9,11 +9,7 @@ export type DayStateStyle = {
 
 /** How each kind of day looks, and what it is called, in Trends. */
 export class DayStateLook {
-  /**
-   * How each kind of day is drawn in Trends: a step bar, a square in the consistency grid and the
-   * legend's swatch all use this, so one key reads the same everywhere. Partial is an outline,
-   * never the pale fill, which is a frozen day's.
-   */
+  /** Shared by bars, grid and legend. Partial is an outline; the pale fill is frozen's. */
   static readonly STYLE: Readonly<Record<DayState, DayStateStyle>> = {
     [DayState.Goal]: { backgroundColor: colors.glacier },
     [DayState.Partial]: {

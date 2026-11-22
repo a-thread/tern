@@ -4,11 +4,7 @@ import { LocalSchema } from './localSchema';
 
 let opening: Promise<LocalDb> | null = null;
 
-/**
- * The on-device database, migrated and ready. One file, so Android Auto Backup can carry it
- * to a new phone. Opened once per launch: signing in and out reuses it. A failed open is
- * forgotten, so the next call tries again.
- */
+/** One file so Auto Backup carries it. Opened once per launch; a failed open is retried next call. */
 export function openLocalDb(): Promise<LocalDb> {
   opening ??= open().catch((error) => {
     opening = null;

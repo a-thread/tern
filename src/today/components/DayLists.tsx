@@ -8,10 +8,7 @@ import { DayNoteCard } from './DayNoteCard/DayNoteCard';
 import { TargetSuggestionCard } from './TargetSuggestionCard';
 import { GettingStarted } from './GettingStarted/GettingStarted';
 
-/**
- * The usual lists for the viewed day: what is left, what is done, the food, and (today, when
- * not resting) a suggested target. `resting` is a rest day whose lists were revealed anyway.
- */
+/** `resting` is a rest day whose lists were revealed anyway. */
 export function DayLists({ resting }: { resting: boolean }) {
   const { isToday } = useViewedDay();
 

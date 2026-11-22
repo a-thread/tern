@@ -1,10 +1,6 @@
 import type { CommonFood } from './models/commonFoods';
 
-/**
- * A small starter set of common foods (per 100 g, rounded USDA figures), for
- * local mode and tests. The full list (~3,000 foods) is built by
- * scripts/buildCommonFoods.ts and synced from the backend.
- */
+/** Starter set for local mode and tests; the full list comes from scripts/buildCommonFoods.ts. */
 export const commonFoodsSeed: CommonFood[] = [
   {
     id: 'egg',

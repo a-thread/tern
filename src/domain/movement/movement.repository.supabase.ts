@@ -1,5 +1,5 @@
 import type { TernClient } from '@shared/backend/supabase';
-import { ok, rows } from '@shared/backend/query';
+import { allRows, ok, rows } from '@shared/backend/query';
 import {
   Activity,
   Effort,
@@ -40,14 +40,15 @@ export function createSupabaseMovementRepository(
   return {
     async load(from, to) {
       return (
-        await rows<MovementRow>(
+        await allRows<MovementRow>((start, end) =>
           db
             .from('movement_entries')
             .select('id, day, activity, minutes, effort, distance_m, logged_at')
             .gte('day', from)
             .lte('day', to)
             .order('logged_at', { ascending: true })
-            .limit(5000),
+            .order('id')
+            .range(start, end),
         )
       ).map(rowToMovement);
     },

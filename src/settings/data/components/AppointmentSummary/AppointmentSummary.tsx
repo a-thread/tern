@@ -12,11 +12,7 @@ import {
   SummarySpan,
 } from '../../models/appointmentSummary';
 
-/**
- * A summary to bring to a dietitian, therapist or doctor: made on the phone from the log,
- * following the person's own display choices, and sent wherever they choose through the
- * share sheet. Free, like every safeguard: nobody pays to show their care team their log.
- */
+/** Free, like every safeguard: nobody pays to show their care team their log. */
 export function AppointmentSummary() {
   const data = useData();
   const { settings } = useSettings();
@@ -58,7 +54,10 @@ export function AppointmentSummary() {
       action: 'Last 4 weeks',
       destructive: false,
       cancel: 'Not now',
-      also: { text: 'Last 2 weeks', onPress: () => share(SummarySpan.TwoWeeks) },
+      also: {
+        text: 'Last 2 weeks',
+        onPress: () => share(SummarySpan.TwoWeeks),
+      },
       onConfirm: () => share(SummarySpan.FourWeeks),
     });
   };

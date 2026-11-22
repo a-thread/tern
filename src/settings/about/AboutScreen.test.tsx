@@ -93,7 +93,7 @@ describe('AboutScreen', () => {
   });
 
   it('has a letter from Aiden, with the source code and a way to write', async () => {
-    const openURL = jest.spyOn(Linking, 'openURL').mockResolvedValue(true);
+    const openURL = jest.spyOn(Linking, 'openURL').mockResolvedValue(undefined);
     open(PLUS);
     expect(await screen.findByText('A letter from Aiden')).toBeTruthy();
     fireEvent.press(

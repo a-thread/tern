@@ -14,11 +14,7 @@ import { TierGroups } from '@/domain/food/models/tierGroups';
 import { TierDot } from '../TierDot';
 import { FoodTypeInfos } from './models/foodTypeInfo';
 
-/**
- * The three food types (Whole, Processed, Ultra-processed) explained with familiar examples, as
- * a sheet that slides up from the bottom. Opened from the intake bars and from the food-type picker; `footnote` says
- * what the scale means on the screen that opened it.
- */
+/** `footnote` says what the scale means on the screen that opened it. */
 export function NovaInfoSheet({
   visible,
   onClose,

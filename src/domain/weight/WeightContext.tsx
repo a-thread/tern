@@ -4,7 +4,7 @@ import { createRequiredContext } from '@shared/state/createRequiredContext';
 import { useSyncedList } from '@shared/hooks/useSyncedList';
 import { useLoader } from '@shared/hooks/useLoader';
 import { usePersist } from '@shared/hooks/usePersist';
-import { dayKey } from '@shared/utils/date';
+import { addDays, dayKey } from '@shared/utils/date';
 import { newId } from '@shared/utils/id';
 import { computeTrend } from './models/weightTrend';
 import { isLoggedToday, type WeightEntry } from './models/weightEntry';
@@ -86,18 +86,22 @@ export function WeightProvider({
     [weight, persistSkipped],
   );
 
-  // A weigh-in earns its waypoint for being logged, whatever it says. Taken back if today's is
-  // removed; nothing happens while weight tracking is off.
+  // A weigh-in today or yesterday earns that day's waypoint, whatever it says.
   const { settings } = useSettings();
   const today = useDayKey();
-  const weighedToday = useMemo(
-    () =>
+  const yesterday = addDays(today, -1);
+  const weighedOn = useCallback(
+    (day: string) =>
       weightEntries.some((e) =>
-        isLoggedToday(e.loggedAt, new Date(`${today}T12:00:00`)),
+        isLoggedToday(e.loggedAt, new Date(`${day}T12:00:00`)),
       ),
-    [weightEntries, today],
+    [weightEntries],
   );
-  useAward(WaypointSource.Weight, weighedToday, settings.trackWeight && ready);
+  const tracking = settings.trackWeight && ready;
+  useAward(WaypointSource.Weight, weighedOn(today), tracking);
+  useAward(WaypointSource.Weight, weighedOn(yesterday), tracking, {
+    day: yesterday,
+  });
 
   const addWeightEntry = useCallback(
     (lb: number, loggedAt: string = new Date().toISOString()) => {

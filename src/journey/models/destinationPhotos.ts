@@ -9,11 +9,7 @@ export type DestinationPhoto = {
   url: string;
 };
 
-/**
- * A photo for each stop, by `Milestones.STOPS` id: terns there where Wikimedia Commons has one,
- * else the kind of tern the stop's facts mention, else the place. All are free to reuse with
- * credit, which the card shows.
- */
+/** Wikimedia Commons, free to reuse with credit (the card shows it). */
 export class DestinationPhotos {
   static readonly BY_STOP: Readonly<Record<string, DestinationPhoto>> = {
     iceland: {

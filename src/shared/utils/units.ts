@@ -40,10 +40,7 @@ export const roundOz = (oz: number) => Math.round(oz * 100) / 100;
 export const volumeUnitLabel = (units: Units) =>
   units === Units.Imperial ? 'oz' : 'ml';
 
-/**
- * Stored ounces as a whole number in the user's unit. Millilitres are rounded to
- * the nearest 10, so a drink entered as 250 ml (stored as 8.45 oz) reads 250 ml again.
- */
+/** ml round to 10, so 250 ml (stored 8.45 oz) reads 250 again. */
 export const toDisplayVolume = (oz: number, units: Units): number =>
   units === Units.Imperial ? Math.round(oz) : Math.round(ozToMl(oz) / 10) * 10;
 
@@ -62,10 +59,7 @@ export const quickWaterOz = (units: Units): number[] =>
     ? [8, 12, 16]
     : [250, 350, 500].map((ml) => fromDisplayVolume(ml, Units.Metric));
 
-/**
- * The daily goal one step up or down (`direction` 1 or -1): 8 oz at a time, or 250 ml
- * at a time from the nearest 250 ml, so a metric goal lands on tidy numbers.
- */
+/** 8 oz, or 250 ml from the nearest 250 so metric goals stay tidy. */
 export function stepWaterGoal(
   oz: number,
   direction: 1 | -1,

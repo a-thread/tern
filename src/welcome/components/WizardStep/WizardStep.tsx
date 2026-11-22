@@ -9,12 +9,7 @@ import { WizardStep as Step } from '../../models/wizardSteps';
 
 type Action = { label: string; onPress: () => void };
 
-/**
- * The frame every wizard screen shares: a back arrow (after the first screen), progress dots
- * and a skip link at the top, a title and
- * body, the screen's own controls, then the main button and an optional quieter link under it.
- * `skip` defaults to "Skip", which keeps this screen's defaults and moves on; pass null for none.
- */
+/** `skip` defaults to "Skip" (keeps the defaults and moves on); null for none. */
 export function WizardStep({
   step,
   title,

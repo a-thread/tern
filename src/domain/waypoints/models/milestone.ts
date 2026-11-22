@@ -29,7 +29,9 @@ const toMilestones = (stops: RouteStop[]): RouteMilestone[] =>
 const BY_ROUTE = new Map<RouteId, RouteMilestone[]>();
 
 /** A route's stops, each at the running total within one trip that covers its distance. */
-export function routeMilestones(route: RouteId = RouteId.Greenland): RouteMilestone[] {
+export function routeMilestones(
+  route: RouteId = RouteId.Greenland,
+): RouteMilestone[] {
   let stops = BY_ROUTE.get(route);
   if (!stops) {
     stops = toMilestones(Routes.of(route).stops);
@@ -89,12 +91,7 @@ export function migrationProgress(
   return { lap, progress: (t % length) / length };
 }
 
-/**
- * Milestones up to and including the next one to reach, with the day each was
- * reached, found by replaying the ledger in date order. The stops repeat for
- * every migration. A stop counts as reached when `total` has passed it, even
- * if the events that got there are no longer on record (`reachedOn` is then unset).
- */
+/** Through the next one, dated by replaying the ledger; `reachedOn` is unset when events are missing. */
 export function milestonesFor(
   total: number,
   events: LedgerEvent[],

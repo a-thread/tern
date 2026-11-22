@@ -1,11 +1,5 @@
 import { useLayoutEffect, useMemo, useRef, useState } from 'react';
-import {
-  Animated,
-  Easing,
-  type GestureResponderEvent,
-  PanResponder,
-  type View,
-} from 'react-native';
+import { Animated, Easing, type GestureResponderEvent, PanResponder, type HostInstance } from 'react-native';
 
 import {
   clampZoom,
@@ -24,18 +18,9 @@ const ZOOM_MS = 360;
 type Touch = { pageX: number; pageY: number };
 
 /**
- * The map's zoom. It opens on `home` (the close-up on the current leg, turned to fly left to
- * right) and toggles between that and the whole route. Pinch to zoom anywhere in between, and
- * drag to look around once zoomed; at normal size a single finger is left alone, so taps still
- * name stops.
- *
- * The map draws itself at `zoom`, so it stays sharp at any zoom. Redrawing it is too slow to
- * follow a finger, though, so while a pinch, drag or glide is under way the drawing is moved as
- * a picture (`moveStyle`), and redrawn at the new zoom once it stops.
- *
- * A new `home` (the next leg) or `resetKey` (switching between the map and the globe) keeps to
- * whichever of the two was showing: the whole route stays the whole route, and anything else
- * becomes the new close-up, since a pinched zoom on one projection has no match on the other.
+ * Redrawing is too slow to follow a finger, so gestures move the drawing as a picture
+ * (`moveStyle`) and redraw at `zoom` when they stop. A new `home` or `resetKey` keeps the whole
+ * route or becomes the new close-up, since a pinched zoom doesn't map across projections.
  */
 export function useMapZoom({
   width,
@@ -66,14 +51,11 @@ export function useMapZoom({
   const live = useRef<MapZoom>(NO_ZOOM);
   /** The glide under way, if any, so a new view can cut it short. */
   const glide = useRef<Animated.CompositeAnimation | null>(null);
-  /**
-   * Whether the whole route was chosen, so it stays chosen across a new view or leg. Set only by
-   * what the person does: before then the map opens on the close-up.
-   */
+  /** Set only by the person, so it survives a new view or leg. */
   const chosenWhole = useRef(false);
   /** The frame's top-left corner on screen, to turn touches into frame points. */
   const origin = useRef<FramePoint>({ x: 0, y: 0 });
-  const frameRef = useRef<View>(null);
+  const frameRef = useRef<HostInstance>(null);
   const start = useRef<{
     zoom: MapZoom;
     from: FramePoint;
@@ -138,10 +120,7 @@ export function useMapZoom({
     });
   };
 
-  /**
-   * Stops a glide part-way and returns the zoom the map shows as right then, so a pinch or drag
-   * picks up from what's on screen rather than from where the glide was going.
-   */
+  /** So a gesture picks up from what's on screen, not where the glide was headed. */
   const catchGlide = (): MapZoom => {
     if (!glide.current) return live.current;
     glide.current.stop();
@@ -155,9 +134,7 @@ export function useMapZoom({
     return live.current;
   };
 
-  // A new view or leg takes its zoom in the same render, not in an effect afterwards: otherwise
-  // the new map is painted once at the old zoom, and flashes. Compared by value, since the
-  // close-up is worked out afresh each render.
+  // In render, not an effect, or the new map flashes at the old zoom. Compared by value.
   const homeKey = `${home.scale},${home.x},${home.y},${home.rotate}`;
   const [seen, setSeen] = useState<{ homeKey: string; resetKey: unknown }>();
   // Not under the fingers, though: a new close-up mid-pinch waits until they lift.
@@ -272,15 +249,9 @@ export function useMapZoom({
     zoom,
     /** Where a tap landed in the frame. */
     tapPoint: (e: GestureResponderEvent) => framePoint(e.nativeEvent),
-    /**
-     * Whether the map is mid-glide or under the fingers, when what's on screen isn't yet drawn
-     * at `zoom`, so a tap can't be placed on it.
-     */
+    /** While true, the screen isn't drawn at `zoom`, so taps can't be placed. */
     moving: () => glide.current !== null || start.current !== null,
-    /**
-     * Zooms by `factor` about a point in the frame, from wherever the map is headed, gliding
-     * there. Zoomed all the way out it's the whole route, north up.
-     */
+    /** From wherever the map is headed; fully out is the whole route, north up. */
     zoomBy: (factor: number, about: FramePoint) => {
       const to = live.current.scale * factor;
       choose(

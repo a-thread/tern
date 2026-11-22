@@ -41,14 +41,7 @@ function Sparkle() {
   );
 }
 
-/**
- * Feathers and sparkles burst out of `origin`, then curve up into `target`
- * (the waypoints chip). Coordinates are relative to this component's
- * container, which should fill the screen. `onArrive` fires as the first
- * wave lands — that's when the caller should let the displayed total tick
- * up — and `onDone` once everything has faded out. Without `points` there is no
- * "+10" label: just the feathers (a milestone's card uses them this way).
- */
+/** Coordinates are relative to a full-screen container. Tick the total up on `onArrive`. */
 export default function WaypointBurst({
   id,
   points,
@@ -102,9 +95,7 @@ export default function WaypointBurst({
       easing: Easing.linear,
       useNativeDriver: false,
     }).start(({ finished }) => {
-      // Unmounting in the same frame the native animation finishes makes the
-      // native side detach nodes it has already dropped ("Animated node with
-      // tag [n] does not exist"), so let the last frame land first.
+      // Unmounting the same frame throws "Animated node … does not exist"; let it land first.
       if (finished) done = setTimeout(onDone, 120);
     });
     return () => {

@@ -22,13 +22,7 @@ type DueMedication = { id: string; name: string; at: number };
 const startOfDay = (d: Date) =>
   new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime();
 
-/**
- * Whether Today should ask for a weigh-in. Never once one is logged today.
- * Daily: every day. Weekly: on the chosen weekday (1 = Sunday … 7 =
- * Saturday), or once a week or more has passed since the last one. With no
- * weigh-in on record, weekly asks only on the chosen weekday, so someone who
- * hasn't started weighing in isn't asked every day.
- */
+/** Weekly: the chosen weekday (1 = Sunday), or a week since the last; with none yet, only the weekday. */
 export function weighInDue(
   lastWeight: WeightEntry | undefined,
   now: Date,
@@ -44,12 +38,7 @@ export function weighInDue(
   return daysSince >= 7;
 }
 
-/**
- * What's still open on Today. A meal row until every core meal is logged or
- * marked as skipped (the first meal still open, by name), a weight row when a weigh-in is due (see `weighInDue`; daily
- * unless told otherwise, never when weight isn't tracked), and a row for each
- * medication not yet taken. Empty means done.
- */
+/** Empty means done. */
 export function leftToDo(
   foodLog: FoodEntry[],
   lastWeight: WeightEntry | undefined,
@@ -79,10 +68,8 @@ export function leftToDo(
   if (options.meals === false) {
     // Food isn't tracked: nothing to log.
   } else if (missing.length > 0) {
-    // Always the first meal still open, by name, so the row says where it goes. (Going by the
-    // clock opened lunch for someone who hadn't logged breakfast yet.)
-    // A meal marked "nothing today" counts towards the total, but until one is actually
-    // logged the row says so, rather than "1 of 3 meals logged" with nothing logged.
+    // The first open meal by name, not by clock (which opened lunch before breakfast was logged).
+    // Skipped meals count, but the row doesn't say "1 of 3 logged" while nothing is.
     const covered = Meals.CORE.length - missing.length;
     const anyLogged = Meals.CORE.some((m) => foodLog.some((f) => f.meal === m));
     items.push({

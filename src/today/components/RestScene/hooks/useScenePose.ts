@@ -9,20 +9,13 @@ import {
   type ScenePose,
 } from '@/today/models/restScene';
 
-/**
- * Milliseconds between redraws: smooth in flight, slow while resting, when only the water, sun
- * and breathing drift and every redraw re-renders the whole scene.
- */
+/** Slow while resting, since every redraw re-renders the whole scene. */
 class Redraw {
   static readonly FLIGHT_MS = 33;
   static readonly REST_MS = 100;
 }
 
-/**
- * Where everything in the rest scene is, right now. The tern flies in when `entrance` is set
- * (with motion on), then rests; it takes off when `leaving` is set, and `onLeft` is called once
- * it has gone. `onTouchdown` is called as its feet touch the log (or at once if it never flew).
- */
+/** `onTouchdown` fires as the feet land (at once if it never flew); `onLeft` once it's gone. */
 export function useScenePose({
   entrance,
   leaving,
@@ -84,19 +77,13 @@ export function useScenePose({
   return poseAt(motion, sinceMs, clockMs);
 }
 
-/**
- * The scene's two clocks: `sinceMs`, the time since the current motion began, and `clockMs`, a
- * running clock for the idle motion (0 with reduce motion on). They tick only while the screen
- * is showing and motion is allowed.
- */
+/** `sinceMs` since the motion began, `clockMs` for idle motion; tick only on screen with motion on. */
 function useSceneClock(motion: SceneMotion, reduceMotion: boolean) {
   const isFocused = useIsFocused();
   const [now, setNow] = useState(() => Date.now());
   const startRef = useRef(now);
 
-  // Each new motion counts its time from the moment it begins. Noticed while rendering (React's
-  // way of adjusting state to a change in what it reads), with the clock brought up to the same
-  // instant so a motion never starts at a negative time.
+  // Reset during render, syncing the clock so a motion never starts at a negative time.
   const [motionState, setMotionState] = useState({ motion, startedAt: now });
   if (motionState.motion !== motion) {
     const t = Date.now();

@@ -28,10 +28,7 @@ type StorePackage = {
   product: { priceString: string; price: number; currencyCode: string };
 };
 
-/**
- * The little of `react-native-purchases` Tern uses. Small on purpose, so the adapter tests
- * without the native module, like `HealthKitApi`.
- */
+/** Small on purpose so the adapter tests without the native module. */
 export interface PurchasesApi {
   configure(options: { apiKey: string }): void;
   getCustomerInfo(): Promise<CustomerInfo>;
@@ -76,10 +73,7 @@ export function statusFrom(info: CustomerInfo): SubscriptionStatus {
   };
 }
 
-/**
- * Supporter is a custom package, billed yearly. The founding price applies to Plus only,
- * and only while the offering says it's on sale.
- */
+/** Supporter is a custom yearly package; founding pricing is Plus-only. */
 const optionFrom = (pkg: StorePackage, founding: boolean): PlanOption => {
   const supporter = pkg.identifier === SubscriptionConfig.SUPPORTER_PACKAGE;
   const plan = supporter ? Plan.Annual : (PLANS[pkg.packageType] ?? Plan.Other);
@@ -176,10 +170,7 @@ export function createRevenueCatSubscriptionRepository(
   };
 }
 
-/**
- * The store's Tern Plus, or null without a RevenueCat key for this platform (then the
- * memory version stands in). Needs a dev build: Expo Go can't load the native module.
- */
+/** Null without a RevenueCat key for this platform. Needs a dev build. */
 export function createStoreSubscriptionRepository(): SubscriptionRepository | null {
   // Written out in full so Expo can inline them.
   const apiKey =

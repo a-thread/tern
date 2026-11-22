@@ -15,10 +15,7 @@ const SOURCE_TAG: Record<FoodSource, string> = {
   [FoodSource.Off]: 'Packaged',
 };
 
-/**
- * The line under a food's name: where it's from, and its detail or brand. No amount: the
- * serving is chosen on the details screen, so the list doesn't promise one it may not open on.
- */
+/** No amount: the list shouldn't promise a serving the details screen may not open on. */
 export function resultSubline(
   r: SearchResult,
   from: FoodSource | undefined,

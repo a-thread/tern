@@ -36,8 +36,7 @@ const KEYS: Record<(typeof TABLES)[keyof typeof TABLES], string[]> = {
   day_notes: ['day'],
 };
 
-// The server caps how many rows one request returns (1000 by default), so a table is read
-// a page at a time until a page comes back empty, whatever that cap is set to.
+// The server caps rows per request, so read pages until one comes back empty.
 const PAGE = 1000;
 
 export function createSupabaseDataRepository(db: TernClient): DataRepository {
@@ -118,14 +117,12 @@ export function createSupabaseDataRepository(db: TernClient): DataRepository {
     },
 
     async deleteAccount() {
-      // Server-side function (supabase/migrations/20260922000000_delete_account.sql):
-      // removing the login cascades to every row of the account.
+      // Cascades to every row (migrations/20260922000000_delete_account.sql).
       await ok(db.rpc('delete_my_account'));
     },
 
     async importAll(copy) {
-      // Server-side function (supabase/migrations/20261022000000_import_my_data.sql): it
-      // adds past days too, which the tables only accept from it.
+      // The only way past days get in (migrations/20261022000000_import_my_data.sql).
       const { data, error } = await db.rpc('import_my_data', { copy });
       if (error) throw error;
       return Number(data ?? 0);

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Pressable, StyleSheet, Text, View, ViewStyle } from 'react-native';
+import { Pressable, StyleSheet, Text, View, ViewStyle, type HostInstance } from 'react-native';
 
 import { colors, space, typography } from '../../theme';
 import { Icon } from '../ui';
@@ -24,11 +24,7 @@ const INK = {
   },
 };
 
-/**
- * The top of every tab: a small line above (a date, a month), the big title, and on the right
- * anything the tab adds (the waypoints chip, "Back to today") followed by the settings gear,
- * so Settings is one tap from every tab.
- */
+/** Always ends with the settings gear, so Settings is one tap from every tab. */
 export function TabHeader({
   eyebrow,
   title,
@@ -46,7 +42,7 @@ export function TabHeader({
   /** Layout overrides, e.g. Journey drops the padding its hero already has. */
   style?: ViewStyle;
   /** The settings gear, for a tip to point at. */
-  gearRef?: React.RefObject<View | null>;
+  gearRef?: React.RefObject<HostInstance | null>;
 }) {
   const navigation = useRootNavigation();
   const ink = INK[tone];

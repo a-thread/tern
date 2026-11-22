@@ -1,10 +1,7 @@
 import type { AppSettings } from '../../domain/settings/models/appSettings';
 import { remindersOn } from '../../domain/settings/models/reminderPlan';
 
-/**
- * How many kinds of reminder will actually fire (see `remindersOn`), medication counted
- * once however many medications remind.
- */
+/** Medication counts once, however many remind. */
 export function activeReminderCount(s: AppSettings): number {
   return Object.values(
     remindersOn(s.reminders, { ...s, readSteps: s.healthData.readSteps }),
@@ -17,10 +14,7 @@ export function remindersSummary(s: AppSettings): string {
   return n ? `${n} on` : 'Off';
 }
 
-/**
- * The Settings index line for health data: what Tern reads from the health app. Workouts are
- * only read as movement, so they're left out while movement isn't tracked.
- */
+/** Workouts are left out while movement isn't tracked. */
 export function healthDataSummary(s: AppSettings): string {
   const { readSteps } = s.healthData;
   const readWorkouts = s.healthData.readWorkouts && s.trackMovement;

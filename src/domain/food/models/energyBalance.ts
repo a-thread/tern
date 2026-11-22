@@ -3,11 +3,7 @@ import { allMealsLogged } from './meals';
 import type { FoodEntry } from './foodEntry';
 import { Aim } from '../../settings/models/aim';
 
-/**
- * The adaptive target: what someone really burns, worked out from what they
- * log and how their weight trends, never from per-workout estimates. See
- * docs/adaptive-target.md.
- */
+/** See docs/adaptive-target.md. */
 export class AdaptiveTarget {
   /** Days the estimate looks back over (yesterday and before; today is still being logged). */
   static readonly WINDOW_DAYS = 21;
@@ -40,11 +36,8 @@ type Weigh = { lb: number; loggedAt: string };
 type Logged = Pick<FoodEntry, 'meal' | 'calories' | 'servings'>;
 
 /**
- * A smoothed weight for every day from `from` to `to`: weigh-ins averaged per
- * day, days between them filled in on a straight line, then an exponential
- * average over about `TREND_DAYS` days. Unlike the chart's trend (which moves
- * per weigh-in), this one moves per day, so a change over the window is a
- * change over that many days. Days before the first weigh-in are left out.
+ * Interpolated, then smoothed over `TREND_DAYS`. Unlike the chart's per-weigh-in trend this
+ * moves per day, so a change over the window is a change over that many days.
  */
 export function dailyTrend(
   weighs: readonly Weigh[],
@@ -97,11 +90,7 @@ const daysBetween = (a: string, b: string) =>
     (Date.parse(`${b}T12:00:00Z`) - Date.parse(`${a}T12:00:00Z`)) / 86_400_000,
   );
 
-/**
- * Days logged fully enough to trust: food in at least two meals, or every core
- * meal accounted for (logged or marked "nothing today"). Empty days are left
- * out, never counted as eating nothing.
- */
+/** Food in two meals, or every core meal accounted for. Empty days are never read as zero. */
 export function completeDays(
   byDay: Record<string, readonly Logged[]>,
   skippedByDay: Record<string, readonly FoodEntry['meal'][]> = {},
@@ -140,12 +129,7 @@ export type BurnEstimate =
       neededWeighIns: number;
     };
 
-/**
- * What someone burns a day, from the last `WINDOW_DAYS` days (ending
- * yesterday): their average logged intake, less the energy their trend weight
- * gained (or plus what it lost). Still "learning" until there are enough fully
- * logged days and weigh-ins spread across the window.
- */
+/** Average intake minus the energy the trend weight gained; "learning" until there's enough data. */
 export function estimateBurn(input: {
   foodByDay: Record<string, readonly Logged[]>;
   skippedByDay?: Record<string, readonly FoodEntry['meal'][]>;
@@ -212,11 +196,7 @@ export function estimateBurn(input: {
   };
 }
 
-/**
- * A target for the aim: the burn plus the aim's offset, never a faster loss
- * than `MAX_LOSS_SHARE` of body weight a week, never below `FLOOR`, and at most
- * `MAX_WEEKLY_CHANGE` away from the current target. Rounded to 50.
- */
+/** Burn plus the aim's offset, clamped by `MAX_LOSS_SHARE`, `FLOOR` and `MAX_WEEKLY_CHANGE`. */
 export function suggestTarget(
   burnKcal: number,
   aim: Aim,
@@ -234,7 +214,6 @@ export function suggestTarget(
   return Math.round(target / AdaptiveTarget.ROUND) * AdaptiveTarget.ROUND;
 }
 
-/** Whether a suggestion is far enough from the current target to offer. */
 export const worthSuggesting = (suggested: number, currentTarget: number) =>
   Math.abs(suggested - currentTarget) >= AdaptiveTarget.MIN_DIFFERENCE;
 
@@ -244,10 +223,7 @@ export type EnergyWeek = {
   intake: number | null;
 };
 
-/**
- * Week by week, oldest first: average logged intake on fully logged days, and
- * the burn estimated as of the end of that week (null while still learning).
- */
+/** Oldest first; burn is null while still learning. */
 export function weeklyEnergy(input: {
   foodByDay: Record<string, readonly Logged[]>;
   skippedByDay?: Record<string, readonly FoodEntry['meal'][]>;

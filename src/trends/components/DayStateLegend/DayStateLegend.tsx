@@ -5,10 +5,7 @@ import { DayState } from '@shared/models/dayState';
 import { LegendDot } from '../LegendDot';
 import { DayStateLook } from '../../utils/dayStateStyle';
 
-/**
- * The key to how a day went, for the step bars and the consistency grid: goal met, partial and
- * rest, plus a streak freeze when one shows. Both draw from `DayStateLook.STYLE`, so it matches.
- */
+/** Draws from `DayStateLook.STYLE`, like the bars and grid. */
 export function DayStateLegend({
   frozen = false,
   children,

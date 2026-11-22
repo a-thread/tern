@@ -12,12 +12,7 @@ import { manageSubscription } from '../../../utils/manageSubscription';
 import { LogHome, logHome } from '../../../models/logHome';
 import { LogHomeMark } from '../../../components/LogHomeMark/LogHomeMark';
 
-/**
- * Tern Plus at the top of Your data: where the data is, the subscription's state, and the
- * one thing to do about it (manage, renew, make the account, or learn more). Synced, it gets
- * a label and a footnote; on the phone (Plus ended, or no account) it's one row, so the
- * screen stays short. Only with an account backend: sample data has no accounts to sync.
- */
+/** One row on the phone so the screen stays short. Needs an account backend. */
 export function PlusSection() {
   const auth = useAuth();
   const plus = useSubscription();
@@ -39,7 +34,9 @@ export function PlusSection() {
   const openStore = () =>
     manageSubscription().catch((e) => {
       console.warn('Could not open the store', e);
-      toast.show(`Couldn't open ${store} — manage Tern Plus from its subscriptions page.`);
+      toast.show(
+        `Couldn't open ${store} — manage Tern Plus from its subscriptions page.`,
+      );
     });
 
   const press = () => {

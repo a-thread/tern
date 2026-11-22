@@ -12,10 +12,7 @@ type Item = Pick<
   'name' | 'servings' | 'servingLabel' | 'calories' | 'tier'
 >;
 
-/**
- * One food in a list: food-type dot, name, portion and calories, following the
- * display settings. Adding a listener to `onPress` makes the whole row tappable.
- */
+/** `onPress` makes the whole row tappable. */
 export default function ItemRow({
   item,
   onPress,

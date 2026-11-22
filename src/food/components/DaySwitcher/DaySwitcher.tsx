@@ -7,10 +7,7 @@ import { useViewedDay } from '@shared/state/ViewedDayContext';
 import { formatLongDate } from '@shared/utils/date';
 import { dayRange } from './utils/dayRange';
 
-/**
- * The date above the Food title, with arrows to step a day back or forward. It moves the same
- * viewed day as the week strip on Today, so both tabs always show the same day.
- */
+/** Moves the same viewed day as Today's week strip. */
 export function DaySwitcher() {
   const { day, today, setDay } = useViewedDay();
   const { prev, next } = dayRange(day, today);

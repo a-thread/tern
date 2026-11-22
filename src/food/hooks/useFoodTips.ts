@@ -1,5 +1,5 @@
 import { useRef } from 'react';
-import type { View } from 'react-native';
+import type { HostInstance } from 'react-native';
 
 import { useViewedDay } from '@shared/state/ViewedDayContext';
 import { useTips } from '@shared/hooks/useTips';
@@ -8,15 +8,11 @@ import { Meals } from '@/domain/food/models/meals';
 import { Tip, Tips } from '@/domain/settings/models/onboarding';
 import { foodTipTargets, foodTipText } from '../models/foodTips';
 
-/**
- * The Food tab's one-time tips: that "No breakfast today" counts as logged (while a core meal
- * is still open), and that a food can be swiped away (once one is logged). Each applies only
- * when its row is there to point at; otherwise it's skipped and left out of the count.
- */
+/** Each applies only when its row is there to point at. */
 export function useFoodTips() {
-  const rootRef = useRef<View>(null);
-  const skipMealRef = useRef<View>(null);
-  const firstFoodRef = useRef<View>(null);
+  const rootRef = useRef<HostInstance>(null);
+  const skipMealRef = useRef<HostInstance>(null);
+  const firstFoodRef = useRef<HostInstance>(null);
   const { day, editable, isToday } = useViewedDay();
   const { foodLog, skippedMeals, loadedDay } = useFood();
   const targets = foodTipTargets({ editable, foodLog, skippedMeals });

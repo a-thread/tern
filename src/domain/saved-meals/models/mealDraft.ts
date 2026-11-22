@@ -87,11 +87,7 @@ export const addItem = (items: SavedMealItem[], item: SavedMealItem) =>
 export const removeItemAt = (items: SavedMealItem[], index: number) =>
   items.filter((_, i) => i !== index);
 
-/**
- * Steps one item up or down. Measured items move by their own unit (a quarter
- * portion, or ten grams) and keep their label; others change servings in
- * quarters, never below a quarter.
- */
+/** Measured items step by their unit; others by quarter servings, never below a quarter. */
 export function stepItemServings(
   items: SavedMealItem[],
   index: number,
