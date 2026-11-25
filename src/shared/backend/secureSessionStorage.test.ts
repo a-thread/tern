@@ -47,14 +47,37 @@ describe('secure session storage', () => {
     expect(secure.get(`${KEY}.aes`)).toHaveLength(64);
   });
 
-  it('uses a new key on every save', async () => {
-    const { api, secure } = fakeApi();
+  it('keeps its key across saves, with a fresh IV each time', async () => {
+    const { api, plain, secure } = fakeApi();
     const storage = createSecureSessionStorage(api);
     await storage.setItem(KEY, session);
-    const first = secure.get(`${KEY}.aes`);
+    const key = secure.get(`${KEY}.aes`);
+    const first = plain.get(KEY);
     await storage.setItem(KEY, session);
-    expect(secure.get(`${KEY}.aes`)).not.toBe(first);
+    expect(secure.get(`${KEY}.aes`)).toBe(key);
+    expect(plain.get(KEY)).not.toBe(first);
     expect(await storage.getItem(KEY)).toBe(session);
+  });
+
+  it('still reads the last session when a later save is cut short', async () => {
+    const { api } = fakeApi();
+    const storage = createSecureSessionStorage(api);
+    await storage.setItem(KEY, session);
+    api.plain.set = async () => {
+      throw new Error('killed');
+    };
+    await expect(storage.setItem(KEY, '{"newer":true}')).rejects.toThrow();
+    expect(await storage.getItem(KEY)).toBe(session);
+  });
+
+  it('drops a session whose key was not restored with it, rather than return ciphertext', async () => {
+    const { api, plain, secure } = fakeApi();
+    const storage = createSecureSessionStorage(api);
+    await storage.setItem(KEY, session);
+    // An Android restore brings AsyncStorage back but not SecureStore.
+    secure.clear();
+    expect(await storage.getItem(KEY)).toBeNull();
+    expect(plain.has(KEY)).toBe(false);
   });
 
   it('removes both halves', async () => {

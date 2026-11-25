@@ -4,6 +4,7 @@ import { act, fireEvent, render, screen } from '@testing-library/react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import type { LocalDb } from '@shared/backend/localDb';
+import { LocalMetaKey, setLocalMeta } from '@shared/backend/localMeta';
 import { ToastProvider } from '@shared/state/ToastContext';
 import { type Backend, useBackend } from './BackendContext';
 import type { SubscriptionRepository } from './domain/subscription/subscription.repository';
@@ -376,16 +377,107 @@ describe('AuthGate health data consent', () => {
   });
 
   it('"Not now" keeps everything on the phone, with the account\'s log copied down', async () => {
-    await mockAccount.restDays.add('2026-10-18');
+    await mockAccount.restDays.add('2026-10-17');
     render(app());
     await screen.findByText(CONSENT_TITLE);
     await act(async () => fireEvent.press(screen.getByText('Not now')));
     expect(await screen.findByText('1 rest days')).toBeTruthy();
     expect(await screen.findByText(/Sync is off/)).toBeTruthy();
     await act(async () => fireEvent.press(screen.getByText('Rest')));
-    expect(await phoneRestDays()).toEqual(['2026-10-18']);
-    expect(await accountRestDays()).toEqual(['2026-10-18']);
+    expect(await phoneRestDays()).toEqual(['2026-10-17', '2026-10-18']);
+    expect(await accountRestDays()).toEqual(['2026-10-17']);
     expect(await consent.get()).toBeNull();
+  });
+
+  it('says sync is off on a later "Not now" too, when nothing new is copied', async () => {
+    // The account's log came down on an earlier "Not now".
+    await setLocalMeta(mockPhoneDb, LocalMetaKey.COPIED_FROM_ACCOUNT, 'me');
+    render(app());
+    await screen.findByText(CONSENT_TITLE);
+    await act(async () => fireEvent.press(screen.getByText('Not now')));
+    expect(await screen.findByText(/Sync is off/)).toBeTruthy();
+  });
+
+  it('says sync is off, not that Plus ended, when the copy down fails', async () => {
+    mockAccount = {
+      ...mockAccount,
+      data: {
+        ...mockAccount.data!,
+        exportAll: async () => {
+          throw new Error('offline');
+        },
+      },
+    };
+    const warn = jest.spyOn(console, 'warn').mockImplementation(() => {});
+    render(app());
+    await screen.findByText(CONSENT_TITLE);
+    await act(async () => fireEvent.press(screen.getByText('Not now')));
+    expect(
+      await screen.findByText(/Sync is off, so Tern is saving to this phone/),
+    ).toBeTruthy();
+    expect(screen.queryByText(/Tern Plus has ended/)).toBeNull();
+    warn.mockRestore();
+  });
+
+  it('offline, goes by the consent this phone last saw instead of asking again', async () => {
+    await consent.give(HealthConsent.POLICY_VERSION);
+    const online = render(app());
+    await screen.findByText('0 rest days');
+    online.unmount();
+
+    mockAccount = {
+      ...mockAccount,
+      consent: {
+        ...consent,
+        get: async () => {
+          throw new Error('offline');
+        },
+      },
+    };
+    const warn = jest.spyOn(console, 'warn').mockImplementation(() => {});
+    render(app());
+    expect(await screen.findByText('0 rest days')).toBeTruthy();
+    expect(screen.queryByText(CONSENT_TITLE)).toBeNull();
+    warn.mockRestore();
+  });
+
+  it('offline, asks when this phone has no consent on record for the account', async () => {
+    // Another account's consent doesn't count.
+    await setLocalMeta(
+      mockPhoneDb,
+      LocalMetaKey.HEALTH_CONSENT,
+      JSON.stringify({
+        userId: 'other',
+        policyVersion: HealthConsent.POLICY_VERSION,
+        consentedAt: '2026-11-22T10:00:00Z',
+      }),
+    );
+    mockAccount = {
+      ...mockAccount,
+      consent: {
+        ...consent,
+        get: async () => {
+          throw new Error('offline');
+        },
+      },
+    };
+    const warn = jest.spyOn(console, 'warn').mockImplementation(() => {});
+    render(app());
+    expect(await screen.findByText(CONSENT_TITLE)).toBeTruthy();
+    warn.mockRestore();
+  });
+
+  it("withdrawing on a shared phone clears another account's copy instead of mixing logs", async () => {
+    await consent.give(HealthConsent.POLICY_VERSION);
+    // The phone still holds another account's copy from when its Plus ended.
+    await createLocalBackend(mockPhoneDb).restDays.add('2026-10-01');
+    await setLocalMeta(mockPhoneDb, LocalMetaKey.COPIED_FROM_ACCOUNT, 'other');
+    await mockAccount.restDays.add('2026-10-18');
+    render(app());
+    await screen.findByText('1 rest days');
+    await act(async () => fireEvent.press(screen.getByText('Withdraw')));
+    expect(await screen.findByText(/Consent withdrawn/)).toBeTruthy();
+    expect(await phoneRestDays()).toEqual(['2026-10-18']);
   });
 
   it('withdrawing copies the log to the phone, then erases the account and stops syncing', async () => {

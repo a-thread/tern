@@ -24,8 +24,20 @@ export type SessionStorage = {
   removeItem(key: string): Promise<void>;
 };
 
-const KEY_BYTES = 32;
+class SessionCipher {
+  static readonly KEY_BYTES = 32;
+  static readonly IV_BYTES = 16;
+  /** What a stored ciphertext looks like: a hex IV, a colon, then hex. */
+  static readonly STORED = /^[0-9a-f]{32}:[0-9a-f]*$/;
+}
+
 const keyName = (key: string) => `${key}.aes`;
+
+const ctr = (hexKey: string, iv: Uint8Array) =>
+  new aesjs.ModeOfOperation.ctr(
+    aesjs.utils.hex.toBytes(hexKey),
+    new aesjs.Counter(iv),
+  );
 
 /**
  * Supabase's "LargeSecureStore": a session outgrows SecureStore's ~2 KB, so an AES key for it
@@ -34,33 +46,52 @@ const keyName = (key: string) => `${key}.aes`;
 export function createSecureSessionStorage(
   api: SessionStorageApi,
 ): SessionStorage {
-  const encrypt = async (key: string, value: string) => {
-    const aesKey = api.randomBytes(KEY_BYTES);
-    const cipher = new aesjs.ModeOfOperation.ctr(aesKey, new aesjs.Counter(1));
-    const bytes = cipher.encrypt(aesjs.utils.utf8.toBytes(value));
-    await api.secure.set(keyName(key), aesjs.utils.hex.fromBytes(aesKey));
-    await api.plain.set(key, aesjs.utils.hex.fromBytes(bytes));
+  // One key per name, kept across saves; each save gets a fresh IV, so a save is one write.
+  const keyFor = async (key: string) => {
+    const existing = await api.secure.get(keyName(key));
+    if (existing) return existing;
+    const created = aesjs.utils.hex.fromBytes(
+      api.randomBytes(SessionCipher.KEY_BYTES),
+    );
+    await api.secure.set(keyName(key), created);
+    return created;
+  };
+
+  const setItem = async (key: string, value: string) => {
+    const iv = api.randomBytes(SessionCipher.IV_BYTES);
+    const bytes = ctr(await keyFor(key), iv).encrypt(
+      aesjs.utils.utf8.toBytes(value),
+    );
+    await api.plain.set(
+      key,
+      `${aesjs.utils.hex.fromBytes(iv)}:${aesjs.utils.hex.fromBytes(bytes)}`,
+    );
   };
 
   return {
     async getItem(key) {
       const stored = await api.plain.get(key);
       if (stored === null) return null;
-      const hexKey = await api.secure.get(keyName(key));
-      if (hexKey === null) {
-        // A session saved before this was plain text: encrypt it in place, so nobody is signed out.
-        await encrypt(key, stored);
+      if (!SessionCipher.STORED.test(stored)) {
+        // Saved in plain text before this: encrypt it in place, so nobody is signed out.
+        await setItem(key, stored);
         return stored;
       }
-      const cipher = new aesjs.ModeOfOperation.ctr(
-        aesjs.utils.hex.toBytes(hexKey),
-        new aesjs.Counter(1),
-      );
+      const hexKey = await api.secure.get(keyName(key));
+      if (!hexKey) {
+        // Restored from a backup without its key (Android keeps SecureStore out of backups):
+        // unreadable, so drop it and sign in again.
+        await api.plain.remove(key);
+        return null;
+      }
+      const [iv, cipher] = stored.split(':');
       return aesjs.utils.utf8.fromBytes(
-        cipher.decrypt(aesjs.utils.hex.toBytes(stored)),
+        ctr(hexKey, aesjs.utils.hex.toBytes(iv)).decrypt(
+          aesjs.utils.hex.toBytes(cipher),
+        ),
       );
     },
-    setItem: encrypt,
+    setItem,
     async removeItem(key) {
       await api.plain.remove(key);
       await api.secure.remove(keyName(key));

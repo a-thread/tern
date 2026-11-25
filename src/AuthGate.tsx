@@ -4,7 +4,11 @@ import LoadingScreen from '@shared/components/LoadingScreen/LoadingScreen';
 
 import { isBackendConfigured } from '@shared/backend/supabase';
 import { openLocalDb } from '@shared/backend/localDb.expo';
-import { LocalMetaKey, setLocalMeta } from '@shared/backend/localMeta';
+import {
+  getLocalMeta,
+  LocalMetaKey,
+  setLocalMeta,
+} from '@shared/backend/localMeta';
 import { useToast } from '@shared/state/ToastContext';
 import {
   type Backend,
@@ -32,6 +36,8 @@ import {
   HealthConsent,
   type HealthConsentRecord,
   hasCurrentConsent,
+  readRememberedConsent,
+  rememberedConsent,
 } from './domain/consent/models/healthConsent';
 import { copyToPhone, lapsedData, moveToAccount } from './accountMoves';
 
@@ -162,6 +168,8 @@ enum ConsentStatus {
 
 const DECLINED_NOTICE =
   'Sync is off, so your log is kept on this phone. Tern will ask again next time you open it.';
+const DECLINED_COPY_FAILED =
+  "Sync is off, so Tern is saving to this phone. Your account's log couldn't be copied here yet; Tern will try again.";
 
 /**
  * Nothing reaches the server until the account has agreed to the current policy. A backend
@@ -178,78 +186,114 @@ function ConsentGate({
   moveIn: boolean;
   children: React.ReactNode;
 }) {
-  const toast = useToast();
   const consent = backend.consent;
   const [status, setStatus] = useState(
     consent ? ConsentStatus.Checking : ConsentStatus.Given,
   );
   const [given, setGiven] = useState<HealthConsentRecord | null>(null);
+  const [phoneNotice, setPhoneNotice] = useState(DECLINED_NOTICE);
+
+  // Kept on the phone so a launch without a connection doesn't ask again.
+  const remember = useCallback(
+    async (record: HealthConsentRecord | null) => {
+      try {
+        const db = await openLocalDb();
+        await setLocalMeta(
+          db,
+          LocalMetaKey.HEALTH_CONSENT,
+          record ? rememberedConsent(userId, record) : null,
+        );
+      } catch (e) {
+        console.warn('Could not note health data consent on the phone', e);
+      }
+    },
+    [userId],
+  );
 
   useEffect(() => {
     if (!consent) return;
     let live = true;
-    consent.get().then(
-      (record) => {
-        if (!live) return;
-        setGiven(hasCurrentConsent(record) ? record : null);
-        setStatus(
-          hasCurrentConsent(record)
-            ? ConsentStatus.Given
-            : ConsentStatus.Needed,
-        );
-      },
-      (e) => {
-        // Can't tell: ask, since agreeing again does no harm and syncing unasked would.
+    const check = async (): Promise<HealthConsentRecord | null> => {
+      try {
+        const record = await consent.get();
+        await remember(hasCurrentConsent(record) ? record : null);
+        return record;
+      } catch (e) {
+        // Offline: go by what this phone last heard. Nothing known means asking.
         console.warn('Could not check health data consent', e);
-        if (live) setStatus(ConsentStatus.Needed);
-      },
-    );
+        const db = await openLocalDb();
+        return readRememberedConsent(
+          await getLocalMeta(db, LocalMetaKey.HEALTH_CONSENT),
+          userId,
+        );
+      }
+    };
+    check()
+      .catch(() => null)
+      .then((record) => {
+        if (!live) return;
+        const current = hasCurrentConsent(record);
+        setGiven(current ? record : null);
+        setStatus(current ? ConsentStatus.Given : ConsentStatus.Needed);
+      });
     return () => {
       live = false;
     };
-  }, [consent]);
+  }, [consent, remember, userId]);
 
   const agree = useCallback(async () => {
     const record = await consent!.give(HealthConsent.POLICY_VERSION);
+    await remember(record);
     setGiven(record);
     setStatus(ConsentStatus.Given);
-  }, [consent]);
+  }, [consent, remember]);
+
+  const decline = useCallback(() => {
+    setPhoneNotice(DECLINED_NOTICE);
+    setStatus(ConsentStatus.Declined);
+  }, []);
 
   const withdraw = useCallback(async () => {
     const account = backend.data!;
     const db = await openLocalDb();
-    // The phone gets a fresh copy first, so a later step failing loses nothing.
-    await setLocalMeta(db, LocalMetaKey.COPIED_FROM_ACCOUNT, null);
+    // A stale copy of this account is refreshed; another account's is left for copyToPhone to
+    // clear, so the two logs never mix.
+    if ((await getLocalMeta(db, LocalMetaKey.COPIED_FROM_ACCOUNT)) === userId) {
+      await setLocalMeta(db, LocalMetaKey.COPIED_FROM_ACCOUNT, null);
+    }
+    // The phone gets its copy first, so a later step failing loses nothing.
     await copyToPhone(account, createLocalBackend(db).data!, db, userId);
     await consent!.withdraw();
+    await remember(null);
     try {
       await account.deleteAll();
-      toast.show(
+      setPhoneNotice(
         "Consent withdrawn. Your log is on this phone, and your account's copy is erased.",
       );
     } catch (e) {
       // Consent is gone, so stop syncing anyway; "Delete my data" there erases both.
       console.warn("Could not erase the account's log after withdrawing", e);
-      toast.show(
+      setPhoneNotice(
         "Consent withdrawn and your log is on this phone, but your account's copy couldn't be erased yet. Use Delete my data to try again.",
       );
     }
     setStatus(ConsentStatus.Declined);
-  }, [backend, consent, toast, userId]);
+  }, [backend, consent, remember, userId]);
 
   if (status === ConsentStatus.Checking) return <LoadingScreen />;
   if (status === ConsentStatus.Needed) {
-    return (
-      <HealthConsentScreen
-        onAgree={agree}
-        onDecline={() => setStatus(ConsentStatus.Declined)}
-      />
-    );
+    return <HealthConsentScreen onAgree={agree} onDecline={decline} />;
   }
   if (status === ConsentStatus.Declined) {
     return (
       <PhoneBackend
-        lapsed={{ userId, account: backend.data!, notice: DECLINED_NOTICE }}
+        lapsed={{
+          userId,
+          account: backend.data!,
+          notice: phoneNotice,
+          always: true,
+          failedNotice: DECLINED_COPY_FAILED,
+        }}
       >
         {children}
       </PhoneBackend>
@@ -402,8 +446,18 @@ function PhoneBackend({
   lapsed,
   children,
 }: {
-  /** `notice` replaces the "Plus has ended" message shown once the account's log is copied. */
-  lapsed?: { userId: string; account: DataRepository; notice?: string };
+  /**
+   * `notice` replaces the "Plus has ended" message shown once the account's log is copied, and
+   * `failedNotice` the one for a copy that failed. With `always`, `notice` shows even when
+   * nothing needed copying.
+   */
+  lapsed?: {
+    userId: string;
+    account: DataRepository;
+    notice?: string;
+    failedNotice?: string;
+    always?: boolean;
+  };
   children: React.ReactNode;
 }) {
   const toast = useToast();
@@ -411,6 +465,8 @@ function PhoneBackend({
   const lapsedFor = lapsed?.userId;
   const account = lapsed?.account;
   const notice = lapsed?.notice;
+  const failedNotice = lapsed?.failedNotice;
+  const always = lapsed?.always ?? false;
 
   useEffect(() => {
     let live = true;
@@ -421,7 +477,8 @@ function PhoneBackend({
       const local = createLocalBackend(db);
       if (lapsedFor && account) {
         try {
-          if (await copyToPhone(account, local.data!, db, lapsedFor)) {
+          const copied = await copyToPhone(account, local.data!, db, lapsedFor);
+          if (copied || always) {
             toast.show(
               notice ??
                 'Tern Plus has ended, so your data is kept on this phone now. Renew in Settings › Account and data to sync it again.',
@@ -431,7 +488,8 @@ function PhoneBackend({
           // Carry on with what the phone has; the copy is tried again next time.
           console.warn("Could not copy the account's log onto the phone", e);
           toast.show(
-            "Tern Plus has ended, and your account's data couldn't be copied onto this phone yet. Tern will try again.",
+            failedNotice ??
+              "Tern Plus has ended, and your account's data couldn't be copied onto this phone yet. Tern will try again.",
           );
         }
       }
@@ -454,7 +512,7 @@ function PhoneBackend({
     return () => {
       live = false;
     };
-  }, [toast, lapsedFor, account, notice]);
+  }, [toast, lapsedFor, account, notice, failedNotice, always]);
 
   if (!backend) return <LoadingScreen />;
   return (
