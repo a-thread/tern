@@ -179,15 +179,19 @@ Where the log lives follows Plus, decided in `AuthGate` with the moves in
   the store has answered for this account (`checkedFor`), not the phone's from before.
 - A log copied down from one account is never uploaded into another (a shared phone).
 
-Before any of that, the account must have agreed to keep health data on the server (GDPR
-Art. 9). `ConsentGate` in `AuthGate` reads `tern.health_consents` (one row per account: the
-policy version and when) and, without a row for `HealthConsent.POLICY_VERSION`, shows
-`HealthConsentScreen` before Plus is synced or anything is moved. Agreeing writes the row and
-carries on; "Not now" treats the account like a lapsed one for this launch (the phone, with
-its log copied down) and asks again next time. Bumping the version asks everyone again.
-Withdrawing (Settings › Account and data, through `HealthConsentContext`, which only a syncing
-account has) copies the log down, deletes the row, erases the account's log and drops to the
-phone; the account and Plus stay.
+All of this waits on consent to keep health data on the server (GDPR Art. 9). `ConsentGate`
+in `AuthGate` looks for the account's row in `tern.health_consents` (policy version and
+date). If there's no row for `HealthConsent.POLICY_VERSION`, it shows `HealthConsentScreen`
+before syncing Plus or moving anything:
+
+- **Agree:** writes the row and carries on.
+- **Not now:** for this launch the account is treated as lapsed (the log is copied down to
+  the phone). It asks again next launch.
+- **Withdraw** (Settings › Account and data, via `HealthConsentContext`, syncing accounts
+  only): copies the log down, deletes the row, erases the server's copy and switches to the
+  phone. The account and Plus are kept.
+
+Bumping `POLICY_VERSION` asks everyone again.
 
 When the store says no for a signed-in account, the app asks the server too
 (`serverGrant` on `SubscriptionProvider`), so an account granted Plus by hand in
