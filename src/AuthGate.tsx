@@ -1,9 +1,10 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { Modal, StyleSheet, View } from 'react-native';
 import LoadingScreen from '@shared/components/LoadingScreen/LoadingScreen';
 
 import { isBackendConfigured } from '@shared/backend/supabase';
 import { openLocalDb } from '@shared/backend/localDb.expo';
+import { LocalMetaKey, setLocalMeta } from '@shared/backend/localMeta';
 import { useToast } from '@shared/state/ToastContext';
 import {
   type Backend,
@@ -25,6 +26,13 @@ import { isPlusLapsed } from './domain/subscription/models/subscription';
 import AuthFlow from './auth/AuthFlow';
 import PaywallScreen from './auth/paywall/PaywallScreen';
 import ResetPasswordScreen from './auth/reset-password/ResetPasswordScreen';
+import HealthConsentScreen from './auth/health-consent/HealthConsentScreen';
+import { HealthConsentProvider } from './domain/consent/HealthConsentContext';
+import {
+  HealthConsent,
+  type HealthConsentRecord,
+  hasCurrentConsent,
+} from './domain/consent/models/healthConsent';
 import { copyToPhone, lapsedData, moveToAccount } from './accountMoves';
 
 /**
@@ -133,14 +141,131 @@ function ChooseBackend({ children }: { children: React.ReactNode }) {
   return (
     // Keyed by userId to refresh on identity changes. A store that couldn't be reached
     // gets the benefit of the doubt: the account, with nothing moved.
-    <AccountBackend
+    <ConsentGate
       key={userId}
       userId={userId}
       backend={remote}
       moveIn={plus.active}
     >
       {children}
+    </ConsentGate>
+  );
+}
+
+enum ConsentStatus {
+  Checking = 'checking',
+  Needed = 'needed',
+  Given = 'given',
+  /** Said no, or withdrew: the phone, with the account's log copied down. */
+  Declined = 'declined',
+}
+
+const DECLINED_NOTICE =
+  'Sync is off, so your log is kept on this phone. Tern will ask again next time you open it.';
+
+/**
+ * Nothing reaches the server until the account has agreed to the current policy. A backend
+ * without a consent record (the memory preview) has nothing to ask about.
+ */
+function ConsentGate({
+  userId,
+  backend,
+  moveIn,
+  children,
+}: {
+  userId: string;
+  backend: Backend;
+  moveIn: boolean;
+  children: React.ReactNode;
+}) {
+  const toast = useToast();
+  const consent = backend.consent;
+  const [status, setStatus] = useState(
+    consent ? ConsentStatus.Checking : ConsentStatus.Given,
+  );
+  const [given, setGiven] = useState<HealthConsentRecord | null>(null);
+
+  useEffect(() => {
+    if (!consent) return;
+    let live = true;
+    consent.get().then(
+      (record) => {
+        if (!live) return;
+        setGiven(hasCurrentConsent(record) ? record : null);
+        setStatus(
+          hasCurrentConsent(record)
+            ? ConsentStatus.Given
+            : ConsentStatus.Needed,
+        );
+      },
+      (e) => {
+        // Can't tell: ask, since agreeing again does no harm and syncing unasked would.
+        console.warn('Could not check health data consent', e);
+        if (live) setStatus(ConsentStatus.Needed);
+      },
+    );
+    return () => {
+      live = false;
+    };
+  }, [consent]);
+
+  const agree = useCallback(async () => {
+    const record = await consent!.give(HealthConsent.POLICY_VERSION);
+    setGiven(record);
+    setStatus(ConsentStatus.Given);
+  }, [consent]);
+
+  const withdraw = useCallback(async () => {
+    const account = backend.data!;
+    const db = await openLocalDb();
+    // The phone gets a fresh copy first, so a later step failing loses nothing.
+    await setLocalMeta(db, LocalMetaKey.COPIED_FROM_ACCOUNT, null);
+    await copyToPhone(account, createLocalBackend(db).data!, db, userId);
+    await consent!.withdraw();
+    try {
+      await account.deleteAll();
+      toast.show(
+        "Consent withdrawn. Your log is on this phone, and your account's copy is erased.",
+      );
+    } catch (e) {
+      // Consent is gone, so stop syncing anyway; "Delete my data" there erases both.
+      console.warn("Could not erase the account's log after withdrawing", e);
+      toast.show(
+        "Consent withdrawn and your log is on this phone, but your account's copy couldn't be erased yet. Use Delete my data to try again.",
+      );
+    }
+    setStatus(ConsentStatus.Declined);
+  }, [backend, consent, toast, userId]);
+
+  if (status === ConsentStatus.Checking) return <LoadingScreen />;
+  if (status === ConsentStatus.Needed) {
+    return (
+      <HealthConsentScreen
+        onAgree={agree}
+        onDecline={() => setStatus(ConsentStatus.Declined)}
+      />
+    );
+  }
+  if (status === ConsentStatus.Declined) {
+    return (
+      <PhoneBackend
+        lapsed={{ userId, account: backend.data!, notice: DECLINED_NOTICE }}
+      >
+        {children}
+      </PhoneBackend>
+    );
+  }
+  const account = (
+    <AccountBackend userId={userId} backend={backend} moveIn={moveIn}>
+      {children}
     </AccountBackend>
+  );
+  return given ? (
+    <HealthConsentProvider given={given} withdraw={withdraw}>
+      {account}
+    </HealthConsentProvider>
+  ) : (
+    account
   );
 }
 

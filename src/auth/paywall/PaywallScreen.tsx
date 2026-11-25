@@ -17,7 +17,7 @@ import { LinkButton } from '../components/LinkButton';
 import { LinkColumn } from '../components/LinkColumn';
 import { SubmitButton } from '../components/SubmitButton';
 import { useSubmit } from '../hooks/useSubmit';
-import { LegalLinks } from './components/LegalLinks/LegalLinks';
+import { LegalLinks } from '../components/LegalLinks/LegalLinks';
 import { PlanChoice } from './components/PlanChoice/PlanChoice';
 
 const STORE = storeName();

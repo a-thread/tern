@@ -34,6 +34,10 @@ tables. With no keys configured, the app runs on local mock data instead.
    the project's Site URL instead of opening Tern.
 6. Restart Expo with `npx expo start --clear` so the new env vars are picked up.
 7. **Tern Plus** (before shipping a build with it). See [Tern Plus](#tern-plus) below.
+8. **Health data consent:** run
+   [`20261122000000_health_consent.sql`](migrations/20261122000000_health_consent.sql)
+   before shipping a build that asks for it. Without the table, agreeing fails and the
+   account stays on the phone.
 
 ## Tern Plus
 

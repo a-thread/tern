@@ -131,6 +131,14 @@ export on the phone (`appointmentSummary`) and hands it to the share sheet. It f
 person's display settings: calories only if they're tracked and shown, weight only if it's
 tracked, and no notes. It's free, and nothing is uploaded.
 
+Nothing on the phone is encrypted by Tern itself: the OS encrypts app files at rest, and
+that, with TLS and row-level security on the server, is what the law asks of it. The one
+exception is the sign-in session, which [`secureSessionStorage.ts`](../src/shared/backend/secureSessionStorage.ts)
+keeps AES-encrypted in AsyncStorage with its key in the Keychain / Keystore (Supabase's
+"LargeSecureStore", since a session outgrows SecureStore). A session saved in plain text
+before is encrypted in place on first read. On iPhone the export is written to the cache for
+the share sheet and deleted once it's handed over.
+
 ## Tern Plus
 
 Everything in Tern is free; Tern Plus is the account, which syncs and backs up. Making an
@@ -170,6 +178,16 @@ Where the log lives follows Plus, decided in `AuthGate` with the moves in
 - **Store unreachable:** the account, with nothing moved. A status is only acted on once
   the store has answered for this account (`checkedFor`), not the phone's from before.
 - A log copied down from one account is never uploaded into another (a shared phone).
+
+Before any of that, the account must have agreed to keep health data on the server (GDPR
+Art. 9). `ConsentGate` in `AuthGate` reads `tern.health_consents` (one row per account: the
+policy version and when) and, without a row for `HealthConsent.POLICY_VERSION`, shows
+`HealthConsentScreen` before Plus is synced or anything is moved. Agreeing writes the row and
+carries on; "Not now" treats the account like a lapsed one for this launch (the phone, with
+its log copied down) and asks again next time. Bumping the version asks everyone again.
+Withdrawing (Settings › Account and data, through `HealthConsentContext`, which only a syncing
+account has) copies the log down, deletes the row, erases the account's log and drops to the
+phone; the account and Plus stay.
 
 When the store says no for a signed-in account, the app asks the server too
 (`serverGrant` on `SubscriptionProvider`), so an account granted Plus by hand in

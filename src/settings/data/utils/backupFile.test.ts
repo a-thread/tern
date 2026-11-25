@@ -1,6 +1,6 @@
 import { Platform } from 'react-native';
 import * as Sharing from 'expo-sharing';
-import { Directory } from 'expo-file-system';
+import { Directory, File } from 'expo-file-system';
 
 import { ExportOutcome, saveExport } from './backupFile';
 import type { TernExport } from '@/domain/settings/models/ternExport';
@@ -25,7 +25,10 @@ jest.mock('expo-sharing', () => ({
 }));
 jest.mock('expo-document-picker', () => ({}));
 
-const copy = { exportedAt: '2026-10-21T08:00:00.000Z', weightUnit: 'lb' } as TernExport;
+const copy = {
+  exportedAt: '2026-10-21T08:00:00.000Z',
+  weightUnit: 'lb',
+} as TernExport;
 const pick = Directory.pickDirectoryAsync as jest.Mock;
 
 function onPlatform(os: 'android' | 'ios') {
@@ -44,14 +47,19 @@ describe('saveExport on Android', () => {
     const result = await saveExport(copy);
     expect(result.outcome).toBe(ExportOutcome.Saved);
     expect(result.savedAs).toMatch(/^tern-export-\d{4}-\d{2}-\d{2}\.json$/);
-    expect(mockCreateFile).toHaveBeenCalledWith(result.savedAs, 'application/json');
+    expect(mockCreateFile).toHaveBeenCalledWith(
+      result.savedAs,
+      'application/json',
+    );
     expect(JSON.parse(mockWrite.mock.calls[0][0])).toEqual(copy);
     expect(Sharing.shareAsync).not.toHaveBeenCalled();
   });
 
   it('saves nothing when the person backs out of the picker', async () => {
     pick.mockRejectedValue(new Error('cancelled'));
-    expect(await saveExport(copy)).toEqual({ outcome: ExportOutcome.Cancelled });
+    expect(await saveExport(copy)).toEqual({
+      outcome: ExportOutcome.Cancelled,
+    });
     expect(mockCreateFile).not.toHaveBeenCalled();
   });
 });
@@ -66,5 +74,18 @@ describe('saveExport on iPhone', () => {
       expect.objectContaining({ mimeType: 'application/json' }),
     );
     expect(pick).not.toHaveBeenCalled();
+  });
+
+  it('removes the cached copy once the share sheet is done', async () => {
+    await saveExport(copy);
+    const cached = (File as unknown as jest.Mock).mock.results[0].value;
+    expect(cached.delete).toHaveBeenCalled();
+  });
+
+  it('removes it even when sharing fails', async () => {
+    (Sharing.shareAsync as jest.Mock).mockRejectedValueOnce(new Error('gone'));
+    await expect(saveExport(copy)).rejects.toThrow('gone');
+    const cached = (File as unknown as jest.Mock).mock.results[0].value;
+    expect(cached.delete).toHaveBeenCalled();
   });
 });

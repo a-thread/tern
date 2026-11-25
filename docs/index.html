@@ -67,15 +67,17 @@
   <body>
     <main>
       <h1>Tern privacy policy</h1>
-      <p class="updated">Last updated: 11/1/2026</p>
+      <p class="updated">Last updated: 11/22/2026</p>
 
       <p>
         Tern is a personal health tracker for steps, food and weight. This page
-        says what it stores, where, and what you can do about it.
+        says what it stores, where, and what you can do about it. If you're in
+        Washington State or another US state with a consumer health data law,
+        see <a href="#health-data">Consumer health data</a>.
       </p>
 
-      <h2>What Tern stores</h2>
-      <p>If you create an account, Tern stores, against your account:</p>
+      <h2 id="stores">What Tern stores</h2>
+      <p>Depending on what you choose to track, Tern stores:</p>
       <ul>
         <li>
           your email address and first name (used to sign you in and greet you),
@@ -103,18 +105,64 @@
         </li>
         <li>
           if you choose to track mood and stress: one check-in per day, made up
-          of two scores from 1 to 10 (mood and stress). Tern does not ask for
-          notes or reasons.
+          of two scores from 1 to 10 (mood and stress),
+        </li>
+        <li>
+          if you choose after-meal check-ins: how full you were and how you felt
+          (each a score from 1 to 5), and a short note if you write one,
+        </li>
+        <li>
+          if you track movement: the activities you log (the kind, minutes, how
+          hard it felt, and a distance if you give one),
+        </li>
+        <li>a note on a day, if you write one.</li>
+      </ul>
+
+      <h2>Where it's kept</h2>
+      <p>
+        <strong>Without an account</strong>, everything stays on your phone, in
+        Tern's own storage. Your phone encrypts it, and it's included in your
+        phone's backup (Google on Android, iCloud on iPhone) if you have backups
+        on. Nothing is sent to Tern.
+      </p>
+      <p>
+        <strong>With Tern Plus</strong>, an account keeps your log on every
+        phone you sign in to. Before anything is uploaded, Tern asks for your
+        explicit consent to keep this health data on its server, and nothing is
+        uploaded unless you agree. It is stored with Supabase, a hosted
+        database, encrypted in transit and at rest, and protected so that only
+        your signed-in account can read or change it. Your sign-in details on
+        the phone are kept encrypted too. Tern relies on your consent for this
+        (Article 9(2)(a) of the GDPR, and the equivalent under Brazil's LGPD),
+        and you can withdraw it at any time (see
+        <a href="#choices">Your choices</a>).
+      </p>
+      <!-- TODO(owner): name the Supabase region here (e.g. "in the EU" or "in the United States"). -->
+      <p>
+        If your data is stored outside your own country, including outside the
+        European Union, the transfer is covered by the data processing
+        agreements Tern has with its service providers, which include the
+        European Commission's Standard Contractual Clauses.
+      </p>
+
+      <h2 id="others">Who else handles it</h2>
+      <p>Only these service providers, and only to run Tern:</p>
+      <ul>
+        <li>
+          <strong>Supabase</strong> stores your account and, with Tern Plus,
+          your log.
+        </li>
+        <li>
+          <strong>RevenueCat</strong> checks your Tern Plus purchase with the App
+          Store or Google Play. It receives your account ID and purchase
+          status, not your log.
+        </li>
+        <li>
+          <strong>Open Food Facts</strong> and <strong>USDA FoodData
+          Central</strong> receive the text you search for or the barcode you
+          scan (see <a href="#food">Food information</a>).
         </li>
       </ul>
-      <p>
-        This data is stored with Supabase, a hosted database, and is protected
-        so that only your signed-in account can read or change it.
-      </p>
-      <p>
-        If you use the preview without an account, nothing is saved: the sample
-        data disappears when you exit.
-      </p>
 
       <h2>Steps, workouts and your health app</h2>
       <p>
@@ -148,12 +196,22 @@
         </li>
       </ul>
 
-      <h2>Your choices</h2>
-      <p>In Settings, under <strong>Your data</strong>, you can:</p>
+      <h2 id="choices">Your choices</h2>
+      <p>
+        In Settings, under <strong>Your data</strong> (<strong>Account and
+        data</strong> when you're signed in), you can:
+      </p>
       <ul>
         <li>
           <strong>Export my data</strong>: get a copy of everything Tern holds
-          about you (JSON).
+          about you (JSON). The file isn't encrypted, so keep it somewhere you
+          trust.
+        </li>
+        <li>
+          <strong>Withdraw consent</strong> (with Tern Plus): Tern stops
+          syncing, keeps your log on your phone and erases your account's copy
+          on the server. Your account and Tern Plus stay, and you can agree
+          again later.
         </li>
         <li>
           <strong>Delete my data</strong>: erase your food log, saved meals,
@@ -167,8 +225,48 @@
           <a href="delete-account.html">how to delete your account</a>.
         </li>
       </ul>
+      <p>
+        You also have the right to ask what Tern holds about you, to have it
+        corrected, and to complain to your data protection authority (in Spain
+        the AEPD, in Brazil the ANPD, in Ecuador the Superintendencia de
+        Protección de Datos Personales). Write to the address under
+        <a href="#contact">Contact</a>.
+      </p>
 
-      <h2>Food information</h2>
+      <h2 id="health-data">Consumer health data</h2>
+      <p>
+        This section is Tern's consumer health data privacy policy, for
+        Washington's My Health My Data Act and similar US state laws. Everything
+        Tern stores is listed under <a href="#stores">What Tern stores</a>; all of it
+        is health data under those laws.
+      </p>
+      <ul>
+        <li>
+          <strong>Why</strong>: only to show you your own log, goals and
+          progress, and, with Tern Plus, to keep it on every phone you sign in
+          to.
+        </li>
+        <li>
+          <strong>How it's collected</strong>: from what you enter, and steps
+          and workouts read from your phone's health app if you connect it.
+        </li>
+        <li>
+          <strong>Who it's shared with</strong>: only the service providers
+          under <a href="#others">Who else handles it</a>. It is never sold, and never
+          used for advertising.
+        </li>
+        <li>
+          <strong>Consent</strong>: nothing leaves your phone for Tern's server
+          until you agree, and you can withdraw that in Settings.
+        </li>
+        <li>
+          <strong>Your rights</strong>: export it, delete it, or withdraw
+          consent in Settings, or write to us under
+          <a href="#contact">Contact</a>.
+        </li>
+      </ul>
+
+      <h2 id="food">Food information</h2>
       <p>
         Nutrition information for packaged foods comes from Open Food Facts,
         used under the Open Database License, and for everyday foods from USDA
@@ -193,7 +291,7 @@
         account, contact us and we'll delete it.
       </p>
 
-      <h2>Contact</h2>
+      <h2 id="contact">Contact</h2>
       <p>
         <a href="mailto:aiden.threadgoode@gmail.com"
           >aiden.threadgoode@gmail.com</a
