@@ -167,7 +167,7 @@ enum ConsentStatus {
 }
 
 const DECLINED_NOTICE =
-  'Sync is off, so your log is kept on this phone. Tern will ask again next time you open it.';
+  'Sync is off, so your log is kept on this phone. Turn it on any time in Settings › Account and data.';
 const DECLINED_COPY_FAILED =
   "Sync is off, so Tern is saving to this phone. Your account's log couldn't be copied here yet; Tern will try again.";
 
@@ -280,23 +280,27 @@ function ConsentGate({
     setStatus(ConsentStatus.Declined);
   }, [backend, consent, remember, userId]);
 
+  const ask = useCallback(() => setStatus(ConsentStatus.Needed), []);
+
   if (status === ConsentStatus.Checking) return <LoadingScreen />;
   if (status === ConsentStatus.Needed) {
     return <HealthConsentScreen onAgree={agree} onDecline={decline} />;
   }
   if (status === ConsentStatus.Declined) {
     return (
-      <PhoneBackend
-        lapsed={{
-          userId,
-          account: backend.data!,
-          notice: phoneNotice,
-          always: true,
-          failedNotice: DECLINED_COPY_FAILED,
-        }}
-      >
-        {children}
-      </PhoneBackend>
+      <HealthConsentProvider given={null} withdraw={withdraw} ask={ask}>
+        <PhoneBackend
+          lapsed={{
+            userId,
+            account: backend.data!,
+            notice: phoneNotice,
+            always: true,
+            failedNotice: DECLINED_COPY_FAILED,
+          }}
+        >
+          {children}
+        </PhoneBackend>
+      </HealthConsentProvider>
     );
   }
   const account = (
@@ -305,7 +309,7 @@ function ConsentGate({
     </AccountBackend>
   );
   return given ? (
-    <HealthConsentProvider given={given} withdraw={withdraw}>
+    <HealthConsentProvider given={given} withdraw={withdraw} ask={ask}>
       {account}
     </HealthConsentProvider>
   ) : (

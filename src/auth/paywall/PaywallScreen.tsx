@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text } from 'react-native';
 
 import { space, typography } from '@shared/theme';
 import { storeName } from '@shared/utils/storeApp';
@@ -12,6 +12,7 @@ import {
   yearlySavings,
 } from '@/domain/subscription/models/subscription';
 import { AuthBanner } from '../components/AuthBanner';
+import { BulletList } from '../components/BulletList/BulletList';
 import { AuthLayout } from '../components/AuthLayout';
 import { LinkButton } from '../components/LinkButton';
 import { LinkColumn } from '../components/LinkColumn';
@@ -100,13 +101,7 @@ export default function PaywallScreen({ onBack }: { onBack: () => void }) {
         }
       />
 
-      <View style={s.list}>
-        {WHAT_PLUS_ADDS.map((line) => (
-          <Text key={line} style={s.line}>
-            {`•  ${line}`}
-          </Text>
-        ))}
-      </View>
+      <BulletList items={WHAT_PLUS_ADDS.map((text) => ({ text }))} />
 
       {plans.map((option) => (
         <PlanChoice
@@ -142,7 +137,5 @@ export default function PaywallScreen({ onBack }: { onBack: () => void }) {
 }
 
 const s = StyleSheet.create({
-  list: { gap: space.sm, marginBottom: space.lg },
-  line: { ...typography.meta, lineHeight: 18 },
   fine: { ...typography.small, marginTop: space.md, lineHeight: 16 },
 });

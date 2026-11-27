@@ -8,12 +8,33 @@ import { confirm } from '@shared/utils/confirm';
 import { dayKey, formatLongDate } from '@shared/utils/date';
 import { useHealthConsent } from '@/domain/consent/HealthConsentContext';
 
-/** Only while the account syncs: withdrawing is as easy as agreeing was. */
+/** For an account with Plus: withdrawing is as easy as agreeing was, and agreeing can come later. */
 export function ConsentSection() {
   const consent = useHealthConsent();
   const toast = useToast();
   const [busy, setBusy] = useState(false);
   if (!consent) return null;
+
+  if (!consent.given) {
+    return (
+      <Group>
+        <Pressable
+          style={s.row}
+          onPress={consent.ask}
+          accessibilityRole='button'
+          accessibilityLabel='Health data consent, not given. Turn on sync'
+        >
+          <View style={s.text}>
+            <Text style={s.title}>Turn on sync</Text>
+            <Text style={s.sub}>
+              Your log is only on this phone. Agree to keep it in your account
+              and sync it to every phone you sign in to.
+            </Text>
+          </View>
+        </Pressable>
+      </Group>
+    );
+  }
 
   const since = formatLongDate(dayKey(new Date(consent.given.consentedAt)));
   const withdraw = () => {
@@ -45,8 +66,8 @@ export function ConsentSection() {
         accessibilityRole='button'
         accessibilityLabel={`Health data consent, given ${since}. Withdraw`}
       >
-        <View style={{ flex: 1 }}>
-          <Text style={s.title}>Withdraw consent</Text>
+        <View style={s.text}>
+          <Text style={[s.title, s.danger]}>Withdraw consent</Text>
           <Text style={s.sub}>
             {`You agreed on ${since} to keep your health data in your account`}
           </Text>
@@ -58,6 +79,8 @@ export function ConsentSection() {
 
 const s = StyleSheet.create({
   row: { paddingHorizontal: 13, paddingVertical: 12 },
-  title: { ...typography.rowTitle, color: colors.danger },
+  text: { flex: 1 },
+  title: { ...typography.rowTitle },
+  danger: { color: colors.danger },
   sub: { ...typography.caption, marginTop: 2, lineHeight: 16 },
 });

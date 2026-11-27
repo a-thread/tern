@@ -107,9 +107,14 @@ function Probe() {
       >
         <Text>Erase</Text>
       </Pressable>
-      {consent ? (
+      {consent?.given ? (
         <Pressable onPress={consent.withdraw} accessibilityRole='button'>
           <Text>Withdraw</Text>
+        </Pressable>
+      ) : null}
+      {consent && !consent.given ? (
+        <Pressable onPress={consent.ask} accessibilityRole='button'>
+          <Text>Turn on sync</Text>
         </Pressable>
       ) : null}
     </>
@@ -329,7 +334,7 @@ describe('AuthGate signed in', () => {
 
 describe('AuthGate health data consent', () => {
   let consent: ConsentRepository;
-  const CONSENT_TITLE = 'Keep your log in your account?';
+  const CONSENT_TITLE = 'Health data consent';
 
   beforeEach(async () => {
     mockAuth.session = { user: { id: 'me', email: 'me@example.com' } };
@@ -353,7 +358,7 @@ describe('AuthGate health data consent', () => {
     await createLocalBackend(mockPhoneDb).restDays.add('2026-10-17');
     render(app());
     await screen.findByText(CONSENT_TITLE);
-    await act(async () => fireEvent.press(screen.getByText('I agree')));
+    await act(async () => fireEvent.press(screen.getByText('Agree and sync')));
     expect(await screen.findByText('1 rest days')).toBeTruthy();
     expect((await consent.get())?.policyVersion).toBe(
       HealthConsent.POLICY_VERSION,
@@ -387,6 +392,24 @@ describe('AuthGate health data consent', () => {
     expect(await phoneRestDays()).toEqual(['2026-10-17', '2026-10-18']);
     expect(await accountRestDays()).toEqual(['2026-10-17']);
     expect(await consent.get()).toBeNull();
+  });
+
+  it('after "Not now", turning on sync from Settings asks again and moves the log in', async () => {
+    render(app());
+    await screen.findByText(CONSENT_TITLE);
+    await act(async () => fireEvent.press(screen.getByText('Not now')));
+    await act(async () => fireEvent.press(await screen.findByText('Rest')));
+    await act(async () =>
+      fireEvent.press(await screen.findByText('Turn on sync')),
+    );
+    await act(async () =>
+      fireEvent.press(await screen.findByText('Agree and sync')),
+    );
+    expect(await screen.findByText('Withdraw')).toBeTruthy();
+    expect((await consent.get())?.policyVersion).toBe(
+      HealthConsent.POLICY_VERSION,
+    );
+    expect(await accountRestDays()).toEqual(['2026-10-18']);
   });
 
   it('says sync is off on a later "Not now" too, when nothing new is copied', async () => {

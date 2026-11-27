@@ -1,20 +1,37 @@
 import React from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text } from 'react-native';
 
 import { space, typography } from '@shared/theme';
 import { AuthBanner } from '../components/AuthBanner';
 import { AuthLayout } from '../components/AuthLayout';
+import { type Bullet, BulletList } from '../components/BulletList/BulletList';
 import { LegalLinks } from '../components/LegalLinks/LegalLinks';
-import { LinkButton } from '../components/LinkButton';
-import { LinkColumn } from '../components/LinkColumn';
 import { SubmitButton } from '../components/SubmitButton';
 import { useSubmit } from '../hooks/useSubmit';
+import { SecondaryButton } from './components/SecondaryButton/SecondaryButton';
 
-const WHAT_IS_KEPT = [
-  'What you log: food, weigh-ins, water, movement, medication, mood and stress check-ins, and notes',
-  'Kept on Tern’s server (Supabase), encrypted, and readable only by your account',
-  'Used only to keep your log on every phone you sign in to. Never sold, never used for ads',
-  'Withdraw any time in Settings › Account and data. A copy stays on this phone.',
+// Every kind of health data Tern stores must be named here, or the consent doesn't cover it.
+const WHAT_IT_MEANS: Bullet[] = [
+  {
+    lead: 'Who:',
+    text: 'Purlieus LLC, the Maine company that makes Tern, is responsible for your data.',
+  },
+  {
+    lead: 'What:',
+    text: 'food, weigh-ins, water, movement, medication, mood and stress, after-meal check-ins, and notes.',
+  },
+  {
+    lead: 'Where:',
+    text: 'Tern’s server (Supabase), encrypted. Other accounts can’t see it.',
+  },
+  {
+    lead: 'Why:',
+    text: 'only to sync your log. Never sold, never used for ads.',
+  },
+  {
+    lead: 'Changing your mind:',
+    text: 'any time, in Settings › Account and data. Your log moves back to this phone and is erased from the server.',
+  },
 ];
 
 /**
@@ -35,38 +52,28 @@ export default function HealthConsentScreen({
   return (
     <AuthLayout
       showMark
-      title='Keep your log in your account?'
-      subtitle='To sync, Tern stores your health data on its server. It needs your OK first.'
+      title='Health data consent'
+      subtitle='Tern Plus keeps your log on every phone you sign in to. To do that, Tern stores your health data on its server, and needs your consent first.'
     >
       <AuthBanner variant='error' message={error || null} />
-      <View style={s.list}>
-        {WHAT_IS_KEPT.map((line) => (
-          <Text key={line} style={s.line}>
-            {`•  ${line}`}
-          </Text>
-        ))}
-      </View>
+      <BulletList items={WHAT_IT_MEANS} />
       <SubmitButton
-        label='I agree'
+        label='Agree and sync'
         busyLabel='Saving…'
         busy={busy}
         disabled={false}
         onPress={() => run(onAgree)}
       />
+      <SecondaryButton label='Not now' disabled={busy} onPress={onDecline} />
       <Text style={s.fine}>
-        Without it, your log stays on this phone and nothing is uploaded. Tern
-        asks again next time you open it.
+        If you choose Not now, your log stays on this phone and nothing is
+        uploaded. You can turn on sync later in Settings › Account and data.
       </Text>
       <LegalLinks />
-      <LinkColumn>
-        <LinkButton label='Not now' onPress={onDecline} />
-      </LinkColumn>
     </AuthLayout>
   );
 }
 
 const s = StyleSheet.create({
-  list: { gap: space.sm, marginBottom: space.lg },
-  line: { ...typography.meta, lineHeight: 18 },
   fine: { ...typography.small, marginTop: space.md, lineHeight: 16 },
 });
