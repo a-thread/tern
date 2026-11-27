@@ -1,7 +1,7 @@
 import { Platform } from 'react-native';
 
 export class LegalUrls {
-  static readonly PRIVACY = 'https://a-thread.github.io/tern/';
+  static readonly PRIVACY = 'https://purlieus.dev/tern/privacy/';
   /** Tern has no terms of its own; on iPhone it uses Apple's standard licence agreement. */
   static readonly APPLE_TERMS =
     'https://www.apple.com/legal/internet-services/itunes/dev/stdeula/';
