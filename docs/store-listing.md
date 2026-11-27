@@ -18,6 +18,8 @@ Inspired by the Arctic tern, the bird with the longest migration on Earth, Tern 
 
 Each day you show up, your Arctic tern travels a little further along its migration. Move when you can, log what sustains you, and always rest when you need to.
 
+No bargaining with calories. No chasing a size. Just regular movement, and goals you choose.
+
 Track the things that help you meet your goals:
 
 MOVEMENT
@@ -99,6 +101,8 @@ food,calorie,step,counter,macro,diary,weight,water,habit,streak,mood,walking,nut
 
 Inspired by the Arctic tern, the bird with the longest migration on Earth, Tern is a tracker built for the long haul. Each day you show up, your tern travels a little further along its journey. Move when you can, log what sustains you, and always rest when you need to.
 
+No bargaining with calories. No chasing a size. Just regular movement, and goals you choose.
+
 Track the things that help you meet your goals:
 
 MOVEMENT
@@ -111,9 +115,7 @@ FOOD (OPTIONAL)
 • Track calories, macros or neither, and hide calorie counts whenever the numbers get in the way. Nothing warns you for going over, and exercise never earns food back.
 • Foods get a NOVA processing level as information, never a judgment, and you decide whether to show NOVA numbers, colors or neither.
 • Search everyday foods and packaged products, or scan a barcode.
-• Log the way you'd say it: a packet, a slice, a cup or a spoonful, in ounces, pounds or grams, and drinks in fl oz or ml.
 • Add your own foods, or cook a batch: log the whole pot once, say how many servings it makes, then log a bowl at a time.
-• Save meals, or re-log yesterday's dinner in a tap.
 • Didn't have lunch? Mark it "nothing today" and your log still counts as complete.
 • Opt in to a quick "How was it?" after meals to see what sits well.
 • Want a hand? Tern can learn how much energy you really use from your log and weight trend and suggest a calorie target. It never changes one on its own.
@@ -152,7 +154,7 @@ TERN PLUS
 Tern Plus is an optional auto-renewing subscription, monthly or yearly; Tern Plus Supporter is yearly. Payment is charged to your Apple Account when you confirm the purchase. It renews automatically unless you turn it off at least 24 hours before the end of the current period, and you can manage or cancel it in your Apple Account settings.
 
 Terms of Use: https://www.apple.com/legal/internet-services/itunes/dev/stdeula/
-Privacy Policy: https://a-thread.github.io/tern/
+Privacy Policy: https://purlieus.dev/tern/privacy/
 
 Nutrition information comes from Open Food Facts and USDA FoodData Central.
 
@@ -160,7 +162,7 @@ Tern is designed for adults. It's a tracking tool, not medical advice. Talk to a
 
 ## Support URL
 
-https://a-thread.github.io/tern/ (the privacy policy, which ends with a contact address)
+https://purlieus.dev/tern/support/
 
 ## Marketing URL (optional)
 
@@ -168,7 +170,7 @@ Leave blank for now.
 
 ## Copyright
 
-2026 Aiden Threadgoode
+2026 Purlieus LLC
 
 ## What's New
 
