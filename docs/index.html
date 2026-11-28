@@ -3,202 +3,367 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Tern privacy policy</title>
-    <style>
-      :root {
-        --bg: #f5f3ee;
-        --text: #26262b;
-        --muted: #6b6b73;
-        --line: #dcd8cf;
-        --link: #1f5f8b;
-      }
-      @media (prefers-color-scheme: dark) {
-        :root {
-          --bg: #1b1b1f;
-          --text: #ececef;
-          --muted: #a0a0a8;
-          --line: #33333a;
-          --link: #7fb8e0;
-        }
-      }
-      body {
-        margin: 0;
-        background: var(--bg);
-        color: var(--text);
-        font:
-          17px/1.6 -apple-system,
-          BlinkMacSystemFont,
-          'Segoe UI',
-          Roboto,
-          sans-serif;
-      }
-      main {
-        max-width: 42rem;
-        margin: 0 auto;
-        padding: 2.5rem 1rem 4rem;
-      }
-      h1 {
-        font-family: Georgia, 'Times New Roman', serif;
-        font-size: 2rem;
-        margin: 0 0 0.25rem;
-      }
-      h2 {
-        font-size: 1.15rem;
-        margin: 2rem 0 0.5rem;
-        padding-top: 1.25rem;
-        border-top: 1px solid var(--line);
-      }
-      .updated {
-        color: var(--muted);
-        margin: 0 0 1.5rem;
-        font-style: italic;
-      }
-      ul {
-        padding-left: 1.25rem;
-      }
-      li {
-        margin: 0.35rem 0;
-      }
-      a {
-        color: var(--link);
-      }
-    </style>
+    <title>Tern: A Kinder Tracker · Purlieus LLC</title>
+    <meta
+      name="description"
+      content="Tern, from Purlieus LLC. A kinder tracker. No bargaining with calories. No chasing a size. Just regular movement, and goals you choose. No ads, nothing sold."
+    />
+    <meta
+      name="theme-color"
+      content="#f5f3ee"
+      media="(prefers-color-scheme: light)"
+    />
+    <meta
+      name="theme-color"
+      content="#181a1c"
+      media="(prefers-color-scheme: dark)"
+    />
+    <link
+      rel="icon"
+      type="image/png"
+      sizes="64x64"
+      href="/tern/assets/img/favicon-64.png"
+    />
+    <link rel="apple-touch-icon" href="/tern/apple-touch-icon.png" />
+    <link
+      rel="preload"
+      href="/assets/fonts/Fraunces_600SemiBold.ttf"
+      as="font"
+      type="font/ttf"
+      crossorigin
+    />
+    <link
+      rel="preload"
+      href="/assets/fonts/Manrope_400Regular.ttf"
+      as="font"
+      type="font/ttf"
+      crossorigin
+    />
+    <link rel="stylesheet" href="/styles.css" />
   </head>
   <body>
-    <main>
-      <h1>Tern privacy policy</h1>
-      <p class="updated">Last updated: 11/1/2026</p>
+    <a class="skip-link" href="#main">Skip to content</a>
+    <header class="site-header site-header--app">
+      <div class="wrap site-header__inner">
+        <nav class="crumb" aria-label="Breadcrumb">
+          <a class="crumb__parent" href="/">Purlieus</a>
+          <span class="crumb__sep" aria-hidden="true">/</span>
+          <a class="crumb__app" href="/tern/" aria-current="page">
+            <img
+              class="crumb__icon"
+              src="/tern/assets/img/tern-icon.png"
+              width="28"
+              height="28"
+              alt=""
+            />
+            <span>Tern</span>
+          </a>
+        </nav>
+        <nav aria-label="Tern">
+          <ul class="nav-links">
+            <li><a href="/tern/support/">Support</a></li>
+            <li><a href="/tern/privacy/">Privacy</a></li>
+            <li class="nav-links__wide">
+              <a href="/tern/delete-account/">Delete account</a>
+            </li>
+            <li class="nav-links__wide">
+              <a href="/tern/delete-data/">Delete data</a>
+            </li>
+          </ul>
+        </nav>
+      </div>
+    </header>
 
-      <p>
-        Tern is a personal health tracker for steps, food and weight. This page
-        says what it stores, where, and what you can do about it.
-      </p>
+    <main id="main">
+      <section class="section feature" aria-labelledby="tern-title">
+        <div class="wrap feature__grid">
+          <div>
+            <div class="feature__head">
+              <img
+                class="product__icon"
+                src="/tern/assets/img/tern-icon.png"
+                width="72"
+                height="72"
+                alt=""
+              />
+              <p class="eyebrow" style="margin: 0">Tern: A Kinder Tracker</p>
+            </div>
+            <h1 id="tern-title">Progress answers to your pace.</h1>
+            <p
+              class="feature__lede feature__lede--strong"
+              style="margin-top: 20px"
+            >
+              No bargaining with calories. No chasing a size. Just regular
+              movement, and goals you choose.
+            </p>
+            <p class="feature__lede" style="margin-top: 14px">
+              Each day you show up, your Arctic tern travels a little further.
+              Move when you can, log what sustains you, and always rest when you
+              need to.
+            </p>
+            <div class="feature__actions">
+              <ul class="stores" aria-label="Download Tern">
+                <!-- TODO(owner): when Tern is live on the App Store, replace this <li> with:
+                <li>
+                  <a class="store" href="https://apps.apple.com/app/idXXXXXXXXXX">
+                    <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="2" width="12" height="20" rx="2.5"/><path d="M11 18h2"/></svg>
+                    <span class="store__text"><span class="store__small">Download on the</span><span class="store__big">App Store</span></span>
+                  </a>
+                </li> -->
+                <li>
+                  <span class="store store--pending">
+                    <svg
+                      aria-hidden="true"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="1.8"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    >
+                      <rect x="6" y="2" width="12" height="20" rx="2.5" />
+                      <path d="M11 18h2" />
+                    </svg>
+                    <span class="store__text"
+                      ><span class="store__small">Coming soon to the</span
+                      ><span class="store__big">App Store</span></span
+                    >
+                  </span>
+                </li>
+                <!-- TODO(owner): when Tern is live on Google Play, replace this <li> with:
+                <li>
+                  <a class="store" href="https://play.google.com/store/apps/details?id=XXXX">
+                    <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3.5v17l13-8.5z"/></svg>
+                    <span class="store__text"><span class="store__small">Get it on</span><span class="store__big">Google Play</span></span>
+                  </a>
+                </li> -->
+                <li>
+                  <span class="store store--pending">
+                    <svg
+                      aria-hidden="true"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="1.8"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    >
+                      <path d="M6 3.5v17l13-8.5z" />
+                    </svg>
+                    <span class="store__text"
+                      ><span class="store__small">Coming soon to</span
+                      ><span class="store__big">Google Play</span></span
+                    >
+                  </span>
+                </li>
+              </ul>
+            </div>
+          </div>
+          <div class="phones">
+            <figure class="phone phone--side phone--left">
+              <img
+                src="/tern/assets/img/tern-journey.jpg"
+                width="540"
+                height="1200"
+                alt=""
+                loading="lazy"
+              />
+            </figure>
+            <figure class="phone phone--center">
+              <img
+                src="/tern/assets/img/tern-home.jpg"
+                width="540"
+                height="1200"
+                alt="Tern's Today screen: steps toward the daily goal, a week of rings, and a short list of what's left to log."
+              />
+            </figure>
+            <figure class="phone phone--side phone--right">
+              <img
+                src="/tern/assets/img/tern-trends.jpg"
+                width="540"
+                height="1200"
+                alt=""
+                loading="lazy"
+              />
+            </figure>
+          </div>
+        </div>
+      </section>
 
-      <h2>What Tern stores</h2>
-      <p>If you create an account, Tern stores, against your account:</p>
-      <ul>
-        <li>
-          your email address and first name (used to sign you in and greet you),
-        </li>
-        <li>
-          your food log (what you log, the meal, and its nutrition values), any
-          meals you mark as &ldquo;nothing today&rdquo;, and the meals you save
-          (named groups of foods),
-        </li>
-        <li>
-          if you track weight: your weigh-ins (stored in pounds, shown in pounds
-          or kilograms as you choose), and a goal weight if you set one,
-        </li>
-        <li>
-          your waypoints, rest days and settings (goals, units, reminder times),
-        </li>
-        <li>
-          if you choose to track water: each drink you log (an amount and a
-          time), and your daily goal,
-        </li>
-        <li>
-          if you choose to track medication: the name and due time you give each
-          one, and which days you marked it as taken. Nothing else about it,
-          such as doses or why you take it.
-        </li>
-        <li>
-          if you choose to track mood and stress: one check-in per day, made up
-          of two scores from 1 to 10 (mood and stress). Tern does not ask for
-          notes or reasons.
-        </li>
-      </ul>
-      <p>
-        This data is stored with Supabase, a hosted database, and is protected
-        so that only your signed-in account can read or change it.
-      </p>
-      <p>
-        If you use the preview without an account, nothing is saved: the sample
-        data disappears when you exit.
-      </p>
+      <section class="section section--surface" aria-labelledby="who-title">
+        <div class="wrap">
+          <h2 class="section-title" id="who-title">Who Tern is for</h2>
+          <div class="audience">
+            <div class="audience__card">
+              <h3>People tired of dieting apps that race to a number</h3>
+              <p>Tern keeps sustainability in mind.</p>
+              <ul>
+                <li>
+                  A rest day counts as showing up, so your streak carries right
+                  through it.
+                </li>
+                <li>
+                  Walking part of the way is never counted as worse than not
+                  walking at all.
+                </li>
+                <li>
+                  Nothing warns you for going over, and exercise never earns
+                  food back.
+                </li>
+                <li>
+                  Follow the trend, so a single morning never decides how you
+                  feel.
+                </li>
+              </ul>
+            </div>
+            <div class="audience__card">
+              <h3>
+                People who've had a hard relationship with food, tracking or
+                exercise
+              </h3>
+              <p>
+                Tern was built with disordered eating, tracking and movement
+                patterns in mind. That's why it's highly customizable.
+              </p>
+              <ul>
+                <li>
+                  Hide calorie counts whenever the numbers get in the way.
+                </li>
+                <li>
+                  Turn weight tracking off and every reference to it goes away.
+                </li>
+                <li>
+                  Turn food tracking off and keep a gentle reminder to eat, with
+                  nothing to log.
+                </li>
+                <li>
+                  Foods get a NOVA processing level as information, never a
+                  judgment.
+                </li>
+                <li>
+                  Every reminder is optional, goes quiet once you've done the
+                  thing, and never scolds.
+                </li>
+                <li>
+                  Seeing a dietitian, therapist or doctor? Share a plain summary
+                  of the last 2 or 4 weeks, with only what you track and none of
+                  your notes.
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </section>
 
-      <h2>Steps, workouts and your health app</h2>
-      <p>
-        If you connect Health Connect on Android or Apple Health on iPhone, Tern
-        reads your <strong>step counts</strong> and, if you leave workouts on,
-        your <strong>workouts</strong> (their type, start and length), and only
-        to show your steps, your streak, your daily goal and your movement.
-        This is read on your device. Tern does not upload it, does not write
-        anything back to your health app, and does not use it for advertising or
-        share it with anyone. You can remove Tern's access at any time in Health
-        Connect (Android) or Settings &gt; Health &gt; Data Access &amp; Devices
-        &gt; Tern (iPhone), and everything you have logged stays.
-      </p>
+      <section class="section" aria-labelledby="features-title">
+        <div class="wrap">
+          <h2 class="section-title" id="features-title">
+            Track what helps you meet your goals
+          </h2>
+          <ul class="features">
+            <li>
+              <h3>Movement</h3>
+              <p>
+                Set a daily step goal and connect Apple Health or Health
+                Connect. Log workouts and how hard they felt.
+              </p>
+            </li>
+            <li>
+              <h3>Food <span class="optional">Optional</span></h3>
+              <p>
+                Track calories, macros or neither. Search everyday foods and
+                packaged products, scan a barcode, or log the way you'd say it:
+                a slice, a cup or a spoonful.
+              </p>
+            </li>
+            <li>
+              <h3>Weight <span class="optional">Optional</span></h3>
+              <p>
+                Track daily, weekly or not at all, and skip a weigh-in whenever
+                you need to.
+              </p>
+            </li>
+            <li>
+              <h3>
+                Water, mood and medication
+                <span class="optional">Optional</span>
+              </h3>
+              <p>
+                A daily water goal, a quick mood and stress check-in, and
+                medication reminders, each only if you want them.
+              </p>
+            </li>
+            <li>
+              <h3>Trends</h3>
+              <p>
+                See the last 7 days, 30 days or 6 months of whatever you track.
+              </p>
+            </li>
+            <li>
+              <h3>A journey for showing up</h3>
+              <p>
+                Your tern flies the route real Arctic terns were tracked flying:
+                26 stops and 71,200 km from Greenland down to the Weddell Sea
+                and home again.
+              </p>
+            </li>
+          </ul>
+        </div>
+      </section>
 
-      <h2>Notifications</h2>
-      <p>
-        Reminders are local notifications scheduled on your device. They don't
-        go through a server, and you can turn them off in Settings.
-      </p>
-
-      <h2>What Tern does not do</h2>
-      <ul>
-        <li>
-          It does not sell your data, show ads, or share your data with third
-          parties for their own purposes.
-        </li>
-        <li>
-          It does not use your weight or calories to award anything. Waypoints
-          come from showing up: reaching your step goal, logging your meals,
-          taking a rest day.
-        </li>
-      </ul>
-
-      <h2>Your choices</h2>
-      <p>In Settings, under <strong>Your data</strong>, you can:</p>
-      <ul>
-        <li>
-          <strong>Export my data</strong>: get a copy of everything Tern holds
-          about you (JSON).
-        </li>
-        <li>
-          <strong>Delete my data</strong>: erase your food log, saved meals,
-          weigh-ins, water, medication and mood history, waypoints, rest days and settings. Your
-          login is kept.
-          <a href="delete-data.html">How to delete your data</a>.
-        </li>
-        <li>
-          <strong>Delete my account</strong>: permanently delete your account and
-          everything stored with it. See
-          <a href="delete-account.html">how to delete your account</a>.
-        </li>
-      </ul>
-
-      <h2>Food information</h2>
-      <p>
-        Nutrition information for packaged foods comes from Open Food Facts,
-        used under the Open Database License, and for everyday foods from USDA
-        FoodData Central (public domain). When you search for a food or scan a
-        barcode, the search text or barcode number is sent to these public
-        databases so it can be looked up. Nothing else about you or your account
-        is sent with it, though, as with any web request, the services can see
-        your IP address.
-      </p>
-
-      <h2>Camera</h2>
-      <p>
-        If you use the barcode scanner, Tern asks for camera access. The camera
-        is used only to read the barcode on screen; nothing is recorded,
-        photographed or saved.
-      </p>
-
-      <h2>Age</h2>
-      <p>
-        Tern is intended for adults 18 and over. We don't knowingly collect data
-        from anyone under 18. If you believe someone under 18 has created an
-        account, contact us and we'll delete it.
-      </p>
-
-      <h2>Contact</h2>
-      <p>
-        <a href="mailto:aiden.threadgoode@gmail.com"
-          >aiden.threadgoode@gmail.com</a
-        >
-      </p>
+      <section class="section section--surface" aria-labelledby="data-title">
+        <div class="wrap prose">
+          <h2 class="section-title" id="data-title">Your data is yours</h2>
+          <ul>
+            <li>No ads, nothing sold.</li>
+            <li>
+              No account required: stay anonymous and keep everything on your
+              phone, free.
+            </li>
+            <li>
+              Tern Plus is the one paid part: an account that keeps your log on
+              every phone you sign in to, on a secure server.
+            </li>
+            <li>
+              Export everything and restore it on a new phone, or delete your
+              data or your account any time, right from Settings.
+            </li>
+          </ul>
+          <ul class="link-row">
+            <li><a href="/tern/support/">Support</a></li>
+            <li><a href="/tern/privacy/">Privacy policy</a></li>
+            <li><a href="/tern/delete-account/">Delete your account</a></li>
+            <li><a href="/tern/delete-data/">Delete your data</a></li>
+          </ul>
+          <p class="note">
+            Nutrition information comes from Open Food Facts and USDA FoodData
+            Central. Tern is a tracking tool, not medical advice. Talk to a
+            health professional before changing your diet or exercise.
+          </p>
+        </div>
+      </section>
     </main>
+
+    <footer class="site-footer">
+      <div class="wrap site-footer__inner">
+        <div>
+          <p class="site-footer__name">Purlieus LLC</p>
+          <p>A Maine limited liability company</p>
+          <p><a href="mailto:admin@purlieus.dev">admin@purlieus.dev</a></p>
+        </div>
+        <nav aria-label="Footer">
+          <ul class="footer-links">
+            <li><a href="/tern/">Tern</a></li>
+            <li><a href="/tern/support/">Tern support</a></li>
+            <li><a href="/tern/privacy/">Privacy policy</a></li>
+            <li><a href="/tern/delete-account/">Delete your account</a></li>
+            <li><a href="/tern/delete-data/">Delete your data</a></li>
+          </ul>
+        </nav>
+      </div>
+      <div class="wrap site-footer__legal">
+        <p>&copy; 2026 Purlieus LLC. Tern is made by Purlieus LLC.</p>
+      </div>
+    </footer>
   </body>
 </html>

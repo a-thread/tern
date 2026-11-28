@@ -15,7 +15,9 @@ describe('legalLinks', () => {
   });
 
   it('links only the privacy policy on Android, where Apple’s terms don’t apply', () => {
-    expect(legalLinks('android').map((l) => l.url)).toEqual([LegalUrls.PRIVACY]);
+    expect(legalLinks('android').map((l) => l.url)).toEqual([
+      LegalUrls.PRIVACY,
+    ]);
   });
 });
 
