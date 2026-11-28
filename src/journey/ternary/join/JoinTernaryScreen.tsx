@@ -19,6 +19,7 @@ import { TernaryField } from '../components/TernaryField/TernaryField';
 import { TernaryButton } from '../components/TernaryButton/TernaryButton';
 import { YouFields } from '../components/YouFields/YouFields';
 import { useYou } from '../hooks/useYou';
+import { NeedsPlus } from './components/NeedsPlus/NeedsPlus';
 
 const JOIN_MESSAGES: Record<JoinOutcome, string | null> = {
   [JoinOutcome.Joined]: null,
@@ -32,7 +33,7 @@ const JOIN_MESSAGES: Record<JoinOutcome, string | null> = {
 export default function JoinTernaryScreen({
   route,
 }: Partial<NativeStackScreenProps<TernaryStackParamList, 'JoinTernary'>>) {
-  const { join } = useTernary();
+  const { join, available } = useTernary();
   const toast = useToast();
   const navigation = useTernaryNavigation();
   const you = useYou();
@@ -70,6 +71,15 @@ export default function JoinTernaryScreen({
       setBusy(false);
     }
   };
+
+  // No account with Plus (from a join link, say): the way to it, keeping the code.
+  if (!available) {
+    return (
+      <TernaryPage title='Join a ternary'>
+        <NeedsPlus code={cleanInviteCode(code)} />
+      </TernaryPage>
+    );
+  }
 
   return (
     <TernaryPage title='Join a ternary'>

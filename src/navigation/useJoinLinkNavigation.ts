@@ -4,6 +4,7 @@ import type { NavigationContainerRefWithCurrent } from '@react-navigation/native
 
 import { codeFromLink } from '../domain/ternary/models/joinLink';
 import type { RootStackParamList } from './types';
+import { takeRememberedJoin } from './pendingJoin';
 
 type Nav = NavigationContainerRefWithCurrent<RootStackParamList>;
 
@@ -12,7 +13,8 @@ let handled: string | null = null;
 
 /**
  * Opens Join a ternary with the code filled in when Tern is opened by a join link, whether it
- * launched the app or arrived while it was open. Waits until the app is `ready` for it.
+ * launched the app or arrived while it was open, and again once someone who signed up for
+ * Tern Plus to join is in (`rememberJoin`). Waits until the app is `ready` for it.
  */
 export function useJoinLinkNavigation(nav: Nav, ready: boolean) {
   const [url, setUrl] = useState<string | null>(null);
@@ -26,9 +28,13 @@ export function useJoinLinkNavigation(nav: Nav, ready: boolean) {
   }, []);
 
   useEffect(() => {
-    if (!ready || !url || url === handled || !nav.isReady()) return;
-    handled = url;
-    const code = codeFromLink(url);
+    if (!ready || !nav.isReady()) return;
+    let code: string | null = null;
+    if (url && url !== handled) {
+      handled = url;
+      code = codeFromLink(url);
+    }
+    code = code ?? takeRememberedJoin();
     if (!code) return;
     // `initial: false` keeps the ternary's home under it, so Back has somewhere to go.
     nav.navigate('Ternary', {

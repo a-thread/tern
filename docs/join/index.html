@@ -54,6 +54,11 @@
         A friend wants you to fly with them in Tern: a few friends who keep each
         other going, without sharing what they track.
       </p>
+      <p>
+        Ternaries are part of <strong>Tern Plus</strong>, so you'll need the
+        app and a Tern Plus account to join. If you don't have one yet, Tern
+        walks you through it and keeps your invite.
+      </p>
 
       <div id="with-code" hidden>
         <p>Your invite code:</p>
@@ -75,8 +80,8 @@
         <li><a href="https://play.google.com/store/apps/details?id=com.purlieus.tern">Tern on Google Play</a> (Android)</li>
       </ul>
       <p class="note">
-        Ternaries come with Tern Plus. Friends see that you showed up, never what
-        you ate, weighed or walked. <a href="/tern/privacy/#ternaries">How we keep it private</a>.
+        Friends see that you showed up, never what you ate, weighed or walked.
+        <a href="/tern/privacy/#ternaries">How we keep it private</a>.
       </p>
     </main>
     </div>
@@ -93,8 +98,9 @@
         document.getElementById('code').textContent = code;
         document.getElementById('open').href = app;
         document.getElementById('with-code').hidden = false;
-        // On a phone, try Tern straight away; the page stays if it isn't installed.
-        if (/Android|iPhone|iPad|iPod/i.test(navigator.userAgent)) {
+        // Android tries Tern straight away and stays quiet if it isn't installed. Safari would
+        // show an "address is invalid" alert, so on iPhone it waits for Open in Tern.
+        if (/Android/i.test(navigator.userAgent)) {
           window.location.href = app;
         }
       })();

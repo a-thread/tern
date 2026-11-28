@@ -4,6 +4,7 @@ import type { NavigationContainerRefWithCurrent } from '@react-navigation/native
 
 import type { RootStackParamList } from './types';
 import { useJoinLinkNavigation } from './useJoinLinkNavigation';
+import { rememberJoin } from './pendingJoin';
 
 type Nav = NavigationContainerRefWithCurrent<RootStackParamList>;
 
@@ -48,6 +49,15 @@ describe('useJoinLinkNavigation', () => {
     expect(navigate).not.toHaveBeenCalled();
     rerender({ ready: true });
     expect(navigate).toHaveBeenCalledWith(...joinWith('ABC234'));
+  });
+
+  it('opens Join again with a code kept while signing up for Plus', async () => {
+    rememberJoin('KTW4QP');
+    const { nav, navigate } = setup(null);
+    renderHook(() => useJoinLinkNavigation(nav, true));
+    await act(async () => {});
+    expect(navigate).toHaveBeenCalledWith(...joinWith('KTW4QP'));
+    expect(navigate).toHaveBeenCalledTimes(1);
   });
 
   it('ignores other links', async () => {
