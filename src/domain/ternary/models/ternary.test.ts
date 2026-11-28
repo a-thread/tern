@@ -111,6 +111,57 @@ describe('dishes', () => {
     // Copies, so changing the saved meal later can't change what was shared.
     expect(dish.items![0]).not.toBe(items[0]);
   });
+
+  it('shares a meal saved from the log as names only, since its amounts are what was eaten', () => {
+    const dish = dishFromSavedMeal({
+      id: 'm',
+      name: 'Lunch',
+      createdAt: '2026-11-01',
+      servings: 1,
+      items: [{ name: 'Rice', servings: 1.5, calories: 300 }] as never[],
+    });
+    expect(dish).toEqual({ name: 'Lunch', foods: ['Rice'] });
+    expect(JSON.stringify(dish)).not.toMatch(/\d/);
+  });
+
+  it('sends only the portion each amount is measured in', () => {
+    const measure = {
+      per100: { calories: 100, protein: 1, carbs: 1, fat: 1 },
+      portions: [
+        { label: 'cup', grams: 200 },
+        { label: 'tbsp', grams: 12 },
+      ],
+      unit: 'cup',
+      quantity: 1,
+    };
+    const dish = dishFromSavedMeal({
+      id: 'm',
+      name: 'Soup',
+      createdAt: '2026-11-01',
+      servings: 4,
+      items: [{ name: 'Lentils', servings: 1, measure }] as never[],
+    });
+    expect(dish.items![0].measure!.portions).toEqual([
+      { label: 'cup', grams: 200 },
+    ]);
+  });
+
+  it('shares a recipe too big for the server as names only', () => {
+    const items = Array.from({ length: 50 }, (_, i) => ({
+      name: `Food ${i}`,
+      servings: 1,
+      servingLabel: 'x'.repeat(2000),
+    })) as never[];
+    const dish = dishFromSavedMeal({
+      id: 'm',
+      name: 'Feast',
+      createdAt: '2026-11-01',
+      servings: 10,
+      items,
+    });
+    expect(dish.items).toBeUndefined();
+    expect(dish.foods).toHaveLength(50);
+  });
 });
 
 describe('stopover tables', () => {

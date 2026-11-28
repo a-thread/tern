@@ -145,8 +145,10 @@ export function createMemoryTernaryRepository(
     },
     async bringDish(stop, dish) {
       const t = need();
+      // Trimmed, as the server stores it, so " Soup" and "Soup" are one meal.
+      const name = dish.name.trim();
       const mine = t.dishes.filter((d) => d.yours && d.stop === stop);
-      const again = mine.some((d) => d.name === dish.name);
+      const again = mine.some((d) => d.name === name);
       if (!again && mine.length >= TernaryRules.MAX_MEALS_PER_STOP) {
         throw new Error('That’s all the meals you can share at this stop');
       }
@@ -155,7 +157,7 @@ export function createMemoryTernaryRepository(
         dishes: [
           // The same meal again updates it rather than adding a second.
           ...t.dishes.filter(
-            (d) => !(d.yours && d.stop === stop && d.name === dish.name),
+            (d) => !(d.yours && d.stop === stop && d.name === name),
           ),
           {
             id: id('dish'),
@@ -164,6 +166,7 @@ export function createMemoryTernaryRepository(
             stop,
             yours: true,
             ...dish,
+            name,
           },
         ],
       };

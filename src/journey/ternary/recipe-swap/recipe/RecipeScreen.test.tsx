@@ -1,5 +1,5 @@
 import React from 'react';
-import { fireEvent, render, screen } from '@testing-library/react-native';
+import { act, fireEvent, render, screen } from '@testing-library/react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import { ToastProvider } from '@shared/state/ToastContext';
@@ -60,8 +60,9 @@ const soup: Dish = {
 };
 
 let meals: ReturnType<typeof useSavedMeals>['meals'] = [];
+let deleteMeal: (id: string) => void = () => {};
 function MealsProbe() {
-  meals = useSavedMeals().meals;
+  ({ meals, deleteMeal } = useSavedMeals());
   return null;
 }
 
@@ -107,6 +108,17 @@ describe('a shared recipe', () => {
       'Red lentils',
       'Coconut milk',
     ]);
-    expect(screen.getByText('Saved to your meals')).toBeTruthy();
+    expect(screen.getByText('In your meals')).toBeTruthy();
+  });
+
+  it('can be saved again once deleted from your meals, and taken off Kept to cook', async () => {
+    open();
+    fireEvent.press(await screen.findByText('Save to my meals'));
+    const saved = meals.find((m) => m.name === 'Lentil soup')!;
+    act(() => deleteMeal(saved.id));
+    expect(screen.getByText('Save to my meals')).toBeTruthy();
+
+    fireEvent.press(screen.getByText('Remove from Kept to cook'));
+    expect(screen.queryByText('Remove from Kept to cook')).toBeNull();
   });
 });

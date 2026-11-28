@@ -68,8 +68,8 @@ export default function AboutTernaryScreen() {
           title='Swap meals'
         >
           <Bullet first>
-            Share your saved meals with the people in your ternary, recipe and
-            all.
+            Share your saved meals with the people in your ternary. Recipes go
+            with their amounts.
           </Bullet>
           <Bullet>
             Save a friend’s meal to your own, ready to log without working out

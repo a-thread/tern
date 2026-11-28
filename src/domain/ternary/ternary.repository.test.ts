@@ -34,6 +34,14 @@ describe('sharing meals at a stop', () => {
     expect(yours[0].foods).toEqual(['Leeks']);
   });
 
+  it('treats a name with stray spaces as the same meal, as the server does', async () => {
+    const repo = createMemoryTernaryRepository(sampleTernary(TODAY));
+    await repo.bringDish('1-iceland', meal('Soup'));
+    await repo.bringDish('1-iceland', meal(' Soup '));
+    const yours = await yoursAt(repo, '1-iceland');
+    expect(yours.map((d) => d.name)).toEqual(['Soup']);
+  });
+
   it('takes back only a meal you shared', async () => {
     const repo = createMemoryTernaryRepository(sampleTernary(TODAY));
     await repo.bringDish('1-iceland', meal('Soup'));

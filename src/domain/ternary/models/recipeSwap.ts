@@ -1,5 +1,6 @@
 import type { Tier } from '../../food/models/foodEntry';
 import { parseMeasure } from '../../food/models/measure';
+import { Servings } from '../../food/models/servings';
 import {
   type SavedMealItem,
   SavedMealLimits,
@@ -9,6 +10,16 @@ import type { Dish } from './ternary';
 const finite = (n: unknown): n is number =>
   typeof n === 'number' && Number.isFinite(n);
 const nonNegative = (n: unknown) => (finite(n) && n >= 0 ? n : 0);
+
+/** How long each part of a friend's food can be, once saved as yours. */
+export class SharedItemLimits {
+  /** As the server allows for a shared food's name. */
+  static readonly MAX_NAME = 80;
+  static readonly MAX_LABEL = 60;
+  static readonly MAX_BRAND = 60;
+}
+
+const clip = (text: string, max: number) => text.trim().slice(0, max);
 
 /**
  * A shared recipe's foods as they arrive from a friend's phone, made safe to save as your own
@@ -21,18 +32,28 @@ export function cleanSharedItems(raw: unknown): SavedMealItem[] | undefined {
     .flatMap((r): SavedMealItem[] => {
       if (!r || typeof r !== 'object') return [];
       const i = r as Record<string, unknown>;
-      const name = typeof i.name === 'string' ? i.name.trim() : '';
+      const name =
+        typeof i.name === 'string'
+          ? clip(i.name, SharedItemLimits.MAX_NAME)
+          : '';
       if (!name || !finite(i.servings) || i.servings <= 0) return [];
       const tier = [1, 2, 3, 4].includes(i.tier as number)
         ? (i.tier as Tier)
         : 3;
+      const brand =
+        typeof i.brand === 'string'
+          ? clip(i.brand, SharedItemLimits.MAX_BRAND)
+          : '';
+      const label =
+        typeof i.servingLabel === 'string'
+          ? clip(i.servingLabel, SharedItemLimits.MAX_LABEL)
+          : '';
       return [
         {
           name,
-          ...(typeof i.brand === 'string' && i.brand ? { brand: i.brand } : {}),
-          servings: i.servings,
-          servingLabel:
-            typeof i.servingLabel === 'string' ? i.servingLabel : '1 serving',
+          ...(brand ? { brand } : {}),
+          servings: Math.min(i.servings, Servings.MAX),
+          servingLabel: label || Servings.PLAIN,
           calories: nonNegative(i.calories),
           protein: nonNegative(i.protein),
           carbs: nonNegative(i.carbs),

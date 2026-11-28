@@ -23,6 +23,7 @@ import {
   TernaryButton,
 } from '../../components/TernaryButton/TernaryButton';
 import { useSavedMeals } from '@/domain/saved-meals/SavedMealsContext';
+import { findMealByName } from '@/domain/saved-meals/models/savedMeals';
 import { servingsText } from '@/domain/food/models/servings';
 
 type Props = NativeStackScreenProps<TernaryStackParamList, 'Recipe'>;
@@ -34,7 +35,7 @@ type Props = NativeStackScreenProps<TernaryStackParamList, 'Recipe'>;
  */
 export default function RecipeScreen({ route }: Props) {
   const { ternary, report, removeDish } = useTernary();
-  const { saveSharedMeal } = useSavedMeals();
+  const { meals, saveSharedMeal } = useSavedMeals();
   const { settings, updateSettings } = useSettings();
   const toast = useToast();
   const navigation = useTernaryNavigation();
@@ -58,6 +59,8 @@ export default function RecipeScreen({ route }: Props) {
 
   // A recipe with amounts saves straight to your meals, ready to log; older shares only list foods.
   const items = dish?.items;
+  // From your meals themselves, so deleting it there lets it be saved again.
+  const inMeals = Boolean(findMealByName(meals, recipe.name));
   const saveToMeals = () => {
     if (!dish || !items) return;
     const outcome = saveSharedMeal(dish.name, items, dish.servings ?? 1);
@@ -139,10 +142,10 @@ export default function RecipeScreen({ route }: Props) {
         <TernaryButton label='Stop sharing' outline onPress={askRemove} />
       ) : items ? (
         <TernaryButton
-          label={kept ? 'Saved to your meals' : 'Save to my meals'}
+          label={inMeals ? 'In your meals' : 'Save to my meals'}
           tone={ButtonTone.Aurora}
-          outline={kept}
-          disabled={kept}
+          outline={inMeals}
+          disabled={inMeals}
           onPress={saveToMeals}
         />
       ) : (
@@ -153,9 +156,13 @@ export default function RecipeScreen({ route }: Props) {
         />
       )}
 
-      {!yours && dish ? (
+      {!yours && (dish || kept) ? (
         <Group>
-          <Row title='Report this recipe' onPress={askReport} />
+          {/* A saved recipe stays kept until taken off the list here. */}
+          {items && kept ? (
+            <Row title='Remove from Kept to cook' onPress={toggleKeep} />
+          ) : null}
+          {dish ? <Row title='Report this recipe' onPress={askReport} /> : null}
         </Group>
       ) : null}
     </TernaryPage>

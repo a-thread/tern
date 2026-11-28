@@ -1,7 +1,8 @@
 import { cleanSpaces } from '@shared/utils/text';
-import type {
-  SavedMeal,
-  SavedMealItem,
+import {
+  isRecipe,
+  type SavedMeal,
+  type SavedMealItem,
 } from '../../saved-meals/models/savedMeals';
 import { RouteId, Routes } from '../../waypoints/models/routes';
 
@@ -152,14 +153,33 @@ export const cleanInviteCode = (text: string) =>
     .replace(/[^A-Z0-9]/g, '')
     .slice(0, TernaryRules.INVITE_LENGTH);
 
-/** A saved meal as it's shared: its name, its foods' names, and the recipe to save it from. */
+export class SharedRecipes {
+  /** Under the server's 64 KB limit on a shared recipe, with room to spare. */
+  static readonly MAX_BYTES = 60_000;
+}
+
+/**
+ * A saved meal as it's shared: its name and foods' names, and, for a recipe (a meal that
+ * makes more than one serving), the amounts to save it from. A meal saved from your log
+ * holds what you ate, so it never shares amounts: only names.
+ */
 export function dishFromSavedMeal(meal: SavedMeal): SharedMeal {
-  return {
+  const names = {
     name: meal.name,
     foods: [...new Set(meal.items.map((i) => i.name.trim()).filter(Boolean))],
-    items: meal.items.map((i) => ({ ...i })),
-    servings: meal.servings,
   };
+  if (!isRecipe(meal)) return names;
+  // Only the portion each amount is measured in travels, not the food's whole list.
+  const items = meal.items.map((i) => ({
+    ...i,
+    measure: i.measure && {
+      ...i.measure,
+      portions: i.measure.portions.filter((p) => p.label === i.measure!.unit),
+    },
+  }));
+  // Too big for the server: share it as names, rather than fail.
+  if (JSON.stringify(items).length > SharedRecipes.MAX_BYTES) return names;
+  return { ...names, items, servings: meal.servings };
 }
 
 /** Friends drawn in the flock today: everyone who's here or resting, you included. */
