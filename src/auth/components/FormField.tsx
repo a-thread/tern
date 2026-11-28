@@ -20,8 +20,10 @@ export function FormField({
   label: string;
   value: string;
   onChangeText: (v: string) => void;
-  kind: 'email' | 'password' | 'name';
-  autoComplete: 'email' | 'current-password' | 'new-password' | 'given-name';
+  /** `code`: an invite code, in capitals with no autocorrect. */
+  kind: 'email' | 'password' | 'name' | 'code';
+  autoComplete:
+    'email' | 'current-password' | 'new-password' | 'given-name' | 'off';
   invalid?: boolean;
   errorMessage?: string;
   onSubmitEditing?: () => void;
@@ -38,7 +40,9 @@ export function FormField({
         onSubmitEditing={onSubmitEditing}
         secureTextEntry={kind === 'password'}
         keyboardType={kind === 'email' ? 'email-address' : 'default'}
-        autoCapitalize={kind === 'name' ? 'words' : 'none'}
+        autoCapitalize={
+          kind === 'name' ? 'words' : kind === 'code' ? 'characters' : 'none'
+        }
         autoCorrect={kind === 'name'}
         autoComplete={autoComplete}
         accessibilityLabel={label}

@@ -29,6 +29,17 @@
         font-weight: 600;
         text-decoration: none;
       }
+      .copy-button {
+        margin-left: 0.5rem;
+        padding: 0.7rem 1.4rem;
+        border-radius: 999px;
+        border: 1.5px solid #d85a30;
+        background: transparent;
+        color: #d85a30;
+        font: inherit;
+        font-weight: 600;
+        cursor: pointer;
+      }
     </style>
   </head>
   <body>
@@ -63,11 +74,17 @@
       <div id="with-code" hidden>
         <p>Your invite code:</p>
         <p class="invite-code" id="code"></p>
-        <p><a class="open-button" id="open" href="#">Open in Tern</a></p>
         <p>
-          If Tern doesn't open, get it below, then go to
-          <strong>Journey</strong> &rsaquo; <strong>Start or join a ternary</strong>
-          &rsaquo; <strong>Join with a code</strong> and enter the code above.
+          <a class="open-button" id="open" href="#">Open in Tern</a>
+          <button class="copy-button" id="copy" type="button">Copy code</button>
+          <span id="copied" role="status"></span>
+        </p>
+        <p>
+          New to Tern? Copy the code, get Tern below, and paste it into
+          <strong>Have an invite code from a friend?</strong> when you create
+          your account. Already have Tern? Go to <strong>Journey</strong>
+          &rsaquo; <strong>Start or join a ternary</strong> &rsaquo;
+          <strong>Join with a code</strong>.
         </p>
       </div>
       <p id="no-code" hidden>
@@ -98,6 +115,17 @@
         document.getElementById('code').textContent = code;
         document.getElementById('open').href = app;
         document.getElementById('with-code').hidden = false;
+        var copied = document.getElementById('copied');
+        document.getElementById('copy').addEventListener('click', function () {
+          if (!navigator.clipboard) {
+            copied.textContent = ' Copy it from above.';
+            return;
+          }
+          navigator.clipboard.writeText(code).then(
+            function () { copied.textContent = ' Copied'; },
+            function () { copied.textContent = ' Copy it from above.'; }
+          );
+        });
         // Android tries Tern straight away and stays quiet if it isn't installed. Safari would
         // show an "address is invalid" alert, so on iPhone it waits for Open in Tern.
         if (/Android/i.test(navigator.userAgent)) {

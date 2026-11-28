@@ -15,6 +15,11 @@ import {
   passwordsMatch,
   AccountLimits,
 } from '../../domain/auth/validation';
+import {
+  cleanInviteCode,
+  TernaryRules,
+} from '../../domain/ternary/models/ternary';
+import { rememberJoin } from '../../navigation/pendingJoin';
 
 export default function CreateAccountScreen({
   onCreated,
@@ -28,6 +33,12 @@ export default function CreateAccountScreen({
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirm, setConfirm] = useState('');
+  // A friend's invite: kept through signing in, so Join opens with it once they're in.
+  const [showInvite, setShowInvite] = useState(false);
+  const [invite, setInvite] = useState('');
+  const inviteCode = cleanInviteCode(invite);
+  const inviteOk =
+    !invite.trim() || inviteCode.length === TernaryRules.INVITE_LENGTH;
   const { busy, error, run } = useSubmit(
     'Unable to create account. Please try again.',
   );
@@ -36,13 +47,15 @@ export default function CreateAccountScreen({
     isValidName(firstName) &&
     isValidEmail(email) &&
     isValidPassword(password) &&
-    passwordsMatch(password, confirm);
+    passwordsMatch(password, confirm) &&
+    inviteOk;
 
   const submit = async () => {
     if (!canSubmit) return;
     const ok = await run(() =>
       auth.signUp(email.trim(), password, firstName.trim()),
     );
+    if (ok && inviteCode) rememberJoin(inviteCode);
     // With email confirmation on there's no session yet, so send them back to
     // sign in. (With it off they're already signed in and this unmounts.)
     if (ok) onCreated();
@@ -94,6 +107,26 @@ export default function CreateAccountScreen({
         errorMessage='Passwords do not match'
         onSubmitEditing={submit}
       />
+
+      {showInvite ? (
+        <FormField
+          label='Invite code (optional)'
+          kind='code'
+          autoComplete='off'
+          value={invite}
+          onChangeText={setInvite}
+          invalid={!inviteOk}
+          errorMessage={`Invite codes are ${TernaryRules.INVITE_LENGTH} letters and numbers`}
+          onSubmitEditing={submit}
+        />
+      ) : (
+        <LinkColumn>
+          <LinkButton
+            label='Have an invite code from a friend?'
+            onPress={() => setShowInvite(true)}
+          />
+        </LinkColumn>
+      )}
 
       <SubmitButton
         label='Create account'

@@ -29,18 +29,25 @@ export function useJoinLinkNavigation(nav: Nav, ready: boolean) {
 
   useEffect(() => {
     if (!ready || !nav.isReady()) return;
-    let code: string | null = null;
+    // `initial: false` keeps the ternary's home under it, so Back has somewhere to go.
+    const openJoin = (code: string) =>
+      nav.navigate('Ternary', {
+        screen: 'JoinTernary',
+        params: { code },
+        initial: false,
+      });
+    let linked: string | null = null;
     if (url && url !== handled) {
       handled = url;
-      code = codeFromLink(url);
+      linked = codeFromLink(url);
     }
-    code = code ?? takeRememberedJoin();
-    if (!code) return;
-    // `initial: false` keeps the ternary's home under it, so Back has somewhere to go.
-    nav.navigate('Ternary', {
-      screen: 'JoinTernary',
-      params: { code },
-      initial: false,
-    });
+    if (linked) return openJoin(linked);
+    let alive = true;
+    takeRememberedJoin()
+      .then((kept) => alive && kept && openJoin(kept))
+      .catch(() => {});
+    return () => {
+      alive = false;
+    };
   }, [ready, url, nav]);
 }

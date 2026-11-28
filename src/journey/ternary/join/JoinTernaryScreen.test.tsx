@@ -47,13 +47,13 @@ function open() {
 }
 
 describe('joining without Tern Plus', () => {
-  beforeEach(() => {
+  beforeEach(async () => {
     mockAuth.openSignIn.mockClear();
     mockGoBack.mockClear();
-    takeRememberedJoin();
+    await takeRememberedJoin();
   });
 
-  it('says it needs Tern Plus, and signs up keeping the invite', () => {
+  it('says it needs Tern Plus, and signs up keeping the invite', async () => {
     mockAuth.session = null;
     open();
     expect(screen.getByText('Ternaries come with Tern Plus')).toBeTruthy();
@@ -61,7 +61,7 @@ describe('joining without Tern Plus', () => {
     expect(screen.queryByText('Join')).toBeNull();
     fireEvent.press(screen.getByText('Get Tern Plus'));
     expect(mockAuth.openSignIn).toHaveBeenCalledWith({ toSignUp: true });
-    expect(takeRememberedJoin()).toBe('KTW4QP');
+    expect(await takeRememberedJoin()).toBe('KTW4QP');
   });
 
   it('renews for an account whose Plus has ended', () => {
@@ -71,11 +71,11 @@ describe('joining without Tern Plus', () => {
     expect(mockAuth.openSignIn).toHaveBeenCalledWith();
   });
 
-  it('can be put off', () => {
+  it('can be put off', async () => {
     mockAuth.session = null;
     open();
     fireEvent.press(screen.getByText('Not now'));
     expect(mockGoBack).toHaveBeenCalled();
-    expect(takeRememberedJoin()).toBeNull();
+    expect(await takeRememberedJoin()).toBeNull();
   });
 });
