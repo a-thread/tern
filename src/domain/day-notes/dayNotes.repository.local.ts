@@ -2,9 +2,7 @@ import type { LocalDb } from '@shared/backend/localDb';
 import { rowToDayNote } from './dayNotes.repository.supabase';
 import type { DayNotesRepository } from './dayNotes.repository';
 
-export function createLocalDayNotesRepository(
-  db: LocalDb,
-): DayNotesRepository {
+export function createLocalDayNotesRepository(db: LocalDb): DayNotesRepository {
   return {
     async load(from, to) {
       return (

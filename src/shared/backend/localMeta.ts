@@ -4,9 +4,14 @@ import type { LocalDb } from './localDb';
 export class LocalMetaKey {
   /** The account whose log was last copied onto the phone when its Tern Plus ended. */
   static readonly COPIED_FROM_ACCOUNT = 'copied_from_account';
+  /** The signed-in account's last known health data consent, for launches without a connection. */
+  static readonly HEALTH_CONSENT = 'health_consent';
 }
 
-export async function getLocalMeta(db: LocalDb, key: string): Promise<string | null> {
+export async function getLocalMeta(
+  db: LocalDb,
+  key: string,
+): Promise<string | null> {
   const [row] = await db.all<{ value: string }>(
     'SELECT value FROM meta WHERE key = ?',
     [key],

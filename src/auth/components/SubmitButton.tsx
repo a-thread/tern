@@ -29,6 +29,8 @@ export function SubmitButton({
       style={[s.button, off && { opacity: 0.5 }]}
       onPress={onPress}
       disabled={off}
+      accessibilityRole='button'
+      accessibilityState={{ disabled: off, busy }}
     >
       {busy ? (
         <View style={s.busyRow}>

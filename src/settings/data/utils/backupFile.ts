@@ -44,11 +44,20 @@ export async function saveExport(
   if (file.exists) file.delete();
   file.create();
   file.write(json);
-  await Sharing.shareAsync(file.uri, {
-    mimeType: 'application/json',
-    UTI: 'public.json',
-    dialogTitle: 'Save your Tern data',
-  });
+  try {
+    await Sharing.shareAsync(file.uri, {
+      mimeType: 'application/json',
+      UTI: 'public.json',
+      dialogTitle: 'Save your Tern data',
+    });
+  } finally {
+    // The whole log in plain text: don't leave it in the cache once it's been handed over.
+    try {
+      file.delete();
+    } catch (e) {
+      console.warn('Could not remove the cached export', e);
+    }
+  }
   return { outcome: ExportOutcome.Shared };
 }
 

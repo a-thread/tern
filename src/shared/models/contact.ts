@@ -1,4 +1,4 @@
-/** Where people reach the developer: the letter on About Tern and the crash screen. */
+/** Where people reach Purlieus: the letter on About Tern and the crash screen. */
 export class Contact {
-  static readonly EMAIL = 'a.threadless@proton.me';
+  static readonly EMAIL = 'admin@purlieus.dev';
 }

@@ -16,12 +16,18 @@ documents.
 
 ## Hosted pages
 
-These are served by GitHub Pages from this folder, and are linked from the Play listing and the App Store listing.
-They're published documents, not notes — changing one changes what the store shows.
+GitHub Pages serves this folder at `https://purlieus.dev/tern/`, because the Purlieus site
+(`a-thread/a-thread.github.io`) is the account's user site. The pages are linked from the app and
+the store listings, so changing one changes what people see. They share the company site's
+`/styles.css` and fonts; Tern's own images are in `assets/img/`. Each page has its own header and
+footer, so a change to one goes in all of them (and in the Purlieus home and 404 pages).
 
-- `index.html` — the privacy policy
-- `delete-account.html` — how to delete an account, which Google Play requires (Apple wants it in the app, which it is)
-- `delete-data.html` — how to delete your data
+- `index.html` — Tern's page: who it's for, features, store links
+- `privacy/` — the privacy policy
+- `support/` — support (the App Store's Support URL)
+- `delete-account/` — how to delete an account, which Google Play requires (Apple wants it in the app, which it is)
+- `delete-data/` — how to delete your data
+- `delete-account.html`, `delete-data.html` — redirects from the old addresses
 - `test.html` — how to join the closed test (Android) and TestFlight (iPhone), linked from social posts; its images are in `assets/testers/`
 
 ## Not built yet

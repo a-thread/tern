@@ -104,6 +104,8 @@ import { createStoreSubscriptionRepository } from './domain/subscription/subscri
 import { plusUnlocked } from './domain/subscription/plusUnlocked';
 import { devSupporter } from './domain/subscription/devSupporter';
 import { createSupabasePlusSync } from './domain/subscription/entitlement.supabase';
+import type { ConsentRepository } from './domain/consent/consent.repository';
+import { createSupabaseConsentRepository } from './domain/consent/consent.repository.supabase';
 
 /** Every repository the app persists through. Contexts read these; they never touch Supabase directly. */
 export type Backend = {
@@ -124,6 +126,8 @@ export type Backend = {
   commonFoods: CommonFoodsRepository;
   /** Account only: syncs the server's Plus record before writing. */
   syncPlus?: () => Promise<boolean>;
+  /** Account only: consent to keep health data on the server, asked before anything syncs. */
+  consent?: ConsentRepository;
   /** What never-saved settings start as; the app's usual defaults when absent. */
   settingsDefaults?: AppSettings;
   /** Export and erase. Absent in the memory preview, where nothing is stored. */
@@ -247,6 +251,7 @@ export function createRemoteBackend(): Backend {
     workouts: createHealthWorkouts(),
     data: createSupabaseDataRepository(supabase),
     syncPlus: createSupabasePlusSync(supabase),
+    consent: createSupabaseConsentRepository(supabase),
   };
 }
 
