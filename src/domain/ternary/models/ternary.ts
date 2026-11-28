@@ -108,6 +108,8 @@ export class TernaryRules {
   /** The arrival bonus is paid at most this often, however fast a small ternary flies. */
   static readonly ARRIVAL_EVERY_DAYS = 7;
   static readonly MAX_FISH_PER_DAY = 3;
+  /** Meals each person can share at one stop; the server holds to it too. */
+  static readonly MAX_MEALS_PER_STOP = 5;
   /**
    * Arctic terns migrate in flocks of fewer than 15; a ternary stays well smaller, one bird
    * for each look. The server holds to it too (`20261128000000_ternary_looks`).

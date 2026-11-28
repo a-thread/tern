@@ -50,6 +50,7 @@ type TernaryContextValue = {
     stop: string,
     dish: { name: string; foods: string[] },
   ) => Promise<void>;
+  removeDish: (dishId: string) => Promise<void>;
   block: (userId: string) => Promise<void>;
   unblock: (userId: string) => Promise<void>;
   report: (kind: ReportKind, target: string) => Promise<void>;
@@ -158,6 +159,7 @@ export function TernaryProvider({
       bringDish: then((stop: string, dish: { name: string; foods: string[] }) =>
         need().bringDish(stop, dish),
       ),
+      removeDish: then((dishId: string) => need().removeDish(dishId)),
       block: then((userId: string) => need().block(userId)),
       unblock: then((userId: string) => need().unblock(userId)),
       report: (kind, target) => need().report(kind, target),

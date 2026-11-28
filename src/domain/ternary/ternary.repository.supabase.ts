@@ -79,6 +79,8 @@ export function createSupabaseTernaryRepository(
           p_foods: dish.foods,
         }),
       ),
+    removeDish: (dishId) =>
+      ok(db.rpc('ternary_remove_dish', { p_dish: dishId })),
     block: (userId) => ok(db.rpc('ternary_block', { p_user: userId })),
     unblock: (userId) => ok(db.rpc('ternary_unblock', { p_user: userId })),
     report: (kind, target) =>

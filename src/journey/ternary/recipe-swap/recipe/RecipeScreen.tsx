@@ -15,6 +15,7 @@ import {
 } from '@/domain/ternary/models/recipeSwap';
 import { stopNamed } from '@/domain/ternary/models/stopover';
 import { ReportKind } from '@/domain/ternary/models/ternary';
+import { useTernaryNavigation } from '@/navigation/useAppNavigation';
 import type { TernaryStackParamList } from '../../navigation';
 import { TernaryPage } from '../../components/TernaryPage/TernaryPage';
 import { TernaryButton } from '../../components/TernaryButton/TernaryButton';
@@ -27,9 +28,10 @@ type Props = NativeStackScreenProps<TernaryStackParamList, 'Recipe'>;
  * friend's recipe can be reported; nobody is told.
  */
 export default function RecipeScreen({ route }: Props) {
-  const { ternary, report } = useTernary();
+  const { ternary, report, removeDish } = useTernary();
   const { settings, updateSettings } = useSettings();
   const toast = useToast();
+  const navigation = useTernaryNavigation();
   const { id } = route.params;
 
   const dish = ternary?.dishes.find((d) => d.id === id);
@@ -57,6 +59,22 @@ export default function RecipeScreen({ route }: Props) {
     updateSettings({ keptRecipes: keepRecipe(settings.keptRecipes, dish) });
     toast.show('Kept. It’s under Kept to cook.');
   };
+
+  const askRemove = () =>
+    confirm({
+      title: 'Stop sharing this meal?',
+      message: `Friends won’t see “${recipe.name}” any more. Anyone who kept it still has it.`,
+      action: 'Stop sharing',
+      onConfirm: async () => {
+        try {
+          await removeDish(id);
+          navigation.goBack();
+        } catch (e) {
+          console.warn('Could not stop sharing a recipe', e);
+          toast.show('Couldn’t do that just now. Please try again.');
+        }
+      },
+    });
 
   const askReport = () =>
     confirm({
@@ -88,12 +106,12 @@ export default function RecipeScreen({ route }: Props) {
         ))}
       </Group>
       <FootNote>
-        No amounts or numbers come with a shared recipe. When you cook it, log
-        the foods from the Food tab with your own amounts, and your display
-        settings apply as always.
+        No amounts come with it: log it with your own when you cook it.
       </FootNote>
 
-      {yours ? null : (
+      {yours ? (
+        <TernaryButton label='Stop sharing' outline onPress={askRemove} />
+      ) : (
         <TernaryButton
           label={kept ? 'Kept to cook · remove' : 'Keep this recipe'}
           outline={kept}

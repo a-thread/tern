@@ -37,10 +37,13 @@ export interface TernaryRepository {
   }): Promise<void>;
   bringFish(toUserId: string, today: string): Promise<void>;
   sendPostcard(stopId: string, today: string): Promise<void>;
+  /** Shares a meal at `stop`, up to `MAX_MEALS_PER_STOP`; the same name again updates it. */
   bringDish(
     stop: string,
     dish: { name: string; foods: string[] },
   ): Promise<void>;
+  /** Takes back a meal you shared. */
+  removeDish(dishId: string): Promise<void>;
   /** Silent: each stops seeing the other, and neither is told. */
   block(userId: string): Promise<void>;
   /** Undoes a block you made. */
@@ -144,10 +147,18 @@ export function createMemoryTernaryRepository(
     },
     async bringDish(stop, dish) {
       const t = need();
+      const mine = t.dishes.filter((d) => d.yours && d.stop === stop);
+      const again = mine.some((d) => d.name === dish.name);
+      if (!again && mine.length >= TernaryRules.MAX_MEALS_PER_STOP) {
+        throw new Error('That’s all the meals you can share at this stop');
+      }
       current = {
         ...t,
         dishes: [
-          ...t.dishes.filter((d) => !(d.yours && d.stop === stop)),
+          // The same meal again updates it rather than adding a second.
+          ...t.dishes.filter(
+            (d) => !(d.yours && d.stop === stop && d.name === dish.name),
+          ),
           {
             id: id('dish'),
             fromName: 'You',
@@ -157,6 +168,13 @@ export function createMemoryTernaryRepository(
             ...dish,
           },
         ],
+      };
+    },
+    async removeDish(dishId) {
+      const t = need();
+      current = {
+        ...t,
+        dishes: t.dishes.filter((d) => !(d.yours && d.id === dishId)),
       };
     },
     async block(userId) {

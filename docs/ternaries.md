@@ -50,9 +50,9 @@ ternary. Never a date, a total or how long it took, not even on the postmark: "w
 everyone?" is a moment someone chose to share, not a standing map of everyone's place.
 
 **Recipe swap.** Each stop the shared bird reaches brings a new idea for what to share
-(*Bring something warming*), and each member can share one saved meal per stop. Only the name
-and foods are shared. A friend's recipe can be kept to cook, and reported. No likes or
-comments, and nobody is shown as not having shared.
+(*Bring something warming*), and each member can share up to five saved meals per stop, and
+take any of them back. Only the name and foods are shared. A friend's recipe can be kept to
+cook, and reported. No likes or comments, and nobody is shown as not having shared.
 
 **Hide friends' food.** A free safeguard in Food display that hides friends' recipes.
 
