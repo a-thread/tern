@@ -51,8 +51,11 @@ everyone?" is a moment someone chose to share, not a standing map of everyone's 
 
 **Recipe swap.** Each stop the shared bird reaches brings a new idea for what to share
 (*Bring something warming*), and each member can share up to five saved meals per stop, and
-take any of them back. Only the name and foods are shared. A friend's recipe can be kept to
-cook, and reported. No likes or comments, and nobody is shown as not having shared.
+take any of them back. A meal is shared as a recipe (its foods with their amounts, and how
+many servings it makes) so a friend can save it to their own meals and log it without
+working out amounts. Its nutrition travels with it but is never shown in the ternary; once
+saved, it's the friend's own meal, shown their way. A friend's recipe can be reported. No
+likes or comments, and nobody is shown as not having shared.
 
 **Hide friends' food.** A free safeguard in Food display that hides friends' recipes.
 

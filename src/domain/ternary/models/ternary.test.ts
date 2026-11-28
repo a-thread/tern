@@ -89,23 +89,27 @@ describe('invite codes', () => {
 });
 
 describe('dishes', () => {
-  it('carries a saved meal’s name and food names, and nothing else', () => {
+  it('carries a saved meal as its recipe: names, foods with amounts, and servings', () => {
+    const items = [
+      { name: 'Red lentils', calories: 230 },
+      { name: 'Carrot', calories: 25 },
+      { name: 'Carrot', calories: 25 },
+    ] as never[];
     const dish = dishFromSavedMeal({
       id: 'm',
       name: 'Red lentil soup',
       createdAt: '2026-11-01',
       servings: 4,
-      items: [
-        { name: 'Red lentils', calories: 230 },
-        { name: 'Carrot', calories: 25 },
-        { name: 'Carrot', calories: 25 },
-      ] as never,
+      items,
     });
     expect(dish).toEqual({
       name: 'Red lentil soup',
       foods: ['Red lentils', 'Carrot'],
+      items,
+      servings: 4,
     });
-    expect(JSON.stringify(dish)).not.toMatch(/calories|\d/);
+    // Copies, so changing the saved meal later can't change what was shared.
+    expect(dish.items![0]).not.toBe(items[0]);
   });
 });
 

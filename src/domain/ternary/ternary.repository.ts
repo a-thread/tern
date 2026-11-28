@@ -5,6 +5,7 @@ import {
   JoinOutcome,
   ReportKind,
   takenLooks,
+  type SharedMeal,
   type Ternary,
   type TernaryMember,
   TernaryRules,
@@ -38,10 +39,7 @@ export interface TernaryRepository {
   bringFish(toUserId: string, today: string): Promise<void>;
   sendPostcard(stopId: string, today: string): Promise<void>;
   /** Shares a meal at `stop`, up to `MAX_MEALS_PER_STOP`; the same name again updates it. */
-  bringDish(
-    stop: string,
-    dish: { name: string; foods: string[] },
-  ): Promise<void>;
+  bringDish(stop: string, dish: SharedMeal): Promise<void>;
   /** Takes back a meal you shared. */
   removeDish(dishId: string): Promise<void>;
   /** Silent: each stops seeing the other, and neither is told. */

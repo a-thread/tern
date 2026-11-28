@@ -18,17 +18,23 @@ import { ReportKind } from '@/domain/ternary/models/ternary';
 import { useTernaryNavigation } from '@/navigation/useAppNavigation';
 import type { TernaryStackParamList } from '../../navigation';
 import { TernaryPage } from '../../components/TernaryPage/TernaryPage';
-import { TernaryButton } from '../../components/TernaryButton/TernaryButton';
+import {
+  ButtonTone,
+  TernaryButton,
+} from '../../components/TernaryButton/TernaryButton';
+import { useSavedMeals } from '@/domain/saved-meals/SavedMealsContext';
+import { servingsText } from '@/domain/food/models/servings';
 
 type Props = NativeStackScreenProps<TernaryStackParamList, 'Recipe'>;
 
 /**
- * One recipe from the swap: who shared it, its foods, and keeping it to cook yourself. Only
- * names and foods, never amounts or numbers: whoever cooks it logs it their own way. A
- * friend's recipe can be reported; nobody is told.
+ * One recipe from the swap: who shared it, its foods with their amounts, and saving it to your
+ * own meals, ready to log. Its nutrition is never shown here; once saved it's yours, shown
+ * your way. A friend's recipe can be reported; nobody is told.
  */
 export default function RecipeScreen({ route }: Props) {
   const { ternary, report, removeDish } = useTernary();
+  const { saveSharedMeal } = useSavedMeals();
   const { settings, updateSettings } = useSettings();
   const toast = useToast();
   const navigation = useTernaryNavigation();
@@ -49,6 +55,19 @@ export default function RecipeScreen({ route }: Props) {
   const kept = isKept(settings.keptRecipes, id);
   const from = yours ? 'You' : recipe.fromName;
   const where = dish ? stopNamed(dish.stop)?.name : undefined;
+
+  // A recipe with amounts saves straight to your meals, ready to log; older shares only list foods.
+  const items = dish?.items;
+  const saveToMeals = () => {
+    if (!dish || !items) return;
+    const outcome = saveSharedMeal(dish.name, items, dish.servings ?? 1);
+    if (!outcome.ok) {
+      toast.show(outcome.error);
+      return;
+    }
+    updateSettings({ keptRecipes: keepRecipe(settings.keptRecipes, dish) });
+    toast.show('Saved to your meals. Log it from Food.');
+  };
 
   const toggleKeep = () => {
     if (kept) {
@@ -99,18 +118,33 @@ export default function RecipeScreen({ route }: Props) {
       </Text>
       <Text style={s.name}>{recipe.name}</Text>
 
-      <GroupLabel>What’s in it</GroupLabel>
+      <GroupLabel>
+        {items && (dish?.servings ?? 1) > 1
+          ? `What’s in it · makes ${dish?.servings}`
+          : 'What’s in it'}
+      </GroupLabel>
       <Group>
-        {recipe.foods.map((food) => (
-          <Row key={food} title={food} />
-        ))}
+        {items
+          ? items.map((item, i) => (
+              <Row
+                key={`${item.name}-${i}`}
+                title={item.name}
+                value={servingsText(item.servings, item.servingLabel)}
+              />
+            ))
+          : recipe.foods.map((food) => <Row key={food} title={food} />)}
       </Group>
-      <FootNote>
-        No amounts come with it: log it with your own when you cook it.
-      </FootNote>
 
       {yours ? (
         <TernaryButton label='Stop sharing' outline onPress={askRemove} />
+      ) : items ? (
+        <TernaryButton
+          label={kept ? 'Saved to your meals' : 'Save to my meals'}
+          tone={ButtonTone.Aurora}
+          outline={kept}
+          disabled={kept}
+          onPress={saveToMeals}
+        />
       ) : (
         <TernaryButton
           label={kept ? 'Kept to cook · remove' : 'Keep this recipe'}

@@ -68,9 +68,13 @@ export default function AboutTernaryScreen() {
           title='Swap meals'
         >
           <Bullet first>
-            Share your saved meals with the people in your ternary.
+            Share your saved meals with the people in your ternary, recipe and
+            all.
           </Bullet>
-          <Bullet>Save meals other people have shared.</Bullet>
+          <Bullet>
+            Save a friend’s meal to your own, ready to log without working out
+            amounts.
+          </Bullet>
         </Feature>
       </Card>
 
@@ -98,7 +102,7 @@ export default function AboutTernaryScreen() {
           postcards you choose to send)
         </Bullet>
         <Bullet icon={HIDDEN}>
-          Amounts or calories in the meals you share
+          Calories or nutrition in the meals you share, or how much you ate
         </Bullet>
       </Card>
 

@@ -1,5 +1,8 @@
 import { cleanSpaces } from '@shared/utils/text';
-import type { SavedMeal } from '../../saved-meals/models/savedMeals';
+import type {
+  SavedMeal,
+  SavedMealItem,
+} from '../../saved-meals/models/savedMeals';
 import { RouteId, Routes } from '../../waypoints/models/routes';
 
 /** The route a ternary's shared bird flies: Greenland's unless it chose another. */
@@ -52,7 +55,7 @@ export enum ReportKind {
   Member = 'member',
 }
 
-/** A dish at a stopover table: a name and its foods, never amounts, calories or levels. */
+/** A meal shared at a stop: its name and foods, and its recipe; nutrition is never shown. */
 export type Dish = {
   id: string;
   fromName: string;
@@ -61,8 +64,18 @@ export type Dish = {
   stop: string;
   name: string;
   foods: string[];
+  /**
+   * The recipe, to save as your own meal: each food with its amount, nutrition included but
+   * never shown in the ternary. Absent for meals shared by older builds.
+   */
+  items?: SavedMealItem[];
+  /** How many servings the recipe makes. */
+  servings?: number;
   yours: boolean;
 };
+
+/** A meal as it's shared: its name and foods, and its recipe. */
+export type SharedMeal = Pick<Dish, 'name' | 'foods' | 'items' | 'servings'>;
 
 export type Ternary = {
   id: string;
@@ -139,14 +152,13 @@ export const cleanInviteCode = (text: string) =>
     .replace(/[^A-Z0-9]/g, '')
     .slice(0, TernaryRules.INVITE_LENGTH);
 
-/** A saved meal as it goes to a stopover table: its name and the foods' names, nothing else. */
-export function dishFromSavedMeal(meal: SavedMeal): {
-  name: string;
-  foods: string[];
-} {
+/** A saved meal as it's shared: its name, its foods' names, and the recipe to save it from. */
+export function dishFromSavedMeal(meal: SavedMeal): SharedMeal {
   return {
     name: meal.name,
     foods: [...new Set(meal.items.map((i) => i.name.trim()).filter(Boolean))],
+    items: meal.items.map((i) => ({ ...i })),
+    servings: meal.servings,
   };
 }
 
