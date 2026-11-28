@@ -105,9 +105,10 @@ const IMPORTS: Record<(typeof TernExportLists.ALL)[number], TableImport> = {
       'minutes',
       'effort',
       'distance_m',
+      'steps',
       'logged_at',
     ],
-    numbers: ['minutes', 'distance_m'],
+    numbers: ['minutes', 'distance_m', 'steps'],
     times: ['logged_at'],
   },
   dayNotes: {

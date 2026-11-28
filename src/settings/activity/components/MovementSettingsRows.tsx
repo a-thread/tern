@@ -5,10 +5,7 @@ import { useToast } from '@shared/state/ToastContext';
 import { healthAppName } from '@shared/utils/healthApp';
 import { useSettings } from '@/domain/settings/SettingsContext';
 import { useMovement } from '@/domain/movement/MovementContext';
-import {
-  clampMovementGoal,
-  MovementGoal,
-} from '@/domain/settings/models/movementGoal';
+import { stepMovementGoal } from '@/domain/settings/models/movementGoal';
 
 /** Whether movement is tracked, and how many minutes make a goal day. */
 export function MovementSettingsRows() {
@@ -28,9 +25,7 @@ export function MovementSettingsRows() {
   };
   const step = (dir: 1 | -1) =>
     updateSettings({
-      movementGoalMinutes: clampMovementGoal(
-        settings.movementGoalMinutes + dir * MovementGoal.STEP,
-      ),
+      movementGoalMinutes: stepMovementGoal(settings.movementGoalMinutes, dir),
     });
   return (
     <>

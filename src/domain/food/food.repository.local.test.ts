@@ -36,7 +36,8 @@ const egg: FoodEntry = {
   },
 };
 
-const create = async () => createLocalFoodRepository(await createMigratedSqlJsDb());
+const create = async () =>
+  createLocalFoodRepository(await createMigratedSqlJsDb());
 
 // The memory version keeps one day, so this one is tested on its own.
 describe('local food repository', () => {
@@ -46,7 +47,12 @@ describe('local food repository', () => {
     await repo.add('2026-10-18', egg);
     await repo.add('2026-10-19', { ...toast, id: 'other' });
     expect(await repo.load('2026-10-18')).toEqual([
-      { ...toast, brand: undefined, tierOverridden: undefined, measure: undefined },
+      {
+        ...toast,
+        brand: undefined,
+        tierOverridden: undefined,
+        measure: undefined,
+      },
       egg,
     ]);
   });

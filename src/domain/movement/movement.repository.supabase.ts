@@ -15,6 +15,7 @@ type MovementRow = {
   minutes: number;
   effort: string | null;
   distance_m: number | null;
+  steps?: number | null;
   logged_at: string;
 };
 
@@ -30,6 +31,7 @@ export const rowToMovement = (row: MovementRow): MovementEntry => ({
   minutes: Number(row.minutes),
   effort: row.effort && EFFORTS.has(row.effort) ? (row.effort as Effort) : null,
   distanceM: row.distance_m ?? null,
+  steps: row.steps ?? null,
   source: MovementSource.Manual,
   loggedAt: row.logged_at,
 });
@@ -43,7 +45,9 @@ export function createSupabaseMovementRepository(
         await allRows<MovementRow>((start, end) =>
           db
             .from('movement_entries')
-            .select('id, day, activity, minutes, effort, distance_m, logged_at')
+            .select(
+              'id, day, activity, minutes, effort, distance_m, steps, logged_at',
+            )
             .gte('day', from)
             .lte('day', to)
             .order('logged_at', { ascending: true })
@@ -61,6 +65,7 @@ export function createSupabaseMovementRepository(
           minutes: entry.minutes,
           effort: entry.effort,
           distance_m: entry.distanceM ?? null,
+          steps: entry.steps ?? null,
           logged_at: entry.loggedAt,
         }),
       );
@@ -75,6 +80,7 @@ export function createSupabaseMovementRepository(
             minutes: entry.minutes,
             effort: entry.effort,
             distance_m: entry.distanceM ?? null,
+            steps: entry.steps ?? null,
           })
           .eq('id', entry.id)
           .select('id'),
