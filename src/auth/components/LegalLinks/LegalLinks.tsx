@@ -3,10 +3,10 @@ import { Linking, StyleSheet, View } from 'react-native';
 
 import { space } from '@shared/theme';
 import { useToast } from '@shared/state/ToastContext';
-import { LinkButton } from '@/auth/components/LinkButton';
+import { LinkButton } from '../LinkButton';
 import { legalLinks } from './utils/legalLinks';
 
-/** The terms and privacy links under the paywall's fine print, side by side. */
+/** The terms and privacy links under the paywall's and the consent screen's fine print. */
 export function LegalLinks() {
   const toast = useToast();
 

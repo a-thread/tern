@@ -111,6 +111,8 @@ import {
 import { withSampleFriends } from './domain/ternary/ternary.repository.sampleFriends';
 import { sampleFriends } from './domain/ternary/sampleFriends';
 import { createSupabaseTernaryRepository } from './domain/ternary/ternary.repository.supabase';
+import type { ConsentRepository } from './domain/consent/consent.repository';
+import { createSupabaseConsentRepository } from './domain/consent/consent.repository.supabase';
 
 /** Every repository the app persists through. Contexts read these; they never touch Supabase directly. */
 export type Backend = {
@@ -131,6 +133,8 @@ export type Backend = {
   commonFoods: CommonFoodsRepository;
   /** Account only: syncs the server's Plus record before writing. */
   syncPlus?: () => Promise<boolean>;
+  /** Account only: consent to keep health data on the server, asked before anything syncs. */
+  consent?: ConsentRepository;
   /** What never-saved settings start as; the app's usual defaults when absent. */
   settingsDefaults?: AppSettings;
   /** Export and erase. Absent in the memory preview, where nothing is stored. */
@@ -263,6 +267,7 @@ export function createRemoteBackend(): Backend {
     ternary: sampleFriends()
       ? withSampleFriends(createSupabaseTernaryRepository(supabase))
       : createSupabaseTernaryRepository(supabase),
+    consent: createSupabaseConsentRepository(supabase),
   };
 }
 

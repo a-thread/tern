@@ -145,5 +145,5 @@ TestFlight:
    TestFlight (it fails early if any of the secrets is missing).
 2. In App Store Connect > TestFlight, add testers to an internal group. Builds expire after 90 days.
 
-App Store: screenshots, the privacy policy URL (`docs/index.html`), App Privacy answers, and review
+App Store: screenshots, the privacy policy URL (https://purlieus.dev/tern/privacy/), the support URL (https://purlieus.dev/tern/support/), App Privacy answers, and review
 notes explaining the HealthKit use (guideline 5.1.3).

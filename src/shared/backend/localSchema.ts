@@ -120,6 +120,9 @@ export class LocalSchema {
 
     // 4: how many servings a saved meal makes (more than 1 is a recipe)
     `ALTER TABLE saved_meals ADD COLUMN servings INTEGER NOT NULL DEFAULT 1`,
+
+    // 5: a walk logged as steps instead of minutes
+    `ALTER TABLE movement_entries ADD COLUMN steps INTEGER`,
   ];
 
   /** Every table holding the person's data, for export and "delete my data". */

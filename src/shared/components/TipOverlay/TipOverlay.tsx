@@ -44,6 +44,8 @@ export function TipOverlay({
   onSkip: () => void;
 }) {
   const still = useReduceMotion();
+  // The dimming fades in once; each new tip only fades its card.
+  const appear = useRef(new Animated.Value(still ? 1 : 0)).current;
   const fade = useRef(new Animated.Value(still ? 1 : 0)).current;
   const [size, setSize] = useState({ width: 0, height: 0 });
   const { height } = size;
@@ -56,6 +58,15 @@ export function TipOverlay({
       (Platform.OS === 'android' ? (StatusBar.currentHeight ?? 0) : 0),
   };
   const last = position === total;
+
+  useEffect(() => {
+    if (still) return;
+    Animated.timing(appear, {
+      toValue: 1,
+      duration: 160,
+      useNativeDriver: true,
+    }).start();
+  }, [still, appear]);
 
   useEffect(() => {
     if (still) return;
@@ -93,7 +104,7 @@ export function TipOverlay({
       onRequestClose={onGotIt}
     >
       <Animated.View
-        style={[StyleSheet.absoluteFill, { opacity: fade }]}
+        style={[StyleSheet.absoluteFill, { opacity: appear }]}
         onLayout={(e) => setSize(e.nativeEvent.layout)}
         accessibilityViewIsModal
       >
@@ -124,7 +135,10 @@ export function TipOverlay({
             ]}
           />
         ) : null}
-        <View style={[s.card, cardPlace]} accessibilityLiveRegion='polite'>
+        <Animated.View
+          style={[s.card, cardPlace, { opacity: fade }]}
+          accessibilityLiveRegion='polite'
+        >
           <Text style={s.text}>
             <Text style={s.lead}>{lead}</Text> {rest}
           </Text>
@@ -150,7 +164,7 @@ export function TipOverlay({
               <Text style={s.gotIt}>Got it</Text>
             </Pressable>
           </View>
-        </View>
+        </Animated.View>
       </Animated.View>
     </Modal>
   );

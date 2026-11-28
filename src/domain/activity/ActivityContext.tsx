@@ -28,6 +28,7 @@ import { StepsRepository } from './steps.repository';
 import { StepsStatus } from './models/stepsStatus';
 import type { RestDaysRepository } from './restDays.repository';
 import { sameDays, sameSteps } from './utils/sameData';
+import { addSteps } from './utils/addSteps';
 import { streakBonus, WaypointSource } from '../waypoints/models/waypoint';
 import { useMovement } from '../movement/MovementContext';
 
@@ -124,11 +125,13 @@ export function ActivityProvider({
   }, [load]);
 
   const restSet = useMemo(() => new Set(restList), [restList]);
-  // "Read steps" off hides the data without deleting it.
+  // "Read steps" off hides the health app's data without deleting it; steps logged by hand
+  // still count.
   const readSteps = settings.healthData.readSteps;
+  const manualSteps = movement.stepsByDay;
   const stepsByDay = useMemo(
-    () => (readSteps ? rawStepsByDay : {}),
-    [readSteps, rawStepsByDay],
+    () => addSteps(readSteps ? rawStepsByDay : {}, manualSteps),
+    [readSteps, rawStepsByDay, manualSteps],
   );
 
   const recorded = useMemo(

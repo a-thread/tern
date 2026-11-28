@@ -9,6 +9,7 @@ import { useUnits } from '../../domain/settings/hooks/useUnits';
 import { useMovement } from '../../domain/movement/MovementContext';
 import { ActivityGlyph } from '../components/ActivityGlyph';
 import { MinutesRuler } from './components/MinutesRuler';
+import { StepsRow } from './components/StepsRow/StepsRow';
 import type { MovementStackParamList } from '../navigation';
 import {
   ACTIVITY_INFO,
@@ -19,12 +20,15 @@ import {
   Effort,
   EFFORT_LABEL,
   formatDistance,
+  MEASURE_LABEL,
   MovementLimits,
+  MovementMeasure,
 } from '../../domain/movement/models/movementEntry';
 
 type Props = NativeStackScreenProps<MovementStackParamList, 'ExerciseDetail'>;
 
 const EFFORTS = Object.values(Effort);
+const MEASURES = Object.values(MovementMeasure);
 
 /** In tenths of a mile or kilometer. */
 const DISTANCE_STEP = 0.1;
@@ -52,8 +56,15 @@ export default function ExerciseDetailScreen({ navigation, route }: Props) {
   const { add, update, entries } = useMovement();
   const { units } = useUnits();
   const editing = entryId ? entries.find((e) => e.id === entryId) : undefined;
+  const [measure, setMeasure] = useState<MovementMeasure>(
+    editing?.steps ? MovementMeasure.Steps : MovementMeasure.Minutes,
+  );
+  const bySteps = !!info.inSteps && measure === MovementMeasure.Steps;
   const [minutes, setMinutes] = useState<number>(
-    editing?.minutes ?? MovementLimits.DEFAULT_MINUTES,
+    editing?.minutes || MovementLimits.DEFAULT_MINUTES,
+  );
+  const [steps, setSteps] = useState<number>(
+    editing?.steps ?? MovementLimits.DEFAULT_STEPS,
   );
   const [effort, setEffort] = useState<Effort>(
     editing?.effort ?? Effort.Moderate,
@@ -72,18 +83,21 @@ export default function ExerciseDetailScreen({ navigation, route }: Props) {
   };
 
   const save = () => {
+    const amount = {
+      minutes,
+      effort,
+      distanceM: distanceM || null,
+      steps: bySteps ? steps : null,
+    };
     // A change goes back to the list it was opened from; a new entry closes the flow. An entry
     // opened to change that has since gone just goes back, rather than logging a copy.
     if (entryId) {
-      if (
-        !editing ||
-        update(editing.id, { minutes, effort, distanceM: distanceM || null })
-      ) {
+      if (!editing || update(editing.id, amount)) {
         navigation.goBack();
       }
       return;
     }
-    if (add({ day, activity, minutes, effort, distanceM: distanceM || null })) {
+    if (add({ day, activity, ...amount })) {
       navigation.getParent()?.goBack();
     }
   };
@@ -104,11 +118,29 @@ export default function ExerciseDetailScreen({ navigation, route }: Props) {
           <ActivityGlyph activity={activity} size={28} />
         </View>
 
-        <View style={s.row}>
-          <Text style={s.rowTitle}>Duration</Text>
-          <Text style={s.value}>{`${minutes} min`}</Text>
-        </View>
-        <MinutesRuler value={minutes} onChange={setMinutes} />
+        {info.inSteps ? (
+          <View style={s.block}>
+            <Text style={s.label}>Log it by</Text>
+            <SegmentedControl
+              options={MEASURES}
+              value={measure}
+              onChange={setMeasure}
+              label={(m) => MEASURE_LABEL[m]}
+            />
+          </View>
+        ) : null}
+
+        {bySteps ? (
+          <StepsRow value={steps} onChange={setSteps} />
+        ) : (
+          <>
+            <View style={s.row}>
+              <Text style={s.rowTitle}>Duration</Text>
+              <Text style={s.value}>{`${minutes} min`}</Text>
+            </View>
+            <MinutesRuler value={minutes} onChange={setMinutes} />
+          </>
+        )}
 
         <View style={s.block}>
           <Text style={s.label}>Intensity</Text>
@@ -141,7 +173,12 @@ export default function ExerciseDetailScreen({ navigation, route }: Props) {
           </View>
         ) : null}
 
-        {!countsTowardGoal(activity) ? (
+        {bySteps ? (
+          <Text style={s.note}>
+            Added to your steps for the day, for when your phone wasn't with
+            you.
+          </Text>
+        ) : !countsTowardGoal(activity) ? (
           <Text style={s.note}>
             Already in your steps, so it's logged but doesn't add to a goal day.
           </Text>

@@ -17,7 +17,7 @@ export function createSupabaseTernaryRepository(
       if (error) throw error;
       const ternary = (data as Ternary | null) ?? null;
       if (!ternary) return null;
-      // Before 20261118000000_ternary_looks runs there's no look: fly as your place.
+      // Before 20261128000000_ternary_looks runs there's no look: fly as your place.
       return {
         ...ternary,
         members: (ternary.members ?? []).map((m, place) => ({

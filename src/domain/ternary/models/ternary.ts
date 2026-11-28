@@ -110,7 +110,7 @@ export class TernaryRules {
   static readonly MAX_FISH_PER_DAY = 3;
   /**
    * Arctic terns migrate in flocks of fewer than 15; a ternary stays well smaller, one bird
-   * for each look. The server holds to it too (`20261118000000_ternary_looks`).
+   * for each look. The server holds to it too (`20261128000000_ternary_looks`).
    */
   static readonly MAX_MEMBERS = 8;
   /** The birds to choose from, each its own pose and colour: one for everyone in a ternary. */

@@ -1,7 +1,8 @@
 name: Build Android
 description: >-
   Builds with `eas build --local` on this runner (no EAS build quota used) and uploads the .aab
-  (production) or .apk (preview) with R8's mapping.txt as the artifact `android-<profile>`. Run
+  (production, with native-debug-symbols.zip) or .apk (preview) with R8's mapping.txt as the
+  artifact `android-<profile>`. Run
   after actions/checkout.
 
 inputs:
@@ -60,6 +61,13 @@ runs:
           exit 1
         fi
         cp "$mapping" "$RUNNER_TEMP/mapping.txt"
+        # Play doesn't read the symbols inside the .aab, so they're uploaded as a separate zip.
+        if [ "$ext" = aab ]; then
+          symbols="$RUNNER_TEMP/symbols"
+          meta=BUNDLE-METADATA/com.android.tools.build.debugsymbols
+          unzip -q "$RUNNER_TEMP/tern-android.aab" "$meta/*" -d "$symbols"
+          (cd "$symbols/$meta" && zip -qr "$RUNNER_TEMP/native-debug-symbols.zip" .)
+        fi
     - uses: ./.github/actions/ccache
       with:
         save: 'true'
@@ -76,5 +84,6 @@ runs:
         path: |
           ${{ runner.temp }}/tern-android.*
           ${{ runner.temp }}/mapping.txt
+          ${{ runner.temp }}/native-debug-symbols.zip
         retention-days: 5
         if-no-files-found: error

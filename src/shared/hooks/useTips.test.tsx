@@ -75,6 +75,8 @@ describe('useTips pacing', () => {
       await act(async () => {
         hook.result.current.tips.gotIt();
       });
+      // Stays open rather than closing and reopening the overlay.
+      expect(hook.result.current.tips.shown).not.toBeNull();
       // Well short of the settle time: the screen is already in place.
       await act(async () => {
         jest.advanceTimersByTime(200);

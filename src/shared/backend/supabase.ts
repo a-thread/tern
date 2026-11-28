@@ -1,6 +1,6 @@
 import 'react-native-url-polyfill/auto';
 import { AppState } from 'react-native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { secureSessionStorage } from './secureSessionStorage';
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 
 // Origin only: a pasted /rest/v1 suffix would fail every request with "invalid path".
@@ -18,7 +18,7 @@ export const supabase: TernClient | null = isBackendConfigured
   ? createClient(url!, anonKey!, {
       db: { schema: 'tern' },
       auth: {
-        storage: AsyncStorage,
+        storage: secureSessionStorage,
         autoRefreshToken: true,
         persistSession: true,
         detectSessionInUrl: false,
