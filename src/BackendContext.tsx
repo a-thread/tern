@@ -104,6 +104,13 @@ import { createStoreSubscriptionRepository } from './domain/subscription/subscri
 import { plusUnlocked } from './domain/subscription/plusUnlocked';
 import { devSupporter } from './domain/subscription/devSupporter';
 import { createSupabasePlusSync } from './domain/subscription/entitlement.supabase';
+import {
+  createMemoryTernaryRepository,
+  type TernaryRepository,
+} from './domain/ternary/ternary.repository';
+import { withSampleFriends } from './domain/ternary/ternary.repository.sampleFriends';
+import { sampleFriends } from './domain/ternary/sampleFriends';
+import { createSupabaseTernaryRepository } from './domain/ternary/ternary.repository.supabase';
 import type { ConsentRepository } from './domain/consent/consent.repository';
 import { createSupabaseConsentRepository } from './domain/consent/consent.repository.supabase';
 
@@ -132,6 +139,8 @@ export type Backend = {
   settingsDefaults?: AppSettings;
   /** Export and erase. Absent in the memory preview, where nothing is stored. */
   data?: DataRepository;
+  /** Ternaries: only an account has one, so absent on the phone. */
+  ternary?: TernaryRepository;
 };
 
 /** Local mock data — used when no Supabase keys are configured, and in tests. */
@@ -152,6 +161,8 @@ export function createMemoryBackend(): Backend {
     movement: createMemoryMovementRepository(),
     dayNotes: createMemoryDayNotesRepository(),
     workouts: null,
+    // Without Supabase, ternaries are tried in memory: join with the sample's code.
+    ternary: createMemoryTernaryRepository(),
   };
 }
 
@@ -171,6 +182,7 @@ export function createBlankMemoryBackend(): Backend {
     waypoints: createMemoryWaypointsRepository(0, []),
     // Stands in for the phone's database when it can't be opened, so it starts like one.
     settingsDefaults: phoneSettings,
+    ternary: undefined,
   };
 }
 
@@ -251,6 +263,10 @@ export function createRemoteBackend(): Backend {
     workouts: createHealthWorkouts(),
     data: createSupabaseDataRepository(supabase),
     syncPlus: createSupabasePlusSync(supabase),
+    // Made-up friends alongside your real ternary, on a local development build only.
+    ternary: sampleFriends()
+      ? withSampleFriends(createSupabaseTernaryRepository(supabase))
+      : createSupabaseTernaryRepository(supabase),
     consent: createSupabaseConsentRepository(supabase),
   };
 }

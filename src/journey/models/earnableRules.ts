@@ -15,6 +15,8 @@ export type Earnable = {
   goal: boolean;
   /** The week allows rest days. */
   rest: boolean;
+  /** In a ternary (and not taking a break from it), whose shared bird can arrive somewhere. */
+  ternary?: boolean;
 };
 
 const NEEDS: Partial<Record<WaypointSource, keyof Earnable>> = {
@@ -28,12 +30,13 @@ const NEEDS: Partial<Record<WaypointSource, keyof Earnable>> = {
   [WaypointSource.Weight]: 'weight',
   [WaypointSource.Medication]: 'medication',
   [WaypointSource.Rest]: 'rest',
+  [WaypointSource.Arrival]: 'ternary',
 };
 
 /** "How waypoints are earned": only the rules that can pay out, so none is a dead end. */
 export function earnableRules(on: Earnable) {
   return listedRules().filter((rule) => {
     const need = NEEDS[rule.id];
-    return need === undefined || on[need];
+    return need === undefined || Boolean(on[need]);
   });
 }

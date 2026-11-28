@@ -211,6 +211,36 @@ since RevenueCat doesn't always send an event when a purchase made before sign-u
 to the new account. Its logic is in `entitlement.ts`, tested with the app; `index.ts` is
 the Deno wrapper, left out of typecheck and lint.
 
+## Ternaries
+
+A ternary is a small invite-only circle of friends with Tern Plus, flying one shared bird
+(the design is in [ternaries.md](ternaries.md)). It needs an account, so the on-phone backend
+has no `ternary` repository: `TernaryProvider` gets none and `available` is false. The remote
+backend has the Supabase one, and the memory preview an in-memory one to try the screens. The provider is app-wide, because the Journey tab (its
+card) and the ternary's own stack (`journey/ternary/`) both read it.
+
+A ternary's shared bird flies one of two routes (`RouteId`, registered in `Routes`), chosen when
+it's started and kept in `tern.ternaries.route`: Greenland's, the same as everyone's own journey,
+or the Dutch one ([journey-route-sources.md](journey-route-sources.md#the-dutch-route)). Route-aware
+code takes the route and defaults to Greenland's, so your own journey never passes one:
+`routeMilestones`, `migrationProgress`, `latestMilestone`, the map helpers, and `JourneyMap`'s
+`route` prop. The map's shapes come from `scripts/buildJourneyMap.ts`, which projects each route;
+the Dutch one has a flat map only, so `JourneyMap` hides the globe toggle for it. Stop ids are
+unique across routes, so `stopNamed` finds a stop by id alone.
+
+Every ternary table has row-level security on and no policies, so the app reaches them only
+through the security-definer functions in
+[`20261111000000_ternaries.sql`](../supabase/migrations/20261111000000_ternaries.sql), as
+changed by [`20261112000000_ternary_fixes.sql`](../supabase/migrations/20261112000000_ternary_fixes.sql).
+`ternary_state` alone decides what a friend sees: who showed up today (counted from
+`waypoint_events`, which no one else can read), "resting" only when shared, and nothing for
+someone flying privately or quiet. The shared bird moves 75 × the share of members who showed
+up each day. Finished days are written once to `ternary_days` by `settle_ternary_days`
+(pg_cron, daily), and unsettled days are counted live the same way. When the bird reaches a
+new stop, `TernaryProvider` pays the 25-waypoint `arrival` award on the person's own ledger,
+at most once a week (`arrivalDue`, remembered in `ternaryArrival`). That award never counts
+as showing up.
+
 Setting a project up, and what each table holds, is in
 [supabase/README.md](../supabase/README.md). `supabase/migrations/` is the schema of
 record.

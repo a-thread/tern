@@ -52,6 +52,17 @@ export default function FoodDisplayScreen() {
           paddingBottom: 40,
         }}
       >
+        <GroupLabel>Friends’ food</GroupLabel>
+        <Group>
+          <ToggleRow
+            title='Hide friends’ food'
+            sub='Hides the recipes friends share in a ternary'
+            on={settings.hideFriendsFood}
+            onToggle={(v) => updateSettings({ hideFriendsFood: v })}
+          />
+        </Group>
+        <FootNote>For when seeing what friends eat isn’t helping.</FootNote>
+
         <GroupLabel>Processing labels</GroupLabel>
         <Group>
           <ToggleRow
@@ -128,8 +139,8 @@ export default function FoodDisplayScreen() {
             <FootNote>{intakeBarsNote(settings)}</FootNote>
             {tracksNutrients ? (
               <FootNote>
-                Tern never shows exercise as "earning back" calories, and
-                won't warn you for going over a target.
+                Tern never shows exercise as "earning back" calories, and won't
+                warn you for going over a target.
               </FootNote>
             ) : null}
           </>

@@ -7,6 +7,7 @@ import type {
   WelcomeStackParamList,
 } from './types';
 import type { TrendsStackParamList } from '../trends/navigation';
+import type { TernaryStackParamList } from '../journey/ternary/navigation';
 
 /** Navigation typed for the root stack: the logging flows, Settings and the Today detail screens. */
 export const useRootNavigation = () =>
@@ -19,6 +20,10 @@ export const useWelcomeNavigation = () =>
 /** Navigation typed for the Trends stack, for the cards that open a detail page. */
 export const useTrendsNavigation = () =>
   useNavigation<NativeStackNavigationProp<TrendsStackParamList>>();
+
+/** Navigation typed for the ternary's stack: its table, postcards and settings. */
+export const useTernaryNavigation = () =>
+  useNavigation<NativeStackNavigationProp<TernaryStackParamList>>();
 
 /** Navigation typed for the Settings stack, for the section pages. */
 export const useSettingsNavigation = () =>

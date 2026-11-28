@@ -41,6 +41,8 @@ import {
 } from '../domain/waypoints/models/milestone';
 import { useSettings } from '../domain/settings/SettingsContext';
 import { useWaypoints } from '../domain/waypoints/WaypointsContext';
+import { useTernary } from '../domain/ternary/TernaryContext';
+import { TernaryCard } from './components/TernaryCard/TernaryCard';
 
 const MILESTONE_COLORS = [colors.glacier, colors.violet, colors.aurora];
 
@@ -58,6 +60,7 @@ const RULE_STYLE: Record<WaypointSource, { bg: string; fg: string }> = {
   [WaypointSource.Rest]: { bg: colors.driftwoodTint, fg: colors.driftwood },
   [WaypointSource.Streak]: { bg: colors.sunTint, fg: colors.sunDeep },
   [WaypointSource.Movement]: { bg: colors.glacierTint, fg: colors.glacierDeep },
+  [WaypointSource.Arrival]: { bg: colors.auroraTint, fg: colors.aurora },
 };
 
 export default function JourneyScreen() {
@@ -73,6 +76,7 @@ export default function JourneyScreen() {
   const days = daysWithWaypoints(events);
   const { settings } = useSettings();
   const { goalReachable } = useActivity();
+  const { ternary, hidden: ternaryHidden } = useTernary();
 
   // Redraw the route when Journey comes into view the first time, when the total changes or after a minute away.
   const replayKey = useReplayOnFocus(waypoints);
@@ -184,6 +188,8 @@ export default function JourneyScreen() {
             </>
           ) : null}
 
+          <TernaryCard />
+
           {/* Where the bird is headed comes first, then the stops passed, newest first. */}
           <GroupLabel
             accessory={
@@ -263,6 +269,7 @@ export default function JourneyScreen() {
               medication: settings.medications.length > 0,
               goal: goalReachable,
               rest: settings.restDaysPerWeek > 0,
+              ternary: Boolean(ternary) && !ternaryHidden,
             }).map((rule) => (
               <Row
                 key={rule.id}

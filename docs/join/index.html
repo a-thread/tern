@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Join a ternary · Tern</title>
+    <meta name="description" content="A friend invited you to fly with them in Tern." />
+    <meta name="robots" content="noindex" />
+    <meta name="theme-color" content="#f5f3ee" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#181a1c" media="(prefers-color-scheme: dark)" />
+    <link rel="icon" type="image/png" sizes="64x64" href="/tern/assets/img/favicon-64.png" />
+    <link rel="apple-touch-icon" href="/tern/apple-touch-icon.png" />
+    <link rel="preload" href="/assets/fonts/Fraunces_600SemiBold.ttf" as="font" type="font/ttf" crossorigin />
+    <link rel="preload" href="/assets/fonts/Manrope_400Regular.ttf" as="font" type="font/ttf" crossorigin />
+    <link rel="stylesheet" href="/styles.css" />
+    <style>
+      .invite-code {
+        font-size: 2rem;
+        font-weight: 700;
+        letter-spacing: 0.3em;
+        margin: 0.5rem 0 1.5rem;
+      }
+      .open-button {
+        display: inline-block;
+        padding: 0.8rem 1.6rem;
+        border-radius: 999px;
+        background: #d85a30;
+        color: #fff;
+        font-weight: 600;
+        text-decoration: none;
+      }
+      .copy-button {
+        margin-left: 0.5rem;
+        padding: 0.7rem 1.4rem;
+        border-radius: 999px;
+        border: 1.5px solid #d85a30;
+        background: transparent;
+        color: #d85a30;
+        font: inherit;
+        font-weight: 600;
+        cursor: pointer;
+      }
+    </style>
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Skip to content</a>
+    <header class="site-header site-header--app">
+      <div class="wrap site-header__inner">
+        <nav class="crumb" aria-label="Breadcrumb">
+          <a class="crumb__parent" href="/">Purlieus</a>
+          <span class="crumb__sep" aria-hidden="true">/</span>
+          <a class="crumb__app" href="/tern/">
+            <img class="crumb__icon" src="/tern/assets/img/tern-icon.png" width="28" height="28" alt="" />
+            <span>Tern</span>
+          </a>
+        </nav>
+      </div>
+    </header>
+
+    <div class="doc-page">
+    <main id="main" class="doc">
+      <p class="eyebrow">Tern &middot; Ternaries</p>
+      <h1>You're invited to a ternary</h1>
+      <p class="lede">
+        A friend wants you to fly with them in Tern: a few friends who keep each
+        other going, without sharing what they track.
+      </p>
+      <p>
+        Ternaries are part of <strong>Tern Plus</strong>, so you'll need the
+        app and a Tern Plus account to join. If you don't have one yet, Tern
+        walks you through it and keeps your invite.
+      </p>
+
+      <div id="with-code" hidden>
+        <p>Your invite code:</p>
+        <p class="invite-code" id="code"></p>
+        <p>
+          <a class="open-button" id="open" href="#">Open in Tern</a>
+          <button class="copy-button" id="copy" type="button">Copy code</button>
+          <span id="copied" role="status"></span>
+        </p>
+        <p>
+          New to Tern? Copy the code, get Tern below, and paste it into
+          <strong>Have an invite code from a friend?</strong> when you create
+          your account. Already have Tern? Go to <strong>Journey</strong>
+          &rsaquo; <strong>Start or join a ternary</strong> &rsaquo;
+          <strong>Join with a code</strong>.
+        </p>
+      </div>
+      <p id="no-code" hidden>
+        This link is missing its code. Ask whoever invited you to send it again.
+      </p>
+
+      <h2>Get Tern</h2>
+      <ul>
+        <li><a href="https://apps.apple.com/app/id6829564936">Tern on the App Store</a> (iPhone)</li>
+        <li><a href="https://play.google.com/store/apps/details?id=com.purlieus.tern">Tern on Google Play</a> (Android)</li>
+      </ul>
+      <p class="note">
+        Friends see that you showed up, never what you ate, weighed or walked.
+        <a href="/tern/privacy/#ternaries">How we keep it private</a>.
+      </p>
+    </main>
+    </div>
+
+    <script>
+      (function () {
+        var raw = new URLSearchParams(window.location.search).get('code') || '';
+        var code = raw.toUpperCase().replace(/[^A-Z0-9]/g, '');
+        if (code.length !== 6) {
+          document.getElementById('no-code').hidden = false;
+          return;
+        }
+        var app = 'tern://join/' + code;
+        document.getElementById('code').textContent = code;
+        document.getElementById('open').href = app;
+        document.getElementById('with-code').hidden = false;
+        var copied = document.getElementById('copied');
+        document.getElementById('copy').addEventListener('click', function () {
+          if (!navigator.clipboard) {
+            copied.textContent = ' Copy it from above.';
+            return;
+          }
+          navigator.clipboard.writeText(code).then(
+            function () { copied.textContent = ' Copied'; },
+            function () { copied.textContent = ' Copy it from above.'; }
+          );
+        });
+        // Android tries Tern straight away and stays quiet if it isn't installed. Safari would
+        // show an "address is invalid" alert, so on iPhone it waits for Open in Tern.
+        if (/Android/i.test(navigator.userAgent)) {
+          window.location.href = app;
+        }
+      })();
+    </script>
+  </body>
+</html>

@@ -1,0 +1,121 @@
+import React from 'react';
+import type { NativeStackScreenProps } from '@react-navigation/native-stack';
+
+import { FootNote, Group, GroupLabel, Row } from '@shared/components/ui';
+import { useTernary } from '@/domain/ternary/TernaryContext';
+import {
+  flockWithLooks,
+  Presence,
+  routeOf,
+} from '@/domain/ternary/models/ternary';
+import { promptFor, restingAt } from '@/domain/ternary/models/stopover';
+import { useTernaryNavigation } from '../../navigation/useAppNavigation';
+import type { TernaryStackParamList } from './navigation';
+import { TernaryPage } from './components/TernaryPage/TernaryPage';
+import { TernaryIntro } from './components/TernaryIntro/TernaryIntro';
+import { FlockMap } from './components/FlockMap/FlockMap';
+import { BringFish } from './components/BringFish/BringFish';
+import { InviteCard } from './components/InviteCard/InviteCard';
+import { FlockBadge } from './components/FlockBadge/FlockBadge';
+
+/**
+ * Your ternary: the shared bird and who's flying with it today, fish, and the way to the
+ * recipe swap, postcards and the ternary's settings. Out of a ternary, starting or joining
+ * one. Only the friends who are here are listed; nobody is ever shown as missing.
+ */
+export default function TernaryHomeScreen({
+  route,
+}: Partial<NativeStackScreenProps<TernaryStackParamList, 'TernaryHome'>>) {
+  const { available, ternary } = useTernary();
+  const navigation = useTernaryNavigation();
+  const arrived = Boolean(route?.params?.arrived);
+
+  if (!available) {
+    return (
+      <TernaryPage title='Ternary'>
+        <FootNote>
+          Ternaries come with Tern Plus and an account, since friends fly
+          together through Tern’s server.
+        </FootNote>
+      </TernaryPage>
+    );
+  }
+  if (!ternary) {
+    return (
+      <TernaryPage title='Fly with friends'>
+        <TernaryIntro />
+      </TernaryPage>
+    );
+  }
+
+  const here = flockWithLooks(ternary.members);
+  const stop = restingAt(ternary.total, routeOf(ternary));
+  return (
+    <TernaryPage
+      title={ternary.name}
+      top={
+        <FlockMap
+          arriving={arrived}
+          onArrived={() => navigation.setParams({ arrived: undefined })}
+        />
+      }
+    >
+      <InviteCard />
+
+      <GroupLabel>Flying today</GroupLabel>
+      <Group>
+        {here.length ? (
+          here.map(({ member: m, look }) => (
+            <Row
+              key={m.userId}
+              icon={
+                <FlockBadge
+                  look={look}
+                  faint={m.presence === Presence.Resting}
+                />
+              }
+              title={m.you ? 'You' : m.name}
+              value={m.presence === Presence.Resting ? 'Resting' : 'Here'}
+            />
+          ))
+        ) : (
+          <Row title='Nobody yet today' sub='Whoever shows up will fly here' />
+        )}
+      </Group>
+
+      <BringFish />
+
+      <GroupLabel>Together</GroupLabel>
+      <Group>
+        <Row
+          title='Recipe swap'
+          sub={
+            stop
+              ? `Share a meal you love · ${promptFor(stop.id)}`
+              : 'Opens when your shared bird reaches its first stop'
+          }
+          chevron
+          onPress={() => navigation.navigate('RecipeSwap')}
+        />
+        <Row
+          title='Postcards'
+          sub='From the stops on each of your own journeys'
+          chevron
+          onPress={() => navigation.navigate('Postcards')}
+        />
+        <Row
+          title='Ternary settings'
+          sub='What you share, inviting friends, leaving'
+          chevron
+          onPress={() => navigation.navigate('TernarySettings')}
+        />
+        <Row
+          title='How does it work?'
+          sub='What you can do together, and what friends see'
+          chevron
+          onPress={() => navigation.navigate('AboutTernary')}
+        />
+      </Group>
+    </TernaryPage>
+  );
+}

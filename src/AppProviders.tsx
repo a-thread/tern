@@ -38,6 +38,7 @@ import {
   DayNotesProvider,
   useDayNotes,
 } from './domain/day-notes/DayNotesContext';
+import { TernaryProvider } from './domain/ternary/TernaryContext';
 import { useBackend, type Backend } from './BackendContext';
 import { assertProviderOrder, type ProviderSpec } from './providerOrder';
 
@@ -139,6 +140,13 @@ const PROVIDERS: readonly Entry[] = [
         {c}
       </ActivityProvider>
     ),
+  },
+  {
+    // Not in LoadGate: Journey shows the ternary's card once it arrives.
+    // App-wide, since the Journey tab and the ternary's own stack both read it.
+    name: 'ternary',
+    needs: ['settings', 'waypoints'],
+    wrap: (c, b) => <TernaryProvider repo={b.ternary}>{c}</TernaryProvider>,
   },
 ];
 

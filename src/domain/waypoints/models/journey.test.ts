@@ -56,6 +56,17 @@ describe('daysWithWaypoints', () => {
       ]),
     ).toBe(2);
   });
+
+  it("leaves out a day whose only award is the ternary's arrival", () => {
+    expect(
+      daysWithWaypoints([
+        ev('2026-03-01', 40),
+        ev('2026-03-02', 25, WaypointSource.Arrival),
+        ev('2026-03-03', 25, WaypointSource.Arrival),
+        ev('2026-03-03', 10, WaypointSource.Rest),
+      ]),
+    ).toBe(2);
+  });
 });
 
 describe('latestMilestone', () => {

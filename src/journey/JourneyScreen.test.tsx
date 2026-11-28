@@ -15,6 +15,7 @@ import { SettingsProvider } from '../domain/settings/SettingsContext';
 import { WaypointsProvider } from '../domain/waypoints/WaypointsContext';
 import { JourneyView } from '../domain/settings/models/journeyView';
 import { SubscriptionProvider } from '../domain/subscription/SubscriptionContext';
+import { TernaryProvider } from '../domain/ternary/TernaryContext';
 import { createMemorySubscriptionRepository } from '../domain/subscription/subscription.repository';
 import type { SubscriptionStatus } from '../domain/subscription/models/subscription';
 import JourneyScreen from './JourneyScreen';
@@ -57,7 +58,9 @@ function open(status?: SubscriptionStatus) {
         >
           <SettingsProvider repo={backend.settings}>
             <WaypointsProvider repo={backend.waypoints}>
-              <JourneyScreen />
+              <TernaryProvider>
+                <JourneyScreen />
+              </TernaryProvider>
             </WaypointsProvider>
           </SettingsProvider>
         </SubscriptionProvider>

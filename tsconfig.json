@@ -16,6 +16,7 @@
     "android",
     "ios",
     "supabase/functions/**/index.ts",
-    "scripts/buildJourneyMap.ts"
+    "scripts/buildJourneyMap.ts",
+    "scripts/buildFlockIcons.ts"
   ]
 }

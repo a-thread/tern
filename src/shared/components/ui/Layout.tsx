@@ -19,7 +19,8 @@ export function GroupLabel({
   );
 }
 
-export function FootNote({ children }: { children: string }) {
+/** A quiet note under a group. Text, which may hold a link (a nested pressable `Text`). */
+export function FootNote({ children }: { children: React.ReactNode }) {
   return <Text style={s.footNote}>{children}</Text>;
 }
 
@@ -98,7 +99,10 @@ export function Row({
       <View style={{ flex: 1 }}>
         <Text style={s.rowTitle}>{title}</Text>
         {sub ? (
-          <Text style={[s.rowSub, subLink && s.rowSubLink]} numberOfLines={subLines}>
+          <Text
+            style={[s.rowSub, subLink && s.rowSubLink]}
+            numberOfLines={subLines}
+          >
             {sub}
           </Text>
         ) : null}
