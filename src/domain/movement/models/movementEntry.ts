@@ -21,6 +21,7 @@ export enum Activity {
   Yoga = 'yoga',
   Pilates = 'pilates',
   Stretching = 'stretching',
+  PhysicalTherapy = 'physical_therapy',
   Aerobics = 'aerobics',
   Boxing = 'boxing',
   MartialArts = 'martial_arts',
@@ -45,7 +46,10 @@ export enum Effort {
 
 type ActivityInfo = {
   label: string;
-  /** Counted by steps already (walking, running…), so it doesn't add to a goal day. */
+  /**
+   * Counted by steps already (walking, running…), so its minutes don't add to a goal day. Can
+   * be logged as steps instead, for a walk without the phone.
+   */
   inSteps?: boolean;
   /** Offers an optional distance. */
   distance?: boolean;
@@ -71,6 +75,7 @@ export const ACTIVITY_INFO: Record<Activity, ActivityInfo> = {
   [Activity.Yoga]: { label: 'Yoga' },
   [Activity.Pilates]: { label: 'Pilates' },
   [Activity.Stretching]: { label: 'Stretching' },
+  [Activity.PhysicalTherapy]: { label: 'Physical therapy' },
   [Activity.Aerobics]: { label: 'Aerobics' },
   [Activity.Boxing]: { label: 'Boxing' },
   [Activity.MartialArts]: { label: 'Martial arts' },
@@ -117,9 +122,12 @@ export type MovementEntry = {
   id: string;
   day: string;
   activity: Activity;
+  /** 0 for an entry logged as steps. */
   minutes: number;
   effort: Effort | null;
   distanceM?: number | null;
+  /** Steps taken without the phone; added to the day's steps. */
+  steps?: number | null;
   /** Health-app entries are read-only and never stored. */
   source: MovementSource;
   loggedAt: string;
@@ -131,7 +139,63 @@ export class MovementLimits {
   static readonly DEFAULT_MINUTES = 30;
   /** 300 km. */
   static readonly MAX_DISTANCE_M = 300_000;
+  static readonly MIN_STEPS = 1;
+  static readonly MAX_STEPS = 100_000;
+  static readonly DEFAULT_STEPS = 500;
+  /** How the steps stepper moves. */
+  static readonly STEPS_STEP = 100;
 }
+
+export const clampSteps = (s: number) =>
+  Math.min(
+    Math.max(Math.round(s), MovementLimits.MIN_STEPS),
+    MovementLimits.MAX_STEPS,
+  );
+
+/** How an in-steps activity was measured. */
+export enum MovementMeasure {
+  Minutes = 'minutes',
+  Steps = 'steps',
+}
+
+export const MEASURE_LABEL: Record<MovementMeasure, string> = {
+  [MovementMeasure.Minutes]: 'Time',
+  [MovementMeasure.Steps]: 'Steps',
+};
+
+export const isValidSteps = (s: number) =>
+  Number.isInteger(s) &&
+  s >= MovementLimits.MIN_STEPS &&
+  s <= MovementLimits.MAX_STEPS;
+
+/** Minutes, or steps (with 0 minutes) for an in-steps activity; null if it isn't valid. */
+export function loggedAmount(
+  activity: Activity,
+  minutes: number,
+  steps: number | null | undefined,
+): { minutes: number; steps: number | null } | null {
+  if (steps)
+    return ACTIVITY_INFO[activity].inSteps && isValidSteps(steps)
+      ? { minutes: 0, steps }
+      : null;
+  return isValidMinutes(minutes) ? { minutes, steps: null } : null;
+}
+
+export const isStepsEntry = (e: Pick<MovementEntry, 'steps'>) =>
+  (e.steps ?? 0) > 0;
+
+/** Manual steps per day, keyed by day. */
+export function stepsByDay(
+  entries: readonly MovementEntry[],
+): Record<string, number> {
+  const out: Record<string, number> = {};
+  for (const e of entries)
+    if (e.steps) out[e.day] = (out[e.day] ?? 0) + e.steps;
+  return out;
+}
+
+/** "600 steps" or "1,200 steps". */
+export const formatSteps = (n: number) => `${n.toLocaleString('en-US')} steps`;
 
 export const EFFORT_LABEL: Record<Effort, string> = {
   [Effort.Easy]: 'Low',
@@ -170,6 +234,10 @@ export function minutesByDay(
 export const goalMinutesByDay = (entries: readonly MovementEntry[]) =>
   minutesByDay(entries.filter((e) => countsTowardGoal(e.activity)));
 
+/** Anything logged that day, minutes or steps. */
+export const movedOn = (entries: readonly MovementEntry[], day: string) =>
+  entries.some((e) => e.day === day && (e.minutes > 0 || isStepsEntry(e)));
+
 export const dayMinutes = (entries: readonly MovementEntry[], day: string) =>
   entries.reduce((sum, e) => (e.day === day ? sum + e.minutes : sum), 0);
 
@@ -186,8 +254,10 @@ export function activityShare(
   const total = entries.reduce((s, e) => s + e.minutes, 0);
   if (!total) return [];
   const by = new Map<Activity, number>();
+  // Walks logged as steps have no minutes to share.
   for (const e of entries)
-    by.set(e.activity, (by.get(e.activity) ?? 0) + e.minutes);
+    if (e.minutes > 0)
+      by.set(e.activity, (by.get(e.activity) ?? 0) + e.minutes);
   return [...by.entries()]
     .map(([activity, minutes]) => ({
       activity,
@@ -197,16 +267,24 @@ export function activityShare(
     .sort((a, b) => b.minutes - a.minutes);
 }
 
-/** "35 min swim", or "50 min · swim and walk" for a day with several. */
+/**
+ * "35 min swim", or "50 min · swim and walk" for a day with several; steps logged by hand
+ * show as "600 steps walking".
+ */
 export function movementSummary(entries: readonly MovementEntry[]): string {
   const total = entries.reduce((s, e) => s + e.minutes, 0);
+  const steps = entries.reduce((s, e) => s + (e.steps ?? 0), 0);
   const kinds = [
     ...new Set(entries.map((e) => ACTIVITY_LABEL[e.activity].toLowerCase())),
   ];
   if (!kinds.length) return '';
-  return kinds.length === 1
-    ? `${total} min ${kinds[0]}`
-    : `${total} min · ${kinds.join(' and ')}`;
+  const amounts = [
+    total > 0 ? `${total} min` : null,
+    steps > 0 ? formatSteps(steps) : null,
+  ].filter(Boolean);
+  return kinds.length === 1 && amounts.length === 1
+    ? `${amounts[0]} ${kinds[0]}`
+    : `${amounts.join(' · ')} · ${kinds.join(' and ')}`;
 }
 
 const METERS_PER_MILE = 1609.344;

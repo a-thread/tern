@@ -11,6 +11,9 @@ import {
   entriesOn,
   isLoggableDay,
   isValidMinutes,
+  loggedAmount,
+  movedOn,
+  stepsByDay,
   minutesByDay,
   movementSummary,
   type MovementEntry,
@@ -116,5 +119,39 @@ describe('movementEntry', () => {
       '50 min · swimming and walking',
     );
     expect(movementSummary([])).toBe('');
+  });
+
+  describe('walks logged as steps', () => {
+    const walked: MovementEntry = {
+      ...entry('2026-11-27', Activity.Walk, 0),
+      steps: 600,
+    };
+
+    it('takes steps only for activities steps count', () => {
+      expect(loggedAmount(Activity.Walk, 30, 600)).toEqual({
+        minutes: 0,
+        steps: 600,
+      });
+      expect(loggedAmount(Activity.Swim, 30, 600)).toBeNull();
+      expect(loggedAmount(Activity.Walk, 30, 0)).toEqual({
+        minutes: 30,
+        steps: null,
+      });
+      expect(loggedAmount(Activity.Walk, 30, 100_001)).toBeNull();
+    });
+
+    it('adds them to the day’s steps, not its minutes', () => {
+      expect(stepsByDay([walked, ...log])).toEqual({ '2026-11-27': 600 });
+      expect(minutesByDay([walked])).toEqual({ '2026-11-27': 0 });
+      expect(movedOn([walked], '2026-11-27')).toBe(true);
+    });
+
+    it('summarises them in steps', () => {
+      expect(movementSummary([walked])).toBe('600 steps walking');
+      expect(
+        movementSummary([walked, entry('2026-11-27', Activity.Swim, 35)]),
+      ).toBe('35 min · 600 steps · walking and swimming');
+      expect(activityShare([walked])).toEqual([]);
+    });
   });
 });

@@ -14,9 +14,11 @@ import {
   dayMinutes,
   goalMinutesByDay,
   isLoggableDay,
-  isValidMinutes,
+  loggedAmount,
   MovementLimits,
   minutesByDay,
+  movedOn,
+  stepsByDay,
   type Activity,
   type Effort,
   type MovementEntry,
@@ -40,6 +42,8 @@ type MovementContextValue = {
   /** Minutes per day that count toward a goal day: everything but walks and runs, which steps already count. */
   goalMinutesByDay: Record<string, number>;
   todayGoalMinutes: number;
+  /** Steps logged by hand per day, added to the health app's. */
+  stepsByDay: Record<string, number>;
   /** Logs movement for `day` (today or yesterday). False if it can't be logged. */
   add: (input: {
     day: string;
@@ -47,6 +51,8 @@ type MovementContextValue = {
     minutes: number;
     effort: Effort | null;
     distanceM?: number | null;
+    /** Instead of minutes, for an in-steps activity. */
+    steps?: number | null;
   }) => boolean;
   /** Manual entries on an editable day only. */
   update: (
@@ -55,6 +61,7 @@ type MovementContextValue = {
       minutes: number;
       effort: Effort | null;
       distanceM?: number | null;
+      steps?: number | null;
     },
   ) => boolean;
   /** Removes a manual entry; workouts from Health Connect can't be removed here. */
@@ -124,25 +131,34 @@ export function MovementProvider({
     [entries, enabled],
   );
   const todayGoalMinutes = goalByDay[today] ?? 0;
+  const manualSteps = useMemo(
+    () => (enabled ? stepsByDay(entries) : {}),
+    [entries, enabled],
+  );
 
   // Any movement today or yesterday earns that day's waypoint.
   const yesterday = addDays(today, -1);
-  useAward(WaypointSource.Movement, todayMinutes > 0, enabled && ready);
   useAward(
     WaypointSource.Movement,
-    enabled && dayMinutes(entries, yesterday) > 0,
+    enabled && movedOn(entries, today),
+    enabled && ready,
+  );
+  useAward(
+    WaypointSource.Movement,
+    enabled && movedOn(entries, yesterday),
     enabled && ready,
     { day: yesterday },
   );
 
   const add = useCallback<MovementContextValue['add']>(
-    ({ day, activity, minutes, effort, distanceM = null }) => {
-      if (!isLoggableDay(day, today) || !isValidMinutes(minutes)) return false;
+    ({ day, activity, minutes, effort, distanceM = null, steps = null }) => {
+      const amount = loggedAmount(activity, minutes, steps);
+      if (!isLoggableDay(day, today) || !amount) return false;
       const entry: MovementEntry = {
         id: newId(),
         day,
         activity,
-        minutes,
+        ...amount,
         effort,
         distanceM:
           distanceM && distanceM > 0
@@ -161,19 +177,20 @@ export function MovementProvider({
   );
 
   const update = useCallback<MovementContextValue['update']>(
-    (id, { minutes, effort, distanceM = null }) => {
+    (id, { minutes, effort, distanceM = null, steps = null }) => {
       const target = entries.find((e) => e.id === id);
+      const amount = target && loggedAmount(target.activity, minutes, steps);
       if (
         !target ||
+        !amount ||
         target.source !== MovementSource.Manual ||
-        !isLoggableDay(target.day, today) ||
-        !isValidMinutes(minutes)
+        !isLoggableDay(target.day, today)
       ) {
         return false;
       }
       const changed: MovementEntry = {
         ...target,
-        minutes,
+        ...amount,
         effort,
         distanceM:
           distanceM && distanceM > 0
@@ -222,6 +239,7 @@ export function MovementProvider({
       todayMinutes,
       goalMinutesByDay: goalByDay,
       todayGoalMinutes,
+      stepsByDay: manualSteps,
       add,
       update,
       remove,
@@ -238,6 +256,7 @@ export function MovementProvider({
       todayMinutes,
       goalByDay,
       todayGoalMinutes,
+      manualSteps,
       add,
       update,
       remove,
