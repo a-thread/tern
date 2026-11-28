@@ -89,7 +89,7 @@ describe('RecipeSwapScreen', () => {
   it('shows what friends shared at this stop, foods only', async () => {
     open(RecipeSwapScreen);
     expect(await screen.findByText('Red lentil soup')).toBeTruthy();
-    expect(screen.getByText('Shared at this stop')).toBeTruthy();
+    expect(screen.getByText('Shared here')).toBeTruthy();
     expect(screen.queryByText(/calorie|kcal/i)).toBeNull();
   });
 
@@ -100,9 +100,7 @@ describe('RecipeSwapScreen', () => {
         { id: 'k1', name: 'Miso noodles', foods: ['noodles'], fromName: 'Sam' },
       ],
     });
-    expect(
-      await screen.findByText('Share one of your saved meals'),
-    ).toBeTruthy();
+    expect(await screen.findByText('Share a meal')).toBeTruthy();
     expect(screen.queryByText('Red lentil soup')).toBeNull();
     // Kept recipes are friends' too, so they're hidden with the rest.
     expect(screen.queryByText('Miso noodles')).toBeNull();

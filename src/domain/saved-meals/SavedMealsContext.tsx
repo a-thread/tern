@@ -21,6 +21,7 @@ import {
   findMealByName,
   isRecipe,
   recipeClash,
+  SavedMealLimits,
   snapshotItems,
   sortMeals,
   validateMealName,
@@ -53,6 +54,12 @@ type SavedMealsContextValue = {
   saveRecipe: (
     name: string,
     batch: SavedMealItem,
+    servings: number,
+  ) => SaveOutcome;
+  /** A friend's shared recipe as your own meal. Never replaces a same-named one. */
+  saveSharedMeal: (
+    name: string,
+    items: SavedMealItem[],
     servings: number,
   ) => SaveOutcome;
   /** Returns an error message, or null on success. */
@@ -171,6 +178,33 @@ export function SavedMealsProvider({
         id: newId(),
         name: clean,
         items: [batch],
+        servings: cleanServings(servings),
+        createdAt: new Date().toISOString(),
+      };
+      commit(sortMeals([...latest.current, meal]));
+      persist(repo.save(meal));
+      return { ok: true, replaced: false, meal };
+    },
+    [repo, persist, commit],
+  );
+
+  const saveSharedMeal = useCallback(
+    (name: string, items: SavedMealItem[], servings: number): SaveOutcome => {
+      const problem = validateMealName(name);
+      if (problem) return { ok: false, error: problem };
+      if (!items.length)
+        return { ok: false, error: 'This recipe has no foods to save.' };
+      const clean = cleanName(name);
+      const clash = findMealByName(latest.current, clean);
+      if (clash)
+        return {
+          ok: false,
+          error: `You already have a meal called “${clash.name}”.`,
+        };
+      const meal: SavedMeal = {
+        id: newId(),
+        name: clean,
+        items: items.slice(0, SavedMealLimits.MAX_ITEMS),
         servings: cleanServings(servings),
         createdAt: new Date().toISOString(),
       };
@@ -309,6 +343,7 @@ export function SavedMealsProvider({
       ready,
       saveMeal,
       saveRecipe,
+      saveSharedMeal,
       renameMeal,
       deleteMeal,
       draft,
@@ -326,6 +361,7 @@ export function SavedMealsProvider({
       ready,
       saveMeal,
       saveRecipe,
+      saveSharedMeal,
       renameMeal,
       deleteMeal,
       draft,

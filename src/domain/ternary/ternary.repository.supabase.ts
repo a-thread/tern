@@ -2,6 +2,8 @@ import type { TernClient } from '@shared/backend/supabase';
 import { ok } from '@shared/backend/query';
 import { JoinOutcome, type Ternary, TernaryRules } from './models/ternary';
 import type { TernaryRepository } from './ternary.repository';
+import { cleanSharedItems } from './models/recipeSwap';
+import { cleanServings } from '../saved-meals/models/savedMeals';
 
 /**
  * Ternaries on the server. Every table is closed to the app; these call the functions in
@@ -23,6 +25,12 @@ export function createSupabaseTernaryRepository(
         members: (ternary.members ?? []).map((m, place) => ({
           ...m,
           look: Number.isInteger(m.look) ? m.look : place,
+        })),
+        // A friend's recipe is checked before it can be saved as anyone's meal.
+        dishes: (ternary.dishes ?? []).map((d) => ({
+          ...d,
+          items: cleanSharedItems(d.items),
+          servings: cleanServings(d.servings),
         })),
       };
     },
@@ -77,8 +85,12 @@ export function createSupabaseTernaryRepository(
           p_stop: stop,
           p_name: dish.name,
           p_foods: dish.foods,
+          p_items: dish.items ?? null,
+          p_servings: cleanServings(dish.servings),
         }),
       ),
+    removeDish: (dishId) =>
+      ok(db.rpc('ternary_remove_dish', { p_dish: dishId })),
     block: (userId) => ok(db.rpc('ternary_block', { p_user: userId })),
     unblock: (userId) => ok(db.rpc('ternary_unblock', { p_user: userId })),
     report: (kind, target) =>

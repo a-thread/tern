@@ -10,7 +10,7 @@ import {
 
 /** Sample data only: a ternary to try the screens with, and made-up friends to show in one. */
 
-/** A friend's recipe in both samples: names and foods, never amounts. */
+/** A friend's recipe in both samples: names and foods. */
 const LENTIL_SOUP = {
   name: 'Red lentil soup',
   foods: ['Red lentils', 'Carrot', 'Onion', 'Cumin', 'Coconut milk', 'Lime'],

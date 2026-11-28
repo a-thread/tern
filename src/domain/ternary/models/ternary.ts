@@ -1,5 +1,9 @@
 import { cleanSpaces } from '@shared/utils/text';
-import type { SavedMeal } from '../../saved-meals/models/savedMeals';
+import {
+  isRecipe,
+  type SavedMeal,
+  type SavedMealItem,
+} from '../../saved-meals/models/savedMeals';
 import { RouteId, Routes } from '../../waypoints/models/routes';
 
 /** The route a ternary's shared bird flies: Greenland's unless it chose another. */
@@ -52,7 +56,7 @@ export enum ReportKind {
   Member = 'member',
 }
 
-/** A dish at a stopover table: a name and its foods, never amounts, calories or levels. */
+/** A meal shared at a stop: its name and foods, and its recipe; nutrition is never shown. */
 export type Dish = {
   id: string;
   fromName: string;
@@ -61,8 +65,18 @@ export type Dish = {
   stop: string;
   name: string;
   foods: string[];
+  /**
+   * The recipe, to save as your own meal: each food with its amount, nutrition included but
+   * never shown in the ternary. Absent for meals shared by older builds.
+   */
+  items?: SavedMealItem[];
+  /** How many servings the recipe makes. */
+  servings?: number;
   yours: boolean;
 };
+
+/** A meal as it's shared: its name and foods, and its recipe. */
+export type SharedMeal = Pick<Dish, 'name' | 'foods' | 'items' | 'servings'>;
 
 export type Ternary = {
   id: string;
@@ -108,6 +122,8 @@ export class TernaryRules {
   /** The arrival bonus is paid at most this often, however fast a small ternary flies. */
   static readonly ARRIVAL_EVERY_DAYS = 7;
   static readonly MAX_FISH_PER_DAY = 3;
+  /** Meals each person can share at one stop; the server holds to it too. */
+  static readonly MAX_MEALS_PER_STOP = 5;
   /**
    * Arctic terns migrate in flocks of fewer than 15; a ternary stays well smaller, one bird
    * for each look. The server holds to it too (`20261128000000_ternary_looks`).
@@ -137,15 +153,33 @@ export const cleanInviteCode = (text: string) =>
     .replace(/[^A-Z0-9]/g, '')
     .slice(0, TernaryRules.INVITE_LENGTH);
 
-/** A saved meal as it goes to a stopover table: its name and the foods' names, nothing else. */
-export function dishFromSavedMeal(meal: SavedMeal): {
-  name: string;
-  foods: string[];
-} {
-  return {
+export class SharedRecipes {
+  /** Under the server's 64 KB limit on a shared recipe, with room to spare. */
+  static readonly MAX_BYTES = 60_000;
+}
+
+/**
+ * A saved meal as it's shared: its name and foods' names, and, for a recipe (a meal that
+ * makes more than one serving), the amounts to save it from. A meal saved from your log
+ * holds what you ate, so it never shares amounts: only names.
+ */
+export function dishFromSavedMeal(meal: SavedMeal): SharedMeal {
+  const names = {
     name: meal.name,
     foods: [...new Set(meal.items.map((i) => i.name.trim()).filter(Boolean))],
   };
+  if (!isRecipe(meal)) return names;
+  // Only the portion each amount is measured in travels, not the food's whole list.
+  const items = meal.items.map((i) => ({
+    ...i,
+    measure: i.measure && {
+      ...i.measure,
+      portions: i.measure.portions.filter((p) => p.label === i.measure!.unit),
+    },
+  }));
+  // Too big for the server: share it as names, rather than fail.
+  if (JSON.stringify(items).length > SharedRecipes.MAX_BYTES) return names;
+  return { ...names, items, servings: meal.servings };
 }
 
 /** Friends drawn in the flock today: everyone who's here or resting, you included. */

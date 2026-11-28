@@ -23,7 +23,7 @@ export function TernaryIntro() {
         </Text>
         <Bullet>Carry one shared bird further together</Bullet>
         <Bullet>Cheer each other on with fish and postcards</Bullet>
-        <Bullet>Swap recipes, never amounts</Bullet>
+        <Bullet>Swap recipes, ready to log</Bullet>
       </Card>
       <Group style={s.about}>
         <Row

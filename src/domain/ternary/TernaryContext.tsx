@@ -13,6 +13,7 @@ import {
   type JoinOutcome,
   type ReportKind,
   routeOf,
+  type SharedMeal,
   type Ternary,
   TernaryRules,
 } from './models/ternary';
@@ -46,10 +47,8 @@ type TernaryContextValue = {
   }) => Promise<void>;
   bringFish: (toUserId: string) => Promise<void>;
   sendPostcard: (stopId: string) => Promise<void>;
-  bringDish: (
-    stop: string,
-    dish: { name: string; foods: string[] },
-  ) => Promise<void>;
+  bringDish: (stop: string, dish: SharedMeal) => Promise<void>;
+  removeDish: (dishId: string) => Promise<void>;
   block: (userId: string) => Promise<void>;
   unblock: (userId: string) => Promise<void>;
   report: (kind: ReportKind, target: string) => Promise<void>;
@@ -155,9 +154,10 @@ export function TernaryProvider({
       sendPostcard: then((stopId: string) =>
         need().sendPostcard(stopId, today),
       ),
-      bringDish: then((stop: string, dish: { name: string; foods: string[] }) =>
+      bringDish: then((stop: string, dish: SharedMeal) =>
         need().bringDish(stop, dish),
       ),
+      removeDish: then((dishId: string) => need().removeDish(dishId)),
       block: then((userId: string) => need().block(userId)),
       unblock: then((userId: string) => need().unblock(userId)),
       report: (kind, target) => need().report(kind, target),

@@ -69,17 +69,61 @@ describe('Supabase ternary repository', () => {
     });
   });
 
-  it('sends only a dish’s name and foods', async () => {
+  it('sends a meal’s recipe with it, to save as a friend’s own', async () => {
     const { db, rpc } = fakeDb();
+    const items = [
+      {
+        name: 'Lentils',
+        servings: 1,
+        servingLabel: '1 cup',
+        calories: 230,
+        protein: 18,
+        carbs: 40,
+        fat: 1,
+        tier: 1 as const,
+      },
+    ];
     await createSupabaseTernaryRepository(db).bringDish('1-iceland', {
       name: 'Soup',
       foods: ['Lentils'],
+      items,
+      servings: 4,
     });
     expect(rpc).toHaveBeenCalledWith('ternary_bring_dish', {
       p_stop: '1-iceland',
       p_name: 'Soup',
       p_foods: ['Lentils'],
+      p_items: items,
+      p_servings: 4,
     });
+  });
+
+  it('checks a friend’s recipe as it arrives, dropping what can’t be saved', async () => {
+    const { db } = fakeDb({
+      id: 't',
+      name: 'Silly goose',
+      members: [],
+      dishes: [
+        {
+          id: 'd',
+          name: 'Soup',
+          foods: ['Lentils'],
+          servings: 900,
+          items: [
+            { name: 'Lentils', servings: 1, calories: 230, tier: 9 },
+            { name: '', servings: 1 },
+            'not a food',
+          ],
+        },
+        { id: 'e', name: 'Old', foods: ['Rice'], items: null },
+      ],
+    });
+    const t = await createSupabaseTernaryRepository(db).mine('2026-11-28');
+    const [soup, old] = t!.dishes;
+    expect(soup.items).toHaveLength(1);
+    expect(soup.items![0]).toMatchObject({ name: 'Lentils', tier: 3 });
+    expect(soup.servings).toBe(100);
+    expect(old.items).toBeUndefined();
   });
 
   it('passes a server failure on', async () => {

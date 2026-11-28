@@ -15,21 +15,30 @@ import {
 } from '@/domain/ternary/models/recipeSwap';
 import { stopNamed } from '@/domain/ternary/models/stopover';
 import { ReportKind } from '@/domain/ternary/models/ternary';
+import { useTernaryNavigation } from '@/navigation/useAppNavigation';
 import type { TernaryStackParamList } from '../../navigation';
 import { TernaryPage } from '../../components/TernaryPage/TernaryPage';
-import { TernaryButton } from '../../components/TernaryButton/TernaryButton';
+import {
+  ButtonTone,
+  TernaryButton,
+} from '../../components/TernaryButton/TernaryButton';
+import { useSavedMeals } from '@/domain/saved-meals/SavedMealsContext';
+import { findMealByName } from '@/domain/saved-meals/models/savedMeals';
+import { servingsText } from '@/domain/food/models/servings';
 
 type Props = NativeStackScreenProps<TernaryStackParamList, 'Recipe'>;
 
 /**
- * One recipe from the swap: who shared it, its foods, and keeping it to cook yourself. Only
- * names and foods, never amounts or numbers: whoever cooks it logs it their own way. A
- * friend's recipe can be reported; nobody is told.
+ * One recipe from the swap: who shared it, its foods with their amounts, and saving it to your
+ * own meals, ready to log. Its nutrition is never shown here; once saved it's yours, shown
+ * your way. A friend's recipe can be reported; nobody is told.
  */
 export default function RecipeScreen({ route }: Props) {
-  const { ternary, report } = useTernary();
+  const { ternary, report, removeDish } = useTernary();
+  const { meals, saveSharedMeal } = useSavedMeals();
   const { settings, updateSettings } = useSettings();
   const toast = useToast();
+  const navigation = useTernaryNavigation();
   const { id } = route.params;
 
   const dish = ternary?.dishes.find((d) => d.id === id);
@@ -48,6 +57,21 @@ export default function RecipeScreen({ route }: Props) {
   const from = yours ? 'You' : recipe.fromName;
   const where = dish ? stopNamed(dish.stop)?.name : undefined;
 
+  // A recipe with amounts saves straight to your meals, ready to log; older shares only list foods.
+  const items = dish?.items;
+  // From your meals themselves, so deleting it there lets it be saved again.
+  const inMeals = Boolean(findMealByName(meals, recipe.name));
+  const saveToMeals = () => {
+    if (!dish || !items) return;
+    const outcome = saveSharedMeal(dish.name, items, dish.servings ?? 1);
+    if (!outcome.ok) {
+      toast.show(outcome.error);
+      return;
+    }
+    updateSettings({ keptRecipes: keepRecipe(settings.keptRecipes, dish) });
+    toast.show('Saved to your meals. Log it from Food.');
+  };
+
   const toggleKeep = () => {
     if (kept) {
       updateSettings({ keptRecipes: unkeepRecipe(settings.keptRecipes, id) });
@@ -57,6 +81,22 @@ export default function RecipeScreen({ route }: Props) {
     updateSettings({ keptRecipes: keepRecipe(settings.keptRecipes, dish) });
     toast.show('Kept. It’s under Kept to cook.');
   };
+
+  const askRemove = () =>
+    confirm({
+      title: 'Stop sharing this meal?',
+      message: `Friends won’t see “${recipe.name}” any more. Anyone who kept it still has it.`,
+      action: 'Stop sharing',
+      onConfirm: async () => {
+        try {
+          await removeDish(id);
+          navigation.goBack();
+        } catch (e) {
+          console.warn('Could not stop sharing a recipe', e);
+          toast.show('Couldn’t do that just now. Please try again.');
+        }
+      },
+    });
 
   const askReport = () =>
     confirm({
@@ -81,19 +121,34 @@ export default function RecipeScreen({ route }: Props) {
       </Text>
       <Text style={s.name}>{recipe.name}</Text>
 
-      <GroupLabel>What’s in it</GroupLabel>
+      <GroupLabel>
+        {items && (dish?.servings ?? 1) > 1
+          ? `What’s in it · makes ${dish?.servings}`
+          : 'What’s in it'}
+      </GroupLabel>
       <Group>
-        {recipe.foods.map((food) => (
-          <Row key={food} title={food} />
-        ))}
+        {items
+          ? items.map((item, i) => (
+              <Row
+                key={`${item.name}-${i}`}
+                title={item.name}
+                value={servingsText(item.servings, item.servingLabel)}
+              />
+            ))
+          : recipe.foods.map((food) => <Row key={food} title={food} />)}
       </Group>
-      <FootNote>
-        No amounts or numbers come with a shared recipe. When you cook it, log
-        the foods from the Food tab with your own amounts, and your display
-        settings apply as always.
-      </FootNote>
 
-      {yours ? null : (
+      {yours ? (
+        <TernaryButton label='Stop sharing' outline onPress={askRemove} />
+      ) : items ? (
+        <TernaryButton
+          label={inMeals ? 'In your meals' : 'Save to my meals'}
+          tone={ButtonTone.Aurora}
+          outline={inMeals}
+          disabled={inMeals}
+          onPress={saveToMeals}
+        />
+      ) : (
         <TernaryButton
           label={kept ? 'Kept to cook · remove' : 'Keep this recipe'}
           outline={kept}
@@ -101,9 +156,13 @@ export default function RecipeScreen({ route }: Props) {
         />
       )}
 
-      {!yours && dish ? (
+      {!yours && (dish || kept) ? (
         <Group>
-          <Row title='Report this recipe' onPress={askReport} />
+          {/* A saved recipe stays kept until taken off the list here. */}
+          {items && kept ? (
+            <Row title='Remove from Kept to cook' onPress={toggleKeep} />
+          ) : null}
+          {dish ? <Row title='Report this recipe' onPress={askReport} /> : null}
         </Group>
       ) : null}
     </TernaryPage>

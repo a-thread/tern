@@ -6,7 +6,7 @@ import { Card, GroupLabel } from '@shared/components/ui';
 import { useTernary } from '@/domain/ternary/TernaryContext';
 import { fishable } from '@/domain/ternary/models/ternary';
 import { useInvite } from '../../hooks/useInvite';
-import { TernaryButton } from '../TernaryButton/TernaryButton';
+import { ButtonTone, TernaryButton } from '../TernaryButton/TernaryButton';
 
 /** While nobody else has joined: your code, and a button to send it to friends. */
 export function InviteCard() {
@@ -27,7 +27,11 @@ export function InviteCard() {
         >
           {ternary.inviteCode}
         </Text>
-        <TernaryButton label='Share invite' onPress={invite} />
+        <TernaryButton
+          label='Share invite'
+          tone={ButtonTone.Aurora}
+          onPress={invite}
+        />
       </Card>
     </>
   );

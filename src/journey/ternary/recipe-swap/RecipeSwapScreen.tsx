@@ -7,17 +7,23 @@ import { useToast } from '@shared/state/ToastContext';
 import { useSavedMeals } from '@/domain/saved-meals/SavedMealsContext';
 import { useSettings } from '@/domain/settings/SettingsContext';
 import { useTernary } from '@/domain/ternary/TernaryContext';
-import { dishFromSavedMeal, routeOf } from '@/domain/ternary/models/ternary';
+import {
+  dishFromSavedMeal,
+  routeOf,
+  TernaryRules,
+} from '@/domain/ternary/models/ternary';
 import { promptFor, restingAt } from '@/domain/ternary/models/stopover';
 import { useTernaryNavigation } from '@/navigation/useAppNavigation';
 import { TernaryPage } from '../components/TernaryPage/TernaryPage';
+import {
+  ButtonTone,
+  TernaryButton,
+} from '../components/TernaryButton/TernaryButton';
 
 /**
- * The recipe swap: share a meal you love, and keep the ones friends share to cook yourself.
- * Each time the shared bird reaches a stop there's a new idea for what to share, and each
- * friend can share one meal per stop. Only names and foods are shared, never amounts or
- * numbers, and nobody is shown as not having shared one. Friends' recipes are hidden
- * entirely when the person has turned that safeguard on; their own and kept ones stay.
+ * The recipe swap: meals shared at the stop the shared bird rests at, with that stop's idea,
+ * and the ones you've kept. Up to `MAX_MEALS_PER_STOP` each per stop; names and foods only.
+ * Friends' recipes are hidden entirely when the person has turned that safeguard on.
  */
 export default function RecipeSwapScreen() {
   const { ternary, bringDish } = useTernary();
@@ -33,7 +39,11 @@ export default function RecipeSwapScreen() {
   const shown = ternary.dishes.filter((d) => d.yours || !hideFriends);
   const now = stop ? shown.filter((d) => d.stop === stop.id) : [];
   const earlier = shown.filter((d) => !stop || d.stop !== stop.id);
-  const yours = now.find((d) => d.yours);
+  const yoursHere = now.filter((d) => d.yours);
+  const canShare = yoursHere.length < TernaryRules.MAX_MEALS_PER_STOP;
+  const sharable = meals.filter(
+    (m) => !yoursHere.some((d) => d.name === m.name),
+  );
   // Kept recipes are friends' too, so the safeguard hides them with the rest.
   const kept = hideFriends ? [] : settings.keptRecipes;
 
@@ -51,82 +61,70 @@ export default function RecipeSwapScreen() {
   };
 
   const open = (id: string) => navigation.navigate('Recipe', { id });
-  const by = (d: { yours: boolean; fromName: string }) =>
-    d.yours ? 'You' : d.fromName;
+  const dishRow = (d: (typeof shown)[number]) => (
+    <Row
+      key={d.id}
+      title={d.name}
+      sub={`${d.yours ? 'You' : d.fromName} · ${d.foods.join(', ')}`}
+      subLines={1}
+      chevron
+      onPress={() => open(d.id)}
+    />
+  );
 
   return (
     <TernaryPage title='Recipe swap'>
-      <Text style={s.lead}>
-        Share a meal you love, and keep the ones your friends share to cook
-        yourself. Only the name and foods are shared, never amounts or numbers.
-      </Text>
-
       {stop ? (
-        <Card>
-          <Text
-            style={typography.label}
-          >{`Idea for this stop · ${stop.name}`}</Text>
+        <Card style={s.idea}>
+          <Text style={typography.label}>{stop.name}</Text>
           <Text style={s.prompt}>{promptFor(stop.id)}</Text>
-          <Text style={s.small}>
-            A new idea each time your shared bird reaches a stop. One meal each,
-            if you’d like.
-          </Text>
         </Card>
       ) : (
-        <FootNote>
-          The swap opens when your shared bird reaches its first stop.
-        </FootNote>
+        <FootNote>Opens at your shared bird’s first stop.</FootNote>
       )}
 
-      {stop ? (
+      {stop && now.length ? (
         <>
-          <GroupLabel>Shared at this stop</GroupLabel>
+          <GroupLabel>Shared here</GroupLabel>
+          <Group>{now.map(dishRow)}</Group>
+        </>
+      ) : null}
+
+      {stop && choosing ? (
+        <>
+          <GroupLabel>Your saved meals</GroupLabel>
           <Group>
-            {now.map((d) => (
-              <Row
-                key={d.id}
-                title={d.name}
-                sub={`${by(d)} · ${d.foods.join(', ')}`}
-                subLines={1}
-                chevron
-                onPress={() => open(d.id)}
-              />
-            ))}
-            {choosing ? (
-              meals.length ? (
-                meals.map((m) => (
-                  <Row
-                    key={m.id}
-                    title={m.name}
-                    sub='Share this one'
-                    chevron
-                    onPress={() => share(m.id)}
-                  />
-                ))
-              ) : (
+            {sharable.length ? (
+              sharable.map((m) => (
                 <Row
-                  title='No saved meals yet'
-                  sub='Save a meal from the Food tab, then share it here'
+                  key={m.id}
+                  title={m.name}
+                  chevron
+                  onPress={() => share(m.id)}
                 />
-              )
+              ))
             ) : (
               <Row
-                title={
-                  yours
-                    ? 'Share a different meal'
-                    : 'Share one of your saved meals'
-                }
-                sub={
-                  yours
-                    ? `Instead of ${yours.name}`
-                    : 'Your friends can keep it to cook'
-                }
-                chevron
-                onPress={() => setChoosing(true)}
+                title={meals.length ? 'All shared here' : 'No saved meals yet'}
+                sub={meals.length ? undefined : 'Save one in Food first'}
               />
             )}
           </Group>
+          <TernaryButton
+            label='Cancel'
+            outline
+            tone={ButtonTone.Aurora}
+            onPress={() => setChoosing(false)}
+          />
         </>
+      ) : null}
+
+      {stop && !choosing && canShare ? (
+        <TernaryButton
+          label='Share a meal'
+          tone={ButtonTone.Aurora}
+          onPress={() => setChoosing(true)}
+        />
       ) : null}
 
       {kept.length ? (
@@ -137,7 +135,7 @@ export default function RecipeSwapScreen() {
               <Row
                 key={k.id}
                 title={k.name}
-                sub={`From ${k.fromName} · ${k.foods.join(', ')}`}
+                sub={`${k.fromName} · ${k.foods.join(', ')}`}
                 subLines={1}
                 chevron
                 onPress={() => open(k.id)}
@@ -149,33 +147,17 @@ export default function RecipeSwapScreen() {
 
       {earlier.length ? (
         <>
-          <GroupLabel>Shared at earlier stops</GroupLabel>
-          <Group>
-            {earlier.map((d) => (
-              <Row
-                key={d.id}
-                title={d.name}
-                sub={`${by(d)} · ${d.foods.join(', ')}`}
-                subLines={1}
-                chevron
-                onPress={() => open(d.id)}
-              />
-            ))}
-          </Group>
+          <GroupLabel>Earlier stops</GroupLabel>
+          <Group>{earlier.map(dishRow)}</Group>
         </>
       ) : null}
 
-      {hideFriends ? (
-        <FootNote>
-          Friends’ recipes are hidden (Food display › Hide friends’ food).
-        </FootNote>
-      ) : null}
+      {hideFriends ? <FootNote>Friends’ recipes are hidden.</FootNote> : null}
     </TernaryPage>
   );
 }
 
 const s = StyleSheet.create({
-  lead: { ...typography.meta, lineHeight: 19, marginVertical: space.md },
+  idea: { marginTop: space.md },
   prompt: { ...typography.heading, fontSize: 18, marginTop: space.xs },
-  small: { ...typography.caption, lineHeight: 16, marginTop: space.xs },
 });
