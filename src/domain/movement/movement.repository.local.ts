@@ -7,7 +7,7 @@ export function createLocalMovementRepository(db: LocalDb): MovementRepository {
     async load(from, to) {
       return (
         await db.all<Parameters<typeof rowToMovement>[0]>(
-          `SELECT id, day, activity, minutes, effort, distance_m, logged_at
+          `SELECT id, day, activity, minutes, effort, distance_m, steps, logged_at
            FROM movement_entries WHERE day BETWEEN ? AND ? ORDER BY logged_at`,
           [from, to],
         )
@@ -15,8 +15,8 @@ export function createLocalMovementRepository(db: LocalDb): MovementRepository {
     },
     async add(entry) {
       await db.run(
-        `INSERT INTO movement_entries (id, day, activity, minutes, effort, distance_m, logged_at)
-         VALUES (?, ?, ?, ?, ?, ?, ?)`,
+        `INSERT INTO movement_entries (id, day, activity, minutes, effort, distance_m, steps, logged_at)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
         [
           entry.id,
           entry.day,
@@ -24,19 +24,21 @@ export function createLocalMovementRepository(db: LocalDb): MovementRepository {
           entry.minutes,
           entry.effort,
           entry.distanceM ?? null,
+          entry.steps ?? null,
           entry.loggedAt,
         ],
       );
     },
     async update(entry) {
       await db.run(
-        `UPDATE movement_entries SET activity = ?, minutes = ?, effort = ?, distance_m = ?
+        `UPDATE movement_entries SET activity = ?, minutes = ?, effort = ?, distance_m = ?, steps = ?
          WHERE id = ?`,
         [
           entry.activity,
           entry.minutes,
           entry.effort,
           entry.distanceM ?? null,
+          entry.steps ?? null,
           entry.id,
         ],
       );

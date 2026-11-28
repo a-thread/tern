@@ -18,6 +18,7 @@ const swim: MovementEntry = {
   minutes: 40,
   effort: Effort.Moderate,
   distanceM: 1500,
+  steps: null,
   source: MovementSource.Manual,
   loggedAt: '2026-10-18T18:00:00.000Z',
 };
@@ -59,6 +60,23 @@ describe.each<[string, () => Promise<MovementRepository>]>([
     });
     expect(await repo.load('2026-10-18', '2026-10-18')).toEqual([
       { ...swim, minutes: 55, effort: Effort.Hard, distanceM: null },
+    ]);
+  });
+
+  it('keeps a walk logged as steps', async () => {
+    const repo = await create();
+    const walk: MovementEntry = {
+      ...yoga,
+      id: 'w',
+      activity: Activity.Walk,
+      minutes: 0,
+      steps: 600,
+    };
+    await repo.add(walk);
+    expect(await repo.load('2026-10-18', '2026-10-18')).toEqual([walk]);
+    await repo.update({ ...walk, steps: 850 });
+    expect(await repo.load('2026-10-18', '2026-10-18')).toEqual([
+      { ...walk, steps: 850 },
     ]);
   });
 

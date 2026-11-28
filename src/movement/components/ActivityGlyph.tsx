@@ -26,6 +26,7 @@ const ICONS: Record<Activity, IconName> = {
   [Activity.Yoga]: 'yoga',
   [Activity.Pilates]: 'spa-outline',
   [Activity.Stretching]: 'human-handsup',
+  [Activity.PhysicalTherapy]: 'bandage',
   [Activity.Aerobics]: 'jump-rope',
   [Activity.Boxing]: 'boxing-glove',
   [Activity.MartialArts]: 'karate',

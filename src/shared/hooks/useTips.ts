@@ -6,9 +6,6 @@ import { useSettings } from '@/domain/settings/SettingsContext';
 import type { Tip } from '@/domain/settings/models/onboarding';
 import { measureInWindow, type Rect } from '../utils/measureInWindow';
 
-/** Long enough for the last tip to fade. */
-const NEXT_TIP_MS = 120;
-
 export type ShownTip = {
   tip: Tip;
   /** Null when the anchor can't be found; the tip then stands alone. */
@@ -91,7 +88,7 @@ export function useTips({
           total: relevant.length,
         });
       },
-      running.current ? NEXT_TIP_MS : settleMs,
+      running.current ? 0 : settleMs,
     );
     return () => {
       cancelled = true;
@@ -101,8 +98,10 @@ export function useTips({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [active, pendingKey]);
 
-  const markSeen = (tips: readonly Tip[]) => {
-    setShown(null);
+  // Closing the overlay between tips dismisses and re-presents a modal, which is slow,
+  // so the current tip stays up until the next one replaces it.
+  const markSeen = (tips: readonly Tip[], keepOpen = false) => {
+    if (!keepOpen) setShown(null);
     updateSettings({
       onboarding: {
         ...onboarding,
@@ -113,7 +112,7 @@ export function useTips({
 
   return {
     shown,
-    gotIt: () => shown && markSeen([shown.tip]),
+    gotIt: () => shown && markSeen([shown.tip], pending.length > 1),
     skipAll: () => markSeen(group),
   };
 }

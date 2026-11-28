@@ -31,6 +31,7 @@ import {
   EFFORT_LABEL,
   entriesOn,
   formatDistance,
+  formatSteps,
   isLoggableDay,
   searchActivities,
   MovementSource,
@@ -84,7 +85,7 @@ export default function ExercisesScreen({ navigation, route }: Props) {
                   icon={<ActivityGlyph activity={e.activity} />}
                   title={ACTIVITY_INFO[e.activity].label}
                   sub={[
-                    `${e.minutes} min`,
+                    e.steps ? formatSteps(e.steps) : `${e.minutes} min`,
                     e.effort
                       ? `${EFFORT_LABEL[e.effort].toLowerCase()} intensity`
                       : null,
