@@ -10,6 +10,7 @@ import { useSettings } from '../domain/settings/SettingsContext';
 import { lastNavigation, rememberNavigation } from './navigationMemory';
 import type { RootStackParamList } from './types';
 import { useNotificationNavigation } from './useNotificationNavigation';
+import { useJoinLinkNavigation } from './useJoinLinkNavigation';
 
 const navTheme = {
   ...DefaultTheme,
@@ -31,6 +32,7 @@ export function AppNavigationContainer({
   const nav = useNavigationContainerRef<RootStackParamList>();
   const [mounted, setMounted] = useState(false);
   useNotificationNavigation(nav, mounted && settings.onboarding.wizardDone);
+  useJoinLinkNavigation(nav, mounted && settings.onboarding.wizardDone);
   return (
     <NavigationContainer
       ref={nav}

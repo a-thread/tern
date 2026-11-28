@@ -113,4 +113,14 @@ describe('Join a ternary', () => {
       arrived: true,
     });
   });
+
+  it('fills in the code from a join link', () => {
+    const route = {
+      key: 'j',
+      name: 'JoinTernary' as const,
+      params: { code: 'KTW4QP' },
+    };
+    open(<JoinTernaryScreen route={route} />, createMemoryTernaryRepository());
+    expect(screen.getByLabelText('Invite code').props.value).toBe('KTW4QP');
+  });
 });

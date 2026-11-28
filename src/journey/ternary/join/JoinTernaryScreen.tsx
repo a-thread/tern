@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { StyleSheet, Text } from 'react-native';
+import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 
 import { colors, space, typography } from '@shared/theme';
 import { FootNote } from '@shared/components/ui';
@@ -12,6 +13,7 @@ import {
   JoinOutcome,
   TernaryRules,
 } from '@/domain/ternary/models/ternary';
+import type { TernaryStackParamList } from '../navigation';
 import { TernaryPage } from '../components/TernaryPage/TernaryPage';
 import { TernaryField } from '../components/TernaryField/TernaryField';
 import { TernaryButton } from '../components/TernaryButton/TernaryButton';
@@ -26,13 +28,20 @@ const JOIN_MESSAGES: Record<JoinOutcome, string | null> = {
   [JoinOutcome.Already]: 'You’re already in a ternary.',
 };
 
-/** Joining a friend's ternary: its code first, then you. */
-export default function JoinTernaryScreen() {
+/** Joining a friend's ternary: its code first (filled in from a join link), then you. */
+export default function JoinTernaryScreen({
+  route,
+}: Partial<NativeStackScreenProps<TernaryStackParamList, 'JoinTernary'>>) {
   const { join } = useTernary();
   const toast = useToast();
   const navigation = useTernaryNavigation();
   const you = useYou();
-  const [code, setCode] = useState('');
+  const linked = route?.params?.code ?? '';
+  const [code, setCode] = useState(linked);
+  // A second link while this is open brings its own code.
+  useEffect(() => {
+    if (linked) setCode(linked);
+  }, [linked]);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 

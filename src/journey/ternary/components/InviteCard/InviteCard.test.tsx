@@ -35,9 +35,9 @@ describe('InviteCard', () => {
     open({ ...sample, members: sample.members.filter((m) => m.you) });
     expect(await screen.findByText('KTW4QP')).toBeTruthy();
     fireEvent.press(screen.getByText('Share invite'));
-    expect(share).toHaveBeenCalledWith({
-      message: expect.stringContaining('the code KTW4QP'),
-    });
+    const { message } = share.mock.calls[0][0] as { message: string };
+    expect(message).toContain('https://purlieus.dev/tern/join/?code=KTW4QP');
+    expect(message).toContain('the code KTW4QP');
   });
 
   it('goes once a friend has joined', async () => {
