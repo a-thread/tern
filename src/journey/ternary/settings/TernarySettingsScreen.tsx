@@ -20,6 +20,7 @@ import {
 import { useRootNavigation } from '@/navigation/useAppNavigation';
 import { TernaryPage } from '../components/TernaryPage/TernaryPage';
 import { LookChoice } from '../components/LookChoice/LookChoice';
+import { LeaveRow } from './components/LeaveRow/LeaveRow';
 
 /**
  * The ternary's settings: the bird you fly as, what you share, taking a break without leaving, inviting friends,
@@ -106,7 +107,8 @@ export default function TernarySettingsScreen() {
       onConfirm: async () => {
         try {
           await leave();
-          root.goBack();
+          // Out of the ternary's screens entirely, back to Journey.
+          root.navigate('Tabs', { screen: 'Journey' });
         } catch (e) {
           console.warn('Could not leave the ternary', e);
           toast.show('Couldn’t leave just now. Please try again.');
@@ -193,9 +195,7 @@ export default function TernarySettingsScreen() {
         </>
       ) : null}
 
-      <Group>
-        <Row title={`Leave ${ternary.name}`} chevron onPress={askLeave} />
-      </Group>
+      <LeaveRow name={ternary.name} alone={alone} onPress={askLeave} />
     </TernaryPage>
   );
 }
