@@ -1,5 +1,4 @@
 import React from 'react';
-import { Share } from 'react-native';
 
 import {
   FootNote,
@@ -21,6 +20,7 @@ import { useRootNavigation } from '@/navigation/useAppNavigation';
 import { TernaryPage } from '../components/TernaryPage/TernaryPage';
 import { LookChoice } from '../components/LookChoice/LookChoice';
 import { LeaveRow } from './components/LeaveRow/LeaveRow';
+import { useInvite } from '../hooks/useInvite';
 
 /**
  * The ternary's settings: the bird you fly as, what you share, taking a break without leaving, inviting friends,
@@ -33,6 +33,7 @@ export default function TernarySettingsScreen() {
   const { settings, updateSettings } = useSettings();
   const toast = useToast();
   const root = useRootNavigation();
+  const invite = useInvite();
   if (!ternary)
     return <TernaryPage title='Ternary settings'>{null}</TernaryPage>;
 
@@ -59,11 +60,6 @@ export default function TernarySettingsScreen() {
         toast.show('Couldn’t change your bird just now. Please try again.');
       });
   };
-
-  const invite = () =>
-    Share.share({
-      message: `Fly with me in Tern: join my ternary “${ternary.name}” with the code ${ternary.inviteCode}.`,
-    }).catch(() => {});
 
   const reportMember = async (userId: string) => {
     try {

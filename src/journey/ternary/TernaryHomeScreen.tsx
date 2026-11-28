@@ -15,6 +15,7 @@ import { TernaryPage } from './components/TernaryPage/TernaryPage';
 import { TernaryIntro } from './components/TernaryIntro/TernaryIntro';
 import { FlockMap } from './components/FlockMap/FlockMap';
 import { BringFish } from './components/BringFish/BringFish';
+import { InviteCard } from './components/InviteCard/InviteCard';
 import { FlockBadge } from './components/FlockBadge/FlockBadge';
 
 /**
@@ -59,6 +60,8 @@ export default function TernaryHomeScreen({
         />
       }
     >
+      <InviteCard />
+
       <GroupLabel>Flying today</GroupLabel>
       <Group>
         {here.length ? (

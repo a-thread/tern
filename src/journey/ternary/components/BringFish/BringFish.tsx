@@ -23,6 +23,8 @@ export function BringFish() {
     0,
   );
   const friends = fishable(ternary.members);
+  // Nobody to bring one to yet: the invite card above says how to fix that.
+  if (!friends.length && !ternary.fish.length) return null;
   const bring = async (userId: string, name: string) => {
     if (busy || !left) return;
     setBusy(true);
@@ -79,7 +81,7 @@ export function BringFish() {
       </View>
       <FootNote>
         {!friends.length
-          ? 'Once friends join, you can bring them a fish here. Invite them from Ternary settings with your code.'
+          ? 'Once friends join, you can bring them a fish here.'
           : left
             ? `A fish waits in their tern’s bill until they next open Tern. You can bring ${left} more today.`
             : 'That’s all the fish for today. You can bring more tomorrow.'}
